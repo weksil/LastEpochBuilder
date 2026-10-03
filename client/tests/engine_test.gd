@@ -9,6 +9,8 @@ var _failed: int = 0
 func _ready() -> void:
 	_vectors()
 	_sample_build()
+	_idol_altar()
+	_passive_field_models()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -303,7 +305,37 @@ func _unique_special_effects() -> void:
 	Build.set_skill(2, "")
 	# Frozen is an enemy flag (CDP 20), not an ailment
 	_check("CDP 20 frozen flag", Enemy.has_condition({"flags": {"frozen": true}, "ailments": {}}, 20), 1.0)
+	_unique_skill_level_models()
 	_all_uniques_smoke()
+
+
+## Skill-level kinds of player-scoped unique models (trigger, param, flag) reach the skill result; fake models are
+## swapped into the loaded dictionary for Apostate's Sanctuary PP 285 and removed again.
+func _unique_skill_level_models() -> void:
+	var player_models: Dictionary = GameData._unique_models.get("player", {})
+	var had: bool = player_models.has("285")
+	var old: Variant = player_models.get("285")
+	var ab: Dictionary = GameData.get_ability("fi9")
+	Build.set_item("amulet", {"unique": 290, "base": 20, "sub": 7, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
+	Build.set_skill(0, "fi9")
+	var g: Dictionary = BuildMods.global_store(Build)
+	player_models["285"] = {"kind": "trigger", "ability": str(ab.get("abilityName", "")), "on": "hit", "chance": 0.25}
+	var s: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	_check("global trigger reaches the skill result", float(s["triggers"].size()), 1.0)
+	_check("global trigger is not a global stat", BuildMods.global_store(Build)["store"].query_untagged(LE.HEALTH).added, g["store"].query_untagged(LE.HEALTH).added - 2.0 * _row(g, "Живучесть"))
+	_check("skill with a global trigger computes", 1.0 if not SkillCalc.compute(Build, 0)["sections"].is_empty() else 0.0, 1.0)
+	player_models["285"] = {"kind": "param", "param": "projectiles", "label": "Тест-параметр", "mod": "added"}
+	s = BuildMods.skill_store(Build, 0, g["store"])
+	_check("global param row appears", 1.0 if s["params"].has("Тест-параметр") else 0.0, 1.0)
+	player_models["285"] = {"kind": "flag", "text": "тестовый флаг"}
+	g = BuildMods.global_store(Build)
+	_check("flag effect is listed", 1.0 if str(g["notes"]).contains("тестовый флаг") else 0.0, 1.0)
+	if had:
+		player_models["285"] = old
+	else:
+		player_models.erase("285")
+	Build.clear_item("amulet")
+	Build.set_skill(0, "")
 
 
 ## Every unique, one at a time, with all player flags on: no script errors, count modelled effects.
@@ -344,6 +376,70 @@ func _all_uniques_smoke() -> void:
 	Build.set_skill(0, "")
 
 
+## Passive nodes into special lists (statsWhileDualWielding, statsWithWeaponRequirements, §5.2): conditions and sources.
+func _passive_field_models() -> void:
+	Build.set_class(1)  # Mage
+	Build.set_level(100)
+	var tree: Dictionary = GameData.get_passive_tree(1)
+	var effects: Dictionary = GameData.passive_effects(str(tree["treeID"]))
+	var dual_id: int = -1
+	var weapon_id: int = -1
+	for node: Dictionary in tree["nodes"]:
+		for effect: Dictionary in effects.get(int(node["id"]), {}).get("effects", []):
+			var target: String = str(effect.get("target", ""))
+			if target == "CharacterMutator.statsWhileDualWielding" and dual_id < 0:
+				dual_id = int(node["id"])
+			elif target == "CharacterMutator.statsWithWeaponRequirements" and weapon_id < 0:
+				weapon_id = int(node["id"])
+	_check("Mage has a dual-wield and a weapon-requirement passive", 1.0 if dual_id >= 0 and weapon_id >= 0 else 0.0, 1.0)
+	# base tree points open the mastery thresholds
+	for _pass in range(6):
+		for node: Dictionary in tree["nodes"]:
+			if int(node["mastery"]) == 0:
+				while Build.add_point(int(node["id"])):
+					pass
+	for id: int in [dual_id, weapon_id]:
+		_allocate_passive_path(tree, id, 1)
+		_check("passive %d allocated" % id, float(Build.get_points(id)), 1.0)
+	var title: String = GameData.display_name(effects[weapon_id])
+	var g: Dictionary = BuildMods.global_store(Build)
+	var wr_note: String = "Пассивка «%s» — учитывается при условии" % title
+	_check("statsWithWeaponRequirements without a catalyst: condition note", 1.0 if str(g["notes"]).contains(wr_note) else 0.0, 1.0)
+	Build.set_item("offhand", {"base": 19, "sub": 0, "implicit_rolls": [255, 255]})
+	g = BuildMods.global_store(Build)
+	var found: bool = false
+	for mod: StatMod in g["store"].all_mods():
+		if mod.source.begins_with("Пассивка «%s»" % title):
+			found = true
+	_check("statsWithWeaponRequirements with a catalyst: mod with the node title in the global store", 1.0 if found else 0.0, 1.0)
+	Build.clear_item("offhand")
+	g = BuildMods.global_store(Build)
+	var dual_title: String = GameData.display_name(effects[dual_id])
+	var dual_note: String = "Пассивка «%s» — учитывается при условии" % dual_title
+	_check("statsWhileDualWielding without weapons: condition note", 1.0 if str(g["notes"]).contains(dual_note) else 0.0, 1.0)
+	Build.set_item("weapon", {"base": 10, "sub": 1, "implicit_rolls": [255, 255]})
+	Build.set_item("offhand", {"base": 10, "sub": 1, "implicit_rolls": [255, 255]})
+	g = BuildMods.global_store(Build)
+	var dual_found: bool = false
+	for mod: StatMod in g["store"].all_mods():
+		if mod.source.begins_with("Пассивка «%s»" % dual_title):
+			dual_found = true
+	_check("statsWhileDualWielding with two weapons: mod in the global store", 1.0 if dual_found else 0.0, 1.0)
+	_check("statsWhileDualWielding with two weapons: no condition note", 0.0 if str(g["notes"]).contains(dual_note) else 1.0, 1.0)
+	Build.clear_item("weapon")
+	Build.clear_item("offhand")
+
+
+## Allocates passive requirements recursively, then `points` into the node.
+func _allocate_passive_path(tree: Dictionary, node_id: int, points: int) -> void:
+	for node: Dictionary in tree["nodes"]:
+		if int(node["id"]) == node_id:
+			for req: Dictionary in node.get("requirements", []):
+				_allocate_passive_path(tree, int(req["nodeID"]), int(req["requirement"]))
+	while Build.get_points(node_id) < points and Build.add_point(node_id):
+		pass
+
+
 ## Allocates requirements recursively, then `points` into the node (skill slot 0).
 func _allocate_path(tree: Dictionary, node_id: int, points: int) -> void:
 	for node: Dictionary in tree["nodes"]:
@@ -377,3 +473,62 @@ func _print_sections(r: Dictionary) -> void:
 			print("    %s: %s" % [row["label"], row["text"]])
 			for line: String in str(row["breakdown"]).split("\n"):
 				print("        " + line)
+
+
+## Idol altar (docs/ENGINE.md §5.4.1): altar grid, refracted slots, effect scaling and per-refracted-idol stats.
+func _idol_altar() -> void:
+	var saved: Dictionary = Build.items.duplicate(true)
+	for slot: String in Build.items.keys():
+		if IdolGrid.is_idol_key(slot) or slot == IdolGrid.ALTAR_SLOT:
+			Build.items.erase(slot)
+	_check("no altar: cell (1,0) not refracted", 1.0 if IdolGrid.is_refracted(1, 0, Build.items) else 0.0, 0.0)
+	# Twisted Altar (sub 0): (1,0) is refracted (108), (1,1) open (4), (0,0) blocked (99)
+	var affixes: Array = [{"id": 1089, "tier": 1, "roll": 255, "index": 0}, {"id": 1100, "tier": 1, "roll": 255, "index": 2}]
+	Build.set_item(IdolGrid.ALTAR_SLOT, {"base": 41, "sub": 0, "implicit_rolls": [], "affixes": affixes})
+	_check("altar grid: (1,0) refracted", 1.0 if IdolGrid.is_refracted(1, 0, Build.items) else 0.0, 1.0)
+	_check("altar grid: (1,1) open, not refracted", 1.0 if IdolGrid.is_open(1, 1, Build.items) and not IdolGrid.is_refracted(1, 1, Build.items) else 0.0, 1.0)
+	_check("altar grid: (0,0) blocked", 0.0 if IdolGrid.is_open(0, 0, Build.items) else 1.0, 1.0)
+	# an idol affix with a big ADDED value, on a Small Eterran Idol in the refracted slot and one beside it
+	var idol_aff: Dictionary = {}
+	for aff: Dictionary in GameData.affixes_for_type(25, "Mage"):
+		var prop: Dictionary = aff["properties"][0]
+		if str(prop.get("modType", "")) == "ADDED" and float(aff["tiers"][-1]["rolls"][0][1]) >= 60.0:
+			idol_aff = aff
+			break
+	if idol_aff.is_empty():
+		_failed += 1
+		print("FAIL altar test: no idol affix found")
+		Build.items = saved
+		return
+	var entry: Dictionary = {"id": int(idol_aff["affixId"]), "tier": idol_aff["tiers"].size(), "roll": 255, "index": 0 if idol_aff["type"] == "PREFIX" else 2}
+	Build.set_item(IdolGrid.key(1, 0), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [entry]})
+	var rolls: Array = idol_aff["tiers"][-1]["rolls"][0]
+	var prop_id: int = int(idol_aff["properties"][0]["property"])
+	var rounding: String = str(idol_aff["properties"][0].get("rounding", "Integer"))
+	var aem: float = AffixMath.effect_modifier(float(GameData.item_base(25).get("affixEffectModifier", 0.0)), float(idol_aff.get("standardAffixEffectModifier", 0.0)))
+	var plain: float = AffixMath.roll_value(float(rolls[0]), float(rolls[1]), rounding, "ADDED", 255, aem)
+	var scaled: float = AffixMath.roll_value(float(rolls[0]), float(rolls[1]), rounding, "ADDED", 255, (1.0 + aem) * 1.08 - 1.0)
+	var g: Dictionary = BuildMods.global_store(Build)
+	var idol_total: float = 0.0
+	for mod: StatMod in g["store"].all_mods():
+		if mod.property == prop_id and mod.source.contains(idol_aff["name"]):
+			idol_total += mod.added
+	_check("refracted idol affix scaled by 1+8%% (%s: %s -> %s)" % [idol_aff["name"], plain, scaled], idol_total, scaled)
+	# Health per idol in a refracted slot: one idol in (1,0), another at (1,1) does not count
+	Build.set_item(IdolGrid.key(1, 1), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": []})
+	g = BuildMods.global_store(Build)
+	var per_refracted: float = 0.0
+	for mod: StatMod in g["store"].all_mods():
+		if mod.property == LE.HEALTH and mod.source.contains("Алтарь") and mod.source.contains("refracted-слоте") and not mod.source.contains("—"):
+			per_refracted += mod.added
+	_check("altar: +2 health per idol in a refracted slot (1 idol)", per_refracted, 2.0)
+	# the same idol outside the altar's refracted slot is not scaled
+	Build.clear_item(IdolGrid.key(1, 0))
+	Build.set_item(IdolGrid.key(1, 1), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [entry]})
+	g = BuildMods.global_store(Build)
+	idol_total = 0.0
+	for mod: StatMod in g["store"].all_mods():
+		if mod.property == prop_id and mod.source.contains(idol_aff["name"]):
+			idol_total += mod.added
+	_check("non-refracted idol affix unscaled", idol_total, plain)
+	Build.items = saved

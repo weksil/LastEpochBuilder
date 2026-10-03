@@ -30,7 +30,7 @@ var _conversions: Dictionary = {}        # "Mutator.field" -> rule (skill_conver
 var _uniques_by_id: Dictionary = {}      # uniqueID -> unique (all, incl. hidden)
 var _unique_effects: Dictionary = {}     # uniqueID -> effects[] (unique_effects.json)
 var _sets: Dictionary = {}               # setID -> set (sets.json)
-var _unique_models: Dictionary = {}      # {player: {ppIndex: model}, ability: {"abilityIndex:propertyIndex": model}}
+var _unique_models: Dictionary = {}      # {player: {ppIndex: model}, ability: {"abilityIndex:propertyIndex": model}, component: {"uniqueID:effectIndex": model}}
 var _blessings_json: Dictionary = {}    # full blessings data from blessings.json
 var _blessings_by_id: Dictionary = {}   # id -> blessing data
 
@@ -371,6 +371,11 @@ func unique_ability_model(ability_index: int, property_index: int) -> Dictionary
 	return _unique_models.get("ability", {}).get("%d:%d" % [ability_index, property_index], {})
 
 
+## Planner model of a Component:* special effect (key "uniqueID:effectIndex", index = position in unique_effects), {} if none.
+func unique_component_model(unique_id: int, effect_index: int) -> Dictionary:
+	return _unique_models.get("component", {}).get("%d:%d" % [unique_id, effect_index], {})
+
+
 func ailment(id: int) -> Dictionary:
 	return _ailments_by_id.get(id, {})
 
@@ -447,3 +452,21 @@ func blessings_for_timeline(timeline_id: int) -> Array[int]:
 			seen[id] = true
 			unique.append(id)
 	return unique
+
+
+var _altar_grids: Array = []
+var _altar_grids_loaded: bool = false
+
+
+## 5×5 unlockMatrix of an idol altar subtype (idols.json containerGrids.data[sub]); 99 blocked, 1..8 open,
+## +100 = refracted slot. Falls back to the grid without an altar for an unknown subtype.
+func altar_grid(sub_id: int) -> Array:
+	if not _altar_grids_loaded:
+		_altar_grids_loaded = true
+		var data_dir: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game").simplify_path()
+		var json: Variant = _load_json(data_dir.path_join("idols.json"))
+		if json is Dictionary:
+			_altar_grids = json.get("containerGrids", {}).get("data", [])
+	if sub_id < 0 or sub_id >= _altar_grids.size():
+		return _idol_grid
+	return _altar_grids[sub_id]

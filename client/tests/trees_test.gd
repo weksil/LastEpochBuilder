@@ -10,6 +10,8 @@ func _ready() -> void:
 	_skill_trees()
 	_passive_trees()
 	_removal_rules()
+	Build.passive_cap_override = -1
+	_caps()
 	print("TREES TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -43,6 +45,7 @@ func _passive_trees() -> void:
 	for class_data: Dictionary in GameData.classes:
 		var class_id: int = int(class_data["classID"])
 		Build.set_class(class_id)
+		Build.passive_cap_override = 100000  # the real cap (level - 2 + quests) is smaller than the whole tree
 		var tree: Dictionary = GameData.get_passive_tree(class_id)
 		_fill(func(id: int) -> bool: return Build.add_point(id), tree["nodes"])
 		var missing: PackedStringArray = []
@@ -73,6 +76,26 @@ func _removal_rules() -> void:
 	Build.add_skill_point(0, 2)  # Harrowing Blade 1 also unlocks Great Scythe
 	removed = Build.remove_skill_point(0, 10)
 	_check("can remove once another requirement holds", removed, str(removed))
+
+
+func _caps() -> void:
+	Build.set_class(3)
+	Build.set_level(100)
+	_check("passive cap at level 100 is 113", Build.passive_point_cap() == 113, str(Build.passive_point_cap()))
+	Build.set_level(10)
+	_check("passive cap at level 10 is 23", Build.passive_point_cap() == 23, str(Build.passive_point_cap()))
+	Build.passive_cap_override = 0
+	var any_added: bool = false
+	for node: Dictionary in GameData.get_passive_tree(3)["nodes"]:
+		any_added = any_added or Build.add_point(int(node["id"]))
+	_check("no passive point when cap is 0", not any_added, str(any_added))
+	Build.passive_cap_override = -1
+	Build.set_level(100)
+	Build.set_skill(0, "ha84")
+	Build.set_skill_level(0, 1)
+	Build.add_skill_point(0, 10)
+	_check("skill cap = level 1", not Build.add_skill_point(0, 10) and Build.skill_point_cap(0) == 1, str(Build.skill_point_cap(0)))
+	Build.set_skill_level(0, 20)
 
 
 func _check(label: String, ok: bool, detail: String) -> void:

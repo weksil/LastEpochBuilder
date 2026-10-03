@@ -116,5 +116,6 @@ func _update_points_label() -> void:
 	var skill_data: Dictionary = Build.skills[slot_index]
 	var skill_level: int = skill_data.get("level", 20)
 	var spent: int = Build.skill_points_spent(slot_index)
+	var bonus: int = Build.skill_level_bonus(slot_index)
 
-	%PointsLabel.text = "Очки дерева: %d / %d" % [spent, skill_level]
+	%PointsLabel.text = "Уровень %d (+%d от предметов), очков %d / %d" % [skill_level, bonus, spent, skill_level + bonus]

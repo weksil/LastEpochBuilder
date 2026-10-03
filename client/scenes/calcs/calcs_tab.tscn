@@ -1,14 +1,16 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/calcs/calcs_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_section.tscn" id="2_section"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_row.tscn" id="3_row"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/skill_input_row.tscn" id="4_input_row"]
 
 [node name="Расчёты" type="VBoxContainer"]
 theme_override_constants/separation = 8
 script = ExtResource("1_script")
 section_scene = ExtResource("2_section")
 row_scene = ExtResource("3_row")
+input_row_scene = ExtResource("4_input_row")
 
 [node name="Header" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -31,6 +33,35 @@ size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "«+» раскрывает расшифровку числа"
 horizontal_alignment = 2
+
+[node name="ParamsPanel" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="ParamsContent" type="VBoxContainer" parent="ParamsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HitsRow" type="HBoxContainer" parent="ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HitsLabel" type="Label" parent="ParamsPanel/ParamsContent/HitsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Попаданий по цели за применение"
+
+[node name="HitsSpin" type="SpinBox" parent="ParamsPanel/ParamsContent/HitsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+min_value = 0.0
+max_value = 50.0
+step = 0.1
+value = 1.0
+
+[node name="Inputs" type="VBoxContainer" parent="ParamsPanel/ParamsContent"]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="Scroll" type="ScrollContainer" parent="."]
 layout_mode = 2

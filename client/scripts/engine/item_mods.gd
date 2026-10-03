@@ -15,6 +15,7 @@ static var SLOT_NAMES_RU: Dictionary = {
 	"relic": "Реликвия",
 	"weapon": "Оружие",
 	"offhand": "Вторая рука",
+	"altar": "Алтарь идолов",
 }
 
 
@@ -26,11 +27,21 @@ static func slot_label(slot: String, item: Dictionary) -> String:
 	return str(SLOT_NAMES_RU.get(slot, slot))
 
 
+## Key of an affix in an effect_scale dictionary: idol enchantments / weaver affixes "enchant", otherwise "prefix"/"suffix".
+static func scale_key(affix: Dictionary) -> String:
+	var special: String = str(affix.get("specialAffixType", ""))
+	if special == "IdolEnchantment" or special == "IdolWeaver":
+		return "enchant"
+	return "prefix" if str(affix.get("type", "")) == "PREFIX" else "suffix"
+
+
 ## Extract all modifiers from an equipped item.
 ## slot: item slot name ("helmet", "body", etc.)
 ## item: Dictionary with {base: int, sub: int, implicit_rolls: Array[int], affixes: Array[{id, tier, roll}]}
+## effect_scale: optional multipliers of the affix effect {"prefix", "suffix", "enchant"} (default 1) — idols in refracted
+## altar slots (AltarMods); applied to the affix effect modifier like the base's affixEffectModifier.
 ## Returns: Array[StatMod] for implicits and affixes.
-static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
+static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary = {}) -> Array[StatMod]:
 	var mods: Array[StatMod] = []
 
 	if not item or item.is_empty():
@@ -144,6 +155,8 @@ static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
 		var item_aem: float = base.get("affixEffectModifier", 0.0)
 		var std_aem: float = affix.get("standardAffixEffectModifier", 0.0)
 		var m: float = AffixMath.effect_modifier(item_aem, std_aem)
+		if not effect_scale.is_empty():
+			m = (1.0 + m) * float(effect_scale.get(scale_key(affix), 1.0)) - 1.0
 
 		# Process each property in this affix
 		var properties: Array = affix.get("properties", [])

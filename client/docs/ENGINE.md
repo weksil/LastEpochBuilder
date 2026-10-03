@@ -88,6 +88,14 @@ player_state: Dictionary   # {health: "full"|"high"|"normal"|"low"}
 Слоты предметов и допустимые `typeName` баз:
 `helmet:HELMET, body:BODY_ARMOR, belt:BELT, boots:BOOTS, gloves:GLOVES, amulet:AMULET, ring1:RING, ring2:RING, relic:RELIC,
 weapon: все isWeapon (1H и 2H), offhand: SHIELD|QUIVER|CATALYST и 1H-оружие`.
+Лимиты очков (D, research/07e §6 и 06e §6):
+- пассивки: `Build.passive_point_cap() = clamp(level − 2 + min(15, quest_passive_points), 0, 255)` (на 100 уровне 113; `quest_passive_points`
+  по умолчанию 15 — максимум квестовых очков, редактора в UI нет); `add_point` отказывает при `spent_points() ≥ cap`;
+  `Build.passive_cap_override ≥ 0` (только для тестов) заменяет расчёт;
+- дерево умения: `Build.skill_point_cap(slot) = skills[slot].level + skill_level_bonus(slot)`; бонус — сумма `added` модов
+  `LEVEL_OF_SKILLS` (88) из `BuildMods.global_store`, у которых `LE.tags_match(mod.tags, ability.tags)` и `extra ∈ {0, abilityIDEnum.value}`,
+  округлённая (`roundi`, способ округления игры — D?); кэшируется до следующего `changed`. Классовые «+N ко всем умениям класса»
+  (`specialTag`) пока не различаются.
 Методы: `set_skill(slot, ability_id)` (сбрасывает tree, level=20), `set_skill_level(slot, lvl)`,
 `add_skill_point(slot, node_id) -> bool`, `remove_skill_point(slot, node_id) -> bool` (правила как у пассивок:
 `requirements` — **«ИЛИ»** (узел открыт, если хоть у одного соседа из списка очков ≥ requirement; пустой список — открыт;
@@ -171,7 +179,12 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 Идол хранится в `Build.items` под ключом `idol_<row>_<col>` (левая верхняя клетка) с той же структурой, что предмет
 (`affixes` — 1 префикс и 1 суффикс). `gridSize` базы — `[ширина, высота]`. Идол помещается, если все его клетки открыты
 (`!= 99`) и не заняты другими идолами. Моды идолов собираются как у предметов (`ItemMods`), с модификатором эффекта базы
-(Small −0.83, Grand −0.33 и т. д.). Награды за открытие слотов считаются полученными, алтарь не поддерживается.
+(Small −0.83, Grand −0.33 и т. д.). Награды за открытие слотов считаются полученными.
+Алтарь (`Build.items["altar"]`, база 41, `engine/altar_mods.gd` `AltarMods.apply`): сетка `idols.json data[sub]`, клетки
+`+100` — преломлённые; свойства SP 130 (`tags` = IdolAltarPropertyID): 1–4 — эффект аффиксов/зачарований идолов в
+преломлённых клетках ×(1 + x) (`ItemMods.item_mods(..., effect_scale)`), 9–19 и 22–30 — статы × число подходящих идолов
+(осквернённые — флаг `corrupted`, еретические/знамения/ткача — по имени подтипа), 20 — SP 117 против боссов за
+уникальный/легендарный идол, 21 — CDR при условии порядка размеров, лимиты — заметки.
 
 ### 5.4.2 Уникальные предметы и сеты (07d §2.1–2.3)
 Предмет с `unique: uniqueID` и `unique_rolls[rollID]` (байт ролла, по умолчанию 255): импликиты базы + моды уникального.

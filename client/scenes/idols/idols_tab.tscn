@@ -21,8 +21,33 @@ text = "Сетка идолов"
 custom_minimum_size = Vector2(410, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Клик по свободной клетке — поставить идол (левый верхний угол), клик по идолу — редактировать. Все слоты считаются открытыми, алтарь не выбран."
+text = "Клик по свободной клетке — поставить идол (левый верхний угол), клик по идолу — редактировать. Выберите алтарь — он задаёт открытые клетки и refracted-слоты (фиолетовая рамка), где аффиксы идолов усиливаются."
 autowrap_mode = 3
+
+[node name="AltarRow" type="HBoxContainer" parent="Left"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AltarLabel" type="Label" parent="Left/AltarRow"]
+layout_mode = 2
+text = "Алтарь"
+
+[node name="AltarSelect" type="OptionButton" parent="Left/AltarRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AltarEditButton" type="Button" parent="Left/AltarRow"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Изменить алтарь"
+
+[node name="CorruptedCheck" type="CheckBox" parent="Left"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Осквернённый идол (для свойств алтаря)"
 
 [node name="Grid" type="GridContainer" parent="Left"]
 unique_name_in_owner = true

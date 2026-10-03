@@ -5,6 +5,8 @@ class_name IdolGrid
 
 const PREFIX: String = "idol_"
 const BLOCKED: int = 99
+const ALTAR_SLOT: String = "altar"
+const ALTAR_BASE: int = 41
 
 
 static func key(row: int, col: int) -> String:
@@ -20,11 +22,35 @@ static func anchor(slot: String) -> Vector2i:
 	return Vector2i(int(parts[0]), int(parts[1])) if parts.size() == 2 else Vector2i(-1, -1)
 
 
-static func is_open(row: int, col: int) -> bool:
-	var grid: Array = GameData.idol_grid()
-	if row < 0 or row >= grid.size() or col < 0 or col >= grid[row].size():
-		return false
-	return int(grid[row][col]) != BLOCKED
+## Altar item in the items dictionary ({} when no altar is set).
+static func altar(items: Variant = null) -> Dictionary:
+	var src: Dictionary = items if items is Dictionary else Build.items
+	var item: Dictionary = src.get(ALTAR_SLOT, {})
+	return item if int(item.get("base", -1)) == ALTAR_BASE else {}
+
+
+## 5×5 unlockMatrix of the altar subtype when an altar is set, otherwise the default grid.
+static func grid(items: Variant = null) -> Array:
+	var item: Dictionary = altar(items)
+	if item.is_empty():
+		return GameData.idol_grid()
+	return GameData.altar_grid(int(item.get("sub", 0)))
+
+
+static func cell_code(row: int, col: int, items: Variant = null) -> int:
+	var g: Array = grid(items)
+	if row < 0 or row >= g.size() or col < 0 or col >= g[row].size():
+		return BLOCKED
+	return int(g[row][col])
+
+
+static func is_open(row: int, col: int, items: Variant = null) -> bool:
+	return cell_code(row, col, items) != BLOCKED
+
+
+## Refracted slot: unlockMatrix value + 100 (idols there get the altar's effect on affixes).
+static func is_refracted(row: int, col: int, items: Variant = null) -> bool:
+	return cell_code(row, col, items) > BLOCKED
 
 
 static func size_of(base_id: int) -> Vector2i:
@@ -58,7 +84,7 @@ static func occupancy(items: Dictionary) -> Dictionary:
 static func fits(items: Dictionary, row: int, col: int, base_id: int, ignore_slot: String = "") -> bool:
 	var occ: Dictionary = occupancy(items)
 	for cell: Vector2i in cells(row, col, base_id):
-		if not is_open(cell.x, cell.y):
+		if not is_open(cell.x, cell.y, items):
 			return false
 		if occ.has(cell) and occ[cell] != ignore_slot:
 			return false

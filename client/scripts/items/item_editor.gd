@@ -11,6 +11,7 @@ const SLOT_TYPES: Dictionary = {
 	"helmet": ["HELMET"], "body": ["BODY_ARMOR"], "belt": ["BELT"], "boots": ["BOOTS"], "gloves": ["GLOVES"],
 	"amulet": ["AMULET"], "ring1": ["RING"], "ring2": ["RING"], "relic": ["RELIC"],
 	"offhand": ["SHIELD", "QUIVER", "CATALYST"],
+	"altar": ["IDOL_ALTAR"],
 }
 
 @export var implicit_row_scene: PackedScene

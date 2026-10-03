@@ -2,12 +2,18 @@ extends Node
 
 signal changed
 
+const QUEST_PASSIVE_POINTS_MAX: int = 15
+
 # Passive tree
 var class_id: int = -1
 var mastery: int = 0
 var level: int = 100
 var passives: Dictionary = {}
 var _nodes: Dictionary = {}
+## Passive points granted by completed quests (the game caps the sum at 15, docs/ENGINE.md §3).
+var quest_passive_points: int = QUEST_PASSIVE_POINTS_MAX
+## Test hook: when >= 0 replaces the computed passive point cap.
+var passive_cap_override: int = -1
 
 # Skills (5 slots)
 var skills: Array[Dictionary] = []
@@ -26,9 +32,17 @@ var enemy: Dictionary = {}
 # Player state
 var player_state: Dictionary = {}
 
+# Cached "+N to skill level" totals per slot from items (reset on every change)
+var _skill_bonus_cache: Dictionary = {}
+
 
 func _ready() -> void:
+	changed.connect(_on_self_changed)
 	_init_defaults()
+
+
+func _on_self_changed() -> void:
+	_skill_bonus_cache.clear()
 
 
 func _init_defaults() -> void:
@@ -134,6 +148,14 @@ func spent_points() -> int:
 		total += int(points)
 	return total
 
+## Passive points earned at the current level (LocalTreeData.calculatePassivePointsEarnt, research/07e §6):
+## level - 2 + min(15, quest points), clamped to 0..255.
+func passive_point_cap() -> int:
+	if passive_cap_override >= 0:
+		return passive_cap_override
+	return clampi(level - 2 + mini(QUEST_PASSIVE_POINTS_MAX, maxi(quest_passive_points, 0)), 0, 255)
+
+
 func points_in_mastery(m: int) -> int:
 	var total: int = 0
 	for node_id: Variant in passives.keys():
@@ -184,6 +206,9 @@ func can_add(id: int) -> bool:
 	var current_points: int = get_points(id)
 	var max_points: int = int(node["maxPoints"])
 	if current_points >= max_points:
+		return false
+
+	if spent_points() >= passive_point_cap():
 		return false
 
 	# Simulate adding a point and check if it would be valid
@@ -312,6 +337,39 @@ func set_skill_level(slot: int, lvl: int) -> void:
 	changed.emit()
 
 
+## Bonus to the skill level from equipped items: LevelOfSkills (SP 88) mods whose tags fit the
+## ability tags and whose extra is 0 or the ability's AbilityID (research/06e §6).
+func skill_level_bonus(slot: int) -> int:
+	if slot < 0 or slot >= skills.size():
+		return 0
+	if _skill_bonus_cache.has(slot):
+		return int(_skill_bonus_cache[slot])
+	var ability: Dictionary = GameData.get_ability(str(skills[slot].get("ability", "")))
+	var total: float = 0.0
+	if not ability.is_empty():
+		var ability_tags: int = int(ability.get("tags", 0))
+		var enum_rec: Variant = ability.get("abilityIDEnum")
+		var ability_index: int = int((enum_rec as Dictionary).get("value", -1)) if enum_rec is Dictionary else -1
+		var store: StatStore = BuildMods.global_store(self)["store"]
+		for mod: StatMod in store.all_mods():
+			if mod.property != LE.LEVEL_OF_SKILLS:
+				continue
+			if mod.extra != 0 and mod.extra != ability_index:
+				continue
+			if LE.tags_match(mod.tags, ability_tags):
+				total += mod.added
+	var bonus: int = maxi(roundi(total), 0)
+	_skill_bonus_cache[slot] = bonus
+	return bonus
+
+
+## Skill tree point cap = skill level + bonus from items.
+func skill_point_cap(slot: int) -> int:
+	if slot < 0 or slot >= skills.size():
+		return 0
+	return int(skills[slot].get("level", 20)) + skill_level_bonus(slot)
+
+
 func get_skill_points(slot: int, node_id: int) -> int:
 	if slot < 0 or slot >= skills.size():
 		return 0
@@ -364,9 +422,8 @@ func can_add_skill_point(slot: int, node_id: int) -> bool:
 	if current_points >= max_points:
 		return false
 
-	# Check if total skill points would exceed level
-	var total_spent: int = skill_points_spent(slot)
-	if total_spent >= skills[slot]["level"]:
+	# Check if total skill points would exceed level (+ item bonus)
+	if skill_points_spent(slot) >= skill_point_cap(slot):
 		return false
 
 	# Simulate adding a point and check if it would be valid

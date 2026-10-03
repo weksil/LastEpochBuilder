@@ -3,6 +3,7 @@ class_name UniqueEffects
 ## Special effects of equipped uniques (docs/ENGINE.md §5.4.3). PlayerProperty / AbilityProperty effects that have a
 ## planner model in unique_effect_models.json become StatMods; everything else is listed in notes with the reason.
 
+const SKILL_KINDS: Array[String] = ["trigger", "component", "minion_stat", "param", "resource", "speed", "mana", "cooldown"]
 const DERIVED_SOURCES: Array[String] = ["GlobalConditionalDamage(more)", "DamagePerStackOfAilment", "AilmentConversion"]
 
 
@@ -34,17 +35,25 @@ static func entries(build: Node) -> Array[Dictionary]:
 
 
 ## Character-wide models. Phase "pre" runs before attributes are converted to stats, "post" after (sources read the store).
+## Only stat models with global scope become StatMods here; skill-level kinds are applied by apply_skill.
 static func apply_global(build: Node, store: StatStore, notes: Array[String], phase: String) -> void:
 	for e: Dictionary in entries(build):
 		var model: Dictionary = e["model"]
 		if model.is_empty() or e["ability_index"] >= 0 or model.has("skill_any") or EffectModels.phase(model) != phase:
 			continue
+		var kind: String = str(model.get("kind", "stat"))
+		if kind == "resource":
+			if phase == "pre":
+				notes.append("%s: %s (особый эффект, на расчёт урона не влияет)" % [e["label"], str(model.get("label", model.get("resource", "")))])
+			continue
+		if (kind != "stat" and kind != "overcap_taken") or _is_skill_scoped(model):
+			continue  # flag is listed by add_notes; trigger / param / speed … are skill-level; conversion is handled by §5.5
 		var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}
 		var reason: String = EffectModels.blocked(model, ctx)
 		if reason != "":
 			notes.append("%s — учитывается при условии: %s" % [e["label"], reason])
 			continue
-		if str(model.get("kind", "stat")) == "overcap_taken":
+		if kind == "overcap_taken":
 			_apply_overcap_taken(store, e)
 			continue
 		var mod: StatMod = EffectModels.make_mod(model, e["pp"], ctx, e["label"])
@@ -52,7 +61,8 @@ static func apply_global(build: Node, store: StatStore, notes: Array[String], ph
 			store.add(mod)
 
 
-## Skill-local models: AbilityProperty of this ability and player models limited to skill tags («skill_any»).
+## Skill-local models: AbilityProperty of this ability, player / component models of skill-level kinds (trigger, component,
+## minion_stat, param, resource, speed, mana, cooldown) and player models limited to skill tags («skill_any»).
 static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) -> void:
 	var store: StatStore = result["store"]
 	var ability_index: int = int(ability.get("abilityIDEnum", {}).get("value", -2))
@@ -61,23 +71,44 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 		var model: Dictionary = e["model"]
 		if model.is_empty():
 			continue
+		var kind: String = str(model.get("kind", "stat"))
+		var routed: bool = false
 		if e["ability_index"] >= 0:
 			if e["ability_index"] != ability_index:
 				continue
-		elif not model.has("skill_any") or (ability_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
+			routed = kind != "mana_added"
+		elif model.has("skill_any"):
+			if (ability_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
+				continue
+		elif SKILL_KINDS.has(kind) or (kind == "stat" and _is_skill_scoped(model)):
+			routed = true
+		else:
 			continue
-		var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}
-		var reason: String = EffectModels.blocked(model, ctx)
+		if routed:
+			var ctx: Dictionary = result["ctx"]
+			var prev_slot: Variant = ctx.get("item_slot", "")
+			ctx["item_slot"] = e["slot"]
+			BuildMods._apply_model(model, e["pp"], e["label"], e["label"], result)
+			ctx["item_slot"] = prev_slot
+			continue
+		var ctx2: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}
+		var reason: String = EffectModels.blocked(model, ctx2)
 		if reason != "":
 			result["notes"].append("%s — учитывается при условии: %s" % [e["label"], reason])
 			continue
-		if str(model.get("kind", "stat")) == "mana_added":
+		if kind == "mana_added":
 			result["mana_added"] += e["pp"]
 			result["mana_sources"].append("%s %s" % [LE.fmt_num(e["pp"]), e["label"]])
 			continue
-		var mod: StatMod = EffectModels.make_mod(model, e["pp"], ctx, e["label"])
+		var mod: StatMod = EffectModels.make_mod(model, e["pp"], ctx2, e["label"])
 		if mod != null:
 			store.add(mod)
+
+
+## Stat model that belongs to the skill (minion or damage-component scope), not to the character.
+static func _is_skill_scoped(model: Dictionary) -> bool:
+	var scope: String = str(model.get("scope", "global"))
+	return scope == "minion" or scope.begins_with("component:")
 
 
 ## Notes for effects without a model (or modelled for a skill that is not on the bar).
@@ -93,19 +124,13 @@ static func add_notes(build: Node, notes: Array[String]) -> void:
 		if DERIVED_SOURCES.has(src):
 			continue  # ordinary mods of the item (SP 100 / 115 / 117), computed by the engine
 		if not e["model"].is_empty():
-			if e["ability_index"] >= 0 and not bar.has(e["ability_index"]):
+			if str(e["model"].get("kind", "")) == "flag":
+				notes.append("%s — %s" % [e["label"], str(e["model"].get("text", ""))])
+			elif e["ability_index"] >= 0 and not bar.has(e["ability_index"]):
 				notes.append("%s — действует только на умение «%s», его нет на панели" % [e["label"], str(effect.get("ability", "?"))])
 			continue
 		notes.append("%s — %s" % [e["label"], _unmodelled_reason(effect)])
-	for slot: String in build.items:
-		var item: Dictionary = build.items[slot]
-		if not item.has("unique"):
-			continue
-		var u: Dictionary = GameData.unique(int(item["unique"]))
-		for umod: Dictionary in u.get("mods", []):
-			if int(umod.get("property", 0)) == LE.LEVEL_OF_SKILLS:
-				notes.append("%s: %s — +%s к уровню умений, поднимите уровень умения в слоте вручную" % [
-					ItemMods.slot_label(slot, item), GameData.display_name(u), LE.fmt_num(float(umod.get("value", 0.0)))])
+	# +levels of skills (SP 88) raise the skill-tree point cap (Build.skill_point_cap)
 
 
 # --- value of the effect ----------------------------------------------------------

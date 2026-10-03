@@ -16,11 +16,13 @@ static func global_store(build: Node) -> Dictionary:
 	for slot: String in build.items:
 		if SLOTS.has(slot) or IdolGrid.is_idol_key(slot):
 			store.add_all(ItemMods.item_mods(slot, build.items[slot]))
+	preload("res://scripts/engine/altar_mods.gd").apply(build, store, notes)
 	_add_blessings(build, store, notes)
 	_add_set_bonuses(build, store, notes)
 	UniqueEffects.apply_global(build, store, notes, "pre")
 	_add_attributes(store, notes)
 	_add_player_ailments(build, store)
+	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
 	UniqueEffects.add_notes(build, notes)
 	return {"store": store, "notes": notes}
@@ -108,9 +110,12 @@ static func _add_class_base(build: Node, store: StatStore) -> void:
 
 # --- 5.2 passives -------------------------------------------------------------
 
-static func _add_passives(build: Node, store: StatStore, notes: Array[String]) -> void:
+## phase "pre": plain stats and models without store-dependent sources; "post": models read after items and attributes
+## (EffectModels.phase). Effects without a model are listed in the notes once, in the "pre" phase.
+static func _add_passives(build: Node, store: StatStore, notes: Array[String], phase: String = "pre") -> void:
 	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
 	var effects: Dictionary = GameData.passive_effects(str(tree.get("treeID", "")))
+	var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": ""}
 	for node_id: Variant in build.passives:
 		var points: int = int(build.passives[node_id])
 		var node: Dictionary = effects.get(int(node_id), {})
@@ -119,13 +124,129 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String]) -
 		var title: String = GameData.display_name(node)
 		var source: String = "Пассивка «%s» ×%d" % [title, points]
 		for effect: Dictionary in node.get("effects", []):
+			if points < int(effect.get("minPoints", 0)):
+				continue
+			var target: String = str(effect.get("target", ""))
+			if target == "CharacterMutator.stats" and effect.get("op") == "add_stat":
+				if phase != "pre":
+					continue
+				var mod: StatMod = stat_from_effect(effect.get("stat", {}), points, source)
+				if mod != null:
+					store.add(mod)
+				else:
+					_passive_unmodelled(notes, title, effect)
+				continue
+			var model: Dictionary = _passive_model(target)
+			if model.is_empty():
+				if phase == "pre":
+					_passive_unmodelled(notes, title, effect)
+				continue
+			if EffectModels.phase(model) != phase:
+				continue
+			_apply_passive_model(model, effect, target, points, source, title, store, notes, ctx)
+
+
+## First part of the target ("A & B") that has a field model.
+static func _passive_model(target: String) -> Dictionary:
+	for part: String in target.split(" & "):
+		var model: Dictionary = FieldModels.find(part.strip_edges())
+		if not model.is_empty():
+			return model
+	return {}
+
+
+static func _passive_unmodelled(notes: Array[String], title: String, effect: Dictionary) -> void:
+	notes.append("Пассивка «%s»: %s — не учитывается" % [title, _effect_label(effect)])
+
+
+## "global" / "minion" for the model's scope, "" if it cannot be applied to the character (component, ability-only field).
+static func _passive_scope(model: Dictionary, target: String) -> String:
+	var scope: String = str(model.get("scope", ""))
+	if scope == "":
+		return "global" if target.begins_with("CharacterMutator.") else ""
+	if scope == "global" or scope == "skill":
+		return "global"
+	return scope if scope == "minion" else ""
+
+
+## Base type of the main-hand or off-hand item is one of `types` (StatWithWeaponRequirement, EquipmentType).
+static func _holds_weapon_type(build: Node, types: Array[int]) -> bool:
+	for slot: String in ["weapon", "offhand"]:
+		if types.has(int(build.items.get(slot, {}).get("base", -1))):
+			return true
+	return false
+
+
+## Minion stats from passives reach minions through the Minion tag (07d §1.2).
+static func _passive_add(store: StatStore, mod: StatMod, scope: String) -> void:
+	if scope == "minion" and (mod.tags & LE.MINION) == 0:
+		mod.tags |= LE.MINION
+	store.add(mod)
+
+
+static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: String, points: int, source: String, title: String,
+		store: StatStore, notes: Array[String], ctx: Dictionary) -> void:
+	var kind: String = str(model.get("kind", ""))
+	var is_stat_effect: bool = effect.get("op") == "add_stat"
+	var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
+	match kind:
+		"stat_list", "stat", "cooldown":
+			var scope: String = _passive_scope(model, target)
 			var mod: StatMod = null
-			if effect.get("op") == "add_stat" and effect.get("target") == "CharacterMutator.stats":
-				mod = stat_from_effect(effect.get("stat", {}), points, source)
-			if mod != null:
-				store.add(mod)
-			else:
-				notes.append("Пассивка «%s»: %s — не учитывается" % [title, _effect_label(effect)])
+			var weapon_types: Array[int] = []
+			if kind == "stat_list" and is_stat_effect:
+				var stat: Dictionary = effect.get("stat", {})
+				if str(stat.get("wrapper", "")).begins_with("StatWithWeaponRequirement") and stat.get("stat") is Dictionary:
+					var other: Array = stat.get("other", [])
+					for o: Variant in other:
+						if str(o).begins_with("EquipmentType="):
+							weapon_types.append(int(str(o).get_slice("=", 1)))
+						elif not str(o).begins_with("Boolean="):
+							# WeaponRequirementType / animation type: semantics unknown, not applied
+							notes.append("Пассивка «%s»: статы при определённом оружии (%s) — не учитывается" % [title, _effect_label(effect)])
+							return
+					stat = stat["stat"]
+				mod = stat_from_effect(stat, points, source)
+			elif kind == "stat" and not is_stat_effect:
+				mod = EffectModels.make_mod(model, v, ctx, source)
+			elif kind == "cooldown" and not is_stat_effect and str(model.get("cooldown", "")) == "recovery_increased" and scope == "global":
+				mod = StatMod.make(LE.CDR, "increased", v, 0, source)
+			if mod == null or scope == "" or (kind == "cooldown" and not target.begins_with("CharacterMutator.")):
+				# ability-specific cooldown/field or an unsupported stat: left to the skill that owns the mutator
+				_passive_unmodelled(notes, title, effect)
+				return
+			var reason: String = EffectModels.blocked(model, ctx)
+			if reason != "":
+				notes.append("Пассивка «%s» — учитывается при условии: %s" % [title, reason])
+				return
+			if not weapon_types.is_empty() and not _holds_weapon_type(ctx["build"], weapon_types):
+				var names: PackedStringArray = []
+				for t: int in weapon_types:
+					names.append(GameData.display_name(GameData.item_base(t)))
+				notes.append("Пассивка «%s» — учитывается при условии: в руках %s" % [title, " / ".join(names)])
+				return
+			if kind == "stat_list":
+				if model.has("per"):
+					if str(model["per"]) == "points":
+						_passive_unmodelled(notes, title, effect)
+						return
+					var n: float = EffectModels.source(str(model["per"]), ctx, model)
+					if model.has("src_max"):
+						n = minf(n, float(model["src_max"]))
+					mod = mod.scaled(n)
+					mod.source += " × %s" % LE.fmt_num(n)
+				if model.has("note"):
+					mod.source += " — " + str(model["note"])
+			_passive_add(store, mod, scope)
+		"flag", "param", "resource":
+			var text: String = str(model.get("text", model.get("label", model.get("param", model.get("resource", "")))))
+			if kind != "flag" and effect.has("value"):
+				text += ": %s" % LE.fmt_num(v)
+			var line: String = "Пассивка «%s»: %s" % [title, text]
+			if not notes.has(line):
+				notes.append(line)
+		_:
+			_passive_unmodelled(notes, title, effect)
 
 
 # --- 5.4.2 uniques and sets ------------------------------------------------------
