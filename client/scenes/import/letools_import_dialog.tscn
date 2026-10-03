@@ -1,0 +1,86 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/import/letools_import_dialog.gd" id="1_script"]
+[ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
+
+[node name="LEToolsImportDialog" type="Window"]
+title = "Импорт из Last Epoch Tools"
+initial_position = 1
+size = Vector2i(720, 460)
+visible = false
+transient = true
+exclusive = true
+min_size = Vector2i(480, 320)
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Layout" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Импорт билда с lastepochtools.com"
+
+[node name="Hint" type="Label" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Вставьте ссылку на планировщик (или только её код). Можно вставить и готовый JSON ответа planner_data — тогда запрос в сеть не делается. Текущий билд будет заменён."
+autowrap_mode = 3
+
+[node name="LinkRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LinkEdit" type="LineEdit" parent="Panel/Margin/Layout/LinkRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "https://www.lastepochtools.com/planner/…"
+clear_button_enabled = true
+
+[node name="LoadButton" type="Button" parent="Panel/Margin/Layout/LinkRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Загрузить"
+
+[node name="StatusScroll" type="ScrollContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/Layout/StatusScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+alignment = 2
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/Layout/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Закрыть"
+
+[node name="Http" type="HTTPRequest" parent="."]
+unique_name_in_owner = true
+timeout = 30.0

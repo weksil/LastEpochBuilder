@@ -113,3 +113,19 @@ tooltipDescriptions[{description}], isSetItem, setID, legendaryType}`), `GameDat
   `set_data.tooltipDescriptions` вида «(N) description».
 - `%AffixesTitle` для уникального: «Легендарные аффиксы» (если `legendaryType == "LegendaryPotential"`), иначе как сейчас.
 - `scripts/items/items_tab.gd` и `scripts/idols/idols_tab.gd`: если у предмета есть `unique` — показывать имя уникального.
+
+## Импорт из Last Epoch Tools — `scripts/import/letools_import_dialog.gd` (`class_name LEToolsImportDialog extends Window`)
+Кнопка `%ImportButton` («Импорт…», конец `TopBar/Row`) открывает `%ImportDialog` (`popup_centered`); по сигналу `imported` `main.gd` приводит
+`%ClassSelect` / `%MasterySelect` / `%LevelSpin` к `Build` без повторного `Build.set_class`. Диалог: `%LinkEdit`, `%LoadButton`, `%StatusLabel`,
+`%CloseButton`, `%Http` (HTTPRequest).
+- Поток: ссылка → `GET /planner/<код>` → `LEToolsImport.extract_data_hash(html)` → `GET /api/internal/planner_data/<hash>` (хеш выдаётся
+  страницей и привязан к ней, закешировать нельзя) → JSON → `LEToolsImport.to_build` → `LEToolsImport.apply(Build, doc)`.
+  Текст, начинающийся с `{`, считается готовым JSON ответа (без сети). User-Agent браузера **не** отправляется: Cloudflare отвечает 403
+  на Chrome UA с нехромовым TLS-отпечатком, а UA движка пропускает.
+- `to_build` принимает полный ответ `{data: {...}}` или только `data`; возвращает `{class_id, mastery, level, passives, skills[5], items, blessings, warnings}`.
+  Непонятные id/узлы пропускаются с русским предупреждением, падений нет.
+- Кодировка id (`LZString.decompress_from_encoded_uri` → строка цифр): `I` — `1` + база(3) + подтип(3) + редкость(1) + uniqueId (≥ 2 цифр);
+  `U` — подтип(3) + uniqueId; `A` — affixId. Идол `(x, y)` → `IdolGrid.key(y - 1, x - 1)`; запечатанный и осквернённый аффиксы дописываются
+  в `affixes`, осквернённый идол получает `corrupted: true`. Слоты: head→helmet, chest→body, waist→belt, feet→boots, hands→gloves,
+  weapon1→weapon, weapon2→offhand, idol_altar→altar. Не поддерживается: дерево и идолы Weaver, сетовые id (`S`); блоки благословений
+  (`I` база 34, подтип = id благословения, ролл = `ir[0]`) реализованы по догадке и не проверены на живом примере.

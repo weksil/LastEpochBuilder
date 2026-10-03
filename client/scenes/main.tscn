@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/calcs/calcs_tab.tscn" id="8_calcs"]
 [ext_resource type="PackedScene" path="res://scenes/config/config_tab.tscn" id="9_config"]
 [ext_resource type="PackedScene" path="res://scenes/idols/idols_tab.tscn" id="10_idols"]
+[ext_resource type="PackedScene" path="res://scenes/import/letools_import_dialog.tscn" id="11_import"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -94,6 +95,12 @@ layout_mode = 2
 min_value = 1.0
 value = 100.0
 
+[node name="ImportButton" type="Button" parent="Margin/Layout/TopBar/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Импорт…"
+
 [node name="Split" type="HSplitContainer" parent="Margin/Layout"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -141,3 +148,6 @@ metadata/_tab_index = 6
 
 [node name="StatsPanel" parent="Margin/Layout/Split" instance=ExtResource("6_stats")]
 layout_mode = 2
+
+[node name="ImportDialog" parent="." instance=ExtResource("11_import")]
+unique_name_in_owner = true
