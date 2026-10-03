@@ -21,7 +21,27 @@ func _check(label: String, got: float, want: float, eps: float = 0.0005) -> void
 		print("ok   %s = %s" % [label, got])
 
 
+## Trigger frequency and cooldown (docs/ENGINE.md §9.6).
+func _triggers_cooldown() -> void:
+	var trig: Dictionary = {"ability": "x", "on": "hit", "chance": 0.5, "count": 1.0, "icd": 1.0}
+	_check("trigger on hit: min(0.75, 1/icd)", float(SkillCalc.trigger_rate(trig, 1.5, 1.0, 0.0, 0.0)["rate"]), 0.75)
+	_check("trigger on hit: capped by icd", float(SkillCalc.trigger_rate(trig, 4.0, 1.0, 0.0, 0.0)["rate"]), 1.0)
+	trig["on"] = "kill"
+	_check("trigger on kill: events input", float(SkillCalc.trigger_rate(trig, 1.5, 1.0, 0.0, 3.0)["rate"]), 1.0)
+	trig["icd"] = 0.0
+	_check("trigger on kill: no icd", float(SkillCalc.trigger_rate(trig, 1.5, 1.0, 0.0, 3.0)["rate"]), 1.5)
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.CDR, "increased", 1.0, 0, "test"))
+	var cd: Dictionary = SkillCalc.cooldown_info({"cooldown": 4.0}, store, 0, {})
+	_check("cooldown 4 s with +100% recovery", float(cd["cd"]), 2.0)
+	_check("cooldown limits uses to 1/cd", minf(3.0, 1.0 / float(cd["cd"])), 0.5)
+	var cd2: Dictionary = SkillCalc.cooldown_info({}, store, 0, {"cooldown_base": {"baseCooldownLength": 6.0, "charges": 2.0}, "cooldown": {"length_added": 2.0, "recovery_more": 1.0}})
+	_check("cooldown from node: (6+2) / (2 × 2)", float(cd2["cd"]), 2.0)
+	_check("cooldown charges", float(cd2["charges"]), 2.0)
+
+
 func _vectors() -> void:
+	_triggers_cooldown()
 	_check("round_half_even(2.5)", LE.round_half_even(2.5), 2)
 	_check("round_half_even(3.5)", LE.round_half_even(3.5), 4)
 	_check("round_half_even(1028.5)", LE.round_half_even(1028.5), 1028)
@@ -93,6 +113,7 @@ func _sample_build() -> void:
 	for slot: String in ["helmet", "ring1", "ring2", "amulet"]:
 		Build.clear_item(slot)
 	_unique_special_effects()
+	_minion_skill()
 
 	# Fireball: Fire 25, ADE 1.25, +4% inc per Int (Int 3 → +12%)
 	Build.set_skill(0, "fi9")
@@ -178,6 +199,69 @@ func _sample_build() -> void:
 	r = SkillCalc.compute(Build, 0)
 	_print_sections(r)
 
+	# Components: Meteor has no primary damage, its hit comes from the MeteorAoe sub-ability (Fire 240)
+	Build.set_skill(0, "me27")
+	r = SkillCalc.compute(Build, 0)
+	print("--- %s components" % r["title"])
+	_print_sections(r)
+	var aoe_breakdown: String = ""
+	for section: Dictionary in r["sections"]:
+		if section["title"] == "Урон за применение (до врага)":
+			for row: Dictionary in section["rows"]:
+				if row["label"] == "Огонь":
+					aoe_breakdown = str(row["breakdown"])
+	_check("Meteor: MeteorAoe base fire 240", 1.0 if aoe_breakdown.contains("База: 240") else 0.0, 1.0)
+	_check("Meteor: fire damage >= 240", 1.0 if _section_value(r, "Урон за применение (до врага)", "Огонь") >= 240.0 else 0.0, 1.0)
+	_check("Meteor: DPS in tooltip section > 0", 1.0 if _section_value(r, "DPS как в подсказке игры", "DPS") > 0.0 else 0.0, 1.0)
+	_check("Meteor: DPS vs enemy > 0", 1.0 if _section_value(r, "Против врага", "DPS по врагу") > 0.0 else 0.0, 1.0)
+
+	# Blessings: choose first timeline's first blessing with a non-104 implicit at roll 255
+	var timelines: Array = GameData.blessing_timelines()
+	for timeline: Dictionary in timelines:
+		var timeline_id: int = int(timeline.get("timelineID", -1))
+		if timeline_id == 99:  # Skip Activities
+			continue
+		var blessing_ids: Array[int] = GameData.blessings_for_timeline(timeline_id)
+		for blessing_id: int in blessing_ids:
+			var blessing: Dictionary = GameData.blessing(blessing_id)
+			if blessing.is_empty():
+				continue
+			var implicits: Array = blessing.get("implicits", [])
+			var has_non_104: bool = false
+			for implicit: Dictionary in implicits:
+				if int(implicit.get("property", 0)) != 104:
+					has_non_104 = true
+					break
+			if has_non_104:
+				Build.set_blessing(timeline_id, blessing_id, 255)
+				g = BuildMods.global_store(Build)
+				var blessing_source_found: bool = false
+				for mod: StatMod in g["store"].all_mods():
+					if mod.source.begins_with("Благословение"):
+						blessing_source_found = true
+						break
+				_check("Blessing mod in global store", 1.0 if blessing_source_found else 0.0, 1.0)
+				Build.set_blessing(timeline_id, -1, 0)
+				break
+		break
+
+	Build.set_skill(0, "fi9")
+
+
+## Summon Wolf: the wolf's attack is a minion component with its own DPS (§9.4).
+func _minion_skill() -> void:
+	Build.set_skill(3, "wo42")
+	var r: Dictionary = SkillCalc.compute(Build, 3)
+	var wolf_dps: float = -1.0
+	for s: Dictionary in r["sections"]:
+		for row: Dictionary in s["rows"]:
+			if str(row["label"]).begins_with("DPS по врагу: Primal Wolf") or (str(row["label"]) == "DPS по врагу" and wolf_dps < 0.0):
+				wolf_dps = float(str(row["text"]))
+	print("--- Summon Wolf: %s" % str(r["sections"].map(func(x: Dictionary) -> String: return x["title"])))
+	_check("Summon Wolf deals minion DPS", 1.0 if wolf_dps > 0.0 else 0.0, 1.0)
+	_check("Summon Wolf declares the minions input", 1.0 if str(r.get("inputs", [])).contains("minions") else 0.0, 1.0)
+	Build.set_skill(3, "")
+
 
 ## Special effects of uniques (unique_effect_models.json, docs/ENGINE.md §5.4.3).
 func _unique_special_effects() -> void:
@@ -226,9 +310,9 @@ func _unique_special_effects() -> void:
 func _all_uniques_smoke() -> void:
 	const SLOT_BY_TYPE: Dictionary = {0: "helmet", 1: "body", 2: "belt", 3: "boots", 4: "gloves", 17: "offhand", 18: "offhand",
 		19: "offhand", 20: "amulet", 21: "ring1", 22: "relic"}
-	for key: String in UniqueEffects.PLAYER_FLAGS_RU:
+	for key: String in EffectModels.PLAYER_FLAGS_RU:
 		Build.set_player_state(key, true)
-	for key: String in UniqueEffects.PLAYER_VALUES_RU:
+	for key: String in EffectModels.PLAYER_VALUES_RU:
 		Build.set_player_state(key, 20)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 1)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 50)
@@ -251,9 +335,9 @@ func _all_uniques_smoke() -> void:
 				modelled += 1
 		Build.clear_item(slot)
 	print("--- all uniques: %d special effects, %d modelled" % [total, modelled])
-	for key: String in UniqueEffects.PLAYER_FLAGS_RU:
+	for key: String in EffectModels.PLAYER_FLAGS_RU:
 		Build.set_player_state(key, false)
-	for key: String in UniqueEffects.PLAYER_VALUES_RU:
+	for key: String in EffectModels.PLAYER_VALUES_RU:
 		Build.set_player_state(key, 0)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 0)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 0)

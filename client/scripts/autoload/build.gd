@@ -17,6 +17,9 @@ var _skill_nodes: Array[Dictionary] = []  # skill tree nodes per slot
 # Items
 var items: Dictionary = {}
 
+# Blessings (timelineID -> {"id": int, "roll": int})
+var blessings: Dictionary = {}
+
 # Enemy config
 var enemy: Dictionary = {}
 
@@ -35,7 +38,9 @@ func _init_defaults() -> void:
 		skills.append({
 			"ability": "",
 			"level": 20,
-			"tree": {}
+			"tree": {},
+			"inputs": {},
+			"hits": 1.0
 		})
 
 	# Initialize skill nodes array
@@ -90,11 +95,14 @@ func set_class(id: int) -> void:
 		skills[i] = {
 			"ability": "",
 			"level": 20,
-			"tree": {}
+			"tree": {},
+			"inputs": {},
+			"hits": 1.0
 		}
 	for i in range(_skill_nodes.size()):
 		_skill_nodes[i] = {}
 	items.clear()
+	blessings.clear()
 
 	var tree: Dictionary = GameData.get_passive_tree(class_id)
 	if "nodes" in tree and tree["nodes"] is Array:
@@ -273,7 +281,9 @@ func set_skill(slot: int, ability_id: String) -> void:
 	skills[slot] = {
 		"ability": ability_id,
 		"level": 20,
-		"tree": {}
+		"tree": {},
+		"inputs": {},
+		"hits": 1.0
 	}
 	_skill_nodes[slot] = {}
 
@@ -410,6 +420,44 @@ func remove_skill_point(slot: int, node_id: int) -> bool:
 
 	changed.emit()
 	return true
+
+
+func set_skill_input(slot: int, key: String, value: Variant) -> void:
+	if slot < 0 or slot >= skills.size():
+		return
+
+	skills[slot]["inputs"][key] = value
+	changed.emit()
+
+
+func get_skill_input(slot: int, key: String, default: Variant) -> Variant:
+	if slot < 0 or slot >= skills.size():
+		return default
+
+	var inputs: Dictionary = skills[slot].get("inputs", {})
+	return inputs.get(key, default)
+
+
+func set_skill_hits(slot: int, hits: float) -> void:
+	if slot < 0 or slot >= skills.size():
+		return
+
+	skills[slot]["hits"] = maxf(hits, 0.0)
+	changed.emit()
+
+
+# ============================================================================
+# BLESSINGS
+# ============================================================================
+
+func set_blessing(timeline_id: int, id: int, roll: int) -> void:
+	if id < 0:
+		# Negative ID means remove blessing for this timeline
+		if timeline_id in blessings:
+			blessings.erase(timeline_id)
+	else:
+		blessings[timeline_id] = {"id": id, "roll": roll}
+	changed.emit()
 
 
 # ============================================================================

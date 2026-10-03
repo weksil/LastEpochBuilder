@@ -5,6 +5,10 @@ extends Node
 
 
 func _ready() -> void:
+	# a script error stops this coroutine; never hang the headless run
+	get_tree().create_timer(180.0).timeout.connect(func() -> void:
+		print("UI SMOKE TIMEOUT")
+		get_tree().quit(1))
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 	await _frames(3)
@@ -85,6 +89,24 @@ func _ready() -> void:
 	print("unique helmet: %s / %s" % [helmet_button.text, str(Build.items.get("helmet", {}))])
 	print("unique rows: %d, text: %s" % [editor.get_node("%UniqueMods").get_child_count(), editor.get_node("%UniqueText").text.replace("
 ", " | ")])
+
+	# blessings tab: select a blessing in the first timeline
+	tabs.current_tab = 4
+	await _frames(1)
+	var blessings_tab: Node = tabs.get_child(4)
+	var blessings_rows: Array = blessings_tab.get_node("%Rows").get_children()
+	if blessings_rows.size() > 0:
+		var first_row: Node = blessings_rows[0]
+		var blessing_select: OptionButton = first_row.get_node("%BlessingSelect")
+		if blessing_select.item_count > 1:
+			blessing_select.select(1)
+			blessing_select.item_selected.emit(1)
+		await _frames(1)
+		var roll_slider: HSlider = first_row.get_node("%RollSlider")
+		roll_slider.value = 128
+		roll_slider.value_changed.emit(128.0)
+	await _frames(2)
+	print("blessings: %s" % str(Build.blessings))
 
 	# idols tab: place an idol at the first open cell and give it an affix
 	tabs.current_tab = 3

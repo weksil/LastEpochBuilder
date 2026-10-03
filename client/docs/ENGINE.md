@@ -345,6 +345,88 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 - Айлменты без урона (шок, шреды, холод) показываются числом стаков; их эффект на враге задаётся во вкладке «Условия».
 
 ### 8.7 Секции результата
-«Урон за применение» (по типам, итог), «Крит» (шанс, множитель), «Скорость» (применений/с, мана, CD),
-«Айлмент: …» (шанс, наложения/с, длительность, стаки, урон стака по типам, DPS без врага и по врагу),
-«DPS как в подсказке игры» (удар, айлменты, итог), «Против врага» (удар, айлменты, итог «DPS по врагу»), «Не учтено» (notes).
+Для каждого компонента урона (§9.3; первый — без префикса, остальные с префиксом «<имя>: »): «Урон за применение (до врага)»
+(по типам, итог; у не-первых и при событиях ≠ применений — строка «Событий урона в секунду»), «Конверсии и теги»,
+«Крит», «Айлмент: …». Один раз после крита первого компонента — «Скорость и мана» (применений/с, мана, CD).
+События/с компонента: `rate`, если задан, иначе применений/с × `per_use` × `hits` (`hits` — `Build.skills[slot].hits`,
+только для primary и sub). Затем «Параметры умения» (по строке на `s.params`), «DPS как в подсказке игры» (удар, айлменты,
+при >1 компонента «DPS: <имя>», итог «DPS» = Σ всех компонентов), «Против врага» (то же, итог «DPS по врагу»; детали
+остальных компонентов — разделы «<имя>: Против врага»), «Не учтено» (notes). Если урона нет ни у одного компонента —
+только скорость, мана и айлменты умения.
+
+## 9. Модели эффектов и компоненты умения (полный учёт механик)
+
+### 9.1 Модель эффекта — общий формат (`client/data/*_models.json`)
+Одна схема для особых эффектов уникальных (§5.4.3), полей мутаторов дерева умения (`field_models.json`, ключ
+`"Mutator.field"`), особых списков статов дерева и пассивок (`list_models.json`, ключ `"Mutator.list"` /
+`"CharacterMutator.list"`), благословений. Базовое значение `v`: ролл мода (уникальные) или значение поля
+`per_point·p + flat` (узлы дерева). Поле `kind`:
+- `stat` (по умолчанию): StatMod `{stat (имя SP), mod: added|increased|more, tags, ailment}`;
+  `x = v·(источник − offset)·factor` при `per`, иначе `v·factor`; затем `min`/`max`.
+- `speed`: `{speed: increased|more}` → скорость применения умения.
+- `mana`: `{mana: added|increased}` → стоимость маны умения.
+- `cooldown`: `{cooldown: recovery_increased|recovery_more|length_added|length_increased|charges}`.
+- `param`: `{param, mod: added|increased|more|set}` — параметр умения для раздела «Параметры умения»
+  (`projectiles, chains, pierce, area, duration, radius, count, hits, …`; `hits` — попаданий по цели за применение,
+  умножает DPS всех компонентов умения).
+- `trigger`: `{ability (имя в abilities.json), on: use|hit|crit|kill|second|end|block|hit_taken, chance, count, icd}` —
+  новый компонент урона (§9.3); `chance`/`count` — число или `"v"` (значение эффекта).
+- `component`: `{ability, count}` — узел включает подумение, срабатывающее за каждое применение.
+- `minion_stat`: как `stat`, но для миньонов этого умения.
+- `stat_list`: для `add_stat` в особый список — стат берётся из самого эффекта, модель задаёт `scope`/`when`/`per`.
+- `resource`: `{resource: mana|health|ward, on: hit|kill|use|second}` — только строка в «Параметрах умения».
+- `flag`: `{text}` — меняет поведение, на числа не влияет.
+- `conversion`: правило из `skill_conversions.json` (уже учтено §5.5).
+- `scope`: `skill` (по умолчанию) | `component:<имя подумения>` | `global` (на персонажа) | `minion`.
+
+Общие поля: `per` (источник, §5.4.3, плюс `input:<ключ>`), `when` (условия, §5.4.3, плюс `input:<ключ>` —
+логический вход), `at_least`/`below`, `offset`, `factor`, `min`, `max`, `src_max`, `note`, `confidence` (D / D?).
+`input`: `{key, label, default, max, bool}` — объявление входного параметра умения (стаки, число тотемов,
+«пока канализирует» …); значения — `Build.skills[slot].inputs[key]`, по умолчанию `default`.
+
+### 9.2 `engine/effect_models.gd` (`class_name EffectModels`)
+`ctx = {build, store: StatStore, slot: int (слот умения или -1), item_slot: String (слот предмета или "")}`.
+- `blocked(model, ctx) -> String` — "" если условия выполнены, иначе текст условия по-русски.
+- `value(model, v, ctx) -> Dictionary {x: float, text: String}` — итоговое значение и пояснение источника.
+- `make_mod(model, v, ctx, label) -> StatMod` (null, если SP неизвестен).
+- `source(per, ctx) -> float`, `source_name(per, ctx) -> String`, `holds(cond, ctx) -> bool`, `phase(model) -> String`.
+- `inputs(model) -> Array[Dictionary]` — объявленные входы модели.
+
+### 9.3 Компоненты урона — `engine/skill_components.gd` (`class_name SkillComponents`)
+`collect(build, slot, ab, s) -> Array[Dictionary]`: `{name, kind: primary|sub|trigger|minion, ab, base (запись урона),
+per_use (раз за применение), rate (событий/с, если не от применений), chance, icd, mods: Array[StatMod]}`.
+- `primary`: `ab.primaryDamage`; если пусто — подумения с причиной `prefab:CreateAbilityObjectOnDeath|OnStart|
+  CastAfterDuration` (связь через `parents`), иначе урон из `abilities_code_damage.json`.
+- `sub`: подумения префаба (те же причины) у умений с собственным уроном; `component`-модели узлов.
+- `trigger`: модели `trigger` (узлы, уникальные, пассивки): частота = частота события × шанс, не чаще 1/icd.
+- `minion`: §9.4.
+`SkillCalc.compute` считает каждый компонент тем же конвейером (§8.2–8.6) и складывает DPS в раздел «Итог».
+
+### 9.4 Миньоны — `engine/minion_calc.gd` (`class_name MinionCalc`, research 07d §1, 07j §4)
+Данные: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protection`, `abilityList`, `castSpeedOverrides`,
+`summonSettings[{numberToSummon, limit, duration…}]`, `mutators`). Для умения-призыва (`summonedBy` содержит имя умения):
+- Статы миньона = снимок статов игрока по правилу `SummonEntityOnDeath` (07d §1.1): пропустить SP 38/39/40/50/126/127;
+  стат с `extraTag` = ID умения-призыва или с тегом Minion (Totem — если умение тотем) переходит с тегами
+  `tags & ~(Minion|Totem)` и `extraTag 0`; остальные статы игрока не переходят. Плюс `innateStats` актёра, плюс
+  `minion_mods` из дерева (§9.1, `minion_stat` / `stat_list scope minion`, как есть), плюс скрытая база игрока для миньонов
+  (Movespeed MORE 0.10, DamageTaken MORE −0.6 PetResisted — уже в статах игрока с тегом Minion).
+- Урон: каждая способность из `abilityList` с уроном — компонент `kind: minion` (§9.3), конвейер §8.2–8.6 на статах миньона
+  (уровень миньона не масштабирует урон; `levelScaling` способностей миньона не применяется). Частота атак: скорость
+  атаки/каста миньона (SP 2/3, база 1) × 1.1 / `useDuration` из `castSpeedOverrides` (или способности).
+- Число миньонов: вход умения `minions` (по умолчанию `limit` из `summonSettings`, с параметрами дерева `count`);
+  DPS = DPS одного × число. Строки «Здоровье миньона», «Броня», сопротивления — в разделе «Миньон: <имя>».
+
+### 9.5 Благословения — `BuildMods._add_blessings` (`blessings.json`, 07a §8.2)
+`Build.blessings: {timelineID: {id: blessingId, roll: 0..255}}`, по одному на таймлайн (обычное или великое — из
+`timelines[].difficulties[].otherSlotBlessings/anySlotBlessings`). Импликиты благословения → StatMod как импликиты
+предмета (`AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0)`), источник «Благословение «…»».
+
+### 9.6 Частота срабатываний и перезарядка
+- Событие `on` модели `trigger`: `use` / `cast` = применений/с; `hit` = применений/с × попаданий (`hits`); `crit` = частота
+  попаданий × шанс крита; `kill` = вход `kills_per_second`; `second` = 1; `end` = применений/с; `hit_taken`, `block`,
+  `dodge`, `potion`, `minion_hit`, `minion_death`, `stun`, `death` — входы умения с числом событий в секунду (по
+  умолчанию 0, ярлык по-русски). Частота = событие × `chance` × `count`, не больше `count / icd`.
+- Перезарядка умения: база `ab.cooldown` или `cooldown_base.baseCooldownLength`; длина `(база + length_added) ×
+  (1 + length_increased)`; восстановление `(1 + Σincreased CDR (SP 70) + recovery_increased) × (1 + recovery_more)`;
+  итог `длина / восстановление`. Заряды `charges` (база 1) влияют только на серию; в установившемся режиме
+  применений/с = min(частота по скорости каста, 1 / перезарядка).

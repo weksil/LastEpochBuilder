@@ -5,11 +5,18 @@ class_name SkillCalc
 const ATTACK_TAGS: int = LE.SPELL | LE.MELEE | LE.THROWING | LE.BOW
 ## Order in which a mod's damage-type bit is resolved (06b §1.2): Physical, Lightning, Cold, Fire, Void, Necrotic, Poison.
 const TYPE_RESOLVE_ORDER: Array[int] = [0, 3, 2, 1, 5, 4, 6]
+## Trigger events whose frequency follows from the skill itself (docs/ENGINE.md §9.6); the rest are skill inputs `events_<on>`.
+const OWN_EVENTS: Array[String] = ["use", "cast", "end", "hit", "crit", "second"]
+const EVENT_RU: Dictionary = {
+	"use": "применение", "cast": "применение", "end": "окончание", "hit": "попадание", "crit": "крит", "second": "секунда",
+	"kill": "убийство", "hit_taken": "получение удара", "block": "блок", "dodge": "уклонение", "potion": "зелье",
+	"minion_hit": "удар миньона", "minion_death": "смерть миньона", "stun": "оглушение", "death": "смерть",
+}
 
 
 ## {title, sections: [{title, rows: [{label, text, breakdown}]}], notes: [String]}
 static func compute(build: Node, slot: int) -> Dictionary:
-	var result: Dictionary = {"title": "", "sections": [], "notes": []}
+	var result: Dictionary = {"title": "", "sections": [], "notes": [], "inputs": [], "hits": 1.0}
 	if slot < 0 or slot >= build.skills.size():
 		return result
 	var ab: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
@@ -25,50 +32,269 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		if not notes.has(n):
 			notes.append(n)
 
-	var ctx: Dictionary = _context(build, ab, store, s["conversions"], notes)
-	var speed: Dictionary = _speed(build, ab, ctx, s)
+	var primary_base: Dictionary = ab.get("primaryDamage", {}) if ab.get("primaryDamage") is Dictionary else {}
+	var head_ctx: Dictionary = _context(build, ab, store, s["conversions"], notes, primary_base)
+	var speed: Dictionary = _speed(build, ab, head_ctx, s)
+	var uses: float = float(speed["uses"])
+	var hits: float = float(build.skills[slot].get("hits", 1.0))
+	var inputs: Array[Dictionary] = []
+	var s_comp: Dictionary = s.duplicate()
+	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, hits, inputs, notes)
+	var comp_notes: Array[String] = []
+	var components: Array[Dictionary] = SkillComponents.collect(build, slot, ab, s_comp, comp_notes)
+	# inputs declared while collecting components (e.g. the number of minions)
+	for inp: Variant in s.get("inputs", []):
+		if inp is Dictionary:
+			_add_input(inputs, inp)
+	for n: String in comp_notes:
+		if not notes.has(n):
+			notes.append(n)
 	var sections: Array = []
-	var ail: Dictionary = AilmentCalc.compute(build, ctx, float(speed["uses"]), notes)
 	var tooltip_rows: Array = []
 	var enemy_rows: Array = []
-	var hit_tooltip: float = 0.0
-	var hit_enemy: float = 0.0
-	if ctx["base"].is_empty():
+	var extra_enemy_sections: Array = []
+	var comp_results: Array[Dictionary] = []
+	var ail_notes: Array[String] = []
+	if components.is_empty():
 		notes.push_front("У умения нет урона удара в основном компоненте (урон задаётся кодом или под-умениями) — показаны скорость, мана и айлменты.")
-		if not ctx["conversion_rows"].is_empty():
-			sections.append({"title": "Конверсии и теги", "rows": ctx["conversion_rows"]})
+		if not head_ctx["conversion_rows"].is_empty():
+			sections.append({"title": "Конверсии и теги", "rows": head_ctx["conversion_rows"]})
 		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
-	else:
+		var head_ail: Dictionary = AilmentCalc.compute(build, head_ctx, uses, ail_notes)
+		sections.append_array(head_ail["sections"])
+		comp_results.append({"name": "", "hit_tooltip": 0.0, "hit_enemy": 0.0, "ail": head_ail, "events": uses})
+	for idx in range(components.size()):
+		var comp: Dictionary = components[idx]
+		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
+		var comp_store: StatStore = _component_store(store, s, comp)
+		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, s["conversions"], notes, comp["base"])
+		var events: float = float(comp["rate"])
+		if events <= 0.0:
+			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else hits)
+		var comp_speed: Dictionary = {"uses": events, "rows": []}
 		var ds: Dictionary = _build_damage(ctx)
-		sections.append({"title": "Урон за применение (до врага)", "rows": ds["rows"]})
+		var damage_rows: Array = ds["rows"]
+		if idx > 0 or not is_equal_approx(events, uses):
+			damage_rows = [_events_row(comp, events, uses, hits)] + damage_rows
+		sections.append({"title": prefix + "Урон за применение (до врага)", "rows": damage_rows})
 		if not ctx["conversion_rows"].is_empty():
-			sections.append({"title": "Конверсии и теги", "rows": ctx["conversion_rows"]})
-		sections.append({"title": "Крит", "rows": ds["crit_rows"]})
-		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
-		tooltip_rows = _tooltip(ds, speed)
-		enemy_rows = _vs_enemy(build, ctx, ds, speed, notes)
-		hit_tooltip = float(speed.get("tooltip_dps", 0.0))
-		hit_enemy = float(speed.get("enemy_dps", 0.0))
-	sections.append_array(ail["sections"])
-	if ail["tooltip_dps"] > 0.0:
-		tooltip_rows.append({"label": "DPS айлментов", "text": LE.fmt_num(ail["tooltip_dps"]), "breakdown": "Сумма DPS всех айлментов без врага (разделы «Айлмент: …»)."})
-	tooltip_rows.append({"label": "DPS", "text": LE.fmt_num(hit_tooltip + ail["tooltip_dps"]), "breakdown":
-		"Удар %s + айлменты %s = %s" % [LE.fmt_num(hit_tooltip), LE.fmt_num(ail["tooltip_dps"]), LE.fmt_num(hit_tooltip + ail["tooltip_dps"])]})
-	if ail["enemy_dps"] > 0.0:
-		enemy_rows.append({"label": "DPS айлментов по врагу", "text": LE.fmt_num(ail["enemy_dps"]), "breakdown": "Сумма DPS всех айлментов по врагу (разделы «Айлмент: …»)."})
-	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(hit_enemy + ail["enemy_dps"]), "breakdown":
-		"Удар %s + айлменты %s = %s" % [LE.fmt_num(hit_enemy), LE.fmt_num(ail["enemy_dps"]), LE.fmt_num(hit_enemy + ail["enemy_dps"])]})
+			sections.append({"title": prefix + "Конверсии и теги", "rows": ctx["conversion_rows"]})
+		sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
+		if idx == 0:
+			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
+		var comp_tooltip: Array = _tooltip(ds, comp_speed)
+		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
+		var ail: Dictionary = AilmentCalc.compute(build, ctx, events, ail_notes)
+		for section: Dictionary in ail["sections"]:
+			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
+		if idx == 0:
+			tooltip_rows = comp_tooltip
+			enemy_rows = comp_enemy
+		else:
+			extra_enemy_sections.append({"title": prefix + "Против врага", "rows": comp_enemy})
+		comp_results.append({"name": str(comp["name"]), "hit_tooltip": float(comp_speed["tooltip_dps"]), "hit_enemy": float(comp_speed["enemy_dps"]),
+			"ail": ail, "events": events})
+	for n: String in ail_notes:
+		if not notes.has(n):
+			notes.append(n)
+
+	var total_tooltip: float = 0.0
+	var total_enemy: float = 0.0
+	var tooltip_lines: PackedStringArray = []
+	var enemy_lines: PackedStringArray = []
+	for cr: Dictionary in comp_results:
+		var ail_t: float = float(cr["ail"]["tooltip_dps"])
+		var ail_e: float = float(cr["ail"]["enemy_dps"])
+		total_tooltip += float(cr["hit_tooltip"]) + ail_t
+		total_enemy += float(cr["hit_enemy"]) + ail_e
+		tooltip_lines.append("%s: удар %s + айлменты %s = %s" % [cr["name"], LE.fmt_num(cr["hit_tooltip"]), LE.fmt_num(ail_t), LE.fmt_num(float(cr["hit_tooltip"]) + ail_t)])
+		enemy_lines.append("%s: удар %s + айлменты %s = %s" % [cr["name"], LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(ail_e), LE.fmt_num(float(cr["hit_enemy"]) + ail_e)])
+	var main: Dictionary = comp_results[0]
+	if float(main["ail"]["tooltip_dps"]) > 0.0:
+		tooltip_rows.append({"label": "DPS айлментов", "text": LE.fmt_num(main["ail"]["tooltip_dps"]), "breakdown": "Сумма DPS всех айлментов без врага (разделы «Айлмент: …»)."})
+	if float(main["ail"]["enemy_dps"]) > 0.0:
+		enemy_rows.append({"label": "DPS айлментов по врагу", "text": LE.fmt_num(main["ail"]["enemy_dps"]), "breakdown": "Сумма DPS всех айлментов по врагу (разделы «Айлмент: …»)."})
+	if comp_results.size() > 1:
+		for cr: Dictionary in comp_results:
+			tooltip_rows.append({"label": "DPS: %s" % cr["name"], "text": LE.fmt_num(float(cr["hit_tooltip"]) + float(cr["ail"]["tooltip_dps"])), "breakdown":
+				"Событий урона в секунду: %s.\nУдар %s + айлменты %s." % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_tooltip"]), LE.fmt_num(cr["ail"]["tooltip_dps"])]})
+			enemy_rows.append({"label": "DPS по врагу: %s" % cr["name"], "text": LE.fmt_num(float(cr["hit_enemy"]) + float(cr["ail"]["enemy_dps"])), "breakdown":
+				"Событий урона в секунду: %s.\nУдар %s + айлменты %s." % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
+	tooltip_rows.append({"label": "DPS", "text": LE.fmt_num(total_tooltip), "breakdown":
+		"\n".join(tooltip_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
+			LE.fmt_num(main["hit_tooltip"]), LE.fmt_num(main["ail"]["tooltip_dps"]), LE.fmt_num(total_tooltip)]})
+	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(total_enemy), "breakdown":
+		"\n".join(enemy_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
+			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
+	var param_rows: Array = _param_rows(s)
+	for flag: String in s.get("flags", []):
+		param_rows.append({"label": "Механика", "text": "есть", "breakdown": flag})
+	if not param_rows.is_empty():
+		sections.append({"title": "Параметры умения", "rows": param_rows})
 	sections.append({"title": "DPS как в подсказке игры", "rows": tooltip_rows})
 	sections.append({"title": "Против врага", "rows": enemy_rows})
+	sections.append_array(extra_enemy_sections)
 	result["sections"] = sections
 	result["notes"] = notes
+	result["inputs"] = _inputs_result(build, slot, inputs)
+	result["hits"] = hits
 	return result
+
+
+# --- triggers, inputs, parameters (docs/ENGINE.md §9.6) ----------------------------
+
+## Event rate -> component rate: event × chance × count, at most count / icd. Returns {rate, event, text}.
+## `event_rate` is the skill input events_<on> for events that do not follow from the skill itself.
+static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float, event_rate: float) -> Dictionary:
+	var on: String = str(trig.get("on", "use"))
+	var event: float
+	var text: String
+	match on:
+		"use", "cast", "end":
+			event = uses
+			text = "события «%s» = применений/с %s" % [EVENT_RU.get(on, on), LE.fmt_num(uses)]
+		"hit":
+			event = uses * hits
+			text = "попаданий/с = применений/с %s × попаданий %s = %s" % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_num(event)]
+		"crit":
+			event = uses * hits * minf(1.0, crit)
+			text = "критов/с = применений/с %s × попаданий %s × шанс крита %s = %s" % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_pct(minf(1.0, crit)), LE.fmt_num(event)]
+		"second":
+			event = 1.0
+			text = "раз в секунду"
+		_:
+			event = event_rate
+			text = "событий «%s» в секунду (вход «events_%s») = %s" % [EVENT_RU.get(on, on), on, LE.fmt_num(event_rate)]
+	var chance: float = float(trig.get("chance", 1.0))
+	var count: float = float(trig.get("count", 1.0))
+	var icd: float = float(trig.get("icd", 0.0))
+	var rate: float = event * chance * count
+	var line: String = "%s; шанс %s × число %s → %s/с" % [text, LE.fmt_pct(chance), LE.fmt_num(count), LE.fmt_num(rate)]
+	if icd > 0.0:
+		var cap: float = count / icd
+		if rate > cap:
+			line += "; ограничено перезарядкой %s с: %s/с" % [LE.fmt_num(icd), LE.fmt_num(cap)]
+			rate = cap
+		else:
+			line += "; перезарядка срабатывания %s с (предел %s/с) не достигнута" % [LE.fmt_num(icd), LE.fmt_num(cap)]
+	return {"rate": rate, "event": event, "text": line}
+
+
+## Triggers of the skill with `rate`, `label`, `note` filled in; collects the declared inputs (skill and event ones).
+static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: Dictionary, uses: float, hits: float,
+		inputs: Array[Dictionary], notes: Array[String]) -> Array:
+	for inp: Variant in s.get("inputs", []):
+		if inp is Dictionary:
+			_add_input(inputs, inp)
+	var result: Array = []
+	var crit: float = -1.0
+	for trig: Variant in s.get("triggers", []):
+		if not trig is Dictionary:
+			continue
+		var on: String = str(trig.get("on", "use"))
+		var event_rate: float = 0.0
+		if not OWN_EVENTS.has(on):
+			var key: String = "events_" + on
+			_add_input(inputs, {"key": key, "label": "Событий в секунду: %s" % EVENT_RU.get(on, on), "default": 0.0})
+			event_rate = float(build.skills[slot].get("inputs", {}).get(key, 0.0))
+		if on == "crit" and crit < 0.0:
+			crit = float(_build_damage(head_ctx)["cc"])
+		var tr: Dictionary = trigger_rate(trig, uses, hits, maxf(crit, 0.0), event_rate)
+		var sub: Dictionary = GameData.ability_by_name(str(trig.get("ability", "")))
+		var label: String = str(sub.get("abilityName", sub.get("name", trig.get("ability", ""))))
+		var copy: Dictionary = trig.duplicate()
+		copy["rate"] = float(tr["rate"])
+		copy["label"] = label
+		copy["note"] = "триггер, узел «%s»: %s" % [trig.get("node", "?"), tr["text"]]
+		result.append(copy)
+		if float(tr["rate"]) <= 0.0:
+			var note: String = "Срабатывание «%s» (%s): 0 событий/с — задайте частоту во вкладке «Расчёты»" % [label, EVENT_RU.get(on, on)]
+			if not notes.has(note):
+				notes.append(note)
+	return result
+
+
+static func _add_input(inputs: Array[Dictionary], inp: Dictionary) -> void:
+	for existing: Dictionary in inputs:
+		if existing["key"] == inp.get("key", ""):
+			return
+	inputs.append(inp.duplicate())
+
+
+## Inputs with their current values: Build.skills[slot].inputs[key] or the default.
+static func _inputs_result(build: Node, slot: int, inputs: Array[Dictionary]) -> Array[Dictionary]:
+	var current: Dictionary = build.skills[slot].get("inputs", {})
+	var out: Array[Dictionary] = []
+	for inp: Dictionary in inputs:
+		var entry: Dictionary = inp.duplicate()
+		entry["value"] = current.get(str(inp["key"]), inp.get("default", 0.0))
+		out.append(entry)
+	return out
+
+
+## Store with the mods meant for this component only (component_mods of the skill, matched by ability name).
+static func _component_store(store: StatStore, s: Dictionary, comp: Dictionary) -> StatStore:
+	if comp.get("store") is StatStore:
+		return comp["store"]
+	var by_name: Variant = s.get("component_mods", {})
+	if not by_name is Dictionary or (by_name as Dictionary).is_empty():
+		return store
+	var extra: Array[StatMod] = []
+	var comp_ab: Dictionary = comp["ab"]
+	for key: String in [str(comp_ab.get("name", "")), str(comp_ab.get("abilityName", "")), str(comp["name"])]:
+		if key != "" and by_name.has(key):
+			for mod: Variant in by_name[key]:
+				if mod is StatMod and not extra.has(mod):
+					extra.append(mod)
+	if extra.is_empty():
+		return store
+	var child := StatStore.new()
+	child.parent = store
+	child.add_all(extra)
+	return child
+
+
+static func _param_rows(s: Dictionary) -> Array:
+	var rows: Array = []
+	var params: Variant = s.get("params", {})
+	if not params is Dictionary:
+		return rows
+	for label: Variant in params:
+		var p: Dictionary = params[label]
+		var inc: float = float(p.get("increased", 0.0))
+		var more: float = float(p.get("more", 1.0))
+		var is_set: bool = p.get("set") != null
+		var base: float = float(p["set"]) if is_set else float(p.get("added", 0.0))
+		var value: float = base * (1.0 + inc) * more
+		var b: PackedStringArray = PackedStringArray(p.get("sources", []))
+		var text: String = LE.fmt_num(value)
+		if base == 0.0 and (inc != 0.0 or more != 1.0):
+			var parts: PackedStringArray = []
+			if inc != 0.0:
+				parts.append("%s%s increased" % ["+" if inc > 0.0 else "", LE.fmt_pct(inc)])
+			if more != 1.0:
+				parts.append("×%s more" % LE.fmt_num(more))
+			text = ", ".join(parts)
+		b.append("%s %s × (1 + %s) × %s = %s" % ["Задано" if is_set else "Добавлено", LE.fmt_num(base), LE.fmt_pct(inc), LE.fmt_num(more), LE.fmt_num(value)])
+		rows.append({"label": str(label), "text": text, "breakdown": "\n".join(b)})
+	return rows
+
+
+static func _events_row(comp: Dictionary, events: float, uses: float, hits: float) -> Dictionary:
+	var b: PackedStringArray = []
+	if float(comp["rate"]) > 0.0:
+		b.append("Частота события (триггер): %s в секунду." % LE.fmt_num(events))
+	else:
+		var hits_text: String = " × попаданий %s" % LE.fmt_num(hits) if comp["kind"] != "trigger" and hits != 1.0 else ""
+		b.append("Применений/с %s × за применение %s%s = %s" % [LE.fmt_num(uses), LE.fmt_num(comp["per_use"]), hits_text, LE.fmt_num(events)])
+	if str(comp["note"]) != "":
+		b.append("Источник: %s" % comp["note"])
+	return {"label": "Событий урона в секунду", "text": LE.fmt_num(events), "breakdown": "\n".join(b)}
 
 
 # --- 8.1 context ------------------------------------------------------------------
 
-static func _context(build: Node, ab: Dictionary, store: StatStore, conversions: Array, notes: Array[String]) -> Dictionary:
-	var base: Dictionary = ab.get("primaryDamage", {}) if ab.get("primaryDamage") is Dictionary else {}
+static func _context(build: Node, ab: Dictionary, store: StatStore, conversions: Array, notes: Array[String], base: Dictionary) -> Dictionary:
 	var tags: int = int(ab.get("tags", 0))
 	var hit: bool = int(base.get("isHit", 1)) == 1
 	var src: int = 0
@@ -402,14 +628,44 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	for line: String in s.get("mana_sources", []):
 		mana_lines.append("  " + line)
 	mana_lines.append("Добавлено — узлы дерева и свойства уникальных предметов; статы маны с аффиксов и пассивок пока не учитываются.")
-	rows.append({"label": "Стоимость маны", "text": LE.fmt_num(mana), "breakdown": "
-".join(mana_lines)})
-	if ab.get("cooldown") != null and float(ab["cooldown"]) > 0.0:
-		var cdr: StatQuery = store.query(LE.CDR, int(ctx["tags"]))
-		var cd: float = float(ab["cooldown"]) / (1.0 + cdr.increased)
-		rows.append({"label": "Перезарядка, с", "text": LE.fmt_num(cd), "breakdown":
-			"%s / (1 + %s скорости восстановления) = %s" % [LE.fmt_num(float(ab["cooldown"])), LE.fmt_pct(cdr.increased), LE.fmt_num(cd)]})
+	rows.append({"label": "Стоимость маны", "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
+	var cd: Dictionary = cooldown_info(ab, store, int(ctx["tags"]), s)
+	if bool(cd["has"]):
+		rows.append({"label": "Перезарядка, с", "text": LE.fmt_num(cd["cd"]), "breakdown": cd["text"]})
+		if float(cd["charges"]) > 1.0:
+			rows.append({"label": "Заряды перезарядки", "text": LE.fmt_num(cd["charges"]), "breakdown":
+				"Зарядов: %s. Заряды дают серию применений подряд; в установившемся режиме частоту задаёт перезарядка." % LE.fmt_num(cd["charges"])})
+		var cap: float = 1.0 / float(cd["cd"])
+		if uses > cap:
+			rows[0]["text"] = LE.fmt_num(cap)
+			rows[0]["breakdown"] += "\nОграничено перезарядкой: min(%s, 1 / %s с) = %s" % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
+			uses = cap
 	return {"uses": uses, "rows": rows}
+
+
+## Cooldown of the skill (docs/ENGINE.md §9.6). Returns {has, cd, charges, text}.
+static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictionary) -> Dictionary:
+	var cdm: Dictionary = s.get("cooldown", {})
+	var base_info: Dictionary = s.get("cooldown_base", {})
+	var base: float = float(ab["cooldown"]) if ab.get("cooldown") != null and float(ab["cooldown"]) > 0.0 else float(base_info.get("baseCooldownLength", 0.0))
+	var charges: float = float(base_info.get("charges", 1.0)) + float(cdm.get("charges", 0.0))
+	if base <= 0.0:
+		return {"has": false, "cd": 0.0, "charges": charges, "text": ""}
+	var added: float = float(cdm.get("length_added", 0.0))
+	var len_inc: float = float(cdm.get("length_increased", 0.0)) + float(base_info.get("increasedCooldownLength", 0.0))
+	var length: float = (base + added) * (1.0 + len_inc)
+	var cdr: StatQuery = store.query(LE.CDR, tags)
+	var rec_inc: float = cdr.increased + float(cdm.get("recovery_increased", 0.0)) + float(base_info.get("increasedCooldownRecoverySpeed", 0.0))
+	var rec_more: float = (1.0 + float(cdm.get("recovery_more", 0.0))) * (1.0 + float(base_info.get("moreCooldownRecoverySpeed", 0.0)))
+	var recovery: float = maxf((1.0 + rec_inc) * rec_more, 0.0001)
+	var cd: float = length / recovery
+	var lines: PackedStringArray = [
+		"Длина: (%s + %s) × (1 + %s) = %s" % [LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(len_inc), LE.fmt_num(length)],
+		"Восстановление: (1 + %s) × %s = %s" % [LE.fmt_pct(rec_inc), LE.fmt_num(rec_more), LE.fmt_num(recovery)],
+		"Перезарядка: %s / %s = %s с" % [LE.fmt_num(length), LE.fmt_num(recovery), LE.fmt_num(cd)]]
+	for mod: StatMod in cdr.mods:
+		lines.append("  " + mod.describe())
+	return {"has": true, "cd": cd, "charges": charges, "text": "\n".join(lines)}
 
 
 ## Main-hand attack rate (average with an off-hand weapon); applies to Melee, and to Bow with a bow equipped.

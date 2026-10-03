@@ -1,122 +1,651 @@
 {
-  "gameVersion": "1.5.0",
-  "source": "Hand-written client planner models (not extracted data; lives in client/data) for unique special effects (PlayerProperty / AbilityProperty), derived from unique_effects.json formulas (research/07i_unique_formulas.md). Only effects that reduce to a stat of the character or of one skill are modelled.",
-  "schema": {
-    "player": "ppIndex -> model; the mod value pp comes from the unique's mod with property 98 (PlayerProperty) and tags == ppIndex",
-    "ability": "'abilityIndex:propertyIndex' -> model; pp comes from the mod with property 58 (AbilityProperty), tags == abilityIndex, specialTag == propertyIndex; applied only to the skill whose abilityIDEnum.value == abilityIndex",
-    "model.stat": "SP name (sp_enum.json); mod: added|increased|more; tags: AT names joined by '|'; ailment: AilmentID name used as specialTag",
-    "model.value": "pp * clamp(source, 0, src_max) - offset ... exactly: x = pp * (source - offset) * factor, then clamped to [min, max]; without 'per' x = pp * factor",
-    "model.per": "attr:str|vit|int|dex|att, total_attr, added:<SP>, value:<SP>, increased:<SP>, added_exact:<SP>:<AT mask>, res:<damage type 0..6> (uncapped), ele_res, total_res, max_health, max_mana, endurance_threshold, enemy_stacks:<Ailment>, player:<number key>, complete_sets",
-    "model.at_least / below": "{per, value}: the model applies only if the source is >= value (at_least) or < value (below)",
-    "model.when": "all must hold: enemy:<Ailment> (has stacks), enemy_any:<A>|<B>, enemy_flag:<flag>, enemy:boss_or_rare, player:<flag>, player:!<flag>, gear:dual_wield, gear:two_handed_melee, slot:<slot>",
-    "model.skill_any": "skill-local: applies only to skills having any of these tags",
-    "model.kind": "stat (default) | mana_added (skill mana cost) | overcap_taken (Null Portent: per damage type, needs cap_pp)",
-    "model.note": "assumption shown to the user"
+ "gameVersion": "1.5.0",
+ "source": "Hand-written client planner models (not extracted data; lives in client/data) for unique special effects (PlayerProperty / AbilityProperty), derived from unique_effects.json formulas (research/07i_unique_formulas.md). Only effects that reduce to a stat of the character or of one skill are modelled.",
+ "schema": {
+  "player": "ppIndex -> model; the mod value pp comes from the unique's mod with property 98 (PlayerProperty) and tags == ppIndex",
+  "ability": "'abilityIndex:propertyIndex' -> model; pp comes from the mod with property 58 (AbilityProperty), tags == abilityIndex, specialTag == propertyIndex; applied only to the skill whose abilityIDEnum.value == abilityIndex",
+  "model.stat": "SP name (sp_enum.json); mod: added|increased|more; tags: AT names joined by '|'; ailment: AilmentID name used as specialTag",
+  "model.value": "pp * clamp(source, 0, src_max) - offset ... exactly: x = pp * (source - offset) * factor, then clamped to [min, max]; without 'per' x = pp * factor",
+  "model.per": "attr:str|vit|int|dex|att, total_attr, added:<SP>, value:<SP>, increased:<SP>, added_exact:<SP>:<AT mask>, res:<damage type 0..6> (uncapped), ele_res, total_res, max_health, max_mana, endurance_threshold, enemy_stacks:<Ailment>, player:<number key>, complete_sets",
+  "model.at_least / below": "{per, value}: the model applies only if the source is >= value (at_least) or < value (below)",
+  "model.when": "all must hold: enemy:<Ailment> (has stacks), enemy_any:<A>|<B>, enemy_flag:<flag>, enemy:boss_or_rare, player:<flag>, player:!<flag>, gear:dual_wield, gear:two_handed_melee, slot:<slot>",
+  "model.skill_any": "skill-local: applies only to skills having any of these tags",
+  "model.kind": "stat (default) | mana_added (skill mana cost) | overcap_taken (Null Portent: per damage type, needs cap_pp)",
+  "model.note": "assumption shown to the user"
+ },
+ "player": {
+  "45": {
+   "stat": "HealthRegen",
+   "mod": "increased",
+   "per": "attr:str"
   },
-  "player": {
-    "45": {"stat": "HealthRegen", "mod": "increased", "per": "attr:str"},
-    "144": {"stat": "AilmentChance", "mod": "added", "ailment": "Shock", "per": "attr:int"},
-    "145": {"stat": "IncreasedAilmentDuration", "mod": "added", "ailment": "Shock", "per": "attr:int"},
-    "141": {"stat": "IncreasedAilmentEffect", "mod": "added", "ailment": "Bleed", "per": "added:CriticalMultiplier", "note": "коэффициент конверсии в коде не разрешён, принят 1"},
-    "142": {"stat": "IncreasedAilmentEffect", "mod": "added", "ailment": "Poison", "per": "added:CriticalMultiplier", "note": "коэффициент конверсии в коде не разрешён, принят 1"},
-    "154": {"stat": "Movespeed", "mod": "increased", "per": "added_exact:Damage:528", "factor": 0.1},
-    "165": {"stat": "WardRetention", "mod": "added", "per": "res:2", "factor": 0.5},
-    "175": {"stat": "CriticalChance", "mod": "added", "tags": "Totem", "per": "attr:int"},
-    "180": {"stat": "Damage", "mod": "added", "tags": "Physical|Bow", "at_least": {"per": "attr:dex", "value": 40}},
-    "182": {"stat": "IncreasedAilmentEffect", "mod": "added", "ailment": "Frostbite", "per": "value:FreezeRateMultiplier", "factor": 10},
-    "183": {"stat": "Movespeed", "mod": "increased", "per": "attr:dex", "factor": 0.5, "max": 0.2},
-    "185": {"stat": "Damage", "mod": "added", "tags": "Physical|Spell", "per": "attr:att", "factor": 0.3333333333},
-    "200": {"stat": "WardRegen", "mod": "added", "per": "value:HealthRegen"},
-    "202": {"stat": "CriticalChance", "mod": "added", "tags": "Melee", "below": {"per": "value:DodgeRating", "value": 100}},
-    "220": {"stat": "BlockChance", "mod": "added", "per": "added:Endurance", "offset": 0.6, "factor": 50, "min": 0},
-    "272": {"stat": "BlockEffectiveness", "mod": "added", "per": "total_res", "factor": 100},
-    "285": {"stat": "Health", "mod": "added", "per": "attr:vit"},
-    "288": {"stat": "WardRegen", "mod": "added", "per": "res:4", "factor": 33.3333333333},
-    "324": {"stat": "Damage", "mod": "increased", "tags": "Spell", "per": "increased:Movespeed", "factor": 100},
-    "325": {"stat": "EnduranceThreshold", "mod": "added", "per": "max_mana"},
-    "341": {"stat": "IncreasedAreaForAreaSkills", "mod": "added", "per": "attr:dex", "factor": 0.3333333333},
-    "342": {"stat": "CastSpeed", "mod": "increased", "per": "attr:int", "factor": 0.5},
-    "413": {"stat": "Penetration", "mod": "added", "tags": "Lightning", "per": "attr:dex", "factor": 0.2},
-    "414": {"stat": "Penetration", "mod": "added", "tags": "Void", "per": "attr:dex", "factor": 0.2},
-    "431": {"stat": "CriticalMultiplier", "mod": "added", "per": "attr:str", "factor": 0.5},
-    "446": {"stat": "Damage", "mod": "added", "tags": "Melee", "per": "attr:att", "factor": 0.5},
-    "447": {"stat": "Damage", "mod": "added", "tags": "Spell", "per": "attr:str", "factor": 0.5},
-    "463": {"stat": "WardDecayThreshold", "mod": "added", "per": "endurance_threshold"},
-    "473": {"stat": "WardDecayThreshold", "mod": "added", "per": "max_health"},
-    "474": {"stat": "WardRegen", "mod": "added", "per": "max_health"},
-    "478": {"stat": "CriticalMultiplier", "mod": "added", "tags": "Melee", "per": "max_mana", "factor": 0.1},
-    "501": {"stat": "WardRegen", "mod": "added", "per": "player:curses"},
-    "566": {"stat": "AllAttributes", "mod": "added", "per": "complete_sets"},
-    "567": {"stat": "AllResistances", "mod": "added", "per": "complete_sets"},
-    "569": {"stat": "AilmentChance", "mod": "added", "ailment": "Ignite", "per": "res:1", "factor": 10, "min": 0},
-    "576": {"stat": "Thorns", "mod": "added", "per": "res:0", "factor": 10},
-    "592": {"stat": "Movespeed", "mod": "increased", "per": "attr:dex", "factor": 0.1},
-    "596": {"stat": "Health", "mod": "added", "per": "attr:att"},
-    "597": {"stat": "Mana", "mod": "added", "per": "attr:att"},
-    "610": {"stat": "WardDecayThreshold", "mod": "added", "per": "max_health"},
-    "620": {"stat": "CriticalChance", "mod": "added", "per": "total_attr", "factor": 0.025},
-    "624": {"stat": "BlockEffectiveness", "mod": "added", "per": "increased:Movespeed", "factor": 100},
-    "663": {"stat": "Mana", "mod": "increased", "per": "attr:vit", "factor": 0.5},
-    "684": {"stat": "WardRegen", "mod": "added", "per": "res:2", "factor": 100},
-    "93": {"stat": "Damage", "mod": "increased", "per": "increased:Movespeed"},
-
-    "454": {"stat": "Armour", "mod": "more", "when": ["enemy:Chill"], "note": "атакующий — противник из вкладки «Условия»"},
-    "455": {"stat": "Armour", "mod": "more", "when": ["enemy:Blind"], "note": "атакующий — противник из вкладки «Условия»"},
-    "286": {"stat": "Armour", "mod": "more", "when": ["enemy:Shock"], "note": "атакующий — противник из вкладки «Условия»"},
-    "129": {"stat": "DamageTaken", "mod": "more", "factor": -1, "when": ["gear:two_handed_melee"]},
-    "234": {"stat": "Damage", "mod": "increased", "tags": "Elemental|Melee", "per": "player:ward", "factor": 0.005},
-    "513": {"stat": "CriticalMultiplier", "mod": "added", "when": ["enemy_flag:frozen"]},
-    "287": {"stat": "BlockChance", "mod": "added", "per": "enemy_stacks:Shock"},
-    "250": {"stat": "DamageTaken", "mod": "more", "tags": "Hit", "when": ["enemy:Chill"]},
-    "419": {"stat": "CriticalChance", "mod": "added", "when": ["player:!crit_recently"], "note": "кроме поддерживаемых (channelled) умений"},
-    "89": {"stat": "CriticalChance", "mod": "more", "factor": -1, "when": ["player:crit_recently"]},
-    "119": {"stat": "CriticalMultiplier", "mod": "added", "when": ["gear:dual_wield"]},
-    "243": {"stat": "Damage", "mod": "increased", "tags": "Physical", "when": ["gear:dual_wield"]},
-    "259": {"stat": "DamageTaken", "mod": "more", "at_least": {"per": "player:ward", "value": 1000}},
-    "222": {"stat": "Damage", "mod": "added", "tags": "Spell", "per": "player:ignite_stacks", "src_max": 40, "skill_any": "Fire|Necrotic"},
-    "225": {"stat": "IncreasedAilmentEffect", "mod": "added", "ailment": "Damned", "per": "player:damned_stacks", "src_max": 40, "skill_any": "Spell"},
-    "240": {"stat": "DamageTaken", "mod": "more", "at_least": {"per": "total_attr", "value": 180}},
-    "275": {"stat": "DamageTaken", "mod": "more", "tags": "DoT", "min": -0.75, "when": ["player:haste"], "note": "без учёта увеличенного эффекта Haste"},
-    "282": {"stat": "DamageTaken", "mod": "more", "tags": "DoT", "when": ["enemy:Slow"]},
-    "291": {"stat": "DamageTaken", "mod": "more", "tags": "Hit", "when": ["enemy_any:Ignite|Shock|Chill"]},
-    "340": {"stat": "DamageTaken", "mod": "more", "when": ["player:leeching"]},
-    "417": {"stat": "ParryChance", "mod": "added", "when": ["slot:weapon"]},
-    "462": {"stat": "DamageTaken", "mod": "more", "tags": "Hit", "factor": -1, "note": "шанс получить 0 урона учтён как среднее снижение урона от ударов"},
-    "254": {"kind": "overcap_taken", "cap_pp": 255},
-    "598": {"stat": "DamageTaken", "mod": "more", "when": ["enemy:boss_or_rare", "player:low_mana"]},
-    "602": {"stat": "Damage", "mod": "more", "tags": "Melee", "when": ["player:frenzy"]},
-    "603": {"stat": "DamageTaken", "mod": "increased", "when": ["player:frenzy"]},
-    "625": {"stat": "BlockChance", "mod": "added", "when": ["player:moving"]},
-    "631": {"stat": "CriticalMultiplier", "mod": "added", "per": "enemy_stacks:Bleed", "src_max": 200, "factor": 0.1},
-    "682": {"stat": "DamageTaken", "mod": "more", "tags": "Hit", "when": ["enemy:boss_or_rare"]},
-
-    "43": {"stat": "Damage", "mod": "increased", "tags": "Necrotic", "when": ["player:hit_recently"]},
-    "103": {"stat": "DodgeRating", "mod": "added", "when": ["player:hit_recently"]}
+  "144": {
+   "stat": "AilmentChance",
+   "mod": "added",
+   "ailment": "Shock",
+   "per": "attr:int"
   },
-  "ability": {
-    "19:0": {"stat": "CriticalChance", "mod": "added"},
-    "78:0": {"stat": "Damage", "mod": "increased"},
-    "263:2": {"stat": "Damage", "mod": "added", "tags": "Lightning"},
-    "468:4": {"stat": "Damage", "mod": "added", "tags": "Lightning|Melee"},
-    "140:2": {"stat": "Damage", "mod": "added", "tags": "Physical|Spell"},
-    "536:0": {"stat": "Damage", "mod": "added", "tags": "Lightning|Throwing"},
-    "403:0": {"stat": "Damage", "mod": "added", "tags": "Melee"},
-    "101:0": {"stat": "Damage", "mod": "added", "tags": "Melee"},
-    "66:1": {"stat": "Damage", "mod": "added", "tags": "Lightning", "per": "attr:int"},
-    "807:2": {"stat": "Damage", "mod": "added", "tags": "Throwing", "per": "attr:dex", "factor": 0.2},
-    "797:0": {"stat": "Damage", "mod": "added", "tags": "Spell", "per": "max_mana", "factor": 0.1},
-    "797:1": {"stat": "CriticalMultiplier", "mod": "added", "per": "increased:ManaRegen", "factor": 100},
-    "12:5": {"stat": "Penetration", "mod": "added", "tags": "Elemental", "per": "ele_res", "factor": 10},
-    "743:0": {"stat": "CriticalMultiplier", "mod": "added", "per": "res:4", "factor": 10},
-    "107:2": {"stat": "Damage", "mod": "more", "tags": "Hit", "when": ["enemy:boss_or_rare"]},
-    "107:3": {"stat": "Damage", "mod": "more", "per": "value:BlockChance", "factor": 10},
-    "153:6": {"stat": "Damage", "mod": "more"},
-    "267:3": {"stat": "Damage", "mod": "added", "tags": "Throwing", "per": "value:Thorns", "factor": 0.1},
-    "156:1": {"kind": "mana_added"},
-    "479:5": {"kind": "mana_added"},
-    "370:3": {"kind": "mana_added"},
-    "411:5": {"kind": "mana_added"},
-    "114:1": {"kind": "mana_added"},
-    "341:1": {"kind": "mana_added"}
+  "145": {
+   "stat": "IncreasedAilmentDuration",
+   "mod": "added",
+   "ailment": "Shock",
+   "per": "attr:int"
+  },
+  "141": {
+   "stat": "IncreasedAilmentEffect",
+   "mod": "added",
+   "ailment": "Bleed",
+   "per": "added:CriticalMultiplier",
+   "note": "коэффициент конверсии в коде не разрешён, принят 1"
+  },
+  "142": {
+   "stat": "IncreasedAilmentEffect",
+   "mod": "added",
+   "ailment": "Poison",
+   "per": "added:CriticalMultiplier",
+   "note": "коэффициент конверсии в коде не разрешён, принят 1"
+  },
+  "154": {
+   "stat": "Movespeed",
+   "mod": "increased",
+   "per": "added_exact:Damage:528",
+   "factor": 0.1
+  },
+  "165": {
+   "stat": "WardRetention",
+   "mod": "added",
+   "per": "res:2",
+   "factor": 0.5
+  },
+  "175": {
+   "stat": "CriticalChance",
+   "mod": "added",
+   "tags": "Totem",
+   "per": "attr:int"
+  },
+  "180": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Physical|Bow",
+   "at_least": {
+    "per": "attr:dex",
+    "value": 40
+   }
+  },
+  "182": {
+   "stat": "IncreasedAilmentEffect",
+   "mod": "added",
+   "ailment": "Frostbite",
+   "per": "value:FreezeRateMultiplier",
+   "factor": 10
+  },
+  "183": {
+   "stat": "Movespeed",
+   "mod": "increased",
+   "per": "attr:dex",
+   "factor": 0.5,
+   "max": 0.2
+  },
+  "185": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Physical|Spell",
+   "per": "attr:att",
+   "factor": 0.3333333333
+  },
+  "200": {
+   "stat": "WardRegen",
+   "mod": "added",
+   "per": "value:HealthRegen"
+  },
+  "202": {
+   "stat": "CriticalChance",
+   "mod": "added",
+   "tags": "Melee",
+   "below": {
+    "per": "value:DodgeRating",
+    "value": 100
+   }
+  },
+  "220": {
+   "stat": "BlockChance",
+   "mod": "added",
+   "per": "added:Endurance",
+   "offset": 0.6,
+   "factor": 50,
+   "min": 0
+  },
+  "272": {
+   "stat": "BlockEffectiveness",
+   "mod": "added",
+   "per": "total_res",
+   "factor": 100
+  },
+  "285": {
+   "stat": "Health",
+   "mod": "added",
+   "per": "attr:vit"
+  },
+  "288": {
+   "stat": "WardRegen",
+   "mod": "added",
+   "per": "res:4",
+   "factor": 33.3333333333
+  },
+  "324": {
+   "stat": "Damage",
+   "mod": "increased",
+   "tags": "Spell",
+   "per": "increased:Movespeed",
+   "factor": 100
+  },
+  "325": {
+   "stat": "EnduranceThreshold",
+   "mod": "added",
+   "per": "max_mana"
+  },
+  "341": {
+   "stat": "IncreasedAreaForAreaSkills",
+   "mod": "added",
+   "per": "attr:dex",
+   "factor": 0.3333333333
+  },
+  "342": {
+   "stat": "CastSpeed",
+   "mod": "increased",
+   "per": "attr:int",
+   "factor": 0.5
+  },
+  "413": {
+   "stat": "Penetration",
+   "mod": "added",
+   "tags": "Lightning",
+   "per": "attr:dex",
+   "factor": 0.2
+  },
+  "414": {
+   "stat": "Penetration",
+   "mod": "added",
+   "tags": "Void",
+   "per": "attr:dex",
+   "factor": 0.2
+  },
+  "431": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "per": "attr:str",
+   "factor": 0.5
+  },
+  "446": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Melee",
+   "per": "attr:att",
+   "factor": 0.5
+  },
+  "447": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Spell",
+   "per": "attr:str",
+   "factor": 0.5
+  },
+  "463": {
+   "stat": "WardDecayThreshold",
+   "mod": "added",
+   "per": "endurance_threshold"
+  },
+  "473": {
+   "stat": "WardDecayThreshold",
+   "mod": "added",
+   "per": "max_health"
+  },
+  "474": {
+   "stat": "WardRegen",
+   "mod": "added",
+   "per": "max_health"
+  },
+  "478": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "tags": "Melee",
+   "per": "max_mana",
+   "factor": 0.1
+  },
+  "501": {
+   "stat": "WardRegen",
+   "mod": "added",
+   "per": "player:curses"
+  },
+  "566": {
+   "stat": "AllAttributes",
+   "mod": "added",
+   "per": "complete_sets"
+  },
+  "567": {
+   "stat": "AllResistances",
+   "mod": "added",
+   "per": "complete_sets"
+  },
+  "569": {
+   "stat": "AilmentChance",
+   "mod": "added",
+   "ailment": "Ignite",
+   "per": "res:1",
+   "factor": 10,
+   "min": 0
+  },
+  "576": {
+   "stat": "Thorns",
+   "mod": "added",
+   "per": "res:0",
+   "factor": 10
+  },
+  "592": {
+   "stat": "Movespeed",
+   "mod": "increased",
+   "per": "attr:dex",
+   "factor": 0.1
+  },
+  "596": {
+   "stat": "Health",
+   "mod": "added",
+   "per": "attr:att"
+  },
+  "597": {
+   "stat": "Mana",
+   "mod": "added",
+   "per": "attr:att"
+  },
+  "610": {
+   "stat": "WardDecayThreshold",
+   "mod": "added",
+   "per": "max_health"
+  },
+  "620": {
+   "stat": "CriticalChance",
+   "mod": "added",
+   "per": "total_attr",
+   "factor": 0.025
+  },
+  "624": {
+   "stat": "BlockEffectiveness",
+   "mod": "added",
+   "per": "increased:Movespeed",
+   "factor": 100
+  },
+  "663": {
+   "stat": "Mana",
+   "mod": "increased",
+   "per": "attr:vit",
+   "factor": 0.5
+  },
+  "684": {
+   "stat": "WardRegen",
+   "mod": "added",
+   "per": "res:2",
+   "factor": 100
+  },
+  "93": {
+   "stat": "Damage",
+   "mod": "increased",
+   "per": "increased:Movespeed"
+  },
+  "454": {
+   "stat": "Armour",
+   "mod": "more",
+   "when": [
+    "enemy:Chill"
+   ],
+   "note": "атакующий — противник из вкладки «Условия»"
+  },
+  "455": {
+   "stat": "Armour",
+   "mod": "more",
+   "when": [
+    "enemy:Blind"
+   ],
+   "note": "атакующий — противник из вкладки «Условия»"
+  },
+  "286": {
+   "stat": "Armour",
+   "mod": "more",
+   "when": [
+    "enemy:Shock"
+   ],
+   "note": "атакующий — противник из вкладки «Условия»"
+  },
+  "129": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "factor": -1,
+   "when": [
+    "gear:two_handed_melee"
+   ]
+  },
+  "234": {
+   "stat": "Damage",
+   "mod": "increased",
+   "tags": "Elemental|Melee",
+   "per": "player:ward",
+   "factor": 0.005
+  },
+  "513": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "when": [
+    "enemy_flag:frozen"
+   ]
+  },
+  "287": {
+   "stat": "BlockChance",
+   "mod": "added",
+   "per": "enemy_stacks:Shock"
+  },
+  "250": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "Hit",
+   "when": [
+    "enemy:Chill"
+   ]
+  },
+  "419": {
+   "stat": "CriticalChance",
+   "mod": "added",
+   "when": [
+    "player:!crit_recently"
+   ],
+   "note": "кроме поддерживаемых (channelled) умений"
+  },
+  "89": {
+   "stat": "CriticalChance",
+   "mod": "more",
+   "factor": -1,
+   "when": [
+    "player:crit_recently"
+   ]
+  },
+  "119": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "when": [
+    "gear:dual_wield"
+   ]
+  },
+  "243": {
+   "stat": "Damage",
+   "mod": "increased",
+   "tags": "Physical",
+   "when": [
+    "gear:dual_wield"
+   ]
+  },
+  "259": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "at_least": {
+    "per": "player:ward",
+    "value": 1000
+   }
+  },
+  "222": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Spell",
+   "per": "player:ignite_stacks",
+   "src_max": 40,
+   "skill_any": "Fire|Necrotic"
+  },
+  "225": {
+   "stat": "IncreasedAilmentEffect",
+   "mod": "added",
+   "ailment": "Damned",
+   "per": "player:damned_stacks",
+   "src_max": 40,
+   "skill_any": "Spell"
+  },
+  "240": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "at_least": {
+    "per": "total_attr",
+    "value": 180
+   }
+  },
+  "275": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "DoT",
+   "min": -0.75,
+   "when": [
+    "player:haste"
+   ],
+   "note": "без учёта увеличенного эффекта Haste"
+  },
+  "282": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "DoT",
+   "when": [
+    "enemy:Slow"
+   ]
+  },
+  "291": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "Hit",
+   "when": [
+    "enemy_any:Ignite|Shock|Chill"
+   ]
+  },
+  "340": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "when": [
+    "player:leeching"
+   ]
+  },
+  "417": {
+   "stat": "ParryChance",
+   "mod": "added",
+   "when": [
+    "slot:weapon"
+   ]
+  },
+  "462": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "Hit",
+   "factor": -1,
+   "note": "шанс получить 0 урона учтён как среднее снижение урона от ударов"
+  },
+  "254": {
+   "kind": "overcap_taken",
+   "cap_pp": 255
+  },
+  "598": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "when": [
+    "enemy:boss_or_rare",
+    "player:low_mana"
+   ]
+  },
+  "602": {
+   "stat": "Damage",
+   "mod": "more",
+   "tags": "Melee",
+   "when": [
+    "player:frenzy"
+   ]
+  },
+  "603": {
+   "stat": "DamageTaken",
+   "mod": "increased",
+   "when": [
+    "player:frenzy"
+   ]
+  },
+  "625": {
+   "stat": "BlockChance",
+   "mod": "added",
+   "when": [
+    "player:moving"
+   ]
+  },
+  "631": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "per": "enemy_stacks:Bleed",
+   "src_max": 200,
+   "factor": 0.1
+  },
+  "682": {
+   "stat": "DamageTaken",
+   "mod": "more",
+   "tags": "Hit",
+   "when": [
+    "enemy:boss_or_rare"
+   ]
+  },
+  "43": {
+   "stat": "Damage",
+   "mod": "increased",
+   "tags": "Necrotic",
+   "when": [
+    "player:hit_recently"
+   ]
+  },
+  "103": {
+   "stat": "DodgeRating",
+   "mod": "added",
+   "when": [
+    "player:hit_recently"
+   ]
   }
+ },
+ "ability": {
+  "19:0": {
+   "stat": "CriticalChance",
+   "mod": "added"
+  },
+  "78:0": {
+   "stat": "Damage",
+   "mod": "increased"
+  },
+  "263:2": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Lightning"
+  },
+  "468:4": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Lightning|Melee"
+  },
+  "140:2": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Physical|Spell"
+  },
+  "536:0": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Lightning|Throwing"
+  },
+  "403:0": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Melee"
+  },
+  "101:0": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Melee"
+  },
+  "66:1": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Lightning",
+   "per": "attr:int"
+  },
+  "807:2": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Throwing",
+   "per": "attr:dex",
+   "factor": 0.2
+  },
+  "797:0": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Spell",
+   "per": "max_mana",
+   "factor": 0.1
+  },
+  "797:1": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "per": "increased:ManaRegen",
+   "factor": 100
+  },
+  "12:5": {
+   "stat": "Penetration",
+   "mod": "added",
+   "tags": "Elemental",
+   "per": "ele_res",
+   "factor": 10
+  },
+  "743:0": {
+   "stat": "CriticalMultiplier",
+   "mod": "added",
+   "per": "res:4",
+   "factor": 10
+  },
+  "107:2": {
+   "stat": "Damage",
+   "mod": "more",
+   "tags": "Hit",
+   "when": [
+    "enemy:boss_or_rare"
+   ]
+  },
+  "107:3": {
+   "stat": "Damage",
+   "mod": "more",
+   "per": "value:BlockChance",
+   "factor": 10
+  },
+  "153:6": {
+   "stat": "Damage",
+   "mod": "more"
+  },
+  "267:3": {
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Throwing",
+   "per": "value:Thorns",
+   "factor": 0.1
+  },
+  "156:1": {
+   "kind": "mana_added"
+  },
+  "479:5": {
+   "kind": "mana_added"
+  },
+  "370:3": {
+   "kind": "mana_added"
+  },
+  "411:5": {
+   "kind": "mana_added"
+  },
+  "114:1": {
+   "kind": "mana_added"
+  },
+  "341:1": {
+   "kind": "mana_added"
+  }
+ },
+ "component": {}
 }

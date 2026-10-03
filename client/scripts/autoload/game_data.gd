@@ -11,6 +11,9 @@ var uniques: Array = []                  # uniques.json, without hideFromPlayers
 var _trees: Array = []
 var _tree_node_stats: Dictionary = {}
 var _abilities: Dictionary = {}          # playerAbilityID -> ability
+var _abilities_by_name: Dictionary = {}  # name -> record (every category; players' records win)
+var _ability_children: Dictionary = {}   # parent name -> [records listing it in `parents`]
+var _code_damage: Dictionary = {}        # ability name -> {ability, kind, components[]} (abilities_code_damage.json)
 var _affixes_by_id: Dictionary = {}      # affixId -> affix
 var _affixes_list: Array = []
 var _items_by_id: Dictionary = {}        # baseTypeID -> base
@@ -28,6 +31,8 @@ var _uniques_by_id: Dictionary = {}      # uniqueID -> unique (all, incl. hidden
 var _unique_effects: Dictionary = {}     # uniqueID -> effects[] (unique_effects.json)
 var _sets: Dictionary = {}               # setID -> set (sets.json)
 var _unique_models: Dictionary = {}      # {player: {ppIndex: model}, ability: {"abilityIndex:propertyIndex": model}}
+var _blessings_json: Dictionary = {}    # full blessings data from blessings.json
+var _blessings_by_id: Dictionary = {}   # id -> blessing data
 
 
 func _ready() -> void:
@@ -50,12 +55,18 @@ func _ready() -> void:
 	var abilities_json: Variant = _load_json(data_dir.path_join("abilities.json"))
 	if abilities_json is Array:
 		for ab: Dictionary in abilities_json:
+			_index_ability_name(ab)
 			var pid: String = str(ab.get("playerAbilityID", ""))
 			if pid == "" or pid == "<null>":
 				continue
 			# several records share an ID (Swipe / Swipe2 / werebear swipes): prefer the player ability owning the tree
 			if not _abilities.has(pid) or _ability_rank(ab, pid) > _ability_rank(_abilities[pid], pid):
 				_abilities[pid] = ab
+
+	var code_damage_json: Variant = _load_json(data_dir.path_join("abilities_code_damage.json"))
+	if code_damage_json is Dictionary:
+		for entry: Dictionary in code_damage_json.get("abilities", []):
+			_code_damage[str(entry.get("ability", ""))] = entry
 
 	var affixes_json: Variant = _load_json(data_dir.path_join("affixes.json"))
 	if affixes_json is Dictionary:
@@ -133,6 +144,24 @@ func _ready() -> void:
 	if dr_json is Dictionary:
 		_damage_reduction_values = dr_json.get("values", [])
 
+	var blessings_json: Variant = _load_json(data_dir.path_join("blessings.json"))
+	if blessings_json is Dictionary:
+		_blessings_json = blessings_json
+		for blessing: Dictionary in blessings_json.get("data", []):
+			_blessings_by_id[int(blessing.get("blessingId", -1))] = blessing
+
+
+func _index_ability_name(ab: Dictionary) -> void:
+	var ab_name: String = str(ab.get("name", ""))
+	if ab_name == "":
+		return
+	if not _abilities_by_name.has(ab_name) or (ab.get("category") == "player" and _abilities_by_name[ab_name].get("category") != "player"):
+		_abilities_by_name[ab_name] = ab
+	for parent: Variant in ab.get("parents", []):
+		if not _ability_children.has(str(parent)):
+			_ability_children[str(parent)] = []
+		_ability_children[str(parent)].append(ab)
+
 
 func _ability_rank(ab: Dictionary, pid: String) -> int:
 	return (2 if ab.get("skillTree") == pid else 0) + (1 if ab.get("category") == "player" else 0)
@@ -194,6 +223,41 @@ func get_node_stats(tree_id: String, node_id: int) -> Dictionary:
 
 func get_ability(pid: String) -> Dictionary:
 	return _abilities.get(pid, {})
+
+
+## Any ability record by its `name` (every category, not only player abilities).
+func ability_by_name(ability_name: String) -> Dictionary:
+	return _abilities_by_name.get(ability_name, {})
+
+
+## Records linked to ability `name` through `parents` in either direction; each is a shallow copy of the record
+## with `spawn_reason` = the first `prefab:…` entry of its `reasons` ("" when it has none).
+func sub_abilities(ability_name: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var seen: Dictionary = {}
+	var linked: Array = _ability_children.get(ability_name, []).duplicate()
+	for parent: Variant in ability_by_name(ability_name).get("parents", []):
+		var rec: Dictionary = ability_by_name(str(parent))
+		if not rec.is_empty():
+			linked.append(rec)
+	for rec: Dictionary in linked:
+		var rec_name: String = str(rec.get("name", ""))
+		if rec_name == ability_name or seen.has(rec_name):
+			continue
+		seen[rec_name] = true
+		var copy: Dictionary = rec.duplicate()
+		copy["spawn_reason"] = ""
+		for reason: Variant in rec.get("reasons", []):
+			if str(reason).begins_with("prefab:"):
+				copy["spawn_reason"] = str(reason)
+				break
+		result.append(copy)
+	return result
+
+
+## Damage the game computes in code, not in the prefab (abilities_code_damage.json): {ability, kind, components[]} or {}.
+func code_damage(ability_name: String) -> Dictionary:
+	return _code_damage.get(ability_name, {})
 
 
 ## Skills available to a class with the chosen mastery (playerAbilityIDs, no duplicates).
@@ -353,3 +417,33 @@ func damage_reduction(level: int) -> float:
 ## Value of a named entry in research/data/stat_tag_enums.json, -1 if missing.
 func enum_value(enum_name: String, value_name: String) -> int:
 	return _enums.get(enum_name, {}).get(value_name, -1)
+
+
+## Blessing timelines from blessings.json.
+func blessing_timelines() -> Array:
+	return _blessings_json.get("timelines", [])
+
+
+## Blessing by ID.
+func blessing(id: int) -> Dictionary:
+	return _blessings_by_id.get(id, {})
+
+
+## All blessing IDs available in a timeline (union of all difficulties).
+func blessings_for_timeline(timeline_id: int) -> Array[int]:
+	var result: Array[int] = []
+	for timeline: Dictionary in blessing_timelines():
+		if int(timeline.get("timelineID", -1)) != timeline_id:
+			continue
+		for difficulty: Dictionary in timeline.get("difficulties", []):
+			result.append_array(difficulty.get("otherSlotBlessings", []))
+			result.append_array(difficulty.get("anySlotBlessings", []))
+			result.append_array(difficulty.get("firstSlotBlessings", []))
+	# Remove duplicates
+	var seen: Dictionary = {}
+	var unique: Array[int] = []
+	for id: int in result:
+		if not seen.has(id):
+			seen[id] = true
+			unique.append(id)
+	return unique

@@ -16,6 +16,7 @@ static func global_store(build: Node) -> Dictionary:
 	for slot: String in build.items:
 		if SLOTS.has(slot) or IdolGrid.is_idol_key(slot):
 			store.add_all(ItemMods.item_mods(slot, build.items[slot]))
+	_add_blessings(build, store, notes)
 	_add_set_bonuses(build, store, notes)
 	UniqueEffects.apply_global(build, store, notes, "pre")
 	_add_attributes(store, notes)
@@ -33,6 +34,10 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		"store": store, "notes": [] as Array[String],
 		"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_inc": 0.0, "mana_added": 0.0,
 		"mana_sources": [] as Array[String], "conversions": [],
+		# §9: field models of the skill tree
+		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
+		"flags": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
+		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": ""},
 	}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -53,6 +58,38 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 	_add_ability_scaling(build, ability, global, store)
 	UniqueEffects.apply_skill(build, ability, result)
 	return result
+
+
+# --- 5.1.5 blessings -------------------------------------------------------
+
+static func _add_blessings(build: Node, store: StatStore, notes: Array[String]) -> void:
+	for timeline_id: Variant in build.blessings:
+		var blessing_data: Dictionary = build.blessings[timeline_id]
+		var blessing_id: int = int(blessing_data.get("id", -1))
+		var roll: int = int(blessing_data.get("roll", 0))
+		if blessing_id < 0:
+			continue
+		var blessing: Dictionary = GameData.blessing(blessing_id)
+		if blessing.is_empty():
+			continue
+		var display_name: String = str(blessing.get("displayName", str(blessing_id)))
+		var implicits: Array = blessing.get("implicits", [])
+		for implicit: Dictionary in implicits:
+			var property: int = int(implicit.get("property", 0))
+			# Skip property 104 (IncreasedDropRate)
+			if property == 104:
+				continue
+			var modType: String = str(implicit.get("modType", "ADDED"))
+			var value: float = float(implicit.get("value", 0.0))
+			var maxValue: float = float(implicit.get("maxValue", value))
+			var rounding: String = str(implicit.get("rounding", "Integer"))
+			var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0.0)
+			var tags: int = int(implicit.get("tags", 0))
+			var specialTag: int = int(implicit.get("specialTag", 0))
+			var extraTag: int = int(implicit.get("extraTag", 0))
+			var mod: StatMod = StatMod.make(property, modType.to_lower(), rolled_value, tags,
+				"Благословение «%s»" % display_name, specialTag, extraTag)
+			store.add(mod)
 
 
 # --- 5.1 class base ---------------------------------------------------------
@@ -203,12 +240,21 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 			if auto_mod != null:
 				store.add(auto_mod)
 				continue
+		elif op == "add_stat":
+			if _apply_list_effect(effect, target, points, source, title, result):
+				continue
+		elif op == "cooldown":
+			for key: String in effect.get("args", {}):
+				result["cooldown_base"][key] = eval_value(effect["args"][key], points)
+			continue
 		elif op == "" and effect.has("value") and target.contains("."):
 			var field: String = target.get_slice(".", target.get_slice_count(".") - 1)
 			var v: float = eval_value(effect["value"], points)
 			var rule: Dictionary = _conversion_rule(target)
 			if not rule.is_empty():
 				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
+				continue
+			if _apply_field_models(target, v, source, title, result):
 				continue
 			match field:
 				"increasedCastSpeed", "increasedAttackSpeed":
@@ -224,6 +270,146 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 					result["mana_added"] += v
 					continue
 		notes.append("Узел «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
+
+
+## Field effect through its models (client/data/field_models.json, §9.1); false if no part of the target has a model.
+static func _apply_field_models(target: String, v: float, source: String, title: String, result: Dictionary) -> bool:
+	var parts: PackedStringArray = target.split(" & ")
+	var any: bool = false
+	var done: Dictionary = {}
+	var skill_scoped: Dictionary = {}
+	for part: String in parts:
+		var m: Dictionary = FieldModels.find(part.strip_edges())
+		if not m.is_empty() and str(m.get("scope", "skill")) == "skill":
+			skill_scoped[_model_signature(m)] = true
+	for part: String in parts:
+		var model: Dictionary = FieldModels.find(part.strip_edges())
+		if model.is_empty():
+			continue
+		any = true
+		var sig: String = _model_signature(model)
+		# the same effect written into the skill and its sub-ability mutators counts once
+		if done.has(sig) or (str(model.get("scope", "skill")) != "skill" and skill_scoped.has(sig)):
+			continue
+		done[sig] = true
+		_apply_model(model, v, source, title, result)
+	return any
+
+
+static func _model_signature(m: Dictionary) -> String:
+	return "%s|%s|%s|%s|%s|%s|%s" % [m.get("kind", "stat"), m.get("stat", ""), m.get("mod", ""), m.get("tags", ""),
+		m.get("param", ""), m.get("ability", ""), str(m.get("when", []))]
+
+
+static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void:
+	if scope.begins_with("component:"):
+		var comp: String = scope.get_slice(":", 1)
+		if not result["component_mods"].has(comp):
+			result["component_mods"][comp] = [] as Array[StatMod]
+		result["component_mods"][comp].append(mod)
+	elif scope == "minion":
+		result["minion_mods"].append(mod)
+	else:
+		result["store"].add(mod)
+
+
+## Routes one model (§9.1) into the skill result.
+static func _apply_model(model: Dictionary, v: float, source: String, title: String, result: Dictionary) -> void:
+	var ctx: Dictionary = result["ctx"]
+	for inp: Dictionary in EffectModels.inputs(model):
+		result["inputs"].append(inp)
+	var reason: String = EffectModels.blocked(model, ctx)
+	if reason != "":
+		result["notes"].append("Узел «%s» — учитывается при условии: %s" % [title, reason])
+		return
+	var x: float = float(EffectModels.value(model, v, ctx)["x"])
+	match str(model.get("kind", "stat")):
+		"stat":
+			var mod: StatMod = EffectModels.make_mod(model, v, ctx, source)
+			if mod != null:
+				_add_scoped(mod, str(model.get("scope", "skill")), result)
+		"minion_stat":
+			var mmod: StatMod = EffectModels.make_mod(model, v, ctx, source)
+			if mmod != null:
+				result["minion_mods"].append(mmod)
+		"speed":
+			if str(model.get("speed", "")) == "more":
+				result["use_speed_more"] *= 1.0 + x
+			else:
+				result["use_speed_inc"] += x
+		"mana":
+			if str(model.get("mana", "")) == "increased":
+				result["mana_inc"] += x
+			else:
+				result["mana_added"] += x
+				result["mana_sources"].append("%s %s" % [LE.fmt_num(x), source])
+		"cooldown":
+			var ck: String = str(model.get("cooldown", ""))
+			if ck == "recovery_more":
+				result["cooldown"][ck] = (1.0 + float(result["cooldown"].get(ck, 0.0))) * (1.0 + x) - 1.0
+			else:
+				result["cooldown"][ck] = float(result["cooldown"].get(ck, 0.0)) + x
+		"param", "resource":
+			var key: String = str(model.get("param", model.get("resource", "")))
+			var label: String = str(model.get("label", key))
+			var entry: Dictionary = result["params"].get(label, {"param": key, "added": 0.0, "increased": 0.0, "more": 1.0, "set": null, "sources": []})
+			match str(model.get("mod", "added")):
+				"increased":
+					entry["increased"] += x
+				"more":
+					entry["more"] *= 1.0 + x
+				"set":
+					entry["set"] = x
+				_:
+					entry["added"] += x
+			entry["sources"].append("%s  (%s)" % [LE.fmt_num(x), source])
+			result["params"][label] = entry
+		"trigger":
+			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
+				"chance": _num(model.get("chance", 1.0), v), "count": _num(model.get("count", 1.0), v),
+				"icd": float(model.get("icd", 0.0)), "node": title})
+		"component":
+			result["components"].append({"ability": str(model["ability"]), "count": _num(model.get("count", 1.0), v), "node": title})
+		"flag":
+			var text: String = "Узел «%s»: %s" % [title, str(model.get("text", ""))]
+			if not result["flags"].has(text):
+				result["flags"].append(text)
+		_:
+			pass
+
+
+static func _num(raw: Variant, v: float) -> float:
+	if raw is String and str(raw) == "v":
+		return v
+	return float(raw)
+
+
+## add_stat into a special list (statsInForm, statsPerStack …): the stat comes from the effect, the model (kind stat_list)
+## gives scope, conditions and scaling. false if there is no model.
+static func _apply_list_effect(effect: Dictionary, target: String, points: int, source: String, title: String, result: Dictionary) -> bool:
+	for part: String in target.split(" & "):
+		var model: Dictionary = FieldModels.find(part.strip_edges())
+		if model.is_empty() or str(model.get("kind", "")) != "stat_list":
+			continue
+		var mod: StatMod = stat_from_effect(effect.get("stat", {}), points, source)
+		if mod == null:
+			return false
+		var ctx: Dictionary = result["ctx"]
+		for inp: Dictionary in EffectModels.inputs(model):
+			result["inputs"].append(inp)
+		var reason: String = EffectModels.blocked(model, ctx)
+		if reason != "":
+			result["notes"].append("Узел «%s» — учитывается при условии: %s" % [title, reason])
+			return true
+		if model.has("per"):
+			var n: float = EffectModels.source(str(model["per"]), ctx, model)
+			if model.has("src_max"):
+				n = minf(n, float(model["src_max"]))
+			mod = mod.scaled(n)
+			mod.source += " × %s" % LE.fmt_num(n)
+		_add_scoped(mod, str(model.get("scope", "skill")), result)
+		return true
+	return false
 
 
 ## AutomaticNodeStat: PerPoint → p·value, None → value, Threshold → value if p ≥ threshold (06a §7.2).

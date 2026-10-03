@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://scenes/passives/passive_tab.tscn" id="3_passives"]
-[ext_resource type="PackedScene" path="res://scenes/common/placeholder_tab.tscn" id="4_placeholder"]
-[ext_resource type="PackedScene" path="res://scenes/stats/stats_panel.tscn" id="5_stats"]
+[ext_resource type="PackedScene" path="res://scenes/blessings/blessings_tab.tscn" id="4_blessings"]
+[ext_resource type="PackedScene" path="res://scenes/blessings/blessing_row.tscn" id="5_blessing_row"]
+[ext_resource type="PackedScene" path="res://scenes/stats/stats_panel.tscn" id="6_stats"]
 [ext_resource type="PackedScene" path="res://scenes/skills/skills_tab.tscn" id="6_skills"]
 [ext_resource type="PackedScene" path="res://scenes/items/items_tab.tscn" id="7_items"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calcs_tab.tscn" id="8_calcs"]
@@ -122,10 +123,11 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 3
 
-[node name="Благословения" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_placeholder")]
+[node name="Благословения" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_blessings")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 4
+row_scene = ExtResource("5_blessing_row")
 
 [node name="Расчёты" parent="Margin/Layout/Split/Tabs" instance=ExtResource("8_calcs")]
 visible = false
@@ -137,5 +139,5 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 6
 
-[node name="StatsPanel" parent="Margin/Layout/Split" instance=ExtResource("5_stats")]
+[node name="StatsPanel" parent="Margin/Layout/Split" instance=ExtResource("6_stats")]
 layout_mode = 2
