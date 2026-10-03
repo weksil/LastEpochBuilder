@@ -43,6 +43,24 @@ theme_type_variation = &"MutedLabel"
 text = "Вставьте ссылку на планировщик (или только её код). Можно вставить и готовый JSON ответа planner_data — тогда запрос в сеть не делается. Текущий билд будет заменён."
 autowrap_mode = 3
 
+[node name="SiteRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OpenSiteButton" type="Button" parent="Panel/Margin/Layout/SiteRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Открыть планировщик LE Tools"
+tooltip_text = "https://www.lastepochtools.com/planner/"
+
+[node name="SiteHint" type="Label" parent="Panel/Margin/Layout/SiteRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Там: Import → имя аккаунта и персонажа → скопируйте адрес страницы сюда."
+autowrap_mode = 3
+
 [node name="LinkRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
 layout_mode = 2
 theme_override_constants/separation = 8

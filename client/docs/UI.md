@@ -117,7 +117,8 @@ tooltipDescriptions[{description}], isSetItem, setID, legendaryType}`), `GameDat
 ## Импорт из Last Epoch Tools — `scripts/import/letools_import_dialog.gd` (`class_name LEToolsImportDialog extends Window`)
 Кнопка `%ImportButton` («Импорт…», конец `TopBar/Row`) открывает `%ImportDialog` (`popup_centered`); по сигналу `imported` `main.gd` приводит
 `%ClassSelect` / `%MasterySelect` / `%LevelSpin` к `Build` без повторного `Build.set_class`. Диалог: `%LinkEdit`, `%LoadButton`, `%StatusLabel`,
-`%CloseButton`, `%Http` (HTTPRequest).
+`%CloseButton`, `%Http` (HTTPRequest), `%OpenSiteButton` («Открыть планировщик LE Tools», `OS.shell_open` на
+`https://www.lastepochtools.com/planner/`, где персонаж импортируется по имени аккаунта и персонажа) с подсказкой рядом.
 - Поток: ссылка → `GET /planner/<код>` → `LEToolsImport.extract_data_hash(html)` → `GET /api/internal/planner_data/<hash>` (хеш выдаётся
   страницей и привязан к ней, закешировать нельзя) → JSON → `LEToolsImport.to_build` → `LEToolsImport.apply(Build, doc)`.
   Текст, начинающийся с `{`, считается готовым JSON ответа (без сети). User-Agent браузера **не** отправляется: Cloudflare отвечает 403

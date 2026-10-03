@@ -20,6 +20,7 @@ func _ready() -> void:
 	about_to_popup.connect(_on_about_to_popup)
 	%LoadButton.pressed.connect(_on_load_pressed)
 	%CloseButton.pressed.connect(hide)
+	%OpenSiteButton.pressed.connect(func() -> void: OS.shell_open(LEToolsImportScript.PLANNER_URL))
 	%LinkEdit.text_submitted.connect(_on_link_submitted)
 	%Http.request_completed.connect(_on_request_completed)
 
