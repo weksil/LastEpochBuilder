@@ -2,17 +2,87 @@ extends Node
 
 signal changed
 
+# Passive tree
 var class_id: int = -1
 var mastery: int = 0
 var level: int = 100
 var passives: Dictionary = {}
 var _nodes: Dictionary = {}
 
+# Skills (5 slots)
+var skills: Array[Dictionary] = []
+var selected_skill: int = 0
+var _skill_nodes: Array[Dictionary] = []  # skill tree nodes per slot
+
+# Items
+var items: Dictionary = {}
+
+# Enemy config
+var enemy: Dictionary = {}
+
+# Player state
+var player_state: Dictionary = {}
+
+
+func _ready() -> void:
+	_init_defaults()
+
+
+func _init_defaults() -> void:
+	# Initialize 5 empty skill slots
+	skills.clear()
+	for i in range(5):
+		skills.append({
+			"ability": "",
+			"level": 20,
+			"tree": {}
+		})
+
+	# Initialize skill nodes array
+	_skill_nodes.clear()
+	for i in range(5):
+		_skill_nodes.append({})
+
+	# Initialize enemy with defaults
+	enemy = {
+		"level": 100,
+		"kind": "boss",
+		"res": [0, 0, 0, 0, 0, 0, 0],
+		"armour": 0,
+		"ailments": {},
+		"flags": {
+			"moving": false,
+			"stunned": false,
+			"low_health": false,
+			"full_health": true
+		}
+	}
+
+	# Initialize player state
+	player_state = {
+		"health": "full"
+	}
+
+	# Initialize items (empty)
+	items = {}
+
+
 func set_class(id: int) -> void:
 	class_id = id
 	mastery = 0
 	passives.clear()
 	_nodes.clear()
+
+	# Reset skills and items
+	for i in range(skills.size()):
+		skills[i] = {
+			"ability": "",
+			"level": 20,
+			"tree": {}
+		}
+	for i in range(_skill_nodes.size()):
+		_skill_nodes[i] = {}
+	items.clear()
 
 	var tree: Dictionary = GameData.get_passive_tree(class_id)
 	if "nodes" in tree and tree["nodes"] is Array:
@@ -147,3 +217,209 @@ func remove_point(id: int) -> bool:
 
 	changed.emit()
 	return true
+
+
+# ============================================================================
+# SKILLS
+# ============================================================================
+
+func set_skill(slot: int, ability_id: String) -> void:
+	if slot < 0 or slot >= skills.size():
+		return
+
+	skills[slot] = {
+		"ability": ability_id,
+		"level": 20,
+		"tree": {}
+	}
+	_skill_nodes[slot] = {}
+
+	# Load skill tree nodes if ability is valid
+	if ability_id != "":
+		var ability: Dictionary = GameData.get_ability(ability_id)
+		if "skillTree" in ability:
+			var tree_id: String = ability["skillTree"]
+			var tree: Dictionary = GameData.get_skill_tree(tree_id)
+			if "nodes" in tree and tree["nodes"] is Array:
+				for node: Variant in tree["nodes"]:
+					if node is Dictionary:
+						var node_entry: Dictionary = node
+						if "id" in node_entry:
+							var node_id: int = int(node_entry["id"])
+							_skill_nodes[slot][node_id] = node_entry
+
+	changed.emit()
+
+
+func set_skill_level(slot: int, lvl: int) -> void:
+	if slot < 0 or slot >= skills.size():
+		return
+
+	skills[slot]["level"] = lvl
+	changed.emit()
+
+
+func get_skill_points(slot: int, node_id: int) -> int:
+	if slot < 0 or slot >= skills.size():
+		return 0
+
+	var tree: Dictionary = skills[slot].get("tree", {})
+	if node_id in tree:
+		return tree[node_id] as int
+	return 0
+
+
+func skill_points_spent(slot: int) -> int:
+	if slot < 0 or slot >= skills.size():
+		return 0
+
+	var total: int = 0
+	var tree: Dictionary = skills[slot].get("tree", {})
+	for points: Variant in tree.values():
+		total += int(points)
+	return total
+
+
+func _skill_is_valid(slot: int, node_id: int) -> bool:
+	if slot < 0 or slot >= skills.size():
+		return false
+
+	if node_id not in _skill_nodes[slot]:
+		return false
+
+	if get_skill_points(slot, node_id) == 0:
+		return true
+
+	var node: Dictionary = _skill_nodes[slot][node_id]
+
+	# Check requirements
+	if "requirements" in node and node["requirements"] is Array:
+		for req: Variant in node["requirements"]:
+			if req is Dictionary:
+				var requirement: Dictionary = req
+				if "nodeID" in requirement and "requirement" in requirement:
+					var req_node_id: int = int(requirement["nodeID"])
+					var req_points: int = int(requirement["requirement"])
+					if get_skill_points(slot, req_node_id) < req_points:
+						return false
+
+	return true
+
+
+func can_add_skill_point(slot: int, node_id: int) -> bool:
+	if slot < 0 or slot >= skills.size():
+		return false
+
+	if node_id not in _skill_nodes[slot]:
+		return false
+
+	var node: Dictionary = _skill_nodes[slot][node_id]
+
+	if "maxPoints" not in node or int(node["maxPoints"]) <= 0:
+		return false
+
+	var current_points: int = get_skill_points(slot, node_id)
+	var max_points: int = int(node["maxPoints"])
+	if current_points >= max_points:
+		return false
+
+	# Check if total skill points would exceed level
+	var total_spent: int = skill_points_spent(slot)
+	if total_spent >= skills[slot]["level"]:
+		return false
+
+	# Simulate adding a point and check if it would be valid
+	var tree: Dictionary = skills[slot]["tree"] as Dictionary
+	tree[node_id] = current_points + 1
+	var valid: bool = _skill_is_valid(slot, node_id)
+
+	# Restore original state
+	if current_points > 0:
+		tree[node_id] = current_points
+	else:
+		tree.erase(node_id)
+
+	return valid
+
+
+func add_skill_point(slot: int, node_id: int) -> bool:
+	if not can_add_skill_point(slot, node_id):
+		return false
+
+	var tree: Dictionary = skills[slot]["tree"] as Dictionary
+	tree[node_id] = get_skill_points(slot, node_id) + 1
+	changed.emit()
+	return true
+
+
+func remove_skill_point(slot: int, node_id: int) -> bool:
+	if slot < 0 or slot >= skills.size():
+		return false
+
+	var tree: Dictionary = skills[slot]["tree"] as Dictionary
+	if node_id not in tree or get_skill_points(slot, node_id) == 0:
+		return false
+
+	var current_points: int = get_skill_points(slot, node_id)
+	var old_tree: Dictionary = tree.duplicate()
+
+	# Decrement or remove
+	if current_points - 1 <= 0:
+		tree.erase(node_id)
+	else:
+		tree[node_id] = current_points - 1
+
+	# Check if any allocated node is now invalid
+	for allocated_node_id: Variant in tree.keys():
+		var nid: int = int(allocated_node_id)
+		if not _skill_is_valid(slot, nid):
+			# Revert
+			skills[slot]["tree"] = old_tree
+			return false
+
+	changed.emit()
+	return true
+
+
+# ============================================================================
+# ITEMS
+# ============================================================================
+
+func set_item(slot: String, item_dict: Dictionary) -> void:
+	items[slot] = item_dict.duplicate()
+	changed.emit()
+
+
+func clear_item(slot: String) -> void:
+	if slot in items:
+		items.erase(slot)
+		changed.emit()
+
+
+# ============================================================================
+# ENEMY
+# ============================================================================
+
+func set_enemy(key: String, value: Variant) -> void:
+	enemy[key] = value
+	changed.emit()
+
+
+func set_enemy_ailment(ailment_id: int, stacks: int) -> void:
+	var ailments: Dictionary = enemy.get("ailments", {}) as Dictionary
+	if stacks > 0:
+		ailments[ailment_id] = stacks
+	elif ailment_id in ailments:
+		ailments.erase(ailment_id)
+
+	enemy["ailments"] = ailments
+	changed.emit()
+
+
+# ============================================================================
+# PLAYER STATE
+# ============================================================================
+
+func set_player_state(key: String, value: Variant) -> void:
+	player_state[key] = value
+	changed.emit()

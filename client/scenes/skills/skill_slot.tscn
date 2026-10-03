@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_slot.gd" id="1_script"]
+
+[node name="SkillSlot" type="PanelContainer"]
+custom_minimum_size = Vector2(260, 0)
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SlotLabel" type="Label" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Слот 1"
+
+[node name="SelectButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Дерево"
+
+[node name="SkillSelect" type="OptionButton" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+
+[node name="LevelRow" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="VBox/LevelRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Уровень умения"
+
+[node name="LevelSpin" type="SpinBox" parent="VBox/LevelRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 40.0
+value = 20.0
+
+[node name="PointsLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Очки дерева: 0 / 20"

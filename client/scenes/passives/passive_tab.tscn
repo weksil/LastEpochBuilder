@@ -1,14 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/passives/passive_tab.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/passives/passive_node.tscn" id="2_node"]
-[ext_resource type="PackedScene" path="res://scenes/passives/passive_link.tscn" id="3_link"]
+[ext_resource type="PackedScene" path="res://scenes/trees/tree_canvas.tscn" id="2_canvas"]
 
 [node name="Пассивки" type="VBoxContainer"]
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
-node_scene = ExtResource("2_node")
-link_scene = ExtResource("3_link")
 
 [node name="Header" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -29,22 +26,6 @@ layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "ЛКМ — добавить очко, ПКМ — убрать"
 
-[node name="Scroll" type="ScrollContainer" parent="."]
+[node name="TreeCanvas" parent="." instance=ExtResource("2_canvas")]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Canvas" type="Control" parent="Scroll"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(1200, 500)
-layout_mode = 2
-mouse_filter = 1
-
-[node name="Links" type="Control" parent="Scroll/Canvas"]
-unique_name_in_owner = true
-anchors_preset = 0
-mouse_filter = 2
-
-[node name="Nodes" type="Control" parent="Scroll/Canvas"]
-unique_name_in_owner = true
-anchors_preset = 0
-mouse_filter = 2

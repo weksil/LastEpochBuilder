@@ -193,6 +193,9 @@ bg_color = Color(0.141, 0.125, 0.169, 1)
 
 [resource]
 default_font_size = 14
+BreakdownLabel/base_type = &"Label"
+BreakdownLabel/colors/font_color = Color(0.604, 0.565, 0.533, 1)
+BreakdownLabel/font_sizes/font_size = 12
 Button/colors/font_color = Color(0.902, 0.875, 0.827, 1)
 Button/colors/font_hover_color = Color(1, 0.953, 0.882, 1)
 Button/colors/font_pressed_color = Color(0.937, 0.792, 0.502, 1)
@@ -200,6 +203,9 @@ Button/styles/focus = SubResource("empty")
 Button/styles/hover = SubResource("btn_hover")
 Button/styles/normal = SubResource("btn_normal")
 Button/styles/pressed = SubResource("btn_pressed")
+GroupLabel/base_type = &"Label"
+GroupLabel/colors/font_color = Color(0.788, 0.643, 0.361, 1)
+GroupLabel/font_sizes/font_size = 15
 HSplitContainer/constants/separation = 6
 Label/colors/font_color = Color(0.902, 0.875, 0.827, 1)
 LineEdit/colors/font_color = Color(0.902, 0.875, 0.827, 1)

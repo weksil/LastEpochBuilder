@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[node name="ImplicitRow" type="HBoxContainer"]
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "Импликит"
+clip_text = true
+
+[node name="RollSlider" type="HSlider" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 255.0
+value = 255.0
+
+[node name="ValueLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2

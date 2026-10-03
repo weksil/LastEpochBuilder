@@ -1,0 +1,146 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/items_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/items/item_editor.tscn" id="2_editor"]
+
+[sub_resource type="ButtonGroup" id="slot_group"]
+
+[node name="Предметы" type="HBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+
+[node name="SlotList" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Slot_helmet" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Шлем"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "helmet"
+metadata/slot_name = "Шлем"
+
+[node name="Slot_body" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Нагрудник"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "body"
+metadata/slot_name = "Нагрудник"
+
+[node name="Slot_belt" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Пояс"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "belt"
+metadata/slot_name = "Пояс"
+
+[node name="Slot_boots" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Сапоги"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "boots"
+metadata/slot_name = "Сапоги"
+
+[node name="Slot_gloves" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Перчатки"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "gloves"
+metadata/slot_name = "Перчатки"
+
+[node name="Slot_weapon" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Оружие"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "weapon"
+metadata/slot_name = "Оружие"
+
+[node name="Slot_offhand" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Вторая рука"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "offhand"
+metadata/slot_name = "Вторая рука"
+
+[node name="Slot_amulet" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Амулет"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "amulet"
+metadata/slot_name = "Амулет"
+
+[node name="Slot_ring1" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Кольцо 1"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "ring1"
+metadata/slot_name = "Кольцо 1"
+
+[node name="Slot_ring2" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Кольцо 2"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "ring2"
+metadata/slot_name = "Кольцо 2"
+
+[node name="Slot_relic" type="Button" parent="SlotList"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("slot_group")
+text = "Реликвия"
+alignment = 0
+text_overrun_behavior = 3
+metadata/slot = "relic"
+metadata/slot_name = "Реликвия"
+
+[node name="EditorScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+
+[node name="ItemEditor" parent="EditorScroll" instance=ExtResource("2_editor")]
+unique_name_in_owner = true
+layout_mode = 2

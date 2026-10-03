@@ -1,0 +1,100 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_editor.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/items/implicit_row.tscn" id="2_implicit"]
+[ext_resource type="PackedScene" path="res://scenes/items/affix_row.tscn" id="3_affix"]
+
+[node name="ItemEditor" type="PanelContainer"]
+size_flags_horizontal = 3
+script = ExtResource("1_script")
+implicit_row_scene = ExtResource("2_implicit")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="SlotTitle" type="Label" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Слот"
+
+[node name="ClearButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Убрать предмет"
+
+[node name="BaseRow" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="BaseLabel" type="Label" parent="VBox/BaseRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "База"
+
+[node name="BaseSelect" type="OptionButton" parent="VBox/BaseRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="SubRow" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SubLabel" type="Label" parent="VBox/SubRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Предмет"
+
+[node name="SubSelect" type="OptionButton" parent="VBox/SubRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="ImplicitsTitle" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Импликиты"
+
+[node name="Implicits" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AffixesTitle" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Аффиксы (2 префикса, 2 суффикса)"
+
+[node name="Affixes" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Prefix1" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
+[node name="Prefix2" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
+[node name="Suffix1" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
+[node name="Suffix2" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
+[node name="EmptyHint" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Выберите базу предмета"

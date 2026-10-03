@@ -1,10 +1,14 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://scenes/passives/passive_tab.tscn" id="3_passives"]
 [ext_resource type="PackedScene" path="res://scenes/common/placeholder_tab.tscn" id="4_placeholder"]
 [ext_resource type="PackedScene" path="res://scenes/stats/stats_panel.tscn" id="5_stats"]
+[ext_resource type="PackedScene" path="res://scenes/skills/skills_tab.tscn" id="6_skills"]
+[ext_resource type="PackedScene" path="res://scenes/items/items_tab.tscn" id="7_items"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calcs_tab.tscn" id="8_calcs"]
+[ext_resource type="PackedScene" path="res://scenes/config/config_tab.tscn" id="9_config"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -102,12 +106,12 @@ current_tab = 0
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="Скиллы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_placeholder")]
+[node name="Скиллы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("6_skills")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Предметы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_placeholder")]
+[node name="Предметы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("7_items")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 2
@@ -122,12 +126,12 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 4
 
-[node name="Расчёты" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_placeholder")]
+[node name="Расчёты" parent="Margin/Layout/Split/Tabs" instance=ExtResource("8_calcs")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 5
 
-[node name="Условия" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_placeholder")]
+[node name="Условия" parent="Margin/Layout/Split/Tabs" instance=ExtResource("9_config")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 6

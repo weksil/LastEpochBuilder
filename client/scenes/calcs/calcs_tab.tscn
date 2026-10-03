@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/calcs/calcs_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_section.tscn" id="2_section"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_row.tscn" id="3_row"]
+
+[node name="Расчёты" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+section_scene = ExtResource("2_section")
+row_scene = ExtResource("3_row")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SkillLabel" type="Label" parent="Header"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Умение"
+
+[node name="SkillSelect" type="OptionButton" parent="Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+focus_mode = 0
+
+[node name="Hint" type="Label" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "«+» раскрывает расшифровку числа"
+horizontal_alignment = 2
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Sections" type="VBoxContainer" parent="Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8

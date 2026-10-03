@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/stats/stats_panel.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/stats/stat_row.tscn" id="2_row"]
+[ext_resource type="PackedScene" path="res://scenes/stats/stat_group.tscn" id="3_group"]
 
 [node name="StatsPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(300, 0)
 script = ExtResource("1_script")
 row_scene = ExtResource("2_row")
+group_scene = ExtResource("3_group")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -19,6 +21,12 @@ text = "Характеристики"
 
 [node name="Separator" type="HSeparator" parent="VBox"]
 layout_mode = 2
+
+[node name="SkillSummary" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+autowrap_mode = 3
 
 [node name="Scroll" type="ScrollContainer" parent="VBox"]
 layout_mode = 2

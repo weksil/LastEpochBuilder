@@ -1,0 +1,67 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skills_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/skills/skill_slot.tscn" id="2_slot"]
+[ext_resource type="PackedScene" path="res://scenes/trees/tree_canvas.tscn" id="3_canvas"]
+
+[node name="Скиллы" type="HBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+
+[node name="SlotScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Slots" type="VBoxContainer" parent="SlotScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SkillSlot1" parent="SlotScroll/Slots" instance=ExtResource("2_slot")]
+layout_mode = 2
+slot_index = 0
+
+[node name="SkillSlot2" parent="SlotScroll/Slots" instance=ExtResource("2_slot")]
+layout_mode = 2
+slot_index = 1
+
+[node name="SkillSlot3" parent="SlotScroll/Slots" instance=ExtResource("2_slot")]
+layout_mode = 2
+slot_index = 2
+
+[node name="SkillSlot4" parent="SlotScroll/Slots" instance=ExtResource("2_slot")]
+layout_mode = 2
+slot_index = 3
+
+[node name="SkillSlot5" parent="SlotScroll/Slots" instance=ExtResource("2_slot")]
+layout_mode = 2
+slot_index = 4
+
+[node name="TreePanel" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Header" type="HBoxContainer" parent="TreePanel"]
+layout_mode = 2
+
+[node name="TreeTitle" type="Label" parent="TreePanel/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Выберите умение"
+
+[node name="TreePoints" type="Label" parent="TreePanel/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+
+[node name="Hint" type="Label" parent="TreePanel"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "ЛКМ — добавить очко, ПКМ — убрать. Очков в дереве не больше уровня умения."
+
+[node name="TreeCanvas" parent="TreePanel" instance=ExtResource("3_canvas")]
+unique_name_in_owner = true
+layout_mode = 2

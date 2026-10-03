@@ -1,0 +1,137 @@
+extends Node
+
+## Headless engine check: test vectors from research/06a–06c, 07a and a sample build.
+## Run: Godot_console.exe --headless --path client res://tests/engine_test.tscn
+
+var _failed: int = 0
+
+
+func _ready() -> void:
+	_vectors()
+	_sample_build()
+	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
+	get_tree().quit(1 if _failed > 0 else 0)
+
+
+func _check(label: String, got: float, want: float, eps: float = 0.0005) -> void:
+	if absf(got - want) > eps:
+		_failed += 1
+		print("FAIL %s: got %s, want %s" % [label, got, want])
+	else:
+		print("ok   %s = %s" % [label, got])
+
+
+func _vectors() -> void:
+	_check("round_half_even(2.5)", LE.round_half_even(2.5), 2)
+	_check("round_half_even(3.5)", LE.round_half_even(3.5), 4)
+	_check("round_half_even(1028.5)", LE.round_half_even(1028.5), 1028)
+	_check("affix Integer [5,10] roll 128", AffixMath.roll_value(5, 10, "Integer", "ADDED", 128, 0.0), 8)
+	_check("affix Integer [5,10] roll 255", AffixMath.roll_value(5, 10, "Integer", "ADDED", 255, 0.0), 10)
+	_check("affix inc [0.10,0.20] roll 200", AffixMath.roll_value(0.10, 0.20, "Hundredth", "INCREASED", 200, 0.0), 0.18)
+	_check("affix inc [0.10,0.20] m 0.5 roll 255", AffixMath.roll_value(0.10, 0.20, "Hundredth", "INCREASED", 255, 0.5), 0.30)
+	_check("affix [61,90] m 0.5 roll 0", AffixMath.roll_value(61, 90, "Integer", "ADDED", 0, 0.5), 92)
+	_check("affix [61,90] m 0.5 roll 255", AffixMath.roll_value(61, 90, "Integer", "ADDED", 255, 0.5), 135)
+	_check("effect_modifier 2H axe", AffixMath.effect_modifier(2.2, 0.75), 0.8286)
+	_check("armour 1000 L50 phys", Enemy.armour_mitigation(1000, 50, false), 0.32390)
+	_check("armour 1000 L50 non-phys", Enemy.armour_mitigation(1000, 50, true), 0.22673)
+	_check("armour 3000 L75", Enemy.armour_mitigation(3000, 75, false), 0.53613)
+	_check("armour -500 L75", Enemy.armour_mitigation(-500, 75, false), -0.19396)
+	_check("tags Elemental vs Fire", 1.0 if LE.tags_match(LE.ELEMENTAL, LE.FIRE) else 0.0, 1.0)
+	_check("tags Elemental|Spell vs Fire|Melee", 1.0 if LE.tags_match(LE.ELEMENTAL | LE.SPELL, LE.FIRE | LE.MELEE) else 0.0, 0.0)
+	_check("level DR boss 75", Enemy.level_dr({"kind": "boss", "level": 75}), 0.7625)
+	_check("level DR normal 50", Enemy.level_dr({"kind": "normal", "level": 50}), 0.54)
+
+	# 06a T1
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.DAMAGE, "added", 10, LE.FIRE | LE.SPELL))
+	store.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.FIRE))
+	store.add(StatMod.make(LE.DAMAGE, "increased", 0.3, LE.FIRE | LE.SPELL))
+	store.add(StatMod.make(LE.DAMAGE, "more", 0.2, LE.FIRE))
+	store.add(StatMod.make(LE.DAMAGE, "more", 0.1, 0))
+	store.add(StatMod.make(LE.DAMAGE, "increased", 1.0, LE.COLD))
+	_check("06a T1 Fire|Spell", store.query(LE.DAMAGE, LE.FIRE | LE.SPELL).value(), 23.76)
+	_check("06a T1 Fire", store.query(LE.DAMAGE, LE.FIRE).value(), 0.0)
+
+	# 06a T4 quotient
+	_check("quotient 0.25", StatMod.make(LE.DAMAGE, "quotient", 0.25).more[0], -0.2)
+
+
+func _sample_build() -> void:
+	Build.set_class(1)  # Mage
+	Build.set_level(100)
+	print("--- Mage L100, no gear")
+	var g: Dictionary = BuildMods.global_store(Build)
+	for row: Dictionary in CharacterCalc.compute(g["store"], Build):
+		if row["label"] in ["Здоровье", "Мана", "Интеллект", "Регенерация здоровья", "Избежание оглушения"]:
+			print("  %s = %s" % [row["label"], row["text"]])
+	_check("Mage L100 health 100+10·100", _row(g, "Здоровье"), 1100)
+	_check("Mage L100 mana round(50+0.50506·100)", _row(g, "Мана"), 101)
+	_check("Mage intelligence", _row(g, "Интеллект"), 3)
+
+	# Fireball: Fire 25, ADE 1.25, +4% inc per Int (Int 3 → +12%)
+	Build.set_skill(0, "fi9")
+	Build.selected_skill = 0
+	Build.set_enemy("kind", "dummy")
+	var r: Dictionary = SkillCalc.compute(Build, 0)
+	print("--- %s" % r["title"])
+	_print_sections(r)
+	_check("Fireball fire hit 25 × 1.12", _section_value(r, "Урон за применение (до врага)", "Огонь"), 28.0)
+
+	# Wand (Rowan Wand: +3 spell damage), Increased Fire Damage T5 roll 255
+	Build.set_item("weapon", {"base": 10, "sub": 1, "implicit_rolls": [255, 255], "affixes": [{"id": 12, "tier": 5, "roll": 255}]})
+	Build.set_enemy("kind", "boss")
+	Build.set_enemy("level", 75)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 10)
+	r = SkillCalc.compute(Build, 0)
+	print("--- %s with wand vs boss L75, 10 shock" % r["title"])
+	_print_sections(r)
+	for n: String in r["notes"]:
+		print("  note: " + n)
+
+	# Fill the base Mage tree and Fireball tree greedily, then recompute
+	var tree: Dictionary = GameData.get_passive_tree(1)
+	for _pass in range(6):
+		for node: Dictionary in tree["nodes"]:
+			if int(node["mastery"]) == 0:
+				while Build.add_point(int(node["id"])):
+					pass
+	print("--- passives spent: %d" % Build.spent_points())
+	var fb_tree: Dictionary = GameData.get_skill_tree("fi9")
+	for node_name: String in ["Fireball Projectile Speed And Damage", "Fireball Fire Penetration", "Fireball Cast Speed"]:
+		for node: Dictionary in fb_tree["nodes"]:
+			if node["name"] == node_name:
+				while Build.add_skill_point(0, int(node["id"])):
+					pass
+	print("--- fireball tree spent: %d" % Build.skill_points_spent(0))
+	g = BuildMods.global_store(Build)
+	for row: Dictionary in CharacterCalc.compute(g["store"], Build):
+		print("  %s / %s = %s" % [row["group"], row["label"], row["text"]])
+	r = SkillCalc.compute(Build, 0)
+	_print_sections(r)
+	for n: String in r["notes"]:
+		print("  note: " + n)
+
+
+func _row(g: Dictionary, label: String) -> float:
+	for row: Dictionary in CharacterCalc.compute(g["store"], Build):
+		if row["label"] == label:
+			return float(row["value"])
+	return -1.0
+
+
+func _section_value(r: Dictionary, section: String, label: String) -> float:
+	for s: Dictionary in r["sections"]:
+		if s["title"] == section:
+			for row: Dictionary in s["rows"]:
+				if row["label"] == label:
+					return float(str(row["text"]).replace("×", "").replace("%", ""))
+	return -1.0
+
+
+func _print_sections(r: Dictionary) -> void:
+	for s: Dictionary in r["sections"]:
+		print("  [%s]" % s["title"])
+		for row: Dictionary in s["rows"]:
+			print("    %s: %s" % [row["label"], row["text"]])
+			for line: String in str(row["breakdown"]).split("\n"):
+				print("        " + line)
