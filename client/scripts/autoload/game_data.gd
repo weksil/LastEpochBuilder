@@ -47,7 +47,8 @@ func _ready() -> void:
 			var pid: String = str(ab.get("playerAbilityID", ""))
 			if pid == "" or pid == "<null>":
 				continue
-			if not _abilities.has(pid) or ab.get("category") == "player":
+			# several records share an ID (Swipe / Swipe2 / werebear swipes): prefer the player ability owning the tree
+			if not _abilities.has(pid) or _ability_rank(ab, pid) > _ability_rank(_abilities[pid], pid):
 				_abilities[pid] = ab
 
 	var affixes_json: Variant = _load_json(data_dir.path_join("affixes.json"))
@@ -102,6 +103,10 @@ func _ready() -> void:
 	var dr_json: Variant = _load_json(parent_dir.path_join("monster_level_damage_reduction.json"))
 	if dr_json is Dictionary:
 		_damage_reduction_values = dr_json.get("values", [])
+
+
+func _ability_rank(ab: Dictionary, pid: String) -> int:
+	return (2 if ab.get("skillTree") == pid else 0) + (1 if ab.get("category") == "player" else 0)
 
 
 func _load_json(path: String) -> Variant:

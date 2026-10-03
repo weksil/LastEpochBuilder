@@ -142,16 +142,8 @@ func _is_valid(id: int) -> bool:
 
 	var node: Dictionary = _nodes[id]
 
-	# Check requirements
-	if "requirements" in node and node["requirements"] is Array:
-		for req: Variant in node["requirements"]:
-			if req is Dictionary:
-				var requirement: Dictionary = req
-				if "nodeID" in requirement and "requirement" in requirement:
-					var req_node_id: int = int(requirement["nodeID"])
-					var req_points: int = int(requirement["requirement"])
-					if get_points(req_node_id) < req_points:
-						return false
+	if not requirements_met(node, passives):
+		return false
 
 	# Points threshold: count only points in lower-threshold nodes of the base tree and this node's mastery tree
 	var mastery_req: int = int(node.get("masteryRequirement", 0))
@@ -207,15 +199,54 @@ func remove_point(id: int) -> bool:
 	else:
 		passives[id] = current_points - 1
 
-	# Check if any allocated node is now invalid
+	# Check if any allocated node is now invalid or cut off from the root
+	var ok: bool = all_connected(_nodes, passives)
 	for node_id: Variant in passives.keys():
-		var nid: int = int(node_id)
-		if not _is_valid(nid):
-			# Revert
-			passives = old_points
-			return false
+		ok = ok and _is_valid(int(node_id))
+	if not ok:
+		passives = old_points
+		return false
 
 	changed.emit()
+	return true
+
+
+## Game rule (LocalTreeData.ArePassiveNodeRequirementsMet): a node is unlocked when ANY of its
+## requirements {nodeID, requirement} has at least `requirement` points; no requirements = unlocked.
+static func requirements_met(node: Dictionary, points: Dictionary) -> bool:
+	var reqs: Array = node.get("requirements", [])
+	if reqs.is_empty():
+		return true
+	for req: Dictionary in reqs:
+		if int(points.get(int(req["nodeID"]), 0)) >= int(req["requirement"]):
+			return true
+	return false
+
+
+## Every allocated node must be reachable from a root (node without requirements or with maxPoints 0)
+## through requirements that are met, so two nodes cannot keep each other alive after their path is removed.
+static func all_connected(nodes: Dictionary, points: Dictionary) -> bool:
+	var connected: Dictionary = {}
+	for id: Variant in nodes:
+		var node: Dictionary = nodes[id]
+		if int(node.get("maxPoints", 0)) == 0 or node.get("requirements", []).is_empty():
+			connected[int(id)] = true
+	var grew: bool = true
+	while grew:
+		grew = false
+		for id: Variant in points:
+			var nid: int = int(id)
+			if connected.has(nid) or int(points[id]) <= 0 or not nodes.has(nid):
+				continue
+			for req: Dictionary in nodes[nid].get("requirements", []):
+				var rid: int = int(req["nodeID"])
+				if connected.has(rid) and int(points.get(rid, 0)) >= int(req["requirement"]):
+					connected[nid] = true
+					grew = true
+					break
+	for id: Variant in points:
+		if int(points[id]) > 0 and not connected.has(int(id)):
+			return false
 	return true
 
 
@@ -291,19 +322,7 @@ func _skill_is_valid(slot: int, node_id: int) -> bool:
 		return true
 
 	var node: Dictionary = _skill_nodes[slot][node_id]
-
-	# Check requirements
-	if "requirements" in node and node["requirements"] is Array:
-		for req: Variant in node["requirements"]:
-			if req is Dictionary:
-				var requirement: Dictionary = req
-				if "nodeID" in requirement and "requirement" in requirement:
-					var req_node_id: int = int(requirement["nodeID"])
-					var req_points: int = int(requirement["requirement"])
-					if get_skill_points(slot, req_node_id) < req_points:
-						return false
-
-	return true
+	return requirements_met(node, skills[slot].get("tree", {}))
 
 
 func can_add_skill_point(slot: int, node_id: int) -> bool:
@@ -369,13 +388,13 @@ func remove_skill_point(slot: int, node_id: int) -> bool:
 	else:
 		tree[node_id] = current_points - 1
 
-	# Check if any allocated node is now invalid
+	# Check if any allocated node is now invalid or cut off from the root
+	var ok: bool = all_connected(_skill_nodes[slot], tree)
 	for allocated_node_id: Variant in tree.keys():
-		var nid: int = int(allocated_node_id)
-		if not _skill_is_valid(slot, nid):
-			# Revert
-			skills[slot]["tree"] = old_tree
-			return false
+		ok = ok and _skill_is_valid(slot, int(allocated_node_id))
+	if not ok:
+		skills[slot]["tree"] = old_tree
+		return false
 
 	changed.emit()
 	return true

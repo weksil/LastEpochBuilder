@@ -90,7 +90,9 @@ player_state: Dictionary   # {health: "full"|"high"|"normal"|"low"}
 weapon: все isWeapon (1H и 2H), offhand: SHIELD|QUIVER|CATALYST и 1H-оружие`.
 Методы: `set_skill(slot, ability_id)` (сбрасывает tree, level=20), `set_skill_level(slot, lvl)`,
 `add_skill_point(slot, node_id) -> bool`, `remove_skill_point(slot, node_id) -> bool` (правила как у пассивок:
-`requirements`, `maxPoints`, плюс сумма очков ≤ level; порог `masteryRequirement` у узлов скилла не используется),
+`requirements` — **«ИЛИ»** (узел открыт, если хоть у одного соседа из списка очков ≥ requirement; пустой список — открыт;
+D, `LocalTreeData.ArePassiveNodeRequirementsMet`), `maxPoints`, сумма очков ≤ level; снятие очка запрещено, если какой-то
+узел перестаёт быть связан с корнем (`Build.all_connected`); порог `masteryRequirement` у узлов скилла не используется),
 `skill_points_spent(slot)`, `set_item(slot, dict)`, `clear_item(slot)`, `set_enemy(key, value)`,
 `set_enemy_ailment(ailment_id, stacks)`, `set_player_state(key, value)`.
 
