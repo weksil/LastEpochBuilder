@@ -76,6 +76,11 @@ func _sample_build() -> void:
 	print("--- %s" % r["title"])
 	_print_sections(r)
 	_check("Fireball fire hit 25 × 1.12", _section_value(r, "Урон за применение (до врага)", "Огонь"), 28.0)
+	# Ignite (06d): 40% chance from the Fireball prefab, base 40 fire / 2.5 s, +12% generic damage from Int
+	_check("Ignite chance", _section_value(r, "Айлмент: Ignite", "Шанс наложения"), 40.0)
+	_check("Ignite stack damage 40 × 1.12", _section_value(r, "Айлмент: Ignite", "Полный урон одного стака"), 44.8)
+	_check("Ignite DPS = uses × 0.4 × 44.8", _section_value(r, "Айлмент: Ignite", "DPS (без врага)"), 1.1 / 0.75 * 0.4 * 44.8, 0.01)
+	_check("Ignite stacks = rate × 2.5", _section_value(r, "Айлмент: Ignite", "Стаков на цели в среднем"), 1.1 / 0.75 * 0.4 * 2.5, 0.01)
 
 	# Wand (Rowan Wand: +3 spell damage), Increased Fire Damage T5 roll 255
 	Build.set_item("weapon", {"base": 10, "sub": 1, "implicit_rolls": [255, 255], "affixes": [{"id": 12, "tier": 5, "roll": 255}]})

@@ -28,8 +28,15 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	var ctx: Dictionary = _context(build, ab, store, s["conversions"], notes)
 	var speed: Dictionary = _speed(build, ab, ctx, s)
 	var sections: Array = []
+	var ail: Dictionary = AilmentCalc.compute(build, ctx, float(speed["uses"]), notes)
+	var tooltip_rows: Array = []
+	var enemy_rows: Array = []
+	var hit_tooltip: float = 0.0
+	var hit_enemy: float = 0.0
 	if ctx["base"].is_empty():
-		notes.push_front("У умения нет урона в основном компоненте (урон задаётся кодом или под-умениями) — показаны только скорость и мана.")
+		notes.push_front("У умения нет урона удара в основном компоненте (урон задаётся кодом или под-умениями) — показаны скорость, мана и айлменты.")
+		if not ctx["conversion_rows"].is_empty():
+			sections.append({"title": "Конверсии и теги", "rows": ctx["conversion_rows"]})
 		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 	else:
 		var ds: Dictionary = _build_damage(ctx)
@@ -38,8 +45,21 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			sections.append({"title": "Конверсии и теги", "rows": ctx["conversion_rows"]})
 		sections.append({"title": "Крит", "rows": ds["crit_rows"]})
 		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
-		sections.append({"title": "DPS как в подсказке игры", "rows": _tooltip(ds, speed)})
-		sections.append({"title": "Против врага", "rows": _vs_enemy(build, ctx, ds, speed, notes)})
+		tooltip_rows = _tooltip(ds, speed)
+		enemy_rows = _vs_enemy(build, ctx, ds, speed, notes)
+		hit_tooltip = float(speed.get("tooltip_dps", 0.0))
+		hit_enemy = float(speed.get("enemy_dps", 0.0))
+	sections.append_array(ail["sections"])
+	if ail["tooltip_dps"] > 0.0:
+		tooltip_rows.append({"label": "DPS айлментов", "text": LE.fmt_num(ail["tooltip_dps"]), "breakdown": "Сумма DPS всех айлментов без врага (разделы «Айлмент: …»)."})
+	tooltip_rows.append({"label": "DPS", "text": LE.fmt_num(hit_tooltip + ail["tooltip_dps"]), "breakdown":
+		"Удар %s + айлменты %s = %s" % [LE.fmt_num(hit_tooltip), LE.fmt_num(ail["tooltip_dps"]), LE.fmt_num(hit_tooltip + ail["tooltip_dps"])]})
+	if ail["enemy_dps"] > 0.0:
+		enemy_rows.append({"label": "DPS айлментов по врагу", "text": LE.fmt_num(ail["enemy_dps"]), "breakdown": "Сумма DPS всех айлментов по врагу (разделы «Айлмент: …»)."})
+	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(hit_enemy + ail["enemy_dps"]), "breakdown":
+		"Удар %s + айлменты %s = %s" % [LE.fmt_num(hit_enemy), LE.fmt_num(ail["enemy_dps"]), LE.fmt_num(hit_enemy + ail["enemy_dps"])]})
+	sections.append({"title": "DPS как в подсказке игры", "rows": tooltip_rows})
+	sections.append({"title": "Против врага", "rows": enemy_rows})
 	result["sections"] = sections
 	result["notes"] = notes
 	return result
@@ -72,6 +92,7 @@ static func _context(build: Node, ab: Dictionary, store: StatStore, conversions:
 	return {
 		"ab": ab, "base": base, "tags": tags, "hit": hit, "src": src, "dmg": dmg, "type_bits": type_bits,
 		"base_before": conv["before"], "conversion_lines": conv["lines"], "conversion_rows": conv["rows"],
+		"ailment_conversions": conv["ailment_conversions"],
 		"minion": tags & LE.MINION, "ade": float(base.get("addedDamageScaling", 1.0)), "mods": mods, "store": store,
 	}
 
@@ -95,6 +116,7 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 	var rows: Array = []
 	var seen: Dictionary = {}
 	var tags_before: int = tags
+	var ailment_conversions: Array = []
 	for c: Dictionary in conversions:
 		var rule: Dictionary = c["rule"]
 		var v: float = float(c["value"])
@@ -130,9 +152,13 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 			rows.append({"label": "Теги: узел «%s»" % c["node"], "text": _tag_text(add_mask, remove_mask),
 				"breakdown": "Правило %s меняет теги умения; от тегов зависит, какие моды подходят к умению." % rule["key"]})
 		for ac: Dictionary in rule.get("ailment_convert", []):
-			var line: String = "Узел «%s»: %s превращается в %s — урон айлментов пока не считается" % [c["node"], ac.get("from", "?"), ac.get("to", "?")]
-			if not notes.has(line):
-				notes.append(line)
+			var key: String = "ail:%s:%s" % [ac.get("from", "?"), ac.get("to", "?")]
+			if seen.has(key):
+				continue
+			seen[key] = true
+			ailment_conversions.append({"from": str(ac.get("from", "")), "to": str(ac.get("to", "")), "node": c["node"]})
+			rows.append({"label": "Айлмент: %s → %s" % [ac.get("from", "?"), ac.get("to", "?")], "text": "100%",
+				"breakdown": "Узел «%s»: шанс наложения %s переходит в %s (правило %s)." % [c["node"], ac.get("from", "?"), ac.get("to", "?"), rule["key"]]})
 		if str(rule.get("note", "")) != "":
 			var note: String = "Узел «%s»: %s" % [c["node"], rule["note"]]
 			if not notes.has(note):
@@ -140,7 +166,7 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 	if tags != tags_before:
 		rows.append({"label": "Итоговые теги умения", "text": _tag_names(tags),
 			"breakdown": "Было: %s\nСтало: %s" % [_tag_names(tags_before), _tag_names(tags)]})
-	return {"tags": tags, "before": before, "lines": lines, "rows": rows}
+	return {"tags": tags, "before": before, "lines": lines, "rows": rows, "ailment_conversions": ailment_conversions}
 
 
 static func _type_index(type_name: String) -> int:
@@ -278,9 +304,9 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 		total += final[i]
 		var b: PackedStringArray = []
 		if not ctx["conversion_lines"][i].is_empty():
-			b.append("База умения до конверсии: %s" % LE.fmt_num(ctx["base_before"][i]))
+			b.append("База до конверсии: %s" % LE.fmt_num(ctx["base_before"][i]))
 			b.append_array(ctx["conversion_lines"][i])
-		b.append("База умения: %s (эффективность добавленного урона %s)" % [LE.fmt_num(base_dmg[i]), LE.fmt_num(ade)])
+		b.append("База: %s (эффективность добавленного урона %s)" % [LE.fmt_num(base_dmg[i]), LE.fmt_num(ade)])
 		if not lines_added[i].is_empty():
 			b.append("Добавленный урон:")
 			b.append_array(lines_added[i])
@@ -422,10 +448,11 @@ static func _tooltip(ds: Dictionary, speed: Dictionary) -> Array:
 		per_use += part
 		b.append("%s: %s × (1 + пробивание %s) × %s = %s" % [LE.DT_NAME_RU[i], LE.fmt_num(d), LE.fmt_pct(ds["pen"][i]), LE.fmt_num(crit_f), LE.fmt_num(part)])
 	var dps: float = per_use * float(speed["uses"])
+	speed["tooltip_dps"] = dps
 	return [
 		{"label": "Урон за применение", "text": LE.fmt_num(per_use), "breakdown": "\n".join(b) +
 			"\nПодсказка игры не учитывает сопротивления, броню, скрытое снижение урона и условные модификаторы."},
-		{"label": "DPS", "text": LE.fmt_num(dps), "breakdown": "%s × %s применений/с = %s" % [LE.fmt_num(per_use), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]},
+		{"label": "DPS удара", "text": LE.fmt_num(dps), "breakdown": "%s × %s применений/с = %s" % [LE.fmt_num(per_use), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]},
 	]
 
 
@@ -452,19 +479,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		if d <= 0.0:
 			continue
 		var b: PackedStringArray = ["Урон до врага: %s" % LE.fmt_num(d)]
-		# conditional more damage (SP 117)
-		var cond: float = 1.0
-		for mod: StatMod in cond_mods:
-			var split: Array = _split_tags(mod.tags)
-			var required: int = mod.tags & ~0xFF
-			if not _targets(split[0], split[1]).has(i) or (required & src) != required:
-				continue
-			var count: float = Enemy.has_condition(enemy, mod.special)
-			for m: float in mod.more:
-				var f: float = 1.0 + m * count
-				cond *= f
-				if count > 0.0:
-					b.append("Условие «%s»: ×%s  (%s)" % [_cdp_name(mod.special), LE.fmt_num(f), mod.source])
+		var cond: float = _condition_factor(cond_mods, enemy, src, i, b)
 		# resistance with penetration (06b §4.2)
 		var res_q: StatQuery = Enemy.resistance(e, i)
 		var res: float = res_q.added
@@ -507,9 +522,27 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var dps: float = avg * float(speed["uses"])
 	rows.append({"label": "Средний удар по врагу", "text": LE.fmt_num(avg), "breakdown":
 		"%s × %s = %s" % [LE.fmt_num(total), LE.fmt_num(e_crit), LE.fmt_num(avg)]})
-	rows.append({"label": "DPS по врагу", "text": LE.fmt_num(dps), "breakdown":
-		"%s × %s применений/с = %s\nAilment-ы (игнайт, кровотечение, яд) в DPS пока не входят." % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]})
+	speed["enemy_dps"] = dps
+	rows.append({"label": "DPS удара по врагу", "text": LE.fmt_num(dps), "breakdown":
+		"%s × %s применений/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]})
 	return rows
+
+
+## Conditional more damage (SP 117) against the enemy for damage type i; appends breakdown lines.
+static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray) -> float:
+	var cond: float = 1.0
+	for mod: StatMod in cond_mods:
+		var split: Array = _split_tags(mod.tags)
+		var required: int = mod.tags & ~0xFF
+		if not _targets(split[0], split[1]).has(i) or (required & src) != required:
+			continue
+		var count: float = Enemy.has_condition(enemy, mod.special)
+		for m: float in mod.more:
+			var f: float = 1.0 + m * count
+			cond *= f
+			if count > 0.0:
+				lines.append("Условие «%s»: ×%s  (%s)" % [_cdp_name(mod.special), LE.fmt_num(f), mod.source])
+	return cond
 
 
 static func _cdp_name(cdp: int) -> String:

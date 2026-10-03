@@ -299,6 +299,22 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 `E_crit = 1 + cc_eff·(cm − 1)`. `avg_hit = Σ Hit_i·E_crit`; `DPS_enemy = avg_hit·uses/s`.
 Расшифровка: таблица по типам с каждым множителем.
 
-### 8.6 Секции результата
+### 8.6 Айлменты — `engine/ailment_calc.gd` (`class_name AilmentCalc`, research/06d)
+- **Шанс** по AilmentID: базовый шанс префаба (`ailmentsOnHit[]`, класс `ChanceToApplyAilmentsOnHit`, тот же `go`, что у
+  `primaryDamage`) + моды SP 1 (`special` = AilmentID, added, теги ⊆ теги умения + health). Конверсии айлментов из правил
+  `skill_conversions.json` переносят весь шанс. Одно попадание по цели за применение.
+- **Длительность** `T = duration·(1 + Σ SP42)`, **эффект** `Σ SP43` (только added, `special` = AilmentID).
+- **Урон стака**: `SkillCalc._build_damage` по `baseDamage` айлмента с тегами `(ailment.tags | Ailment | DoT) & ~Hit` + health
+  (Spell/Melee/Hit-моды не подходят), ADE айлмента; затем `× (1+effMore)(1+durMore)(1+damageModifier)`, где
+  `effMore = effect` при `effectOfIncreasedEffectiveness == 0`, иначе effect идёт в пробивание `additionalPenetrationDamageType`;
+  `durMore = incDur`, если урон не наносится в конце / при ударе.
+- **DPS**: `λ = применений/с × шанс`; без лимита `DPS = λ·D`, стаков `λ·T`. С лимитом `maxInstances`, если `λ·T > max`:
+  `a = max/λ`, `DPS = λ·D·(a + 0.4)/(T + 0.4)` (k = 0.4 для врагов).
+- **По врагу**: по типам — условные моды SP 117, `(res > 0.75 ? 0.25 : 1 − res) + pen`, получаемый урон SP 6 с тегами
+  DoT|Ailment, `(1 − DR по уровню)`, броня только при SP 118 (× доля). Без крита, разброса, уклонения и блока.
+- Айлменты без урона (шок, шреды, холод) показываются числом стаков; их эффект на враге задаётся во вкладке «Условия».
+
+### 8.7 Секции результата
 «Урон за применение» (по типам, итог), «Крит» (шанс, множитель), «Скорость» (применений/с, мана, CD),
-«DPS (как в подсказке игры)», «Против врага» (сопротивление, броня, DR, ожидаемый удар, DPS), «Не учтено» (notes).
+«Айлмент: …» (шанс, наложения/с, длительность, стаки, урон стака по типам, DPS без врага и по врагу),
+«DPS как в подсказке игры» (удар, айлменты, итог), «Против врага» (удар, айлменты, итог «DPS по врагу»), «Не учтено» (notes).

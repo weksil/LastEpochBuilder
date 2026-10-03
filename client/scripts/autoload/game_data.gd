@@ -14,6 +14,7 @@ var _affixes_by_id: Dictionary = {}      # affixId -> affix
 var _affixes_list: Array = []
 var _items_by_id: Dictionary = {}        # baseTypeID -> base
 var _ailments_by_id: Dictionary = {}     # id -> ailment
+var _ailment_names: Dictionary = {}      # normalised name -> id (lazy)
 var _passive_effects: Dictionary = {}    # treeID -> {node_id -> node}
 var _skill_effects: Dictionary = {}      # treeID -> {node_id -> node}
 var _sp_id_map: Dictionary = {}
@@ -257,6 +258,17 @@ func conversion_rule(key: String) -> Dictionary:
 
 func ailment(id: int) -> Dictionary:
 	return _ailments_by_id.get(id, {})
+
+
+## Ailment id by asset name or AilmentID name, ignoring spaces and case ("Time Rot" == "TimeRot"); -1 if unknown.
+func ailment_id_by_name(ailment_name: String) -> int:
+	if _ailment_names.is_empty():
+		for ail: Dictionary in _ailments_by_id.values():
+			for key: String in [str(ail.get("name", "")), str(ail.get("ailmentIDName", ""))]:
+				var norm: String = key.replace(" ", "").to_lower()
+				if norm != "" and (not _ailment_names.has(norm) or ail.get("inList", false)):
+					_ailment_names[norm] = int(ail["id"])
+	return int(_ailment_names.get(ailment_name.replace(" ", "").to_lower(), -1))
 
 
 ## Negative ailments that can be configured on the enemy.
