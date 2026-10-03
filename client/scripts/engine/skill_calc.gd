@@ -397,9 +397,13 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	var rows: Array = [{"label": "Применений в секунду", "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
 	var mana_base: float = float(ab.get("manaCost", 0.0))
 	var mana: float = (mana_base + float(s["mana_added"])) * (1.0 + float(s["mana_inc"]))
-	rows.append({"label": "Стоимость маны", "text": LE.fmt_num(mana), "breakdown":
-		"(база %s + дерево %s) × (1 + %s) = %s\nСтаты маны с предметов и пассивок пока не учитываются." % [
-			LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]})
+	var mana_lines: PackedStringArray = ["(база %s + добавлено %s) × (1 + %s) = %s" % [
+		LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]]
+	for line: String in s.get("mana_sources", []):
+		mana_lines.append("  " + line)
+	mana_lines.append("Добавлено — узлы дерева и свойства уникальных предметов; статы маны с аффиксов и пассивок пока не учитываются.")
+	rows.append({"label": "Стоимость маны", "text": LE.fmt_num(mana), "breakdown": "
+".join(mana_lines)})
 	if ab.get("cooldown") != null and float(ab["cooldown"]) > 0.0:
 		var cdr: StatQuery = store.query(LE.CDR, int(ctx["tags"]))
 		var cd: float = float(ab["cooldown"]) / (1.0 + cdr.increased)
@@ -471,7 +475,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 
 	var cond_mods: Array[StatMod] = []
 	for mod: StatMod in ctx["mods"]:
-		if mod.property == LE.CONDITIONAL_DAMAGE:
+		if mod.property == LE.CONDITIONAL_DAMAGE or mod.property == LE.DAMAGE_PER_AILMENT_STACK:
 			cond_mods.append(mod)
 
 	for i in range(7):
@@ -528,7 +532,8 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	return rows
 
 
-## Conditional more damage (SP 117) against the enemy for damage type i; appends breakdown lines.
+## Conditional more damage against the enemy for damage type i (SP 117 by condition, SP 115 per stack of an ailment
+## on the target without a cap, 06b §6); appends breakdown lines.
 static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray) -> float:
 	var cond: float = 1.0
 	for mod: StatMod in cond_mods:
@@ -536,12 +541,18 @@ static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src:
 		var required: int = mod.tags & ~0xFF
 		if not _targets(split[0], split[1]).has(i) or (required & src) != required:
 			continue
-		var count: float = Enemy.has_condition(enemy, mod.special)
-		for m: float in mod.more:
+		var per_stack: bool = mod.property == LE.DAMAGE_PER_AILMENT_STACK
+		var count: float = float(enemy.get("ailments", {}).get(mod.special, 0)) if per_stack else Enemy.has_condition(enemy, mod.special)
+		# SP 115 item mods are ADDED: the per-stack value is in the added field
+		var values: Array[float] = mod.more.duplicate()
+		if per_stack and values.is_empty() and mod.added != 0.0:
+			values.append(mod.added)
+		for m: float in values:
 			var f: float = 1.0 + m * count
 			cond *= f
 			if count > 0.0:
-				lines.append("Условие «%s»: ×%s  (%s)" % [_cdp_name(mod.special), LE.fmt_num(f), mod.source])
+				var what: String = "за стак %s ×%d" % [str(GameData.ailment(mod.special).get("name", mod.special)), int(count)] if per_stack else _cdp_name(mod.special)
+				lines.append("Условие «%s»: ×%s  (%s)" % [what, LE.fmt_num(f), mod.source])
 	return cond
 
 

@@ -92,6 +92,7 @@ func _sample_build() -> void:
 	_check("Legends Entwined completes the 3-piece bonus", g["store"].query(LE.MANA_EFFICIENCY, LE.NECROTIC | LE.SPELL).added, 0.3)
 	for slot: String in ["helmet", "ring1", "ring2", "amulet"]:
 		Build.clear_item(slot)
+	_unique_special_effects()
 
 	# Fireball: Fire 25, ADE 1.25, +4% inc per Int (Int 3 → +12%)
 	Build.set_skill(0, "fi9")
@@ -106,6 +107,23 @@ func _sample_build() -> void:
 	_check("Ignite stack damage 40 × 1.12", _section_value(r, "Айлмент: Ignite", "Полный урон одного стака"), 44.8)
 	_check("Ignite DPS = uses × 0.4 × 44.8", _section_value(r, "Айлмент: Ignite", "DPS (без врага)"), 1.1 / 0.75 * 0.4 * 44.8, 0.01)
 	_check("Ignite stacks = rate × 2.5", _section_value(r, "Айлмент: Ignite", "Стаков на цели в среднем"), 1.1 / 0.75 * 0.4 * 2.5, 0.01)
+	# Carrion of Creation: SP 100 converts the Ignite chance into Bleed
+	Build.set_item("gloves", {"unique": 431, "base": 4, "sub": 12, "implicit_rolls": [0, 0], "unique_rolls": [0, 0, 0, 0]})
+	var conv_r: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Carrion: no Ignite left", 1.0 if _section_value(conv_r, "Айлмент: Ignite", "Шанс наложения") <= 0.0 else 0.0, 1.0)
+	_check("Carrion: Bleed = 100% item + 40% converted", _section_value(conv_r, "Айлмент: Bleed", "Шанс наложения"), 140.0)
+	Build.clear_item("gloves")
+	# Oceareon SP 115: more damage per Shock stack on the target
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 10)
+	var no_ring: float = _section_value(SkillCalc.compute(Build, 0), "Против врага", "DPS удара по врагу")
+	Build.set_item("ring1", {"unique": 125, "base": 21, "sub": 2, "implicit_rolls": [0, 0], "unique_rolls": [0, 0, 0, 0, 0, 0]})
+	var per_stack: float = 0.0
+	for umod: Dictionary in GameData.unique(125)["mods"]:
+		if int(umod["property"]) == LE.DAMAGE_PER_AILMENT_STACK:
+			per_stack = AffixMath.unique_value(umod, 0)
+	_check("Oceareon: ×(1 + per stack × 10 shocks)", _section_value(SkillCalc.compute(Build, 0), "Против врага", "DPS удара по врагу") / no_ring, 1.0 + per_stack * 10.0, 0.002)
+	Build.clear_item("ring1")
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 0)
 
 	# Wand (Rowan Wand: +3 spell damage), Increased Fire Damage T5 roll 255
 	Build.set_item("weapon", {"base": 10, "sub": 1, "implicit_rolls": [255, 255], "affixes": [{"id": 12, "tier": 5, "roll": 255}]})
@@ -159,6 +177,87 @@ func _sample_build() -> void:
 	print("--- fireball with lightning conversion node, tree spent %d" % Build.skill_points_spent(0))
 	r = SkillCalc.compute(Build, 0)
 	_print_sections(r)
+
+
+## Special effects of uniques (unique_effect_models.json, docs/ENGINE.md §5.4.3).
+func _unique_special_effects() -> void:
+	var chill: int = GameData.enum_value("AilmentID", "Chill")
+	# Snowblind PP 454: 24% more armour against chilled attackers (rollID 2 at 255), only while the enemy is chilled
+	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
+	var g: Dictionary = BuildMods.global_store(Build)
+	_check("Snowblind armour more without chill", g["store"].query_untagged(LE.ARMOUR).more, 1.0)
+	_check("Snowblind condition listed", 1.0 if str(g["notes"]).contains("учитывается при условии") else 0.0, 1.0)
+	Build.set_enemy_ailment(chill, 1)
+	g = BuildMods.global_store(Build)
+	_check("Snowblind armour more vs chilled", g["store"].query_untagged(LE.ARMOUR).more, 1.24)
+	Build.set_enemy_ailment(chill, 0)
+	Build.clear_item("helmet")
+	# Apostate's Sanctuary PP 285: +2 health per Vitality (after attributes)
+	Build.set_item("amulet", {"unique": 290, "base": 20, "sub": 7, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
+	g = BuildMods.global_store(Build)
+	var per_vit: float = 0.0
+	for mod: StatMod in g["store"].query_untagged(LE.HEALTH).mods:
+		if mod.source.contains("Health per Vitality"):
+			per_vit += mod.added
+	_check("Apostate's health = 2 × Vitality", per_vit, 2.0 * _row(g, "Живучесть"))
+	Build.clear_item("amulet")
+	# Haste toggle: +30% increased movement speed
+	Build.set_player_state("haste", true)
+	g = BuildMods.global_store(Build)
+	_check("Haste on you: +30% movespeed", g["store"].query_untagged(LE.MOVESPEED).increased, 0.3)
+	Build.set_player_state("haste", false)
+	# Eye of Orexia AbilityProperty 78:0: +120% increased Volcanic Orb damage, only for Volcanic Orb
+	Build.set_item("relic", {"unique": 182, "base": 22, "sub": 22, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255, 255, 255]})
+	Build.set_skill(1, "vo54")
+	Build.set_skill(2, "fi9")
+	g = BuildMods.global_store(Build)
+	var vo: Dictionary = BuildMods.skill_store(Build, 1, g["store"])
+	var fb: Dictionary = BuildMods.skill_store(Build, 2, g["store"])
+	_check("Eye of Orexia: Volcanic Orb increased damage", vo["store"].query(LE.DAMAGE, LE.FIRE | LE.SPELL).increased - fb["store"].query(LE.DAMAGE, LE.FIRE | LE.SPELL).increased, 1.2)
+	Build.clear_item("relic")
+	Build.set_skill(1, "")
+	Build.set_skill(2, "")
+	# Frozen is an enemy flag (CDP 20), not an ailment
+	_check("CDP 20 frozen flag", Enemy.has_condition({"flags": {"frozen": true}, "ailments": {}}, 20), 1.0)
+	_all_uniques_smoke()
+
+
+## Every unique, one at a time, with all player flags on: no script errors, count modelled effects.
+func _all_uniques_smoke() -> void:
+	const SLOT_BY_TYPE: Dictionary = {0: "helmet", 1: "body", 2: "belt", 3: "boots", 4: "gloves", 17: "offhand", 18: "offhand",
+		19: "offhand", 20: "amulet", 21: "ring1", 22: "relic"}
+	for key: String in UniqueEffects.PLAYER_FLAGS_RU:
+		Build.set_player_state(key, true)
+	for key: String in UniqueEffects.PLAYER_VALUES_RU:
+		Build.set_player_state(key, 20)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 1)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 50)
+	Build.set_skill(0, "fi9")
+	var modelled: int = 0
+	var total: int = 0
+	for u: Dictionary in GameData.uniques:
+		var t: int = int(u["baseType"])
+		var slot: String = str(SLOT_BY_TYPE.get(t, "weapon" if GameData.item_base(t).get("isWeapon", false) else ""))
+		if slot == "":
+			slot = IdolGrid.key(1, 1)
+		var sub: int = int(u["subTypes"][0]) if not u.get("subTypes", []).is_empty() else 0
+		Build.set_item(slot, {"unique": int(u["uniqueID"]), "base": t, "sub": sub, "implicit_rolls": [255, 255, 255], "unique_rolls": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]})
+		var g: Dictionary = BuildMods.global_store(Build)
+		CharacterCalc.compute(g["store"], Build)
+		SkillCalc.compute(Build, 0)
+		for e: Dictionary in UniqueEffects.entries(Build):
+			total += 1
+			if not e["model"].is_empty():
+				modelled += 1
+		Build.clear_item(slot)
+	print("--- all uniques: %d special effects, %d modelled" % [total, modelled])
+	for key: String in UniqueEffects.PLAYER_FLAGS_RU:
+		Build.set_player_state(key, false)
+	for key: String in UniqueEffects.PLAYER_VALUES_RU:
+		Build.set_player_state(key, 0)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 0)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 0)
+	Build.set_skill(0, "")
 
 
 ## Allocates requirements recursively, then `points` into the node (skill slot 0).

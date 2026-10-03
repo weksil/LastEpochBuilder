@@ -56,7 +56,11 @@
 - `%KindSelect` → `Build.set_enemy("kind", ["dummy","normal","magic","rare","miniboss","boss"][i])`;
   `%LevelSpin` → "level"; `%ArmourSpin` → "armour".
 - SpinBox-ы с `metadata/res_index` (дети `EnemyGrid`) → `res[i]` (копия массива, затем `Build.set_enemy("res", arr)`).
-- CheckBox-ы с `metadata/flag` → копия `flags`, `Build.set_enemy("flags", d)`.
+- CheckBox-ы с `metadata/flag` → копия `flags`, `Build.set_enemy("flags", d)` (в т. ч. `frozen` — «Заморожен»).
+- Состояние игрока (для особых эффектов уникальных, ENGINE §5.4.3): CheckBox-ы с `metadata/player_flag`
+  (`hit_recently, crit_recently, moving, leeching, low_mana, haste, frenzy`) → `Build.set_player_state(flag, pressed)`;
+  SpinBox-ы в `%PlayerValues` с `metadata/player_value` (`ward, curses, ignite_stacks, damned_stacks`) →
+  `Build.set_player_state(key, int(v))`. Синхронизация из `Build.player_state` в `_sync_from_build`.
 - `%AilmentList`: строка `ailment_row_scene` на каждый `GameData.enemy_ailments()`: `%NameLabel` = name,
   `tooltip_text` = список `buffs` («propertyName: значение»), `maxInstances`, «против боссов ×(1+moreBuffEffectAgainstBosses)»;
   `%StacksSpin.max_value` = maxInstances (или 200, если 0) → `Build.set_enemy_ailment(id, int(v))`.

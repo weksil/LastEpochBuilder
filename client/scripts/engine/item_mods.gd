@@ -18,6 +18,14 @@ static var SLOT_NAMES_RU: Dictionary = {
 }
 
 
+## Russian label of an equipment slot or idol cell ("Шлем", "Идол Small Idol (2:3)").
+static func slot_label(slot: String, item: Dictionary) -> String:
+	if IdolGrid.is_idol_key(slot):
+		var cell: Vector2i = IdolGrid.anchor(slot)
+		return "Идол %s (%d:%d)" % [GameData.display_name(GameData.item_base(int(item.get("base", -1)))), cell.x + 1, cell.y + 1]
+	return str(SLOT_NAMES_RU.get(slot, slot))
+
+
 ## Extract all modifiers from an equipped item.
 ## slot: item slot name ("helmet", "body", etc.)
 ## item: Dictionary with {base: int, sub: int, implicit_rolls: Array[int], affixes: Array[{id, tier, roll}]}
@@ -34,10 +42,7 @@ static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
 	if base_id < 0 or sub_id < 0:
 		return mods
 
-	var slot_ru: String = SLOT_NAMES_RU.get(slot, slot)
-	if IdolGrid.is_idol_key(slot):
-		var cell: Vector2i = IdolGrid.anchor(slot)
-		slot_ru = "Идол %s (%d:%d)" % [GameData.display_name(GameData.item_base(int(item.get("base", -1)))), cell.x + 1, cell.y + 1]
+	var slot_ru: String = slot_label(slot, item)
 
 	# Get base and sub data
 	var base: Dictionary = GameData.item_base(base_id)

@@ -225,6 +225,15 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	# Resistances (7 rows) - Сопротивления
 	rows.append_array(_compute_resistances(store))
 
+	# Damage taken multipliers (SP 6): hits and damage over time, per damage type
+	rows.append(_damage_taken_row(store, LE.HIT, "Получаемый урон от ударов"))
+	rows.append(_damage_taken_row(store, LE.DOT, "Получаемый урон от DoT"))
+
+	# Ward per second (92) and ward decay threshold (119)
+	for entry: Array in [[LE.WARD_REGEN, "Ward в секунду"], [LE.WARD_DECAY_THRESHOLD, "Порог распада ward"]]:
+		var q: StatQuery = store.query_untagged(entry[0])
+		rows.append({"group": "Защита", "label": entry[1], "value": q.value(), "text": LE.fmt_num(q.value()), "breakdown": q.breakdown()})
+
 	return rows
 
 
@@ -252,6 +261,16 @@ static func _compute_other(store: StatStore) -> Array[Dictionary]:
 		"value": ward_value,
 		"text": LE.fmt_pct(ward_value),
 		"breakdown": ward_query.breakdown()
+	})
+
+	# Thorns (85) - Отражение урона атакующим
+	var thorns_query: StatQuery = store.query_untagged(LE.THORNS)
+	rows.append({
+		"group": "Прочее",
+		"label": "Отражение урона атакующим",
+		"value": thorns_query.value(),
+		"text": LE.fmt_num(thorns_query.value()),
+		"breakdown": thorns_query.breakdown()
 	})
 
 	# Crit Avoidance (89) - Избежание крита
@@ -358,6 +377,28 @@ static func _explain_endurance_threshold(store: StatStore) -> String:
 		LE.fmt_num(M76),
 		LE.fmt_num(threshold)
 	]
+
+
+## Damage taken multiplier (1 + added)·(1 + increased)·Πmore for a hit or DoT, by damage type.
+static func _damage_taken_row(store: StatStore, kind_tag: int, label: String) -> Dictionary:
+	var lines: PackedStringArray = []
+	var low: float = INF
+	var high: float = -INF
+	var seen: Dictionary = {}
+	for i in range(7):
+		var q: StatQuery = store.query(LE.DAMAGE_TAKEN, kind_tag | LE.DT_TAG[i])
+		var m: float = (1.0 + q.added) * (1.0 + q.increased) * q.more
+		low = minf(low, m)
+		high = maxf(high, m)
+		lines.append("%s: ×%s" % [LE.DT_NAME_RU[i], LE.fmt_num(m)])
+		for mod: StatMod in q.mods:
+			if not seen.has(mod):
+				seen[mod] = true
+	for mod: StatMod in seen:
+		lines.append(mod.describe())
+	var text: String = "×" + LE.fmt_num(low) if is_equal_approx(low, high) else "×%s … ×%s" % [LE.fmt_num(low), LE.fmt_num(high)]
+	return {"group": "Защита", "label": label, "value": low, "text": text, "breakdown": "
+".join(lines)}
 
 
 ## Compute resistances (7 rows)

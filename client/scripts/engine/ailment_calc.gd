@@ -87,6 +87,15 @@ static func _chances(ctx: Dictionary, ability_tags: int) -> Dictionary:
 		dst["chance"] += src["chance"]
 		dst["lines"].append("  +%s  (конверсия из %s, узел «%s»)" % [LE.fmt_pct(src["chance"]), src["name"], conv["node"]])
 		src["chance"] = 0.0
+	# conversions from item stats: property 100, specialTag = from, tags = to, applied when value > 0.1 (06d §1.2)
+	for mod: StatMod in ctx["mods"]:
+		if mod.property != LE.AILMENT_CONVERSION or mod.added <= 0.1 or not out.has(mod.special):
+			continue
+		var from_c: Dictionary = out[mod.special]
+		var to_c: Dictionary = _entry(out, mod.tags)
+		to_c["chance"] += from_c["chance"]
+		to_c["lines"].append("  +%s  (конверсия из %s, %s)" % [LE.fmt_pct(from_c["chance"]), from_c["name"], mod.source])
+		from_c["chance"] = 0.0
 	# duration and effect stats (property 42 / 43, added value, 06d §1.2)
 	for id: int in out:
 		var c: Dictionary = out[id]
@@ -196,7 +205,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	var armour_share: float = minf(1.0, ctx["store"].query(118).added)
 	var cond_mods: Array[StatMod] = []
 	for mod: StatMod in ctx["mods"]:
-		if mod.property == LE.CONDITIONAL_DAMAGE:
+		if mod.property == LE.CONDITIONAL_DAMAGE or mod.property == LE.DAMAGE_PER_AILMENT_STACK:
 			cond_mods.append(mod)
 	var enemy_dps: float = 0.0
 	var eb: PackedStringArray = []

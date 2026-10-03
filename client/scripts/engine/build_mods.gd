@@ -16,9 +16,12 @@ static func global_store(build: Node) -> Dictionary:
 	for slot: String in build.items:
 		if SLOTS.has(slot) or IdolGrid.is_idol_key(slot):
 			store.add_all(ItemMods.item_mods(slot, build.items[slot]))
-	_add_unique_notes(build, notes)
 	_add_set_bonuses(build, store, notes)
+	UniqueEffects.apply_global(build, store, notes, "pre")
 	_add_attributes(store, notes)
+	_add_player_ailments(build, store)
+	UniqueEffects.apply_global(build, store, notes, "post")
+	UniqueEffects.add_notes(build, notes)
 	return {"store": store, "notes": notes}
 
 
@@ -29,7 +32,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 	var result: Dictionary = {
 		"store": store, "notes": [] as Array[String],
 		"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_inc": 0.0, "mana_added": 0.0,
-		"conversions": [],
+		"mana_sources": [] as Array[String], "conversions": [],
 	}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -48,6 +51,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		_add_skill_node(node, points, result)
 
 	_add_ability_scaling(build, ability, global, store)
+	UniqueEffects.apply_skill(build, ability, result)
 	return result
 
 
@@ -90,28 +94,11 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String]) -
 # --- 5.4.2 uniques and sets ------------------------------------------------------
 
 const LEGENDS_ENTWINED: int = 423  # "Counts as a part of every equipped item set"
+const PLAYER_AILMENTS: Dictionary = {"haste": 33, "frenzy": 34}
 
 
-## Special effects of equipped uniques are listed with their code formula (not computed yet).
-static func _add_unique_notes(build: Node, notes: Array[String]) -> void:
-	for slot: String in build.items:
-		var item: Dictionary = build.items[slot]
-		if not item.has("unique"):
-			continue
-		var u: Dictionary = GameData.unique(int(item["unique"]))
-		for effect: Dictionary in GameData.unique_effects(int(item["unique"])):
-			var what: String = str(effect.get("name", effect.get("source", "")))
-			var formula: String = str(effect.get("formula", ""))
-			notes.append("Уникальный «%s»: %s — особый эффект, не считается%s" % [GameData.display_name(u), what,
-				"" if formula == "" else " (в коде: %s)" % formula])
-		for umod: Dictionary in u.get("mods", []):
-			if int(umod.get("property", 0)) == LE.LEVEL_OF_SKILLS:
-				notes.append("Уникальный «%s»: +%s к уровню умений — поднимите уровень умения в слоте вручную" % [
-					GameData.display_name(u), LE.fmt_num(float(umod.get("value", 0.0)))])
-
-
-## Set bonuses: count = distinct equipped uniqueIDs of the set + Legends Entwined (07d §2.3).
-static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]) -> void:
+## Set piece counts: setID -> distinct equipped uniqueIDs of the set + Legends Entwined (07d §2.3).
+static func set_counts(build: Node) -> Dictionary:
 	var members: Dictionary = {}  # setID -> {uniqueID: true}
 	var entwined: int = 0
 	for slot: String in build.items:
@@ -126,9 +113,28 @@ static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]
 			if not members.has(int(u["setID"])):
 				members[int(u["setID"])] = {}
 			members[int(u["setID"])][uid] = true
+	var counts: Dictionary = {}
 	for set_id: int in members:
+		counts[set_id] = members[set_id].size() + entwined
+	return counts
+
+
+## Number of complete sets (all pieces of the set counted), used by Legends Entwined (PP 566–568).
+static func complete_sets(build: Node) -> int:
+	var counts: Dictionary = set_counts(build)
+	var complete: int = 0
+	for set_id: int in counts:
+		if counts[set_id] >= GameData.set_data(set_id).get("items", []).size():
+			complete += 1
+	return complete
+
+
+## Set bonuses: active if setRequirement <= set_counts() (07d §2.3).
+static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]) -> void:
+	var counts: Dictionary = set_counts(build)
+	for set_id: int in counts:
 		var st: Dictionary = GameData.set_data(set_id)
-		var count: int = members[set_id].size() + entwined
+		var count: int = counts[set_id]
 		var source: String = "Сет «%s» (%d предм.)" % [str(st.get("setName", set_id)), count]
 		for bonus: Dictionary in st.get("bonuses", []):
 			if int(bonus.get("setRequirement", 99)) > count:
@@ -140,6 +146,19 @@ static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]
 			store.add(StatMod.make(prop_id, str(bonus.get("modType", "ADDED")).to_lower(),
 				AffixMath.fixed_value(float(bonus.get("value", 0.0)), str(bonus.get("rounding", "Hundredth")), str(bonus.get("modType", "ADDED"))),
 				int(bonus.get("tags", 0)), source, int(bonus.get("specialTag", 0)), int(bonus.get("extraTag", 0))))
+
+
+## Haste / Frenzy on the player (Условия): ailment buffs × (1 + increased effect of the ailment on you, SP 120).
+static func _add_player_ailments(build: Node, store: StatStore) -> void:
+	for key: String in PLAYER_AILMENTS:
+		if not build.player_state.get(key, false):
+			continue
+		var id: int = PLAYER_AILMENTS[key]
+		var ail: Dictionary = GameData.ailment(id)
+		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
+		for buff: Dictionary in ail.get("buffs", []):
+			var mod: StatMod = stat_from_record(buff, "%s на вас (эффект ×%s)" % [str(ail.get("name", key)), LE.fmt_num(effect)])
+			store.add(mod.scaled(effect))
 
 
 # --- 5.3 attributes -----------------------------------------------------------

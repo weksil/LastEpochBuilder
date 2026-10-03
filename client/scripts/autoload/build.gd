@@ -54,13 +54,25 @@ func _init_defaults() -> void:
 			"moving": false,
 			"stunned": false,
 			"low_health": false,
-			"full_health": true
+			"full_health": true,
+			"frozen": false
 		}
 	}
 
-	# Initialize player state
+	# Initialize player state (flags and numbers used by unique special effects, docs/ENGINE.md §5.4.3)
 	player_state = {
-		"health": "full"
+		"health": "full",
+		"hit_recently": false,
+		"crit_recently": false,
+		"moving": false,
+		"leeching": false,
+		"low_mana": false,
+		"haste": false,
+		"frenzy": false,
+		"ward": 0,
+		"curses": 0,
+		"ignite_stacks": 0,
+		"damned_stacks": 0
 	}
 
 	# Initialize items (empty)

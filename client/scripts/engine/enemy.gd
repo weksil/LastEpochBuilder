@@ -212,8 +212,8 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 		19:  # Bleeding
 			return 1.0 if _get_ailment_stacks(ailments, "Bleed") > 0 else 0.0
 
-		20:  # Frozen
-			return 1.0 if _get_ailment_stacks(ailments, "Frozen") > 0 else 0.0
+		20:  # Frozen (a state, not an AilmentID: enemy flag)
+			return 1.0 if flags.get("frozen", false) else 0.0
 
 		21:  # PerNegAilment (count of different ailments)
 			return float(_count_ailments(ailments))
@@ -225,7 +225,7 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 			return float(mini(_count_ailments(ailments), 8))
 
 		32:  # Frozen|Chilled
-			return 1.0 if (_get_ailment_stacks(ailments, "Frozen") > 0 or _get_ailment_stacks(ailments, "Chill") > 0) else 0.0
+			return 1.0 if (flags.get("frozen", false) or _get_ailment_stacks(ailments, "Chill") > 0) else 0.0
 
 		33:  # Ignited|Shocked
 			return 1.0 if (_get_ailment_stacks(ailments, "Ignite") > 0 or _get_ailment_stacks(ailments, "Shock") > 0) else 0.0

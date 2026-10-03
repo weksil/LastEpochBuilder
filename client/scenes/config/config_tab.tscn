@@ -49,6 +49,98 @@ popup/item_2/id = 2
 popup/item_3/text = "Низкое (<35%)"
 popup/item_3/id = 3
 
+[node name="HitRecentlyCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Был поражён недавно"
+metadata/player_flag = "hit_recently"
+
+[node name="CritRecentlyCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Критовал недавно"
+metadata/player_flag = "crit_recently"
+
+[node name="PlayerMovingCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Двигаюсь"
+metadata/player_flag = "moving"
+
+[node name="LeechingCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Вампиризм активен"
+metadata/player_flag = "leeching"
+
+[node name="LowManaCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Мана ниже 50%"
+metadata/player_flag = "low_mana"
+
+[node name="HasteCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Haste на мне"
+metadata/player_flag = "haste"
+
+[node name="FrenzyCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Frenzy на мне"
+metadata/player_flag = "frenzy"
+
+[node name="PlayerValues" type="GridContainer" parent="Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 2
+
+[node name="WardLabel" type="Label" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Текущий ward"
+
+[node name="WardSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+max_value = 100000.0
+step = 10.0
+metadata/player_value = "ward"
+
+[node name="CursesLabel" type="Label" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Проклятий на мне"
+
+[node name="CursesSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+max_value = 20.0
+metadata/player_value = "curses"
+
+[node name="IgniteStacksLabel" type="Label" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Стаков Ignite на мне"
+
+[node name="IgniteStacksSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+max_value = 200.0
+metadata/player_value = "ignite_stacks"
+
+[node name="DamnedStacksLabel" type="Label" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Стаков Damned на мне"
+
+[node name="DamnedStacksSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+layout_mode = 2
+max_value = 200.0
+metadata/player_value = "damned_stacks"
+
 [node name="EnemyTitle" type="Label" parent="Columns/Left"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
@@ -213,6 +305,12 @@ layout_mode = 2
 focus_mode = 0
 text = "Низкое здоровье"
 metadata/flag = "low_health"
+
+[node name="FrozenCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+text = "Заморожен"
+metadata/flag = "frozen"
 
 [node name="Right" type="VBoxContainer" parent="Columns"]
 layout_mode = 2

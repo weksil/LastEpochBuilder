@@ -27,6 +27,7 @@ var _conversions: Dictionary = {}        # "Mutator.field" -> rule (skill_conver
 var _uniques_by_id: Dictionary = {}      # uniqueID -> unique (all, incl. hidden)
 var _unique_effects: Dictionary = {}     # uniqueID -> effects[] (unique_effects.json)
 var _sets: Dictionary = {}               # setID -> set (sets.json)
+var _unique_models: Dictionary = {}      # {player: {ppIndex: model}, ability: {"abilityIndex:propertyIndex": model}}
 
 
 func _ready() -> void:
@@ -122,6 +123,11 @@ func _ready() -> void:
 	if sets_json is Dictionary:
 		for st: Dictionary in sets_json.get("data", []):
 			_sets[int(st["setID"])] = st
+
+	# hand-written planner models (client/data, not extracted game data)
+	var models_json: Variant = _load_json(ProjectSettings.globalize_path("res://data/unique_effect_models.json"))
+	if models_json is Dictionary:
+		_unique_models = models_json
 
 	var dr_json: Variant = _load_json(parent_dir.path_join("monster_level_damage_reduction.json"))
 	if dr_json is Dictionary:
@@ -289,6 +295,16 @@ func unique_effects(id: int) -> Array:
 
 func set_data(set_id: int) -> Dictionary:
 	return _sets.get(set_id, {})
+
+
+## Planner model of a PlayerProperty special effect (unique_effect_models.json), {} if not modelled.
+func unique_player_model(pp_index: int) -> Dictionary:
+	return _unique_models.get("player", {}).get(str(pp_index), {})
+
+
+## Planner model of an AbilityProperty special effect, {} if not modelled.
+func unique_ability_model(ability_index: int, property_index: int) -> Dictionary:
+	return _unique_models.get("ability", {}).get("%d:%d" % [ability_index, property_index], {})
 
 
 func ailment(id: int) -> Dictionary:

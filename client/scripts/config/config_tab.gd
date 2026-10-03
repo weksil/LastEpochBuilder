@@ -39,11 +39,24 @@ func _ready() -> void:
 			if child is SpinBox and child.has_meta("res_index"):
 				(child as SpinBox).value_changed.connect(_on_resistance_changed.bindv([child]))
 
-	# Connect flag checkboxes from Left container
+	# Connect flag checkboxes from Left container (enemy flags)
 	if left_container:
 		for child: Node in left_container.get_children():
 			if child is CheckBox and child.has_meta("flag"):
 				(child as CheckBox).toggled.connect(_on_flag_toggled.bindv([child]))
+
+	# Connect player flag checkboxes from Left container
+	if left_container:
+		for child: Node in left_container.get_children():
+			if child is CheckBox and child.has_meta("player_flag"):
+				(child as CheckBox).toggled.connect(_on_player_flag_toggled.bindv([child]))
+
+	# Connect player value spinboxes from PlayerValues grid
+	if has_node("%PlayerValues"):
+		var player_values: GridContainer = %PlayerValues
+		for child: Node in player_values.get_children():
+			if child is SpinBox and child.has_meta("player_value"):
+				(child as SpinBox).value_changed.connect(_on_player_value_changed.bindv([child]))
 
 	# Connect filter
 	%Filter.text_changed.connect(_on_filter_changed)
@@ -92,6 +105,11 @@ func _sync_from_build() -> void:
 	# Flags
 	var flags: Dictionary = Build.enemy.get("flags", {}) as Dictionary
 	_update_flags(flags)
+
+	# Player state flags and values
+	var player_state: Dictionary = Build.player_state as Dictionary
+	_update_player_flags(player_state)
+	_update_player_values(player_state)
 
 	# Ailments (already populated, just sync values)
 	var ailments: Dictionary = Build.enemy.get("ailments", {}) as Dictionary
@@ -238,6 +256,41 @@ func _on_filter_changed(text: String) -> void:
 		var name_label: Label = row.get_node("%NameLabel") as Label
 		var ailment_name: String = name_label.text.to_lower()
 		row.visible = (filter_lower.is_empty() or ailment_name.contains(filter_lower))
+
+
+func _update_player_flags(player_state: Dictionary) -> void:
+	if left_container:
+		for child: Node in left_container.get_children():
+			if child is CheckBox and child.has_meta("player_flag"):
+				var flag_name: String = child.get_meta("player_flag") as String
+				var flag_value: bool = player_state.get(flag_name, false) as bool
+				(child as CheckBox).set_pressed_no_signal(flag_value)
+
+
+func _update_player_values(player_state: Dictionary) -> void:
+	if has_node("%PlayerValues"):
+		var player_values: GridContainer = %PlayerValues
+		for child: Node in player_values.get_children():
+			if child is SpinBox and child.has_meta("player_value"):
+				var key: String = child.get_meta("player_value") as String
+				var value: int = int(player_state.get(key, 0))
+				(child as SpinBox).set_value_no_signal(float(value))
+
+
+func _on_player_flag_toggled(pressed: bool, check: CheckBox) -> void:
+	if not check.has_meta("player_flag"):
+		return
+
+	var flag_name: String = check.get_meta("player_flag") as String
+	Build.set_player_state(flag_name, pressed)
+
+
+func _on_player_value_changed(value: float, spin: SpinBox) -> void:
+	if not spin.has_meta("player_value"):
+		return
+
+	var key: String = spin.get_meta("player_value") as String
+	Build.set_player_state(key, int(value))
 
 
 func _on_build_changed() -> void:

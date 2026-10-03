@@ -177,9 +177,29 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 Предмет с `unique: uniqueID` и `unique_rolls[rollID]` (байт ролла, по умолчанию 255): импликиты базы + моды уникального.
 Значение мода — `AffixMath.unique_value`: роллится, только если `canRoll`, `maxValue > value` и ролл ≠ 0, иначе
 фиксированное значение на сетке округления. Моды SP 98 (PlayerProperty) и SP 58 (AbilityProperty) и компоненты —
-особые эффекты, пока не считаются: в notes с формулой из `unique_effects.json`. SP 88 (+уровень умений) — note.
+особые эффекты (§5.4.3). SP 88 (+уровень умений) — note. SP 100 (конверсия айлмента: specialTag = из, tags = в) — §8.6,
+SP 115 (more за стак айлмента на цели, без лимита) — вместе с SP 117 в `_condition_factor`.
 Сеты: `count` = число **разных** uniqueID сета в экипировке + число Legends Entwined (423); бонусы `sets.json` с
 `setRequirement ≤ count` добавляются фиксированными значениями, источник «Сет «…» (N предм.)».
+`BuildMods.set_counts(build)` и `complete_sets(build)` (сет полный, если count ≥ числа предметов сета).
+
+### 5.4.3 Особые эффекты уникальных — `engine/unique_effects.gd` (`class_name UniqueEffects`)
+Модели — рукописная таблица `client/data/unique_effect_models.json` (не выгрузка игры; схема в самом файле), построена по
+формулам `unique_effects.json` (07i). `player[ppIndex]` для PlayerProperty, `ability["abilityIndex:propertyIndex"]` для
+AbilityProperty. Значение `pp` — ролл мода-носителя: SP 98 с `tags = ppIndex` или SP 58 с `tags = AbilityID`,
+`specialTag = index` (`AffixMath.unique_value`).
+- Модель → StatMod: `x = pp · (источник − offset) · factor` (без `per`: `pp · factor`), затем `min`/`max`; `stat` — имя SP,
+  `mod`, `tags`, `ailment` → specialTag. Источники: атрибуты, сумма атрибутов, added/value/increased SP, сопротивления без
+  капа, макс. здоровье/мана, порог выносливости, стаки айлмента на враге, числа игрока (`Build.player_state`), полные сеты.
+- Условия (`when`, `at_least`, `below`): айлменты и флаги врага, тип врага, флаги игрока, два оружия / двуручное ближнего
+  боя (по базам в слотах), слот предмета. Невыполненное условие → note «учитывается при условии: …».
+- Порядок в `global_store`: сеты → `apply_global("pre")` (источники, не читающие хранилище) → атрибуты → Haste/Frenzy игрока
+  (баффы `ailments.json` × (1 + increased SP 120)) → `apply_global("post")` → `add_notes`.
+- `apply_skill` в `skill_store`: AbilityProperty только для умения с `abilityIDEnum.value = abilityIndex`, модели со
+  `skill_any` — для умений с одним из тегов; `kind: mana_added` → `mana_added` и `mana_sources`.
+- Особые: `overcap_taken` (Null Portent: по типу урона more получаемого `max(−cap, (res−0.75)/0.02·pp)`).
+- Без модели → note с причиной: «не влияет на урон и защиту» (flag/util), «срабатывание или отдельная механика» (proc,
+  компоненты), «не моделируется» (с формулой из кода); алтари идолов не поддерживаются.
 
 ### 5.5 Дерево скилла — `BuildMods.skill_store(build, slot, global) -> Dictionary`
 → `{store: StatStore (parent = global), notes, use_speed_inc: float, use_speed_more: float, mana_inc: float, mana_added: float}`.
@@ -227,10 +247,10 @@ tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], not
 - `static func has_condition(enemy, cdp: int) -> float` — множитель/счётчик для ConditionalDamageProperty
   (06b §5): 0 Stunned → flag; 1 LowHealth; 3 FullHealth; 4 Bosses&Rares (rare/boss/miniboss); 5 Ignited (стаки Ignite > 0);
   6 PerPoisonStack (min(стаки,30)); 7 PerBleedStack (min(стаки,30)); 8 Chilled; 9 Slowed; 10 Shocked; 13 Cursed (любое isCurse);
-  16 Moving; 17 Bosses; 18 PerArmourShred (min(стаки,14)); 19 Bleeding; 20 Frozen; 21 PerNegAilment (число разных айлментов);
-  25 Damned; 26 PerNegAilment≤8; 32 Frozen|Chilled; 33 Ignited|Shocked; 36 Electrified; 44 Poisoned; 46 Blinded; 47 Frostbitten.
+  16 Moving; 17 Bosses; 18 PerArmourShred (min(стаки,14)); 19 Bleeding; 20 Frozen (флаг `frozen`: заморозка — состояние,
+  не AilmentID); 21 PerNegAilment (число разных айлментов); 25 Damned; 26 PerNegAilment≤8; 32 Frozen (флаг)|Chilled; 33 Ignited|Shocked; 36 Electrified; 44 Poisoned; 46 Blinded; 47 Frostbitten.
   Возвращает 1/0 для булевых и счётчик для «Per…»; для неизвестных — 0 и вызывающий пишет note.
-  Айлменты ищутся по `ailmentIDName` (`Ignite, Bleed, Poison, Chill, Shock, Slow, Frozen? (Freeze), ArmourShred, Damned, Electrify, Blind, Frostbite`).
+  Айлменты ищутся по `ailmentIDName` (`Ignite, Bleed, Poison, Chill, Shock, Slow, ArmourShred, Damned, Electrify, Blind, Frostbite`).
 
 ## 7. Персонаж — `engine/character_calc.gd` (`class_name CharacterCalc`)
 
@@ -245,7 +265,9 @@ tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], not
   `I76·((maxMore96 + A96)·maxHealth + A76)·M76` (maxMore96 — наибольшее more у SP 96, иначе 0);
   Избежание оглушения (12); Сопротивления: 7 строк, только added по группам как у врага (`Enemy.resistance`),
   текст `"min(res,75)% (без капа X%)"`.
-- «Прочее»: Скорость передвижения `query(9).more − 1` как %, Ward retention (16), Crit avoidance (89).
+  «Получаемый урон от ударов» / «… от DoT»: по типам `(1+added)(1+inc)·Πmore` для `query(6, HIT|DOT | тип)`
+  (текст — значение или диапазон по типам); Ward в секунду (92), порог распада ward (119).
+- «Прочее»: Скорость передвижения `query(9).more − 1` как %, Ward retention (16), отражение урона (85), Crit avoidance (89).
 Каждая строка: `breakdown` — из `StatQuery.breakdown()` плюс пояснение формулы.
 
 ## 8. Умение — `engine/skill_calc.gd` (`class_name SkillCalc`)
@@ -259,7 +281,7 @@ tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], not
 `tags = ab.tags`, затем конверсии дерева (§5.5): базовый урон `dmg[to] += f·dmg[from]; dmg[from] −= …` **до** всех
 модификаторов (как `convertBaseDamage`, 06b §1.7), смена тегов `tags = (tags & ~remove) | add`. Правила с одинаковым полем
 у разных мутаторов умения (Fireball / FireballExplosion) применяются один раз. Новые теги используются для подбора модов,
-скорости и перезарядки; конверсии айлментов идут в «Не учтено» (урон айлментов пока не считается).
+скорости и перезарядки; конверсии айлментов переносят шанс (§8.6).
 `hit = base.isHit == 1`; `src = hit ? (tags & ~DOT) | HIT : (tags & ~HIT) | DOT`; добавить health-тег из `player_state.health`:
 full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 `ADE = base.addedDamageScaling`; `dmg[7] = base.damage`; `typeBits` = OR `DT_TAG[i]` для `dmg[i] > 0`.
