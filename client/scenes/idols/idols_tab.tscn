@@ -1,0 +1,166 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/idols/idols_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/idols/idol_cell.tscn" id="2_cell"]
+[ext_resource type="PackedScene" path="res://scenes/items/item_editor.tscn" id="3_editor"]
+
+[node name="Идолы" type="HBoxContainer"]
+theme_override_constants/separation = 12
+script = ExtResource("1_script")
+
+[node name="Left" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Left"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Сетка идолов"
+
+[node name="Hint" type="Label" parent="Left"]
+custom_minimum_size = Vector2(410, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Клик по свободной клетке — поставить идол (левый верхний угол), клик по идолу — редактировать. Все слоты считаются открытыми, алтарь не выбран."
+autowrap_mode = 3
+
+[node name="Grid" type="GridContainer" parent="Left"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 5
+
+[node name="Cell00" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 0
+metadata/col = 0
+
+[node name="Cell01" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 0
+metadata/col = 1
+
+[node name="Cell02" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 0
+metadata/col = 2
+
+[node name="Cell03" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 0
+metadata/col = 3
+
+[node name="Cell04" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 0
+metadata/col = 4
+
+[node name="Cell10" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 1
+metadata/col = 0
+
+[node name="Cell11" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 1
+metadata/col = 1
+
+[node name="Cell12" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 1
+metadata/col = 2
+
+[node name="Cell13" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 1
+metadata/col = 3
+
+[node name="Cell14" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 1
+metadata/col = 4
+
+[node name="Cell20" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 2
+metadata/col = 0
+
+[node name="Cell21" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 2
+metadata/col = 1
+
+[node name="Cell22" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 2
+metadata/col = 2
+
+[node name="Cell23" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 2
+metadata/col = 3
+
+[node name="Cell24" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 2
+metadata/col = 4
+
+[node name="Cell30" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 3
+metadata/col = 0
+
+[node name="Cell31" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 3
+metadata/col = 1
+
+[node name="Cell32" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 3
+metadata/col = 2
+
+[node name="Cell33" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 3
+metadata/col = 3
+
+[node name="Cell34" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 3
+metadata/col = 4
+
+[node name="Cell40" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 4
+metadata/col = 0
+
+[node name="Cell41" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 4
+metadata/col = 1
+
+[node name="Cell42" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 4
+metadata/col = 2
+
+[node name="Cell43" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 4
+metadata/col = 3
+
+[node name="Cell44" parent="Left/Grid" instance=ExtResource("2_cell")]
+layout_mode = 2
+metadata/row = 4
+metadata/col = 4
+
+[node name="EditorScroll" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+
+[node name="ItemEditor" parent="EditorScroll" instance=ExtResource("3_editor")]
+unique_name_in_owner = true
+layout_mode = 2

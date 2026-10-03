@@ -72,6 +72,30 @@ func _ready() -> void:
 	print("weapon: %s" % weapon_button.text)
 	print("item: %s" % str(Build.items.get("weapon", {})))
 
+	# idols tab: place an idol at the first open cell and give it an affix
+	tabs.current_tab = 3
+	await _frames(1)
+	var idols_tab: Node = tabs.get_child(3)
+	for cell: Node in idols_tab.get_node("%Grid").get_children():
+		if not cell.disabled:
+			cell.pressed.emit()
+			break
+	await _frames(1)
+	var idol_editor: Node = idols_tab.get_node("%ItemEditor")
+	var idol_base: OptionButton = idol_editor.get_node("%BaseSelect")
+	if idol_base.item_count > 1:
+		idol_base.select(1)
+		idol_base.item_selected.emit(1)
+	await _frames(2)
+	var idol_affix: OptionButton = idol_editor.get_node("%Affixes/Suffix1").get_node("Top/AffixSelect")
+	if idol_affix.item_count > 1:
+		idol_affix.select(1)
+		idol_affix.item_selected.emit(1)
+	await _frames(2)
+	for item_slot: String in Build.items:
+		if IdolGrid.is_idol_key(item_slot):
+			print("idol %s: %s" % [item_slot, str(Build.items[item_slot])])
+
 	# config tab: shock stacks and boss
 	tabs.current_tab = 6
 	await _frames(1)

@@ -35,6 +35,9 @@ static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
 		return mods
 
 	var slot_ru: String = SLOT_NAMES_RU.get(slot, slot)
+	if IdolGrid.is_idol_key(slot):
+		var cell: Vector2i = IdolGrid.anchor(slot)
+		slot_ru = "Идол %s (%d:%d)" % [GameData.display_name(GameData.item_base(int(item.get("base", -1)))), cell.x + 1, cell.y + 1]
 
 	# Get base and sub data
 	var base: Dictionary = GameData.item_base(base_id)

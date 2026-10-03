@@ -112,6 +112,9 @@ weapon: все isWeapon (1H и 2H), offhand: SHIELD|QUIVER|CATALYST и 1H-ору
   `affixes_for_type(type_id: int) -> Array` — `rollsOn == "Equipment"`, `specialAffixType == "Standard"`, `type_id in canRollOn`.
 - `ailment(id) -> Dictionary`, `enemy_ailments() -> Array` — `inList`, `positive == 0`, и (`buffs` не пуст или `dealsDamage`), сортировка по имени.
 - `attributes: Array`, `sp_name(id) -> String`, `sp_id(name) -> int` (−1 если нет), `damage_reduction(level) -> float` (0 при level > 100).
+- `affixes_for_type(type_id, class_filter := "")` для идолов (типы 25–33) берёт `rollsOn == "Idols"` и фильтрует
+  `classSpecificity` (пусто, `NonSpecific` или имя класса); `is_idol_type(type_id)`; `idol_grid()` — `idols.json`
+  `containerGrids.defaultData` (5×5, 99 — закрытая клетка); `conversion_rule("Mutator.field")` — правило из `skill_conversions.json`.
 - `enum_value(enum_name: String, name: String) -> int` по `research/data/stat_tag_enums.json`
   (`{enum_name: {values: [{id, name}]}}`), −1 если нет. Используется для `AilmentID` и `ConditionalDamageProperty`.
 
@@ -162,6 +165,12 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 Тест-векторы: Integer [5,10] roll 0→5, 128→8, 255→10; Hundredth [0.10,0.20] roll 200→0.18;
 [0.10,0.20] m=0.5 roll 255→0.30; [61,90] m=0.5 roll 0→92, 255→135.
 
+### 5.4.1 Идолы — `engine/idol_grid.gd` (`class_name IdolGrid`)
+Идол хранится в `Build.items` под ключом `idol_<row>_<col>` (левая верхняя клетка) с той же структурой, что предмет
+(`affixes` — 1 префикс и 1 суффикс). `gridSize` базы — `[ширина, высота]`. Идол помещается, если все его клетки открыты
+(`!= 99`) и не заняты другими идолами. Моды идолов собираются как у предметов (`ItemMods`), с модификатором эффекта базы
+(Small −0.83, Grand −0.33 и т. д.). Награды за открытие слотов считаются полученными, алтарь не поддерживается.
+
 ### 5.5 Дерево скилла — `BuildMods.skill_store(build, slot, global) -> Dictionary`
 → `{store: StatStore (parent = global), notes, use_speed_inc: float, use_speed_more: float, mana_inc: float, mana_added: float}`.
 Для узла с `p > 0` из `skill_effects(treeID)`:
@@ -171,7 +180,14 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 - Поле мутатора (есть `target` вида `XMutator.field`, нет `op`):
   `increasedCastSpeed`, `increasedAttackSpeed` → `use_speed_inc += v`; `moreCastSpeed`, `moreAttackSpeed` → `use_speed_more *= (1+v)`;
   `increasedManaCost` → `mana_inc += v`; `addedManaCost` → `mana_added += v`.
+- Поле, для которого есть правило в `skill_conversions.json` (`kind` ≠ none) → `conversions.append({rule, value, node})`.
 - Всё остальное → `notes`: `"Узел «name»: поле <field> — механика скилла, не считается"`.
+
+**Правила конверсий** (`research/data/game/skill_conversions.json`, собраны из описаний кода мутаторов, уровень D?):
+`{key "Mutator.field", kind conversion|tags|ailment_conversion, convert[{from, to, fraction: "value"|число}], tags_add[],
+tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], note}`. `fraction: "value"` — значение поля,
+выставленное узлом (обрезается до 0..1). Если теги в разметке не указаны, тип-источник заменяется типом-целью
+(`tags_derived`), при частичной конверсии — только при 100%.
 Плюс моды умения: `attributeScaling[]` — каждый Stat × значение атрибута (int), `levelScaling` × уровень персонажа.
 
 ## 6. Враг — `engine/enemy.gd` (`class_name Enemy`)
@@ -230,7 +246,10 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 ### 8.1 Входные данные
 `ab = GameData.get_ability(skill.ability)`; `base = ab.primaryDamage` (нет → note «урон задаётся кодом/подумениями», только скорость и мана).
 `g = BuildMods.global_store(build)`; `s = BuildMods.skill_store(build, slot, g.store)`; `store = s.store`.
-`tags = ab.tags` (если узел дерева конвертирует урон — не учитываем в MVP).
+`tags = ab.tags`, затем конверсии дерева (§5.5): базовый урон `dmg[to] += f·dmg[from]; dmg[from] −= …` **до** всех
+модификаторов (как `convertBaseDamage`, 06b §1.7), смена тегов `tags = (tags & ~remove) | add`. Правила с одинаковым полем
+у разных мутаторов умения (Fireball / FireballExplosion) применяются один раз. Новые теги используются для подбора модов,
+скорости и перезарядки; конверсии айлментов идут в «Не учтено» (урон айлментов пока не считается).
 `hit = base.isHit == 1`; `src = hit ? (tags & ~DOT) | HIT : (tags & ~HIT) | DOT`; добавить health-тег из `player_state.health`:
 full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 `ADE = base.addedDamageScaling`; `dmg[7] = base.damage`; `typeBits` = OR `DT_TAG[i]` для `dmg[i] > 0`.

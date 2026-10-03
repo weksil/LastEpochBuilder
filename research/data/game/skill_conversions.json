@@ -1,0 +1,4908 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "mutator_field_semantics_*.json (decompiled mutator code descriptions) classified into rules; tools/extract/conversions (prefilter.py, merge.py)",
+ "schema": "{key \"Mutator.field\", kind conversion|tags|ailment_conversion, convert[{from,to,fraction:\"value\"|number}], tags_add[], tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], note, trees, nodes, evidence}. fraction \"value\" = the field value set by the tree node (clamped 0..1). Confidence: text-level (D?) — verify in game.",
+ "data": [
+  {
+   "key": "AbyssalEchoesMutator.ailmentStats",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Slow",
+     "to": "Haste"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ab0lh"
+   ],
+   "nodes": [
+    "Abyssal Echoes Increased DoT Taken",
+    "Abyssal Echoes Reduce Physical Res But No Trigger On Hit",
+    "Abyssal Echoes Slow To Haste Conversion From Enemies"
+   ],
+   "evidence": "Stats attached to the Abyssal Decay ailment instance (debuff on the enemy): -10% physical resistance, +8% damage taken from DoT per point, Slow->Haste ailment conversion. each Stat appended to the instance stat list (param_4 of mutateAilmentInstance) -> applied to the afflicted enemy while Abyssal Decay is on "
+  },
+  {
+   "key": "AbyssalEchoesMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Void"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ab0lh"
+   ],
+   "nodes": [
+    "Abyssal Echoes Fire Conversion"
+   ],
+   "evidence": "Converts the on-hit Void damage to Fire (damage type 1 instead of 5; getTags clears Void bit 0x10 and sets Fire 8), changes cast VFX, and re-routes scaling. bool: on-hit base damage type Void(5) -> Fire(1); tags Void->Fire Tree node also sets addedHealing 60."
+  },
+  {
+   "key": "AcidFlaskMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Poison",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Poison"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "aacfl"
+   ],
+   "nodes": [
+    "Acid Flask Fire Conversion"
+   ],
+   "evidence": "Converts the flask from Poison to Fire: tags Poison(0x40) -> Fire(8), cast VFX, ailment stats switch (poison shred -> FireResShred id 0x2a, poison duration -> Ignite duration), no poison chance or pools (DPS applier skipped), copied into explosion/trap/decoy. bool: tags: Poison -> Fire; poisonShred ailment PoisonResShred(0x1c) -> FireResShred(0x2a); poison duration stat -> Ignite(1); explosion dam"
+  },
+  {
+   "key": "AnomalyMutator.igniteInsteadOfTimeRot",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Time Rot",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "an0my"
+   ],
+   "nodes": [
+    "Anomaly Ignite Conversion"
+   ],
+   "evidence": "Time Rot chance is replaced by Ignite (ailment id 1 instead of 9). bool: ailment = Ignite "
+  },
+  {
+   "key": "AuraOfDecayMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Poison",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Poison"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ad0ry"
+   ],
+   "nodes": [
+    "Aura Of Decay Cold Conversion"
+   ],
+   "evidence": "Converts the aura poison to Cold (Frostbite): tags Poison->Cold, ailment id 7->0x17, poison resistance -> cold resistance, nova/bomb/bolt conversion flags; applies to all conversion helper lists. bool: Conversion: Poison -> Cold (Frostbite 0x17, tag Cold 4, resist 0xe) with coldConversion, Poison -> Physical (Bleed 2, tag 1, resist 0x40) with physicalConversion, Poison -> Fire (Ignite 1) if the st"
+  },
+  {
+   "key": "AuraOfDecayMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Poison",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Poison"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ad0ry"
+   ],
+   "nodes": [
+    "Aura Of Decay Physical Conversion"
+   ],
+   "evidence": "Converts the aura poison to Physical (Bleed): tags Poison->Physical, ailment 7->2, poison resistance -> physical resistance; conversion list entry Stats.AilmentConversionStat(2,7,1.0) added to temp stats. bool: Conversion: Poison -> Cold (Frostbite 0x17, tag Cold 4, resist 0xe) with coldConversion, Poison -> Physical (Bleed 2, tag 1, resist 0x40) with physicalConversion, Poison -> Fire (Ignite 1) "
+  },
+  {
+   "key": "AvalancheMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "av75ch"
+   ],
+   "nodes": [
+    "Avalanche Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold conversion: getTags clears the Physical bit (1), VFX/DPS variants switch to cold. bool: tags Physical -> Cold ; Increased Stun Chance -> Freeze Rate Multiplier "
+  },
+  {
+   "key": "AvalancheMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "av75ch"
+   ],
+   "nodes": [
+    "Avalanche Physical Conversion"
+   ],
+   "evidence": "Cold -> Physical conversion: getTags clears the Cold bit (4); VFX changed; DPS appliers use the physical variant of the boulder objects. bool: tags Cold -> Physical ; Freeze Rate Multiplier -> Increased Stun Chance "
+  },
+  {
+   "key": "AvalancheSnowballMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "av75ch"
+   ],
+   "nodes": [
+    "Avalanche Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold conversion: getTags clears Physical(1); GetConversionType=1; copied to AvalancheAoEMutator. bool: tags Physical -> Cold "
+  },
+  {
+   "key": "AvalancheSnowballMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "av75ch"
+   ],
+   "nodes": [
+    "Avalanche Physical Conversion"
+   ],
+   "evidence": "Cold -> Physical conversion: getTags clears Cold(4); GetConversionType=2; copied to AvalancheAoEMutator. bool: tags Cold -> Physical ; freeze rate -> increased stun chance "
+  },
+  {
+   "key": "BlackHoleMutator.armageddon",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "bh2"
+   ],
+   "nodes": [
+    "Black Hole Armageddon"
+   ],
+   "evidence": "Black Hole creates meteors (extra AoE meteor object, DPS applier added, tags |= Fire). bool: meteors; getTags |= Fire(8) "
+  },
+  {
+   "key": "BladestormThrowMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    },
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "bl5st",
+    "bs6d9"
+   ],
+   "nodes": [
+    "Bladestorm Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold conversion (tags &~1 | 4), Bleed/Poison -> Frostbite; DPS applier uses the cold variant; 60 Freeze Rate. bool: tags Physical -> Cold "
+  },
+  {
+   "key": "BladestormThrowMutator.poisonConversion",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "bl5st",
+    "bs6d9"
+   ],
+   "nodes": [
+    "Bladestorm Poison Conversion"
+   ],
+   "evidence": "Bleed -> Poison conversion: getTags |= Poison(0x40); casting VFX 1; storm conversion flag; temp stat ailment conversion. bool: tags |= Poison; ailment Bleed->Poison "
+  },
+  {
+   "key": "BloodSplatterMutator.necrotic",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Necrotic",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Necrotic"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Damned"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rb31pl"
+   ],
+   "nodes": [
+    "Rip Blood Tree Necrotic"
+   ],
+   "evidence": "Physical -> Necrotic: getTags clears Physical (1) and sets Necrotic (0x20); Bleed -> Damned; DPS applier uses the necrotic variant. bool: tags Physical -> Necrotic "
+  },
+  {
+   "key": "BurstOfFlameMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fw3d"
+   ],
+   "nodes": [
+    "Flame Ward Ice Retaliation"
+   ],
+   "evidence": "Fire -> Cold: DamageStatsHolder.convertAllDamageOfType(Fire(1)->Cold(2)); tags |= Cold (4); freeze rate += (increasedFreezeRate+1)*40; temp stats for frostbite (0x17 ailment chance etc.). bool: all Fire base damage -> Cold; freeze rate +40*(1+increasedFreezeRate) "
+  },
+  {
+   "key": "BurstOfFlameMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fw3d"
+   ],
+   "nodes": [
+    "Flame Ward Lightning Retaliation"
+   ],
+   "evidence": "Fire -> Lightning: convertAllDamageOfType(Fire->Lightning(3)); tags |= Lightning (2); shock stat (+0x1c scaled by 1+increasedFreezeRate). bool: Fire base damage -> Lightning "
+  },
+  {
+   "key": "ChaosBoltsMutator.fireConvertedToCold",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ch4bo"
+   ],
+   "nodes": [
+    "Chaos Bolts Fire To Cold Conversion"
+   ],
+   "evidence": "Fire -> Cold: getTags clears Fire (8) and sets Cold (4); conversionType 3; Ignite -> Frostbite chance; VFX. bool: tags Fire -> Cold; ConversionType 3 "
+  },
+  {
+   "key": "ChaosBoltsMutator.necroticConvertedToPhysical",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Damned",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ch4bo"
+   ],
+   "nodes": [
+    "Chaos Bolts Necrotic To Physical Conversion"
+   ],
+   "evidence": "Necrotic -> Physical: getTags clears Necrotic(0x20) and sets Physical(1); with fire->cold both: tags & 0xd7 | 5; conversionType passed to the bolts; Damned -> Bleed ailment conversion (temp stat). bool: tags Necrotic -> Physical; ConversionType 1 (2 with fire->cold) "
+  },
+  {
+   "key": "ChthonicFissureMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ch0fs"
+   ],
+   "nodes": [
+    "Chthonic Fissure Physical Conversion"
+   ],
+   "evidence": "Fire -> Physical: ConversionType 1, tags Fire -> Physical, Ignite -> Bleed chance; used in hit mutator, DPS, VFX. bool: Fire -> Physical; ignite chance -> bleed chance "
+  },
+  {
+   "key": "ChthonicFissureMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ch0fs"
+   ],
+   "nodes": [
+    "Chthonic Fissure Poison Conversion"
+   ],
+   "evidence": "Fire -> Poison: ConversionType 2, tags Fire -> Poison (0x40), Ignite -> Poison chance. bool: Fire -> Poison; ignite chance -> poison chance "
+  },
+  {
+   "key": "DancingStrikesMutator.bleedConvertedToPoison",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "dacn33"
+   ],
+   "nodes": [
+    "Dancing Strikes Bleed To Poison"
+   ],
+   "evidence": "Bleed -> Poison: GetConversionType 1 (2 if manager fire flag), tags |= Poison (0x40) (or Physical -> Fire), ailment conversion Bleed(0x1c?)->Poison stat; Physical -> Poison penetration. bool: tags |= Poison; ailment conversion bleed -> poison "
+  },
+  {
+   "key": "DeathSealMutator.coldConversionOfDeathWave",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ds34l"
+   ],
+   "nodes": [
+    "Death Seal Cold Conversion"
+   ],
+   "evidence": "Necrotic -> Cold for the wave: ConversionType 2; resist (cold), shred (0x4a) and tags converted. bool: wave damage Necrotic -> Cold "
+  },
+  {
+   "key": "DeathSealMutator.physicalConversionOfDeathWave",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ds34l"
+   ],
+   "nodes": [
+    "Death Seal Wave Physical Conversion"
+   ],
+   "evidence": "Necrotic -> Physical for the wave: ConversionType 1, VFX/sound, resistance/shred lists converted (necrotic -> physical). bool: wave damage Necrotic -> Physical (resist and shred converted) "
+  },
+  {
+   "key": "DecoyMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Cold Explosion"
+   ],
+   "evidence": "Fire -> Cold: getTags clears Fire(8) and sets Cold(4); tree: Ignite -> Chill chance, 60 freeze rate. bool: tags Fire -> Cold "
+  },
+  {
+   "key": "DecoyMutator.igniteConvertedToPoison",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Ignite Converted To Poison"
+   ],
+   "evidence": "Ignite -> Poison: DPS applier uses the Acid Flask replacement of the explosion (explosions replaced by acid flasks) instead of decoyDetonation. bool: DPS uses acid flask variant Spawn-side logic in SummonDecoyMutator/DetonateDecoyMutator."
+  },
+  {
+   "key": "DetonatingArrowMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "detar"
+   ],
+   "nodes": [
+    "Detonating Arrow Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold: explosion conversion (+0x13e flag), Shock -> Chill, freeze rate. bool: Lightning -> Cold "
+  },
+  {
+   "key": "DetonatingArrowMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "detar"
+   ],
+   "nodes": [
+    "Detonating Arrow Fire Conversion"
+   ],
+   "evidence": "Lightning -> Fire: explosion tag/damage conversion, Shock -> Ignite chance; VFX/sound. bool: Lightning -> Fire "
+  },
+  {
+   "key": "DivineFlareMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "si4lgl"
+   ],
+   "nodes": [
+    "Sigils Of Hope Convert To Lightning"
+   ],
+   "evidence": "Converts Divine Flare's base fire damage to lightning (all DamageStatsHolders) and swaps the Fire tag for Lightning; also switches the visual (CreateVfxOnDeath alternate). Ignored if voidConversion is set (void wins). GetConversion reports ConversionType Lightning to Sigils of Hope. bool: DamageStatsHolder.convertBaseDamage(FIRE, LIGHTNING, 1.0) ; tags = (tags & ~Fire) | Lightning Tooltip's '+15% "
+  },
+  {
+   "key": "DrainLifeMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "dl73"
+   ],
+   "nodes": [
+    "Drain Life Poison Conversion"
+   ],
+   "evidence": "Necrotic -> Poison: DamageStatsHolder.convertBaseDamage(Necrotic(4)->Poison(6), 100%); tags, VFX and kill effects converted. bool: base damage Necrotic -> Poison "
+  },
+  {
+   "key": "DreadShadeMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ds4d3"
+   ],
+   "nodes": [
+    "Dread Shade Poison Conversion"
+   ],
+   "evidence": "Increased necrotic damage -> poison: aura damage stat uses Poison tag (0x40), AilmentChance(Poison) per added necrotic damage; getConversion/getTags. bool: Necrotic -> Poison "
+  },
+  {
+   "key": "DreamslashMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    },
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "dr4sl"
+   ],
+   "nodes": [
+    "Dreamslash Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold conversion (ConversionType 1); Bleed and Ignite -> Frostbite in getTempStats; VFX index 1. bool: tags Physical -> Cold; ailments converted "
+  },
+  {
+   "key": "DreamslashMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    },
+    {
+     "from": "Frostbite",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "dr4sl"
+   ],
+   "nodes": [
+    "Dreamslash Fire Conversion"
+   ],
+   "evidence": "Physical -> Fire conversion; Bleed and Frostbite -> Ignite; Chill -> fire res shred (ConversionType 2). bool: tags Physical -> Fire; ailments converted "
+  },
+  {
+   "key": "EarthquakeSeekingCrackMutator.spellConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Spell",
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical",
+    "Melee"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "eq5s"
+   ],
+   "nodes": [
+    "Earthquake Spell And Lightning Conversion"
+   ],
+   "evidence": "Converts melee attack to spell with physical-to-lightning conversion (bool flag) isSpell = true; physicalDamage -> lightningDamage if spellConversion != 0 "
+  },
+  {
+   "key": "EarthquakeSlamMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "eq5s"
+   ],
+   "nodes": [
+    "Earthquake Cold Mode"
+   ],
+   "evidence": "Cold mode: Base damage -> Cold (ConversionType 3), Armour Shred -> Frostbite chance. bool "
+  },
+  {
+   "key": "EarthquakeSlamMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "eq5s"
+   ],
+   "nodes": [
+    "Earthquake Fire Mode"
+   ],
+   "evidence": "Fire mode: Base damage -> Fire (ConversionType 1) and Armour Shred -> Ignite chance. bool "
+  },
+  {
+   "key": "EarthquakeSlamMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "eq5s"
+   ],
+   "nodes": [
+    "Earthquake Spell And Lightning Conversion"
+   ],
+   "evidence": "Physical -> Lightning (ConversionType 2); minion display tags. bool "
+  },
+  {
+   "key": "EarthquakeSlamMutator.spellConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Spell",
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Melee"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "eq5s"
+   ],
+   "nodes": [
+    "Earthquake Spell And Lightning Conversion"
+   ],
+   "evidence": "Melee attack becomes Spell (tags 0x100), physical -> lightning conversion; +80 initial slam spell damage; changes minion display tags and speed scaler. bool: tags melee -> spell "
+  },
+  {
+   "key": "EntanglingRootsMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "er6no"
+   ],
+   "nodes": [
+    "Entangling Roots Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold: tags/VFX, EntanglingRootsWrapMutator.coldConversion, seed mutator cold conversion; Physical -> Cold Res Shred. bool: Physical -> Cold "
+  },
+  {
+   "key": "ExplosiveTrapMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ex4tp"
+   ],
+   "nodes": [
+    "Explosive Trap Cold Conversion"
+   ],
+   "evidence": "Fire -> Cold (ConversionType 1), fire res shred -> cold res shred chance. bool: Fire -> Cold "
+  },
+  {
+   "key": "ExplosiveTrapMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ex4tp"
+   ],
+   "nodes": [
+    "Explosive Trap Lightning Conversion"
+   ],
+   "evidence": "Fire -> Lightning (ConversionType 2), Fire res shred -> Lightning res shred chance. bool: Fire -> Lightning "
+  },
+  {
+   "key": "FalconryMutator.poisonConversionForFeatherstorm",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "aa989"
+   ],
+   "nodes": [
+    "Aerial Assault Featherstorm Poison Conversion"
+   ],
+   "evidence": "Flag enabling physical to poison damage conversion for Featherstorm; affects poison chance calculation poison_conversion = (v == 1) Consumed in the falcon adapter/spawned falcon objects (not followed)."
+  },
+  {
+   "key": "FinalExplosionMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Cold Explosion"
+   ],
+   "evidence": "Fire -> Cold: base fire damage moved to cold (getBaseDamage(1) -> addBaseDamage(2)), freeze rate (+0x48) = (1+increasedFreezeRate)*240 (60 per tooltip), Ignite -> Chill ailment conversion stat (SP 100, ailment 3) in getTempStats. bool: Fire base -> Cold; AilmentConversion(Chill <- Ignite, 100%) "
+  },
+  {
+   "key": "FinalExplosionMutator.igniteConvertedToPoison",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Ignite Converted To Poison"
+   ],
+   "evidence": "Ignite -> Poison: finalExplosionIgnite adds poison (ailment 7) instead of ignite (1); conversion stat uses Poison (7); decoys replaced with acid flasks. bool: ailment 1 -> 7 "
+  },
+  {
+   "key": "FireAuraMutator.coldConversionFromFlameWard",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fw3d"
+   ],
+   "nodes": [
+    "Flame Ward Ice Retaliation"
+   ],
+   "evidence": "Fire -> Cold for the Fire Aura: tags (clears Fire 8 sets Cold 4), conversion type 1, ailment stat ids (0x2a/0x4b variants), VFX. bool: tags Fire -> Cold "
+  },
+  {
+   "key": "FireAuraMutator.lightningConversionFromFlameWard",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fw3d"
+   ],
+   "nodes": [
+    "Flame Ward Lightning Retaliation"
+   ],
+   "evidence": "Fire -> Lightning for the Fire Aura: tags Fire -> Lightning (2), conversion type 2. bool "
+  },
+  {
+   "key": "FireballExplosionMutator.baseDamageConvertedToLightning",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": "value"
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fi9"
+   ],
+   "nodes": [
+    "Fireball Added Lightning Damage"
+   ],
+   "evidence": "Fraction of base fire damage converted to Lightning: DamageStatsHolder.convertBaseDamage(Fire(1) -> Lightning, fraction = clamp(f + mgr.conversion, 0, 1)); getTags changes when full conversion. convert fraction = clamp(f + managerConversion, 0, 1) of Fire -> Lightning ; f = 0.5 "
+  },
+  {
+   "key": "FireballMutator.baseDamageConvertedToLightning",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": "value"
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fi9"
+   ],
+   "nodes": [
+    "Fireball Added Lightning Damage"
+   ],
+   "evidence": "Fraction of base fire damage converted to Lightning: GetTotalBaseDamageConvertedToLightning = clamp(f + mgr.conversion (+0xd28), 0, 1) (0 if the manager no-conversion flag +0xd38). Fire -> Lightning fraction = clamp(f + mgr, 0, 1) ; f = 0.5 "
+  },
+  {
+   "key": "FirebrandMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "f1b4d"
+   ],
+   "nodes": [
+    "Firebrand Lightning Conversion"
+   ],
+   "evidence": "Fire -> Lightning: stack added melee damage tag 0x202 (Melee|Lightning) instead of 0x208 (Melee|Fire); resistance per stack lightning; tags Fire -> Lightning; Ignite -> Shock chance. bool: Fire -> Lightning "
+  },
+  {
+   "key": "FlameReaveMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 0.5
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fr11mv"
+   ],
+   "nodes": [
+    "Flame Reave Lightning Conversion"
+   ],
+   "evidence": "50% of base fire damage -> Lightning (DamageStatsHolder.convertBaseDamage(Fire(1), Lightning(3), 0.5)); fire tree modifiers also apply to lightning; ignite chance also grants shock. bool: 50% Fire -> Lightning "
+  },
+  {
+   "key": "FlameRushMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Chill"
+    },
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    },
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fl71ds"
+   ],
+   "nodes": [
+    "Flame Rush Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold (cold mode): tags, ailment conversion stats (Lightning/Fire/Poison ailments -> Chill/Frostbite), VFX. bool: converted to Cold "
+  },
+  {
+   "key": "FlameRushMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fl71ds"
+   ],
+   "nodes": [
+    "Flame Rush Lightning Conversion"
+   ],
+   "evidence": "Fire -> Lightning: tags, ailment conversion stats in unconditionalTempStats (Fire -> Lightning shred chance), VFX; OnAbilityUseBeforeCreation. bool: Fire -> Lightning "
+  },
+  {
+   "key": "FlameWardMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fw3d"
+   ],
+   "nodes": [
+    "Flame Ward Ice Retaliation"
+   ],
+   "evidence": "Fire -> Cold for the ward and its retaliation (BurstOfFlameMutator.coldConversion), tags and VFX. bool: Fire -> Cold "
+  },
+  {
+   "key": "FlayMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fl44"
+   ],
+   "nodes": [
+    "Flay Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold, Bleed -> Frostbite, +80 freeze rate; ConversionType, VFX, attribute scaling; copied to FlayDelayerMutator. bool "
+  },
+  {
+   "key": "ForgeStrikeMutator.fireTag",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fs3e3"
+   ],
+   "nodes": [
+    "Forge Strike Added Fire Damage"
+   ],
+   "evidence": "getTags adds the Fire tag from the ability (forge strike deals fire damage). bool: AT |= ability tags (Fire) "
+  },
+  {
+   "key": "FrostClawMutator.conversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Chill",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "frc87w"
+   ],
+   "nodes": [
+    "Frost Claw Fire Conversion"
+   ],
+   "evidence": "ConversionType: 1 and 2 convert cold damage (tooltip: Cold -> Fire and Chill -> Ignite); drives DPS appliers, VFX and tags; copied to the claw component (+0x144). enum: 0 none, 1/2 element conversion "
+  },
+  {
+   "key": "FrostWallMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Chill",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "",
+    "fr4wl"
+   ],
+   "nodes": [
+    "Frost Wall Fire Conversion"
+   ],
+   "evidence": "Cold -> Fire, Chill -> Ignite, Frostbite -> Fire shred (GetFireConversion; DPS applier). bool "
+  },
+  {
+   "key": "GatheringStormMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ga2st"
+   ],
+   "nodes": [
+    "Gathering Storm Cold Conversion"
+   ],
+   "evidence": "ConversionType 1: Lightning -> Cold (convertBaseDamage(3,2,1)), Shock -> Frostbite, base freeze rate 40. bool: conversion type 1 "
+  },
+  {
+   "key": "GatheringStormMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ga2st"
+   ],
+   "nodes": [
+    "Gathering Storm Physical Conversion"
+   ],
+   "evidence": "ConversionType 2: Lightning -> Physical, Shock -> Armour shred chance. bool: conversion type 2 "
+  },
+  {
+   "key": "GhostflameMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1
+    },
+    {
+     "from": "Fire",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Fire",
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Damned",
+     "to": "Bleed"
+    },
+    {
+     "from": "Ignite",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "gh0fl"
+   ],
+   "nodes": [
+    "Ghostflame Damage Conversion To Physical"
+   ],
+   "evidence": "Necrotic -> Physical and Fire -> Physical (convertBaseDamage(4,0,1) and (1,0,1)); Damned and Ignite -> Bleed; tags/VFX/sound; getTempStats uses the converted ailment for the duration stats. bool "
+  },
+  {
+   "key": "GlyphOfDominionMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "gy2dm"
+   ],
+   "nodes": [
+    "Glyph Of Dominion Fire Conversion"
+   ],
+   "evidence": "Lightning -> Fire; shock -> ignite; copied to GlyphOfDominionExplosionMutator.fireConversion; VFX/tags/DPS. bool "
+  },
+  {
+   "key": "HailOfArrowsMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "exvol8"
+   ],
+   "nodes": [
+    "Hail Of Arrows Fire Damage Conversion"
+   ],
+   "evidence": "Physical -> Fire (convertAllDamageOfType(0,1)); Bleed -> Ignite; VFX/tags/DPS. bool "
+  },
+  {
+   "key": "HammerThrowMutator.aoeVoidDamage",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ht16aw"
+   ],
+   "nodes": [
+    "Hammer Throw Tree Void Damage In Aoe"
+   ],
+   "evidence": "Disintegrating Aura: adds Void base damage (increasedAoEVoidDamage+1)*8 to the hit, converts physical damage (convertBaseDamage 0->3 per tag); copied to the hammer component; DPS applier; tags. bool "
+  },
+  {
+   "key": "HarvestMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ha84"
+   ],
+   "nodes": [
+    "Harvest Cold Damage Conversion"
+   ],
+   "evidence": "Base Necrotic -> Cold; ConversionType 2; Bleed -> Frostbite; VFX/tags/scaling. bool "
+  },
+  {
+   "key": "HarvestMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Damned",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ha84"
+   ],
+   "nodes": [
+    "Harvest Physical Damage Conversion"
+   ],
+   "evidence": "Base Necrotic -> Physical (convertAllDamageOfType(4,0)); ConversionType 1; Dex/attribute scaling; Bleed instead of Damned; VFX/tags. bool "
+  },
+  {
+   "key": "HeartseekerMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "htsk5"
+   ],
+   "nodes": [
+    "Heartseeker Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold (convertBaseDamage(0,2)), base freeze rate 40 + addedFreezeRate; Bleed -> Frostbite; ConversionType 2. bool "
+  },
+  {
+   "key": "HeartseekerMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "htsk5"
+   ],
+   "nodes": [
+    "Heartseeker Fire Conversion"
+   ],
+   "evidence": "Physical -> Fire (convertBaseDamage(0,1)); Bleed -> Ignite; ConversionType 1. bool "
+  },
+  {
+   "key": "IceThornsMutator.convertToPhysical",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "tb47"
+   ],
+   "nodes": [
+    "Ice Thorns Convert To Physical"
+   ],
+   "evidence": "Cold -> Physical conversion; Poison chance instead of freeze; VFX/tags/DPS. bool "
+  },
+  {
+   "key": "InfernalShadeMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "is40"
+   ],
+   "nodes": [
+    "Infernal Shade Physical Conversion"
+   ],
+   "evidence": "Fire -> Physical, Ignite -> Bleed; copied to ShadeExplosionMutator.physicalConversion; tags/DPS/VFX. bool "
+  },
+  {
+   "key": "JavelinMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Electrify"
+    },
+    {
+     "from": "Bleed",
+     "to": "Electrify"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "javeli"
+   ],
+   "nodes": [
+    "Javelin Lightning Conversion"
+   ],
+   "evidence": "All physical base damage -> Lightning (convertAllDamageOfType(0,3)); Ignite/Bleed -> Electrify; VFX/tags/DPS. bool "
+  },
+  {
+   "key": "LightningBlastMutator.convertToCold",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "lb23il"
+   ],
+   "nodes": [
+    "Lightning Blast Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold (convertBaseDamage(3,2)); shock chance -> chill chance; base freeze rate 46 (2x base cold damage times freeze rate factor). bool "
+  },
+  {
+   "key": "MaelstromMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Physical",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Chill",
+     "to": "Slow"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "mas54"
+   ],
+   "nodes": [
+    "Maelstrom Physical Conversion"
+   ],
+   "evidence": "Maelstrom deals Physical instead of Cold: tags (AT & ~Cold) | Physical; chill becomes slow; cannot freeze; VFX/indicator changes. getTags = (AT & 0xFFFFFFFB) | 1 "
+  },
+  {
+   "key": "ManaStrikeMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ms26"
+   ],
+   "nodes": [
+    "Mana Strike Cold Conversion"
+   ],
+   "evidence": "If true, Mana Strike's lightning damage is converted to cold damage; shock -> frostbite chance If field is true, convert lightning tags to cold tags and shock chance to frostbite Tag change itself is in getTags of base chain."
+  },
+  {
+   "key": "MarrowShardsMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "bp2nk"
+   ],
+   "nodes": [
+    "Marrow Shards Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold conversion of all damage (DamageStatsHolder.convertAllDamageOfType(0,2)), bleed -> frostbite (Ailment 0x17), freeze rate = 100*0.4*crit-chance-ish, tags: (tags & ~Physical(1)) | Cold(4); AilmentConversionStat(0x17,2,1.0). getTags = (AT & 0xFFFFFFFE) | 4; convertAllDamageOfType(Physical->Cold); BaseDamageStats.freezeRate(+0x48)=stat(+0x3C)*100*0.4 "
+  },
+  {
+   "key": "NetMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "Bleed->Shred is non-standard ailment",
+   "trees": [
+    "ne01t"
+   ],
+   "nodes": [
+    "Net Lightning Conversion"
+   ],
+   "evidence": "Physical -> Lightning conversion: tags (AT & ~Physical) | Lightning(2); Bleed -> lightning res shred ailment conversion; VFX. getTags = (AT & 0xFFFFFFFE) | 2 "
+  },
+  {
+   "key": "NetMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Poison",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ne01t"
+   ],
+   "nodes": [
+    "Net Poison Conversion"
+   ],
+   "evidence": "Physical -> Poison conversion: tags |= 0x40 (Poison); Stats.AilmentConversionStat(to Poison 7, from Bleed 2, 1.0). getTags = AT | 0x40; bleed chance -> poison chance "
+  },
+  {
+   "key": "ProfaneVeilMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Fire",
+     "fraction": 1
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": true,
+   "ailment_convert": [],
+   "note": "Bleed->Shred is non-standard ailment",
+   "trees": [
+    "pr5fm"
+   ],
+   "nodes": [
+    "Profane Veil Damage Converted To Fire And Ignite Chance Per Second"
+   ],
+   "evidence": "Necrotic -> Fire conversion: tags changed, repeated damage of the veil converted (DamageStatsHolder.convertAllDamageOfType(Necrotic(4)->Fire)), AbilityObjectIndicator type 2, no moreDamagePerBleedChance. convertAllDamageOfType(Necrotic -> Fire); getTags swaps tag "
+  },
+  {
+   "key": "ProfaneVeilMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "pr5fm"
+   ],
+   "nodes": [
+    "Profane Veil Damage Converted To Physical"
+   ],
+   "evidence": "Necrotic -> Physical conversion: convertAllDamageOfType(4->0), indicator type 1, getTags change; orb conversions. convertAllDamageOfType(Necrotic -> Physical) "
+  },
+  {
+   "key": "PunctureMutator.bleedConvertedToPoison",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "pun22"
+   ],
+   "nodes": [
+    "Puncture Bleed Converted To Poison"
+   ],
+   "evidence": "Bleed -> Poison: tags | 0x40 (Poison), conversion type 6, bleed chance becomes poison chance; mirage variants use poison spear mirage. getTags = AT | 0x40; getConversionType 6; AilmentConversion bleed->poison "
+  },
+  {
+   "key": "PunctureMutator.poisonConvertedToBleed",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "pun22"
+   ],
+   "nodes": [
+    "Puncture Poison Converted To Bleed"
+   ],
+   "evidence": "Boolean flag: when set, poison chance converts to bleed chance boolean gate: if(f) then Stat(100, 2, 1.0) ailment conversion Stat(100,2,1.0) interpreted as ailment conversion."
+  },
+  {
+   "key": "RadiantLanceMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Electrify",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ra1an"
+   ],
+   "nodes": [
+    "Radiant Lance Fire Conversion"
+   ],
+   "evidence": "Lightning -> Fire conversion (conversion type 1): Electrify -> Ignite, lightning res shred -> fire res shred. GetConversionType = 1 "
+  },
+  {
+   "key": "RadiantLanceMutator.igniteConvertedToElectrify",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Electrify"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ra1an"
+   ],
+   "nodes": [
+    "Radiant Lance Ignite To Electrify"
+   ],
+   "evidence": "Ignite chance converts to Electrify (conversion stat 0x5D). AilmentConversion ignite->electrify "
+  },
+  {
+   "key": "RadiantLanceMutator.shockConvertedToElectrify",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Electrify"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ra1an"
+   ],
+   "nodes": [
+    "Radiant Lance Shock To Electrify"
+   ],
+   "evidence": "Shock chance converts to Electrify (conversion stat) and shock chance counted into electrify for Scathing Light. AilmentConversion shock(5)->electrify(0x5D) when conversion type <2 "
+  },
+  {
+   "key": "RadiantLanceMutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Electrify",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ra1an"
+   ],
+   "nodes": [
+    "Radiant Lance Void Conversion"
+   ],
+   "evidence": "Lightning -> Void conversion (type 3): Electrify -> Time Rot, lightning res shred -> void res shred; +2 void spell damage per vitality (stat). GetConversionType = 3 "
+  },
+  {
+   "key": "ReapMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Convert Reap to Cold Damage"
+   ],
+   "evidence": "Reap deals Cold instead of Necrotic: tags (AT & ~Necrotic(0x20)) | Cold(4); convertAllDamageOfType(Necrotic(4)->Cold(2)); poison chance becomes frostbite chance (ailment 0x17); necrotic per intelligence scaling -> cold; freeze rate. getTags = (AT & 0xFFFFFFDF) | 4; conversion type 1; AilmentConversionStat(frostbite 0x17 <- poison 7) "
+  },
+  {
+   "key": "ReapMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Physical Conversion"
+   ],
+   "evidence": "Necrotic -> Physical conversion: tags (AT & ~Necrotic) | Physical(1); conversion type 3; poison chance -> bleed chance (ailment 2). getTags = (AT & 0xFFFFFFDF) | 1 "
+  },
+  {
+   "key": "ReapMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Poison",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Convert Reap Poison But No Crit"
+   ],
+   "evidence": "Reap Necrotic -> Poison conversion: tag |= 0x40; conversion type 2; poisonChance applied as Poison stat; no crit (tree). getTags = AT | 0x40 "
+  },
+  {
+   "key": "ReaperFormMutator.coldConversion",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Convert Reap to Cold Damage"
+   ],
+   "evidence": "Gates conversion of Reaper Form ability tags Necrotic->Cold and form ailment Poison->Frostbite f (bool gate) Reap's own damage conversion (tooltip) not done here; only tag/ailment swap + AbilityObjectIndicator visuals sync. Reap side likely via ReaperFormTree/other code."
+  },
+  {
+   "key": "ReaperFormMutator.physicalConversion",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Bleed"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Physical Conversion"
+   ],
+   "evidence": "Enables Necrotic to Physical damage conversion and Poison to Bleed conversion in Reaper Form flag controls damage type conversion behavior cold overrides physical overrides poison"
+  },
+  {
+   "key": "ReaperFormMutator.poisonConversion",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "rf1azz"
+   ],
+   "nodes": [
+    "Reaper Form Convert Reap Poison But No Crit"
+   ],
+   "evidence": "If true, Reaper Form converts Necrotic damage tags to Poison; applies poison ailment instead If field is true, tag conversion Necrotic -> Poison; damage type and ailments shift to poison tooltip '+100% poison chance / no crit' not implemented in this class"
+  },
+  {
+   "key": "RipBloodMutator.necrotic",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Necrotic",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Necrotic"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Damned"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "rb31pl"
+   ],
+   "nodes": [
+    "Rip Blood Tree Necrotic"
+   ],
+   "evidence": "Physical -> Necrotic conversion: tags changed, bleed -> damned, necrotic VFX and CoagulatedBlood/BloodSplatter/BloodTether necrotic flags. getTags necrotic variant; CreateOnHit conversions "
+  },
+  {
+   "key": "Rive2Mutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sndr1"
+   ],
+   "nodes": [
+    "Rive Void Conversion Double Echo Chance"
+   ],
+   "evidence": "Void conversion: getTags = (AT & ~Physical(1)) | Void(0x10); bleed becomes Time Rot (ailment conversion stat in unconditionalTempStats); doubles echo chance. getTags = (AT & 0xFFFFFFFE) | 0x10 "
+  },
+  {
+   "key": "Rive3Mutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sndr1"
+   ],
+   "nodes": [
+    "Rive Void Conversion Double Echo Chance"
+   ],
+   "evidence": "Void conversion: getTags (AT & ~Physical)|Void; also changes the strike VFX and radius collider in Mutate; flameDrinkerStats gain void penetration form. getTags = (AT & 0xFFFFFFFE) | 0x10 "
+  },
+  {
+   "key": "RiveMutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sndr1"
+   ],
+   "nodes": [
+    "Rive Void Conversion Double Echo Chance"
+   ],
+   "evidence": "Void conversion: getTags = (AT & ~Physical(1)) | Void(0x10); bleed becomes Time Rot (ailment conversion stat in unconditionalTempStats); doubles echo chance. getTags = (AT & 0xFFFFFFFE) | 0x10 "
+  },
+  {
+   "key": "RuneEmberMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fl71ds"
+   ],
+   "nodes": [
+    "Flame Rush Cold Conversion"
+   ],
+   "evidence": "When enabled, converts fire damage to cold damage and fire shred to cold shred utility_flag: bool, enables fire->cold damage and shred conversion Tooltip says Lightning -> Cold but code source type is 1 (Fire)."
+  },
+  {
+   "key": "RuneEmberMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "fl71ds"
+   ],
+   "nodes": [
+    "Flame Rush Lightning Conversion"
+   ],
+   "evidence": "Fire -> Lightning conversion of the Rune Ember hits: DamageStatsHolder.convertAllDamageOfType(1 Fire, 3 Lightning) on every holder; AbilityObjectIndicator type 2. convertAllDamageOfType(Fire->Lightning, 100%) "
+  },
+  {
+   "key": "SacrificeMutator.addedFireDamage",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Fire",
+    "Spell"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sf31rc"
+   ],
+   "nodes": [
+    "Sacrifice Tree Added Fire Damage"
+   ],
+   "evidence": "Temp stat AddedStat(Damage, tags 0x108 = Fire|Spell, f) and adds the Fire tag (8) to getTags. added fire spell damage f per cast; getTags |= 8; f=6*p "
+  },
+  {
+   "key": "ScorpionCompanionAbilityMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Poison",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Poison"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sc36pi"
+   ],
+   "nodes": [
+    "Summon Scorpion Cold Conversion",
+    "Summon Scorpion Freeze Rate"
+   ],
+   "evidence": "Scorpion Venom Nova becomes Cold: getTags = (tags & ~(Physical|Poison)) | Cold(4); poison chance becomes frostbite (ailment 0x17 for allies buff); freeze. getTags = (AT & 0xFFFFFFBE) | 4 "
+  },
+  {
+   "key": "ScorpionCompanionAbilityMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Poison",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Poison"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sc36pi"
+   ],
+   "nodes": [
+    "Summon Scorpion Lightning Conversion"
+   ],
+   "evidence": "Scorpion Venom Nova becomes Lightning: getTags = (tags & ~(Physical|Poison)) | Lightning(2); poison -> shock (ailment 5); also casts Shock Nova using Storm Bolt stacks (GetStormBoltStacks, RepeatedlyApplyAilmentsInRadius). getTags = (AT & 0xFFFFFFBE) | 2 "
+  },
+  {
+   "key": "SerpentStrikeMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "st31et"
+   ],
+   "nodes": [
+    "Serpent Strike Cold Conversion"
+   ],
+   "evidence": "Physical base damage -> Cold: convertBaseDamage(0 Physical, 2 Cold, 100%); tags (AT & ~Physical)|Cold; +40 freeze rate; bleed -> frostbite; also used by Swarmblade armblade slashes. getTags = (AT & 0xFFFFFFFE) | 4; convertBaseDamage(Phys->Cold,1.0); freezeRate += 40 "
+  },
+  {
+   "key": "ShadowCascadeMutator.daggersToThrow",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Throwing"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "dagg3"
+   ],
+   "nodes": [
+    "Shadow Cascade Dagger Damage No Melee",
+    "Shadow Cascade Dagger Dance"
+   ],
+   "evidence": "Number of daggers thrown (DaggerThrowMutator, CreateAbilityObjectOnDeath dagger throw; extra = daggers-1); adds Throwing tag (0x400) to getTags; DPSApplier counts the daggers. daggers per cast = f; tags |= 0x400 when f>0; f=1*p (+3 with No Melee node) "
+  },
+  {
+   "key": "ShadowCascadeMutator.noMelee",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [
+    "Melee"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "dagg3"
+   ],
+   "nodes": [
+    "Shadow Cascade Dagger Damage No Melee"
+   ],
+   "evidence": "No melee attack: only daggers; removes the Melee tag (0x200) from getTags; use delay 0.08 s (0x3da3d70a) or 0.05 s when channelled. getTags &= ~0x200; getUseDelay override "
+  },
+  {
+   "key": "ShadowCascadeMutator.poisonConversionVFX",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "dagg3"
+   ],
+   "nodes": [
+    "Shadow Cascade Bleed To Poison"
+   ],
+   "evidence": "Bleed -> Poison conversion: tags |= 0x40 (Poison) (or Fire(8) when the stats-mutator forces conversion type 2); conversion type 1; passed to dagger mutator (+0x13C). getTags: | 0x40; GetConversionType 1 "
+  },
+  {
+   "key": "ShadowRendBowMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sh4re"
+   ],
+   "nodes": [
+    "Shadow Rend Lightning Conversion"
+   ],
+   "evidence": "converts Shadow Rend to lightning getTags: Physical->Lightning; ShadowRendDamageMutator: tags Physical->Lightning, DamageStatsHolder.convertBaseDamage(PHYSICAL->LIGHTNING, 100%); penPerUniqueAilment uses LIGHTNING "
+  },
+  {
+   "key": "ShadowRendMeleeMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sh4re"
+   ],
+   "nodes": [
+    "Shadow Rend Lightning Conversion"
+   ],
+   "evidence": "converts Shadow Rend to lightning getTags: Physical->Lightning; ShadowRendDamageMutator: tags Physical->Lightning, DamageStatsHolder.convertBaseDamage(PHYSICAL->LIGHTNING, 100%); penPerUniqueAilment uses LIGHTNING "
+  },
+  {
+   "key": "ShatterStrikeMutator.convertIgniteStacksToFrostbite",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ss3tre"
+   ],
+   "nodes": [
+    "Shatter Strike Convert Ignite to Frostbite"
+   ],
+   "evidence": "Ignite stacks on the target are converted to frostbite by the strike (ShatterStrikeMutator.convertIgniteStacksToFrostbite). ignite -> frostbite stack conversion on hit "
+  },
+  {
+   "key": "ShatterStrikeMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Frostbite",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ss3tre"
+   ],
+   "nodes": [
+    "Shatter Strike Lightning Conversion"
+   ],
+   "evidence": "Cold -> Lightning conversion: getTags = (AT & ~Cold(4)) | Lightning(2); frostbite -> shock; cannot freeze (frozen condition uses shocked); cold penetration becomes lightning. getTags = (AT & 0xFFFFFFFB) | 2 "
+  },
+  {
+   "key": "ShieldBashMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sb4h"
+   ],
+   "nodes": [
+    "Shield Bash Fire Conversion"
+   ],
+   "evidence": "Base damage -> Fire: getTags = (AT & ~Physical) | Fire(8); convertAllDamageOfType on holders; guaranteed stun becomes ignite chance (+300%). getTags = (AT & 0xFFFFFFFE) | 8 "
+  },
+  {
+   "key": "ShieldRushMutator.voidTag",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sr31hu"
+   ],
+   "nodes": [
+    "Shield Rush Tree AoE Void Damage",
+    "Shield Rush Tree Attack Speed Reduced Void Damage",
+    "Shield Rush Tree Backwards Beam",
+    "Shield Rush Tree Forwards Beam",
+    "Shield Rush Tree No Shield Requirement"
+   ],
+   "evidence": "Adds the Void tag (0x10) to the ability tags (void beams, no shield requirement variant). getTags |= 0x10 "
+  },
+  {
+   "key": "ShieldThrowMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "st31io"
+   ],
+   "nodes": [
+    "Shield Throw Convert to Fire and Convert Stun to Ignite"
+   ],
+   "evidence": "Shield Throw damage physical -> Fire: ConversionTarget returns 8; getTags (AT & ~Physical) | Fire; bleed -> ignite (AilmentConversionStat(1,2)); phys shred -> fire res shred. ConversionTarget = 8 (Fire) (16 void if stats mutator flag, else 1 physical); getTags = (AT & 0xFFFFFFFE) | 8 "
+  },
+  {
+   "key": "ShieldThrowMutator.fireTag",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "st31io"
+   ],
+   "nodes": [
+    "Shield Throw Fire Damage And Fire Pen"
+   ],
+   "evidence": "Adds the Fire tag (8) to Shield Throw (without removing physical). getTags |= 8 "
+  },
+  {
+   "key": "ShurikensMutator.percentBaseDamageConvertedToLightning",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": "value"
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "srk21"
+   ],
+   "nodes": [
+    "Shurikens Added Lightning Damage"
+   ],
+   "evidence": "Fraction of base physical damage converted to Lightning: convertBaseDamage(0 Physical, 3 Lightning, min(1, f + managerExtra)); >=0.48 changes the indicator to lightning. convert min(1,f+extra) of base damage Physical->Lightning; f=0.25*p "
+  },
+  {
+   "key": "SigilsOfHopeMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "убирает регенерацию здоровья сигил",
+   "trees": [
+    "si4lgl"
+   ],
+   "nodes": [
+    "Sigils Of Hope Convert To Lightning"
+   ],
+   "evidence": "converts sigil fire stats to lightning; removes health regen from sigils conversion=1 (void @0x146 has priority =2). AddStatToAura: stats with Fire tag -> tag Fire cleared, Lightning set; stats with property HealthRegen and increasedValue!=0 skipped. getTags: abilityTags & ~Fire | Lightning; passed to SigilsOfHopeActiveMutator.conversion (VFX) also used by DivineFlareMutator.lightningConversion (t"
+  },
+  {
+   "key": "SmallExplosionMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Chill"
+    }
+   ],
+   "note": "добавляет freeze rate 120",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Cold Explosion"
+   ],
+   "evidence": "fire -> cold conversion of Decoy explosion; ignite chance -> chill; explosion gains freeze rate each DamageStatsHolder: base COLD += base FIRE, base FIRE = 0; baseDamageStats.freezeRate = 120*(1+increasedFreezeRate); temp stat Stat(SP100 AilmentConversion, tags=3 Chill(to), added 1.0, specialTag 1 Ignite(from)); cold VFX 120 verified (0x1845620E0); tooltip says 60 freeze rate"
+  },
+  {
+   "key": "SmallExplosionMutator.igniteConvertedToPoison",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Ignite Converted To Poison"
+   ],
+   "evidence": "explosion replaced by Acid Flask explosion; ignite chance converted to poison temp stat Stat(SP100 AilmentConversion, tags=7 Poison(to), added 1.0, specialTag 1 Ignite(from)) = 100% ignite->poison; Mutate: constructAbilityObject(acidFlaskExplosion @0x150) at same location, original object's DamageEnemyOnHit disabled and its CreateVfxOnDeath list cleared original explosion deals no damage; damage c"
+  },
+  {
+   "key": "SmiteMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Electrify"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sm87r4"
+   ],
+   "nodes": [
+    "Smite Lightning Conversion"
+   ],
+   "evidence": "Fire -> Lightning conversion: conversion type 2; getTags (AT & ~Fire(8)) | Lightning(2); ignite -> electrify (ailment 0x5D). getTags = (AT & 0xFFFFFFF7) | 2 "
+  },
+  {
+   "key": "SmiteMutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "отключает Holy Nova и лечение",
+   "trees": [
+    "sm87r4"
+   ],
+   "nodes": [
+    "Smite Void Conversion"
+   ],
+   "evidence": "Void conversion (Fire -> Void): conversion type 1; getTags (AT & ~Fire) | Void(0x10); ignite -> time rot; Smite no longer heals (no Holy Nova when conversion type is 1). getTags = (AT & 0xFFFFFFF7) | 0x10; Holy Nova skipped "
+  },
+  {
+   "key": "SmokeBombMutator.applyPoisonResShredinsteadOfArmorShred",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Armour Shred",
+     "to": "Poison Shred"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "smbmb"
+   ],
+   "nodes": [
+    "Smoke Bomb Poison Shred Conversion"
+   ],
+   "evidence": "Armour shred becomes Poison Resistance Shred. ailment = poisonShred instead of armorShred "
+  },
+  {
+   "key": "SnapFreezeMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Cold",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Cold"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Chill",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "sw31a"
+   ],
+   "nodes": [
+    "Snap Freeze Lightning Conversion"
+   ],
+   "evidence": "Cold -> Lightning: getTags = (AT & ~Cold) | Lightning; convertAllDamageOfType(Cold, Lightning); chill -> shock chance; no self freeze. getTags = (AT & 0xFFFFFFFB) | 2 "
+  },
+  {
+   "key": "SonicWaveMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Cold Explosion"
+   ],
+   "evidence": "Boolean flag to enable Fire to Cold conversion and Ignite to Chill for decoy Sonic Wave v Conversion body read from names/tooltip; Mutate not expanded."
+  },
+  {
+   "key": "SonicWaveMutator.convertArmorShredToFire",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Armour Shred",
+     "to": "Fire Resistance Shred"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "deeco"
+   ],
+   "nodes": [
+    "Decoy Sonic Wave Fire Shred"
+   ],
+   "evidence": "Armour shred becomes Fire Resistance Shred. ailment armour shred -> fire res shred "
+  },
+  {
+   "key": "SoulFeastMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Physical",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "ward конвертируется в health",
+   "trees": [
+    "fe8at"
+   ],
+   "nodes": [
+    "Soul Feast Convert to Physical and Restores Health"
+   ],
+   "evidence": "Necrotic -> Physical conversion (convertBaseDamage(4,0,1.0)); ward converted to health. getTags necrotic->physical; ward -> health "
+  },
+  {
+   "key": "SoulFeastMutator.poisonConvertedToArmourShred",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Armour Shred"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "fe8at"
+   ],
+   "nodes": [
+    "Soul Feast Armour Shred"
+   ],
+   "evidence": "Poison becomes Armour Shred (ailment 8 instead of 7): both for the self-applied poison and temp stats. ailment id 7 -> 8 "
+  },
+  {
+   "key": "SpiritThornsMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "freeze rate +40",
+   "trees": [
+    "sf5rd"
+   ],
+   "nodes": [
+    "Spriggan Form Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold (convertBaseDamage(0,2,1.0)), freeze rate +40 (0x42200000 at +0x48 of BaseDamageStats), getTags (AT & ~Physical)|Cold, poison chance -> frostbite chance. getTags = (AT & 0xFFFFFFFE) | 4; convertBaseDamage(Phys->Cold, 100%); freeze rate = 40 "
+  },
+  {
+   "key": "SprigganFormMutator.coldConversion",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sf5rd"
+   ],
+   "nodes": [
+    "Spriggan Form Cold Conversion"
+   ],
+   "evidence": "converts Spriggan Form ability tags Physical -> Cold (damage type conversion); also swaps casting VFX index and form indicator visuals getTagsWithFakeTags = (base tags & ~Physical) | Cold when field; GetCastingVFXIndex = field?1:0; AbilityObjectIndicator.HandleTransformAbilityMutator(0xDF, field) Tooltip also mentions poison->frostbite and 40 base freeze rate; not implemented in this mutator (like"
+  },
+  {
+   "key": "SprigganHealingTotemMutator.convertToCold",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "freeze rate +15",
+   "trees": [
+    "th39"
+   ],
+   "nodes": [
+    "Thorn Totem Convert To Cold"
+   ],
+   "evidence": "Ability flag: converts thorn totem damage from physical to cold, poison to frostbite; adds freeze rate. v (boolean flag enabling conversion + freeze rate application) Tooltip claims 30 base freeze rate and +25% freeze rate multiplier; constants in code are 15 (0x41700000); 30 may come from the thorn base."
+  },
+  {
+   "key": "StaticOrbMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "удаляет pull",
+   "trees": [
+    "so35a"
+   ],
+   "nodes": [
+    "Static Orb Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold: addBaseDamage(Cold, base lightning(3)) and remove lightning, freeze rate at +0x48 = addedFreezeRate; getTags (AT & ~Lightning)|Cold (0xfffffffd | 4); shock chance -> frostbite via stats; applied to charged ground and explosion. getTags = (AT & 0xFFFFFFFD) | 4; convert base lightning damage to cold; freeze rate = addedFreezeRate "
+  },
+  {
+   "key": "StormBoltMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "freeze rate +40",
+   "trees": [
+    "ga2st"
+   ],
+   "nodes": [
+    "Gathering Storm Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold (conversion type 1): convertBaseDamage(3 Lightning -> 2 Cold, 1.0); getTags (AT & ~Lightning)|Cold; shock -> frostbite; freeze rate +40 base. getTags = (AT & 0xFFFFFFFD) | 4; freeze rate = addedFreezeRate + 40 "
+  },
+  {
+   "key": "StormBoltMutator.physicalConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Physical",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Physical"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Armour Shred"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ga2st"
+   ],
+   "nodes": [
+    "Gathering Storm Physical Conversion"
+   ],
+   "evidence": "Lightning -> Physical (conversion type 2): getTags (AT & ~Lightning)|Physical; shock -> armour shred chance; convertBaseDamage for type 2. getTags = (AT & 0xFFFFFFFD) | 1 "
+  },
+  {
+   "key": "StormTotemMutator.convertShockToChill",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "st38ml"
+   ],
+   "nodes": [
+    "Storm Totem Blizzard"
+   ],
+   "evidence": "Shock applied by the totem becomes chill (cVar5 passed on to the ailment application). shock -> chill "
+  },
+  {
+   "key": "SurgeMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "freeze rate +60",
+   "trees": [
+    "su5g3"
+   ],
+   "nodes": [
+    "Surge Cold Conversion"
+   ],
+   "evidence": "Lightning -> Cold: GetConversion=1, getTags (AT & ~Lightning)|Cold (0xfffffffd | 4), shock -> frostbite chance, 60 freeze rate (temp stats). getTags = (AT & 0xFFFFFFFD) | 4 "
+  },
+  {
+   "key": "SurgeMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Lightning",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Lightning"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Shock",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "su5g3"
+   ],
+   "nodes": [
+    "Surge Fire Conversion"
+   ],
+   "evidence": "Lightning -> Fire: GetConversion=2, getTags (AT & ~Lightning)|Fire (0xfffffffd | 8), shock -> ignite chance. getTags = (AT & 0xFFFFFFFD) | 8 "
+  },
+  {
+   "key": "SwarmbladeFormMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Poison",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "Также конверсия яда в обморозь",
+   "trees": [
+    "sbf4m"
+   ],
+   "nodes": [
+    "Swarmblade Form Cold Conversion"
+   ],
+   "evidence": "Base physical -> cold: getTagsWithFakeTags |4, AbilityObjectIndicator.HandleTransformAbilityMutator(0xdf, true), poison->frostbite via statsInForm. tags | 4 "
+  },
+  {
+   "key": "SwarmbladeShiftMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sbf4m"
+   ],
+   "nodes": [
+    "Swarmblade Form Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold: getTags = (AT & ~1) | 4 (ISIL); SwarmbladeShiftSlashMutator.coldConversion; HitHives vfx variant. getTags = (AT & 0xFFFFFFFE) | 4 "
+  },
+  {
+   "key": "SwarmbladeSpinMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sbf4m"
+   ],
+   "nodes": [
+    "Swarmblade Form Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold: swarm tag 4 instead of 1, swarm cold flag +0x149, DPS applier (cold), vfx; getTags. phys -> cold "
+  },
+  {
+   "key": "SwarmbladeSpinMutator.useMinionDamageScalingInstead",
+   "kind": "tags",
+   "convert": [],
+   "tags_add": [
+    "Minion"
+   ],
+   "tags_remove": [
+    "DoT"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "Масштабирование урона отряда по модификаторам урона миньонов",
+   "trees": [
+    "sbf4m"
+   ],
+   "nodes": [
+    "Swarmblade Form Swarm Minion Damage"
+   ],
+   "evidence": "Swarm damage scales with minion damage modifiers instead of melee/physical: tags 0x1200->0x3200 / 0x1240->0x3240, more-stat tag 0x2000, temp stat tags |0x2000. minion scaling for swarm "
+  },
+  {
+   "key": "SwipeMutator.baseDamageConvertedToLightning",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": "value"
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sw43"
+   ],
+   "nodes": [
+    "Swipe Added Lightning Damage"
+   ],
+   "evidence": "Fraction of base (physical) damage converted to lightning: convertBaseDamage(0 Physical -> 3 Lightning, f); storm claw forces 1.0; getTags adds lightning; bear display tags. convertBaseDamage(Phys, Lightning, f); f=0.2p "
+  },
+  {
+   "key": "SwipeMutator.stormClawEvery3Seconds",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "Условная конверсия каждые 3 секунды",
+   "trees": [
+    "sw43"
+   ],
+   "nodes": [
+    "Swipe Lightning Damage Cooldown"
+   ],
+   "evidence": "Storm Claw: every 3 s the next Swipe is converted 100% to lightning (StormClawLightningConversionEvery3Seconds) with increasedAreaWithStormClaw; reset on totem summon with the reset node. cooldown-based conversion: 100% base dmg -> lightning every 3 s "
+  },
+  {
+   "key": "ThornShieldMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "sf5rd"
+   ],
+   "nodes": [
+    "Spriggan Form Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold: nova coldConversion, getTags (AT & ~1)|4, DPS applier, vfx. getTags = (AT & 0xFFFFFFFE) | 4 "
+  },
+  {
+   "key": "TornadoMutator.fireTornado",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "to50"
+   ],
+   "nodes": [
+    "Tornado Skill Fire Tornado"
+   ],
+   "evidence": "Physical -> Fire conversion (GetConversion 1); getTags (AT & ~1)|8; also forced by stats manager flag +0x708 (type 2 cold conversion). getTags = (AT & 0xFFFFFFFE) | 8 "
+  },
+  {
+   "key": "TransplantMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "Заморозка 100",
+   "trees": [
+    "ts50pl"
+   ],
+   "nodes": [
+    "Transplant Convert to Cold"
+   ],
+   "evidence": "Physical -> Cold (GetConversionType 2): getTags (AT & ~1)|4; 100 freeze rate; detonation flag. getTags = (AT & 0xFFFFFFFE) | 4 "
+  },
+  {
+   "key": "TransplantMutator.necroticConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Necrotic",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Necrotic"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ts50pl"
+   ],
+   "nodes": [
+    "Transplant Convert to Necrotic"
+   ],
+   "evidence": "Physical -> Necrotic: GetConversionType 1; getTags (AT & ~1)|0x20; detonation flag. getTags = (AT & 0xFFFFFFFE) | 0x20 "
+  },
+  {
+   "key": "UmbralBlades2Mutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold; conversion type 2; bleed -> frostbite via AilmentConversionStat(0x17,2). conversion type 2 (cold) "
+  },
+  {
+   "key": "UmbralBlades2Mutator.poisonConversion",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Bleed Converted To Poison"
+   ],
+   "evidence": "Bleed -> Poison; conversion type 1; getTags |0x40; explosion hit damage -80% / poison chance +100% (tooltip). conversion type 1 (poison) "
+  },
+  {
+   "key": "UmbralBlades3Mutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Throw 3 Added To Combo"
+   ],
+   "evidence": "Physical -> Cold; conversion type 2; bleed -> frostbite via AilmentConversionStat(0x17,2). conversion type 2 (cold) "
+  },
+  {
+   "key": "UmbralBlades3Mutator.poisonConversion",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Throw 3 Added To Combo"
+   ],
+   "evidence": "Bleed -> Poison; conversion type 1; getTags |0x40; explosion hit damage -80% / poison chance +100% (tooltip). conversion type 1 (poison) "
+  },
+  {
+   "key": "UmbralBladesMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold; conversion type 2; bleed -> frostbite via AilmentConversionStat(0x17,2). conversion type 2 (cold) "
+  },
+  {
+   "key": "UmbralBladesMutator.poisonConversion",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Bleed Converted To Poison"
+   ],
+   "evidence": "Bleed -> Poison; conversion type 1; getTags |0x40; explosion hit damage -80% / poison chance +100% (tooltip). conversion type 1 (poison) "
+  },
+  {
+   "key": "UmbralBladesRecallMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Cold Conversion"
+   ],
+   "evidence": "Physical -> Cold for recalled blades (conversion type 2); AilmentConversionStat(frostbite 0x17, 2) in temp stats; getTags |4. conversion cold "
+  },
+  {
+   "key": "UmbralBladesRecallMutator.poisonConversion",
+   "kind": "ailment_conversion",
+   "convert": [],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Poison"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "ub5d9"
+   ],
+   "nodes": [
+    "Umbral Blades Bleed Converted To Poison"
+   ],
+   "evidence": "Bleed -> Poison: GetConversionType 1 (3 when stats mgr fire flag); getTags |0x40; recalled blade poison flag. conversion poison "
+  },
+  {
+   "key": "UpheavalMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    },
+    {
+     "from": "Slow",
+     "to": "Chill"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "uph41"
+   ],
+   "nodes": [
+    "Upheaval Cold Conversion"
+   ],
+   "evidence": "Base damage -> Cold, bleed -> frostbite, slow -> chill; GetConversionType. conversion type cold "
+  },
+  {
+   "key": "VengeanceMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "gs15de"
+   ],
+   "nodes": [
+    "Vengeance Fire Conversion"
+   ],
+   "evidence": "Physical -> Fire (conversion type 1): getTags (AT & ~1)|8; physical -> fire res shred, bleed -> ignite (temp stats). getTags = (AT & 0xFFFFFFFE) | 8 "
+  },
+  {
+   "key": "VengeanceMutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "gs15de"
+   ],
+   "nodes": [
+    "Vengeance Void Conversion"
+   ],
+   "evidence": "Physical -> Void (conversion type 2): getTags (AT & ~1)|0x10; physical -> void res shred, bleed -> time rot. getTags = (AT & 0xFFFFFFFE) | 0x10 "
+  },
+  {
+   "key": "VoidBoltMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Void"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Time Rot",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "vr53sl"
+   ],
+   "nodes": [
+    "Volatile Reversal Fire Conversion"
+   ],
+   "evidence": "Void -> Fire: getTags (AT & ~0x10)|8; get_FireConverted true (also true automatically with the stats-manager flag +0xf00 when Intelligence < 50); time rot -> ignite chance. getTags = (AT & 0xFFFFFFEF) | 8 "
+  },
+  {
+   "key": "VoidCleaveMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Void"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "+30% урон на следующей атаке огнем",
+   "trees": [
+    "v01cv"
+   ],
+   "nodes": [
+    "Void Cleave Fire Conversion"
+   ],
+   "evidence": "100% base damage -> Fire; void res -> fire res shred; +30% damage on next fire attack/spell (via stats). getConversion/getTags fire "
+  },
+  {
+   "key": "VoidCleaveMutator.partialFireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 0.5
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "v01cv"
+   ],
+   "nodes": [
+    "Void Cleave Ignite Chance"
+   ],
+   "evidence": "50% of base void damage converted to fire (getConversion/getTags), ignite chance, plus fire penetration with ignite per 10% increased void damage. 50% base dmg -> fire; getTags adds fire "
+  },
+  {
+   "key": "VolatileReversalMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Void"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Time Rot",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "vr53sl"
+   ],
+   "nodes": [
+    "Volatile Reversal Fire Conversion"
+   ],
+   "evidence": "Void -> Fire conversion, time rot -> ignite chance (get_FireConverted; true also via stats mgr flag when Intelligence < 50). fire converted "
+  },
+  {
+   "key": "VolatileReversalReturnMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Void",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Void"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Time Rot",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "vr53sl"
+   ],
+   "nodes": [
+    "Volatile Reversal Fire Conversion"
+   ],
+   "evidence": "Void -> Fire conversion, time rot -> ignite chance (get_FireConverted; true also via stats mgr flag when Intelligence < 50). fire converted "
+  },
+  {
+   "key": "VolcanicOrbMutator.convertToCold",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Fire",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Fire"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Ignite",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "vo54"
+   ],
+   "nodes": [
+    "Volcanic Orb Tree Frozen Orb"
+   ],
+   "evidence": "Volcanic Orb -> Frozen Orb: fire -> cold conversion (getConversionType), ignite -> frostbite chance. conversion cold "
+  },
+  {
+   "key": "WanderingSpiritsMutator.poisonConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Necrotic",
+     "to": "Poison",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Poison"
+   ],
+   "tags_remove": [
+    "Necrotic"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "ws54hm"
+   ],
+   "nodes": [
+    "Wandering Spirits Poison Conversion"
+   ],
+   "evidence": "Necrotic -> Poison damage (getConversionType, getTags, cast vfx). necrotic -> poison "
+  },
+  {
+   "key": "WarcryMutator.coldConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Cold",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Cold"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Frostbite"
+    }
+   ],
+   "note": "Оглушение становится заморозкой",
+   "trees": [
+    "wc57"
+   ],
+   "nodes": [
+    "Warcry Cold Conversion"
+   ],
+   "evidence": "Warcry stun -> freeze, physical -> cold, bleed -> frostbite, no knockback (isConvertedToCold). conversion cold "
+  },
+  {
+   "key": "WarpathMutator.fireConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Fire",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Fire"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Ignite"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "va53st"
+   ],
+   "nodes": [
+    "Warpath Tree Ignite Conversion"
+   ],
+   "evidence": "Base physical -> Fire; bleed -> ignite chance. conversion fire "
+  },
+  {
+   "key": "WarpathMutator.voidConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Void",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Void"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Time Rot"
+    },
+    {
+     "from": "Ignite",
+     "to": "Time Rot"
+    }
+   ],
+   "note": "+30% шанс Time Rot",
+   "trees": [
+    "va53st"
+   ],
+   "nodes": [
+    "Warpath Tree Time Rot Conversion"
+   ],
+   "evidence": "Base physical -> Void; +30% time rot chance; bleed and ignite -> time rot chance (GetConversion). conversion void "
+  },
+  {
+   "key": "WerebearChargeMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "wb8fo"
+   ],
+   "nodes": [
+    "Bear Form Lightning Conversion"
+   ],
+   "evidence": "Physical -> Lightning damage; armour shred and bleed -> shock chance. tags lightning "
+  },
+  {
+   "key": "WerebearFormMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [
+    {
+     "from": "Bleed",
+     "to": "Shock"
+    }
+   ],
+   "note": "",
+   "trees": [
+    "wb8fo"
+   ],
+   "nodes": [
+    "Bear Form Lightning Conversion"
+   ],
+   "evidence": "Physical -> Lightning damage; armour shred and bleed -> shock chance (getTagsWithFakeTags). tags lightning "
+  },
+  {
+   "key": "WerebearMaulMutator.lightningConversion",
+   "kind": "conversion",
+   "convert": [
+    {
+     "from": "Physical",
+     "to": "Lightning",
+     "fraction": 1.0
+    }
+   ],
+   "tags_add": [
+    "Lightning"
+   ],
+   "tags_remove": [
+    "Physical"
+   ],
+   "tags_when": "full_conversion",
+   "tags_derived": false,
+   "ailment_convert": [],
+   "note": "",
+   "trees": [
+    "wb8fo"
+   ],
+   "nodes": [
+    "Bear Form Lightning Conversion"
+   ],
+   "evidence": "Physical -> Lightning damage. tags lightning "
+  }
+ ]
+}

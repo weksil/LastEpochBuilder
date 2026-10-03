@@ -20,6 +20,8 @@ var _sp_id_map: Dictionary = {}
 var _sp_name_map: Dictionary = {}
 var _enums: Dictionary = {}              # enum name -> {value name -> id}
 var _damage_reduction_values: Array = []
+var _idol_grid: Array = []                # 5×5 unlockMatrix, 99 = blocked
+var _conversions: Dictionary = {}        # "Mutator.field" -> rule (skill_conversions.json)
 
 
 func _ready() -> void:
@@ -87,6 +89,15 @@ func _ready() -> void:
 				for v: Dictionary in enum_data.get("values", []):
 					values[str(v["name"])] = int(v["id"])
 			_enums[enum_name] = values
+
+	var idols_json: Variant = _load_json(data_dir.path_join("idols.json"))
+	if idols_json is Dictionary:
+		_idol_grid = idols_json.get("containerGrids", {}).get("defaultData", [])
+
+	var conv_json: Variant = _load_json(data_dir.path_join("skill_conversions.json"))
+	if conv_json is Dictionary:
+		for rule: Dictionary in conv_json.get("data", []):
+			_conversions[str(rule["key"])] = rule
 
 	var dr_json: Variant = _load_json(parent_dir.path_join("monster_level_damage_reduction.json"))
 	if dr_json is Dictionary:
@@ -207,11 +218,15 @@ func item_sub(base: int, sub: int) -> Dictionary:
 	return {}
 
 
-## Standard equipment affixes that can roll on an equipment type.
-func affixes_for_type(type_id: int) -> Array:
+## Standard affixes that can roll on an equipment or idol type. Idol affixes are also filtered by class.
+func affixes_for_type(type_id: int, class_filter: String = "") -> Array:
 	var result: Array = []
+	var rolls_on: String = "Idols" if is_idol_type(type_id) else "Equipment"
 	for aff: Dictionary in _affixes_list:
-		if aff.get("rollsOn") != "Equipment" or aff.get("specialAffixType") != "Standard":
+		if aff.get("rollsOn") != rolls_on or aff.get("specialAffixType") != "Standard":
+			continue
+		var classes_ok: Array = aff.get("classSpecificity", [])
+		if rolls_on == "Idols" and class_filter != "" and not classes_ok.is_empty() 				and not classes_ok.has("NonSpecific") and not classes_ok.has(class_filter):
 			continue
 		for t: Variant in aff.get("canRollOn", []):
 			if int(t) == type_id:
@@ -219,6 +234,20 @@ func affixes_for_type(type_id: int) -> Array:
 				break
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("name", "")) < str(b.get("name", "")))
 	return result
+
+
+func is_idol_type(type_id: int) -> bool:
+	return type_id >= 25 and type_id <= 33
+
+
+## Idol grid without an altar: rows of cell codes (99 blocked, 1..8 unlocked by quest rewards).
+func idol_grid() -> Array:
+	return _idol_grid
+
+
+## Conversion / tag-change rule for a skill-tree mutator field ("Mutator.field"), {} if none.
+func conversion_rule(key: String) -> Dictionary:
+	return _conversions.get(key, {})
 
 
 func ailment(id: int) -> Dictionary:

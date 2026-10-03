@@ -103,6 +103,16 @@ func _sample_build() -> void:
 				while Build.add_skill_point(0, int(node["id"])):
 					pass
 	print("--- fireball tree spent: %d" % Build.skill_points_spent(0))
+	# Idol: Small Eterran Idol with its first suffix at the first open cell
+	var idol_base: Dictionary = GameData.item_base(25)
+	var idol_affixes: Array = GameData.affixes_for_type(25, "Mage")
+	for affix: Dictionary in idol_affixes:
+		if affix["type"] == "SUFFIX":
+			Build.set_item(IdolGrid.key(1, 0), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [{"id": int(affix["affixId"]), "tier": 1, "roll": 255, "index": 2}]})
+			print("--- idol %s with %s; fits 2x1 at (1,0) now: %s" % [GameData.display_name(idol_base), affix["name"], IdolGrid.fits(Build.items, 1, 0, 27)])
+			break
+	_check("idol blocks its cell", 0.0 if IdolGrid.fits(Build.items, 1, 0, 25) else 1.0, 1.0)
+	_check("blocked corner cell", 0.0 if IdolGrid.is_open(0, 0) else 1.0, 1.0)
 	g = BuildMods.global_store(Build)
 	for row: Dictionary in CharacterCalc.compute(g["store"], Build):
 		print("  %s / %s = %s" % [row["group"], row["label"], row["text"]])
@@ -110,6 +120,25 @@ func _sample_build() -> void:
 	_print_sections(r)
 	for n: String in r["notes"]:
 		print("  note: " + n)
+
+	# Conversion: Fireball "Added Lightning Damage" node converts 50% of base fire per point to lightning
+	Build.set_skill(0, "fi9")
+	for node: Dictionary in fb_tree["nodes"]:
+		if node["name"] == "Fireball Added Lightning Damage":
+			_allocate_path(fb_tree, int(node["id"]), int(node["maxPoints"]))
+	print("--- fireball with lightning conversion node, tree spent %d" % Build.skill_points_spent(0))
+	r = SkillCalc.compute(Build, 0)
+	_print_sections(r)
+
+
+## Allocates requirements recursively, then `points` into the node (skill slot 0).
+func _allocate_path(tree: Dictionary, node_id: int, points: int) -> void:
+	for node: Dictionary in tree["nodes"]:
+		if int(node["id"]) == node_id:
+			for req: Dictionary in node.get("requirements", []):
+				_allocate_path(tree, int(req["nodeID"]), int(req["requirement"]))
+	while Build.get_skill_points(0, node_id) < points and Build.add_skill_point(0, node_id):
+		pass
 
 
 func _row(g: Dictionary, label: String) -> float:

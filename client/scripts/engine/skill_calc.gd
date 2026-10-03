@@ -25,7 +25,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		if not notes.has(n):
 			notes.append(n)
 
-	var ctx: Dictionary = _context(build, ab, store)
+	var ctx: Dictionary = _context(build, ab, store, s["conversions"], notes)
 	var speed: Dictionary = _speed(build, ab, ctx, s)
 	var sections: Array = []
 	if ctx["base"].is_empty():
@@ -34,6 +34,8 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	else:
 		var ds: Dictionary = _build_damage(ctx)
 		sections.append({"title": "Урон за применение (до врага)", "rows": ds["rows"]})
+		if not ctx["conversion_rows"].is_empty():
+			sections.append({"title": "Конверсии и теги", "rows": ctx["conversion_rows"]})
 		sections.append({"title": "Крит", "rows": ds["crit_rows"]})
 		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 		sections.append({"title": "DPS как в подсказке игры", "rows": _tooltip(ds, speed)})
@@ -45,22 +47,19 @@ static func compute(build: Node, slot: int) -> Dictionary:
 
 # --- 8.1 context ------------------------------------------------------------------
 
-static func _context(build: Node, ab: Dictionary, store: StatStore) -> Dictionary:
+static func _context(build: Node, ab: Dictionary, store: StatStore, conversions: Array, notes: Array[String]) -> Dictionary:
 	var base: Dictionary = ab.get("primaryDamage", {}) if ab.get("primaryDamage") is Dictionary else {}
 	var tags: int = int(ab.get("tags", 0))
 	var hit: bool = int(base.get("isHit", 1)) == 1
-	var src: int = ((tags & ~LE.DOT) | LE.HIT) if hit else ((tags & ~LE.HIT) | LE.DOT)
-	match str(build.player_state.get("health", "full")):
-		"full":
-			src |= LE.HIGH_LIFE | LE.FULL_LIFE
-		"high":
-			src |= LE.HIGH_LIFE
-		"low":
-			src |= LE.LOW_LIFE
+	var src: int = 0
 	var dmg: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 	var damage: Array = base.get("damage", [])
 	for i in range(mini(7, damage.size())):
 		dmg[i] = float(damage[i])
+	var conv: Dictionary = _apply_conversions(tags, dmg, conversions, notes)
+	tags = conv["tags"]
+	src = ((tags & ~LE.DOT) | LE.HIT) if hit else ((tags & ~LE.HIT) | LE.DOT)
+	src |= _health_tags(build)
 	var type_bits: int = 0
 	for i in range(7):
 		if dmg[i] > 0.0:
@@ -72,8 +71,97 @@ static func _context(build: Node, ab: Dictionary, store: StatStore) -> Dictionar
 			mods.append(mod)
 	return {
 		"ab": ab, "base": base, "tags": tags, "hit": hit, "src": src, "dmg": dmg, "type_bits": type_bits,
+		"base_before": conv["before"], "conversion_lines": conv["lines"], "conversion_rows": conv["rows"],
 		"minion": tags & LE.MINION, "ade": float(base.get("addedDamageScaling", 1.0)), "mods": mods, "store": store,
 	}
+
+
+static func _health_tags(build: Node) -> int:
+	match str(build.player_state.get("health", "full")):
+		"full":
+			return LE.HIGH_LIFE | LE.FULL_LIFE
+		"high":
+			return LE.HIGH_LIFE
+		"low":
+			return LE.LOW_LIFE
+	return 0
+
+
+## Applies skill-tree base-damage conversions and tag changes (skill_conversions.json rules).
+## Base conversion happens before any modifier, like BaseDamageStats.convertBaseDamage (06b §1.7).
+static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array, notes: Array[String]) -> Dictionary:
+	var before: Array[float] = dmg.duplicate()
+	var lines: Array = [[], [], [], [], [], [], []]
+	var rows: Array = []
+	var seen: Dictionary = {}
+	var tags_before: int = tags
+	for c: Dictionary in conversions:
+		var rule: Dictionary = c["rule"]
+		var v: float = float(c["value"])
+		if v == 0.0:
+			continue
+		var field: String = str(rule["key"]).get_slice(".", 1)
+		var full: bool = true
+		for cv: Dictionary in rule.get("convert", []):
+			var from: int = _type_index(str(cv.get("from", "")))
+			var to: int = _type_index(str(cv.get("to", "")))
+			var f: float = clampf(v, 0.0, 1.0) if str(cv.get("fraction", "value")) == "value" else clampf(float(cv["fraction"]), 0.0, 1.0)
+			full = full and f >= 1.0
+			var dedupe: String = "%s:%d:%d" % [field, from, to]
+			if from < 0 or to < 0 or seen.has(dedupe):
+				continue
+			seen[dedupe] = true
+			var moved: float = dmg[from] * f
+			rows.append({"label": "%s → %s" % [LE.DT_NAME_RU[from], LE.DT_NAME_RU[to]], "text": LE.fmt_pct(f),
+				"breakdown": "Узел «%s»: %s базового урона типа «%s» переходит в «%s» до всех модификаторов (перенесено %s).\nПравило: %s" % [
+					c["node"], LE.fmt_pct(f), LE.DT_NAME_RU[from], LE.DT_NAME_RU[to], LE.fmt_num(moved), rule["key"]]})
+			if moved <= 0.0:
+				continue
+			dmg[to] += moved
+			dmg[from] -= moved
+			lines[to].append("  +%s из «%s» (конверсия %s, узел «%s»)" % [LE.fmt_num(moved), LE.DT_NAME_RU[from], LE.fmt_pct(f), c["node"]])
+			lines[from].append("  −%s в «%s» (конверсия %s, узел «%s»)" % [LE.fmt_num(moved), LE.DT_NAME_RU[to], LE.fmt_pct(f), c["node"]])
+		var change_tags: bool = str(rule.get("tags_when", "active")) == "active" or full
+		var add_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_add", []))))
+		var remove_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_remove", []))))
+		if change_tags and (add_mask != 0 or remove_mask != 0) and not seen.has("tags:" + field):
+			seen["tags:" + field] = true
+			tags = (tags & ~remove_mask) | add_mask
+			rows.append({"label": "Теги: узел «%s»" % c["node"], "text": _tag_text(add_mask, remove_mask),
+				"breakdown": "Правило %s меняет теги умения; от тегов зависит, какие моды подходят к умению." % rule["key"]})
+		for ac: Dictionary in rule.get("ailment_convert", []):
+			var line: String = "Узел «%s»: %s превращается в %s — урон айлментов пока не считается" % [c["node"], ac.get("from", "?"), ac.get("to", "?")]
+			if not notes.has(line):
+				notes.append(line)
+		if str(rule.get("note", "")) != "":
+			var note: String = "Узел «%s»: %s" % [c["node"], rule["note"]]
+			if not notes.has(note):
+				notes.append(note)
+	if tags != tags_before:
+		rows.append({"label": "Итоговые теги умения", "text": _tag_names(tags),
+			"breakdown": "Было: %s\nСтало: %s" % [_tag_names(tags_before), _tag_names(tags)]})
+	return {"tags": tags, "before": before, "lines": lines, "rows": rows}
+
+
+static func _type_index(type_name: String) -> int:
+	return ["Physical", "Fire", "Cold", "Lightning", "Necrotic", "Void", "Poison"].find(type_name)
+
+
+static func _tag_names(mask: int) -> String:
+	var names: PackedStringArray = []
+	for tag_name: String in LE.TAG_NAMES:
+		if mask & LE.tag_mask(tag_name):
+			names.append(tag_name)
+	return ", ".join(names) if not names.is_empty() else "—"
+
+
+static func _tag_text(add_mask: int, remove_mask: int) -> String:
+	var parts: PackedStringArray = []
+	if add_mask != 0:
+		parts.append("+" + _tag_names(add_mask))
+	if remove_mask != 0:
+		parts.append("−" + _tag_names(remove_mask))
+	return " ".join(parts)
 
 
 static func _applicable(ctx: Dictionary, mod_tags: int) -> bool:
@@ -189,6 +277,9 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 		final[i] = maxf(0.0, pre * (1.0 + inc[i]) * more[i])
 		total += final[i]
 		var b: PackedStringArray = []
+		if not ctx["conversion_lines"][i].is_empty():
+			b.append("База умения до конверсии: %s" % LE.fmt_num(ctx["base_before"][i]))
+			b.append_array(ctx["conversion_lines"][i])
 		b.append("База умения: %s (эффективность добавленного урона %s)" % [LE.fmt_num(base_dmg[i]), LE.fmt_num(ade)])
 		if not lines_added[i].is_empty():
 			b.append("Добавленный урон:")
@@ -248,7 +339,7 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		speed = 1.0 + use_inc
 		b.append("Скорость не масштабируется статами: 1 + %s (дерево)" % LE.fmt_pct(use_inc))
 	else:
-		var q: StatQuery = store.query(scaler, int(ab.get("tags", 0)))
+		var q: StatQuery = store.query(scaler, int(ctx["tags"]))
 		speed = q.added * (1.0 + q.increased + use_inc) * q.more
 		b.append("%s: (Σ added %s) × (1 + %s + %s дерево) × %s = %s" % [
 			"Скорость атаки" if scaler == LE.ATTACK_SPEED else "Скорость каста",
@@ -256,7 +347,7 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		for mod: StatMod in q.mods:
 			b.append("  " + mod.describe())
 		if scaler == LE.ATTACK_SPEED:
-			var rate: float = _weapon_rate(build, int(ab.get("tags", 0)))
+			var rate: float = _weapon_rate(build, int(ctx["tags"]))
 			if rate > 0.0:
 				speed *= rate
 				b.append("× скорость атаки оружия %s = %s" % [LE.fmt_num(rate), LE.fmt_num(speed)])
@@ -284,7 +375,7 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		"(база %s + дерево %s) × (1 + %s) = %s\nСтаты маны с предметов и пассивок пока не учитываются." % [
 			LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]})
 	if ab.get("cooldown") != null and float(ab["cooldown"]) > 0.0:
-		var cdr: StatQuery = store.query(LE.CDR, int(ab.get("tags", 0)))
+		var cdr: StatQuery = store.query(LE.CDR, int(ctx["tags"]))
 		var cd: float = float(ab["cooldown"]) / (1.0 + cdr.increased)
 		rows.append({"label": "Перезарядка, с", "text": LE.fmt_num(cd), "breakdown":
 			"%s / (1 + %s скорости восстановления) = %s" % [LE.fmt_num(float(ab["cooldown"])), LE.fmt_pct(cdr.increased), LE.fmt_num(cd)]})

@@ -13,8 +13,8 @@ static func global_store(build: Node) -> Dictionary:
 	var notes: Array[String] = []
 	_add_class_base(build, store)
 	_add_passives(build, store, notes)
-	for slot: String in SLOTS:
-		if build.items.has(slot):
+	for slot: String in build.items:
+		if SLOTS.has(slot) or IdolGrid.is_idol_key(slot):
 			store.add_all(ItemMods.item_mods(slot, build.items[slot]))
 	_add_attributes(store, notes)
 	return {"store": store, "notes": notes}
@@ -27,6 +27,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 	var result: Dictionary = {
 		"store": store, "notes": [] as Array[String],
 		"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_inc": 0.0, "mana_added": 0.0,
+		"conversions": [],
 	}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -129,6 +130,10 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 		elif op == "" and effect.has("value") and target.contains("."):
 			var field: String = target.get_slice(".", target.get_slice_count(".") - 1)
 			var v: float = eval_value(effect["value"], points)
+			var rule: Dictionary = _conversion_rule(target)
+			if not rule.is_empty():
+				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
+				continue
 			match field:
 				"increasedCastSpeed", "increasedAttackSpeed":
 					result["use_speed_inc"] += v
@@ -158,6 +163,15 @@ static func _automatic_stat(effect: Dictionary, points: int, source: String) -> 
 			value = value if points >= int(effect.get("threshold", 0)) else 0.0
 	return StatMod.make(property, str(effect.get("modType", "ADDED")).to_lower(), value,
 		LE.tag_mask(str(effect.get("tags", ""))), source, int(effect.get("specialTag", 0)))
+
+
+## Conversion / tag-change rule for any "Mutator.field" part of a target ({} if none or kind "none").
+static func _conversion_rule(target: String) -> Dictionary:
+	for part: String in target.split(" & "):
+		var rule: Dictionary = GameData.conversion_rule(part.strip_edges())
+		if not rule.is_empty() and str(rule.get("kind", "none")) != "none":
+			return rule
+	return {}
 
 
 static func _is_unconditional_temp(target: String) -> bool:

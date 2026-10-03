@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=17 format=3]
+[gd_resource type="Theme" load_steps=23 format=3]
 
 [sub_resource type="StyleBoxFlat" id="panel_bg"]
 content_margin_left = 8.0
@@ -191,10 +191,91 @@ bg_color = Color(0.141, 0.125, 0.169, 1)
 
 [sub_resource type="StyleBoxEmpty" id="empty"]
 
+[sub_resource type="StyleBoxFlat" id="idol_blocked"]
+bg_color = Color(0.063, 0.059, 0.075, 1)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 0
+border_color = Color(0.063, 0.059, 0.075, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="idol_open"]
+bg_color = Color(0.102, 0.094, 0.122, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.29, 0.259, 0.329, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="idol_open_hover"]
+bg_color = Color(0.141, 0.125, 0.169, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.435, 0.561, 0.702, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="idol_occupied"]
+bg_color = Color(0.239, 0.196, 0.125, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.788, 0.643, 0.361, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="idol_selected"]
+bg_color = Color(0.122, 0.165, 0.212, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.58, 0.718, 0.871, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [resource]
 default_font_size = 14
 BreakdownLabel/base_type = &"Label"
-BreakdownLabel/colors/font_color = Color(0.604, 0.565, 0.533, 1)
+BreakdownIdolCellBlocked/base_type = &"Button"
+IdolCellBlocked/styles/disabled = SubResource("idol_blocked")
+IdolCellBlocked/styles/hover = SubResource("idol_blocked")
+IdolCellBlocked/styles/normal = SubResource("idol_blocked")
+IdolCellBlocked/styles/pressed = SubResource("idol_blocked")
+IdolCellOccupied/base_type = &"Button"
+IdolCellOccupied/colors/font_color = Color(0.937, 0.792, 0.502, 1)
+IdolCellOccupied/font_sizes/font_size = 11
+IdolCellOccupied/styles/hover = SubResource("idol_occupied")
+IdolCellOccupied/styles/normal = SubResource("idol_occupied")
+IdolCellOccupied/styles/pressed = SubResource("idol_occupied")
+IdolCellOpen/base_type = &"Button"
+IdolCellOpen/font_sizes/font_size = 11
+IdolCellOpen/styles/hover = SubResource("idol_open_hover")
+IdolCellOpen/styles/normal = SubResource("idol_open")
+IdolCellOpen/styles/pressed = SubResource("idol_open")
+IdolCellSelected/base_type = &"Button"
+IdolCellSelected/font_sizes/font_size = 11
+IdolCellSelected/styles/hover = SubResource("idol_selected")
+IdolCellSelected/styles/normal = SubResource("idol_selected")
+IdolCellSelected/styles/pressed = SubResource("idol_selected")
+Label/colors/font_color = Color(0.604, 0.565, 0.533, 1)
 BreakdownLabel/font_sizes/font_size = 12
 Button/colors/font_color = Color(0.902, 0.875, 0.827, 1)
 Button/colors/font_hover_color = Color(1, 0.953, 0.882, 1)

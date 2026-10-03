@@ -65,7 +65,7 @@ func _fill() -> void:
 
 	%SubSelect.clear()
 	for sub: Dictionary in base.get("subItems", []):
-		if int(sub.get("isLegacySubType", 0)) == 0:
+		if _sub_allowed(sub):
 			%SubSelect.add_item(GameData.display_name(sub), int(sub["subTypeID"]))
 	if not base.is_empty():
 		%SubSelect.select(maxi(0, %SubSelect.get_item_index(int(item.get("sub", 0)))))
@@ -74,20 +74,34 @@ func _fill() -> void:
 	_fill_affixes(item, base)
 
 	var has_item: bool = not base.is_empty()
+	var is_idol: bool = IdolGrid.is_idol_key(_slot)
+	%AffixesTitle.text = "Аффиксы (1 префикс, 1 суффикс)" if is_idol else "Аффиксы (2 префикса, 2 суффикса)"
 	%EmptyHint.visible = not has_item
 	for node_name: String in ["%SubRow", "%ImplicitsTitle", "%Implicits", "%AffixesTitle", "%Affixes", "%ClearButton"]:
 		get_node(node_name).visible = has_item
+	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
 	_filling = false
 	_update_values()
 
 
 func _base_fits_slot(base: Dictionary) -> bool:
 	var type_name: String = str(base.get("typeName", ""))
+	if IdolGrid.is_idol_key(_slot):
+		var a: Vector2i = IdolGrid.anchor(_slot)
+		return GameData.is_idol_type(int(base.get("type", -1))) 			and IdolGrid.fits(Build.items, a.x, a.y, int(base["baseTypeID"]), _slot)
 	if _slot == "weapon":
 		return bool(base.get("isWeapon", false)) and type_name != "CROSSBOW"
 	if _slot == "offhand" and type_name in ONE_HANDED_TYPES:
 		return true
 	return type_name in SLOT_TYPES.get(_slot, [])
+
+
+## Non-legacy subtypes usable by the current class.
+func _sub_allowed(sub: Dictionary) -> bool:
+	if int(sub.get("isLegacySubType", 0)) != 0:
+		return false
+	var classes: Array = sub.get("classRequirement", [])
+	return classes.is_empty() or classes.has(str(GameData.get_class_data(Build.class_id).get("className", "")))
 
 
 func _fill_implicits(item: Dictionary) -> void:
@@ -112,7 +126,8 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	var stored: Array = item.get("affixes", [])
 	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
 	if not base.is_empty():
-		for aff: Dictionary in GameData.affixes_for_type(int(base.get("type", -1))):
+		var class_name_str: String = str(GameData.get_class_data(Build.class_id).get("className", ""))
+		for aff: Dictionary in GameData.affixes_for_type(int(base.get("type", -1)), class_name_str):
 			if options.has(str(aff.get("type", ""))):
 				options[str(aff["type"])].append(aff)
 	for r in range(AFFIX_ROWS.size()):
@@ -136,6 +151,8 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		row.get_node("Bottom/RollSlider").set_value_no_signal(float(entry.get("roll", 255)))
 		for path: String in ["Top/TierLabel", "Top/TierSpin", "Bottom"]:
 			row.get_node(path).visible = affix_id != EMPTY_ID
+		# idols have one prefix and one suffix
+		row.visible = not (IdolGrid.is_idol_key(_slot) and (r == 1 or r == 3))
 
 
 # --- storing user edits ---------------------------------------------------------------
@@ -150,7 +167,7 @@ func _on_base_selected(index: int) -> void:
 		var base: Dictionary = GameData.item_base(base_id)
 		var sub_id: int = 0
 		for sub: Dictionary in base.get("subItems", []):
-			if int(sub.get("isLegacySubType", 0)) == 0:
+			if _sub_allowed(sub):
 				sub_id = int(sub["subTypeID"])
 				break
 		Build.set_item(_slot, _new_item(base_id, sub_id, []))
@@ -198,7 +215,7 @@ func _store_affixes(refill: bool) -> void:
 	for r in range(AFFIX_ROWS.size()):
 		var row: Node = %Affixes.get_node(AFFIX_ROWS[r])
 		var affix_id: int = row.get_node("Top/AffixSelect").get_selected_id()
-		if affix_id == EMPTY_ID:
+		if affix_id == EMPTY_ID or not row.visible:
 			continue
 		var tiers: int = GameData.affix(affix_id).get("tiers", []).size()
 		affixes.append({
