@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/passives/passive_link.gd" id="1_script"]
+
+[node name="PassiveLink" type="Line2D"]
+width = 4.0
+default_color = Color(0.227, 0.208, 0.251, 1)
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+script = ExtResource("1_script")
+active_color = Color(0.788, 0.643, 0.361, 1)
+inactive_color = Color(0.227, 0.208, 0.251, 1)

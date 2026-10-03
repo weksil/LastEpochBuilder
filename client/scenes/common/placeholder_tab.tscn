@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[node name="Placeholder" type="CenterContainer"]
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "В разработке"
