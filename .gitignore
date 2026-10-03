@@ -19,3 +19,6 @@ venv/
 /research/06?_dump_*.md
 /research/07j_ghidra_deepdives_*.md
 /research/data/game/abilities_code_damage.json
+
+# Serena local state
+/.serena/cache/

@@ -14,6 +14,10 @@ config/name="LastEpochBuilder"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+
 [display]
 
 window/stretch/mode="canvas_items"
