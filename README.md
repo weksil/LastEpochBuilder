@@ -33,7 +33,7 @@ client/          проект Godot
   docs/          ENGINE.md — спецификация движка, UI.md — контракт UI-скриптов
   scenes/        сцены UI (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, common/
   scripts/       логика (.gd): autoload/ (GameData, Build), engine/ (расчёты), UI-скрипты по папкам сцен
-  tests/         headless-проверки: engine_test (тест-векторы), ui_smoke (прогон всех вкладок), trees_test, minion_test
+  tests/         headless-проверки: engine_test (тест-векторы), ui_smoke (прогон всех вкладок), trees_test, minion_test, letools_import_test, layout_test
   theme/         main_theme.tres — общая тема и варианты стилей
   addons/        плагин godot_ai
 .mcp.json        MCP-серверы проекта (Serena)
@@ -111,6 +111,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/trees_t
 (в т. ч. прогон всех уникальных при включённых условиях) и печатает пример билда с расшифровкой;
 `ui_smoke` прогоняет все вкладки и выводит ошибки скриптов в консоль (сторожевой таймер 180 с);
 `minion_test` проверяет перенос статов игрока на миньона (07d §1.1);
+`layout_test` импортирует пример билда и проверяет, что каждая вкладка помещается в окно шириной 1600 px (длинные тексты переносятся);
 `letools_import_test` проверяет импорт из Last Epoch Tools (LZString, id, ссылки, сохранённый ответ `tests/fixtures/letools_A83KxJq5.json`,
 применение к `Build`, кнопка в верхней панели); `letools_live` (в набор не входит, нужна сеть) грузит живую ссылку через диалог;
 `trees_test` проверяет, что каждый узел всех 136 действующих деревьев умений и 5 пассивных деревьев можно взять

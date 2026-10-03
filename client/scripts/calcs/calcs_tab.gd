@@ -7,7 +7,9 @@ class_name CalcsTab
 @export var input_row_scene: PackedScene
 
 @onready var skill_select: OptionButton = %SkillSelect
-@onready var sections_container: VBoxContainer = %Sections
+@onready var left_column: VBoxContainer = %Left
+@onready var right_column: VBoxContainer = %Right
+@onready var wide_column: VBoxContainer = %Wide
 @onready var hits_spin: SpinBox = %HitsSpin
 @onready var inputs_container: VBoxContainer = %Inputs
 
@@ -59,8 +61,10 @@ func _update_calcs() -> void:
 		return
 
 	# Clear existing sections
-	for child: Node in sections_container.get_children():
-		child.queue_free()
+	for column: VBoxContainer in [left_column, right_column, wide_column]:
+		for child: Node in column.get_children():
+			child.queue_free()
+	var weights: Array[int] = [0, 0]  # rows placed in the left / right column
 
 	# Clear existing input rows
 	for child: Node in inputs_container.get_children():
@@ -79,9 +83,12 @@ func _update_calcs() -> void:
 		input_instance.setup(Build.selected_skill, inp)
 
 	# Add sections with rows
+	# Sections go to the shorter of the two columns (by rows), notes span both
 	for section: Dictionary in result.get("sections", []):
 		var section_instance: Node = section_scene.instantiate()
-		sections_container.add_child(section_instance)
+		var side: int = 0 if weights[0] <= weights[1] else 1
+		weights[side] += section.get("rows", []).size() + 2
+		(left_column if side == 0 else right_column).add_child(section_instance)
 
 		var title_label: Label = section_instance.get_node("%Title") as Label
 		var rows_container: VBoxContainer = section_instance.get_node("%Rows") as VBoxContainer
@@ -116,7 +123,7 @@ func _update_calcs() -> void:
 	var notes: Array = result.get("notes", [])
 	if notes.size() > 0:
 		var section_instance: Node = section_scene.instantiate()
-		sections_container.add_child(section_instance)
+		wide_column.add_child(section_instance)
 
 		var title_label: Label = section_instance.get_node("%Title") as Label
 		var rows_container: VBoxContainer = section_instance.get_node("%Rows") as VBoxContainer

@@ -69,10 +69,12 @@
 ## Расчёты — `scripts/calcs/calcs_tab.gd` (`extends VBoxContainer`), `@export section_scene, row_scene`
 - `%SkillSelect`: 5 слотов «N. имя умения» (пустые — «N. —», disabled); выбор → `Build.selected_skill = i` и пересчёт.
 - На `Build.changed` (и при показе вкладки, `visibility_changed`): если вкладка невидима — ничего не делать (лениво);
-  иначе `r = SkillCalc.compute(Build, Build.selected_skill)`, очистить `%Sections`, для каждой секции инстанс `section_scene`
+  иначе `r = SkillCalc.compute(Build, Build.selected_skill)`, очистить колонки `%Left` / `%Right` / `%Wide` (внутри `%Sections`), каждую секцию — инстанс `section_scene` — в более
+  короткую по числу строк из двух колонок
   (`%Title`, `%Rows`), для строки — `row_scene`: `%NameLabel`, `%ValueLabel` = text, `%Details` = breakdown,
   `%ExpandButton.toggled` → `%Details.visible`, кнопка скрыта, если breakdown пуст. Секция «Не учтено» из `r.notes`
-  (строки без значения). Если у слота нет умения — одна секция с подсказкой выбрать умение во вкладке «Скиллы».
+  (строки без значения) — на всю ширину в `%Wide`. `%NameLabel` переносит текст (autowrap), чтобы длинные строки не расширяли окно
+  (проверяет `tests/layout_test`). Если у слота нет умения — одна секция с подсказкой выбрать умение во вкладке «Скиллы».
 
 ## Панель характеристик — `scripts/stats/stats_panel.gd`
 `@export row_scene, group_scene`. На `Build.changed`: `g = BuildMods.global_store(Build)`,

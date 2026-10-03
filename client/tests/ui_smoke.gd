@@ -142,8 +142,11 @@ func _ready() -> void:
 	# calcs tab
 	tabs.current_tab = 5
 	await _frames(3)
-	var sections: Node = tabs.get_child(5).get_node("%Sections")
-	print("calc sections: %d" % sections.get_child_count())
+	var calcs: Node = tabs.get_child(5)
+	var section_count: int = 0
+	for column: String in ["%Left", "%Right", "%Wide"]:
+		section_count += calcs.get_node(column).get_child_count()
+	print("calc sections: %d" % section_count)
 	var summary: Label = main.get_node("Margin/Layout/Split/StatsPanel/VBox/SkillSummary")
 	print("summary: %s" % summary.text)
 	print("UI SMOKE DONE")
