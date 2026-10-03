@@ -1,0 +1,2678 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "MasterItemsList (idol base types 25-33, altar 41) + Resources/IdolsContainerGridDataList.asset (Odin)",
+ "schema": "see research/07a_assets_core_data.md §idols",
+ "containerGrids": {
+  "defaultData": [
+   [
+    99,
+    7,
+    6,
+    5,
+    99
+   ],
+   [
+    8,
+    4,
+    3,
+    2,
+    1
+   ],
+   [
+    8,
+    4,
+    99,
+    1,
+    1
+   ],
+   [
+    8,
+    4,
+    3,
+    2,
+    1
+   ],
+   [
+    99,
+    7,
+    6,
+    5,
+    99
+   ]
+  ],
+  "data": [
+   [
+    [
+     99,
+     3,
+     3,
+     2,
+     2
+    ],
+    [
+     108,
+     4,
+     104,
+     99,
+     1
+    ],
+    [
+     8,
+     99,
+     99,
+     99,
+     1
+    ],
+    [
+     7,
+     99,
+     105,
+     1,
+     101
+    ],
+    [
+     7,
+     6,
+     6,
+     5,
+     99
+    ]
+   ],
+   [
+    [
+     99,
+     105,
+     99,
+     101,
+     99
+    ],
+    [
+     8,
+     5,
+     5,
+     1,
+     1
+    ],
+    [
+     7,
+     7,
+     4,
+     4,
+     1
+    ],
+    [
+     8,
+     6,
+     3,
+     2,
+     2
+    ],
+    [
+     99,
+     106,
+     99,
+     103,
+     99
+    ]
+   ],
+   [
+    [
+     99,
+     99,
+     107,
+     5,
+     4
+    ],
+    [
+     99,
+     8,
+     2,
+     1,
+     1
+    ],
+    [
+     106,
+     6,
+     3,
+     103,
+     99
+    ],
+    [
+     99,
+     8,
+     2,
+     1,
+     1
+    ],
+    [
+     99,
+     99,
+     107,
+     5,
+     4
+    ]
+   ],
+   [
+    [
+     103,
+     3,
+     2,
+     7,
+     8
+    ],
+    [
+     99,
+     4,
+     1,
+     5,
+     6
+    ],
+    [
+     99,
+     99,
+     101,
+     99,
+     99
+    ],
+    [
+     6,
+     5,
+     1,
+     4,
+     99
+    ],
+    [
+     8,
+     7,
+     2,
+     3,
+     103
+    ]
+   ],
+   [
+    [
+     7,
+     6,
+     5,
+     99,
+     4
+    ],
+    [
+     8,
+     99,
+     103,
+     1,
+     1
+    ],
+    [
+     99,
+     99,
+     6,
+     2,
+     2
+    ],
+    [
+     8,
+     99,
+     103,
+     1,
+     1
+    ],
+    [
+     7,
+     6,
+     5,
+     99,
+     4
+    ]
+   ],
+   [
+    [
+     99,
+     107,
+     5,
+     3,
+     99
+    ],
+    [
+     8,
+     104,
+     99,
+     3,
+     2
+    ],
+    [
+     6,
+     4,
+     1,
+     1,
+     1
+    ],
+    [
+     8,
+     104,
+     99,
+     3,
+     2
+    ],
+    [
+     99,
+     107,
+     5,
+     3,
+     99
+    ]
+   ],
+   [
+    [
+     99,
+     2,
+     101,
+     1,
+     99
+    ],
+    [
+     3,
+     3,
+     102,
+     1,
+     1
+    ],
+    [
+     4,
+     6,
+     106,
+     6,
+     4
+    ],
+    [
+     5,
+     8,
+     99,
+     8,
+     5
+    ],
+    [
+     7,
+     99,
+     99,
+     99,
+     7
+    ]
+   ],
+   [
+    [
+     107,
+     8,
+     8,
+     1,
+     101
+    ],
+    [
+     6,
+     7,
+     99,
+     1,
+     1
+    ],
+    [
+     6,
+     99,
+     99,
+     99,
+     2
+    ],
+    [
+     5,
+     5,
+     99,
+     3,
+     2
+    ],
+    [
+     105,
+     4,
+     4,
+     3,
+     103
+    ]
+   ],
+   [
+    [
+     99,
+     7,
+     6,
+     5,
+     99
+    ],
+    [
+     8,
+     4,
+     3,
+     2,
+     1
+    ],
+    [
+     108,
+     4,
+     99,
+     1,
+     101
+    ],
+    [
+     8,
+     4,
+     3,
+     2,
+     1
+    ],
+    [
+     99,
+     7,
+     6,
+     5,
+     99
+    ]
+   ],
+   [
+    [
+     99,
+     99,
+     6,
+     7,
+     7
+    ],
+    [
+     5,
+     4,
+     102,
+     101,
+     1
+    ],
+    [
+     5,
+     99,
+     103,
+     108,
+     1
+    ],
+    [
+     5,
+     4,
+     103,
+     102,
+     1
+    ],
+    [
+     99,
+     99,
+     6,
+     7,
+     7
+    ]
+   ],
+   [
+    [
+     99,
+     8,
+     8,
+     8,
+     99
+    ],
+    [
+     7,
+     3,
+     1,
+     2,
+     4
+    ],
+    [
+     7,
+     1,
+     101,
+     1,
+     4
+    ],
+    [
+     6,
+     3,
+     3,
+     2,
+     4
+    ],
+    [
+     99,
+     6,
+     5,
+     5,
+     99
+    ]
+   ],
+   [
+    [
+     99,
+     99,
+     7,
+     5,
+     102
+    ],
+    [
+     99,
+     8,
+     6,
+     103,
+     1
+    ],
+    [
+     8,
+     106,
+     104,
+     1,
+     1
+    ],
+    [
+     99,
+     8,
+     6,
+     103,
+     1
+    ],
+    [
+     99,
+     99,
+     7,
+     5,
+     102
+    ]
+   ],
+   [
+    [
+     6,
+     8,
+     99,
+     8,
+     6
+    ],
+    [
+     3,
+     2,
+     1,
+     1,
+     3
+    ],
+    [
+     104,
+     99,
+     101,
+     99,
+     104
+    ],
+    [
+     4,
+     1,
+     1,
+     2,
+     4
+    ],
+    [
+     5,
+     7,
+     99,
+     7,
+     5
+    ]
+   ]
+  ]
+ },
+ "gridLegend": "unlockMatrix[row][col]: 99 = blocked cell (CellBlockedId); 1..8 = cell unlocked by idol-slot reward N (MaxIdolSlotUnlockRewards = 8); +100 = refracted slot (RefractedSlotIdJump); data[i] corresponds to idol altar subtype i (defaultData = no altar)",
+ "idolAffixIds": [
+  105,
+  106,
+  107,
+  108,
+  109,
+  110,
+  111,
+  112,
+  113,
+  114,
+  115,
+  116,
+  117,
+  118,
+  119,
+  120,
+  121,
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  128,
+  129,
+  130,
+  131,
+  132,
+  133,
+  134,
+  135,
+  136,
+  137,
+  138,
+  139,
+  140,
+  141,
+  142,
+  143,
+  144,
+  145,
+  146,
+  147,
+  148,
+  149,
+  150,
+  151,
+  152,
+  153,
+  154,
+  155,
+  156,
+  157,
+  158,
+  159,
+  160,
+  161,
+  162,
+  163,
+  164,
+  165,
+  166,
+  167,
+  168,
+  169,
+  170,
+  171,
+  172,
+  173,
+  174,
+  175,
+  176,
+  177,
+  178,
+  179,
+  180,
+  181,
+  182,
+  183,
+  184,
+  185,
+  186,
+  187,
+  188,
+  189,
+  190,
+  191,
+  193,
+  194,
+  195,
+  196,
+  197,
+  198,
+  199,
+  200,
+  201,
+  202,
+  203,
+  204,
+  205,
+  206,
+  207,
+  208,
+  209,
+  210,
+  211,
+  212,
+  213,
+  214,
+  215,
+  216,
+  217,
+  218,
+  219,
+  220,
+  221,
+  222,
+  223,
+  224,
+  225,
+  226,
+  227,
+  228,
+  229,
+  230,
+  231,
+  232,
+  233,
+  234,
+  235,
+  236,
+  237,
+  238,
+  239,
+  240,
+  241,
+  242,
+  243,
+  244,
+  245,
+  246,
+  247,
+  248,
+  249,
+  250,
+  251,
+  252,
+  253,
+  254,
+  255,
+  256,
+  257,
+  258,
+  259,
+  260,
+  261,
+  262,
+  263,
+  264,
+  265,
+  266,
+  267,
+  268,
+  269,
+  270,
+  271,
+  272,
+  273,
+  274,
+  275,
+  276,
+  277,
+  278,
+  279,
+  280,
+  281,
+  282,
+  283,
+  284,
+  285,
+  286,
+  287,
+  288,
+  289,
+  290,
+  291,
+  292,
+  293,
+  294,
+  295,
+  296,
+  297,
+  298,
+  299,
+  300,
+  301,
+  302,
+  303,
+  304,
+  305,
+  306,
+  307,
+  308,
+  309,
+  310,
+  311,
+  312,
+  313,
+  314,
+  315,
+  316,
+  317,
+  318,
+  319,
+  320,
+  321,
+  322,
+  323,
+  324,
+  325,
+  326,
+  327,
+  328,
+  329,
+  403,
+  430,
+  436,
+  438,
+  441,
+  444,
+  445,
+  447,
+  450,
+  452,
+  455,
+  456,
+  458,
+  460,
+  462,
+  464,
+  465,
+  466,
+  467,
+  470,
+  472,
+  474,
+  476,
+  478,
+  480,
+  482,
+  484,
+  486,
+  488,
+  490,
+  491,
+  492,
+  493,
+  495,
+  497,
+  499,
+  508,
+  510,
+  512,
+  514,
+  516,
+  518,
+  520,
+  522,
+  523,
+  525,
+  527,
+  529,
+  531,
+  533,
+  535,
+  538,
+  650,
+  651,
+  657,
+  658,
+  659,
+  664,
+  668,
+  685,
+  686,
+  689,
+  692,
+  697,
+  716,
+  736,
+  738,
+  740,
+  741,
+  742,
+  743,
+  744,
+  745,
+  746,
+  750,
+  751,
+  752,
+  753,
+  754,
+  755,
+  756,
+  757,
+  763,
+  826,
+  827,
+  828,
+  829,
+  830,
+  831,
+  832,
+  833,
+  834,
+  835,
+  836,
+  837,
+  838,
+  839,
+  840,
+  841,
+  842,
+  843,
+  844,
+  845,
+  846,
+  847,
+  848,
+  849,
+  850,
+  851,
+  852,
+  853,
+  854,
+  855,
+  856,
+  857,
+  858,
+  859,
+  860,
+  861,
+  862,
+  863,
+  864,
+  865,
+  866,
+  867,
+  868,
+  869,
+  870,
+  871,
+  872,
+  873,
+  874,
+  875,
+  876,
+  877,
+  878,
+  879,
+  880,
+  881,
+  882,
+  883,
+  884,
+  885,
+  886,
+  887,
+  888,
+  889,
+  890,
+  891,
+  892,
+  893,
+  894,
+  895,
+  896,
+  897,
+  898,
+  899,
+  900,
+  901,
+  902,
+  903,
+  904,
+  905,
+  906,
+  907,
+  908,
+  909,
+  910,
+  911,
+  912,
+  913,
+  914,
+  915,
+  916,
+  917,
+  918,
+  919,
+  920,
+  921,
+  922,
+  923,
+  924,
+  925,
+  926,
+  927,
+  928,
+  929,
+  930,
+  931,
+  932,
+  933,
+  934,
+  935,
+  936,
+  937,
+  938,
+  939,
+  940,
+  941,
+  942,
+  1029,
+  1030,
+  1031,
+  1032,
+  1033,
+  1034,
+  1035,
+  1036,
+  1037,
+  1038,
+  1039,
+  1040,
+  1041,
+  1042,
+  1043,
+  1044,
+  1045,
+  1046,
+  1047,
+  1048,
+  1049,
+  1050,
+  1051,
+  1052,
+  1053,
+  1054,
+  1055,
+  1056,
+  1057,
+  1058,
+  1059,
+  1060,
+  1061,
+  1062,
+  1063,
+  1064,
+  1065,
+  1066,
+  1067,
+  1068,
+  1069,
+  1070,
+  1071,
+  1072,
+  1112,
+  1150,
+  1151,
+  1152
+ ],
+ "data": [
+  {
+   "baseTypeID": 25,
+   "name": "Small Idol",
+   "displayName": "Small Idol",
+   "type": 25,
+   "typeName": "IDOL_1x1_ETERRA",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.83,
+   "gridSize": [
+    1,
+    1
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyNonClassSpecific",
+   "minimumDropLevel": 11,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Small Eterran Idol",
+     "displayName": "Small Eterran Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Small Orobyss Idol",
+     "displayName": "Small Orobyss Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Small Weaver Idol",
+     "displayName": "Small Weaver Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 26,
+   "name": "Small Lagonian Idol",
+   "displayName": "Minor Idol",
+   "type": 26,
+   "typeName": "IDOL_1x1_LAGON",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.83,
+   "gridSize": [
+    1,
+    1
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyNonClassSpecific",
+   "minimumDropLevel": 11,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Small Lagonian Idol",
+     "displayName": "Minor Lagonian Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Minor Weaver Idol",
+     "displayName": "Minor Weaver Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 27,
+   "name": "Humble Idol",
+   "displayName": "Humble Idol",
+   "type": 27,
+   "typeName": "IDOL_2x1",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.62,
+   "gridSize": [
+    2,
+    1
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyNonClassSpecific",
+   "minimumDropLevel": 11,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Humble Eterran Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Humble Weaver Idol",
+     "displayName": "Humble Weaver Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 28,
+   "name": "Stout Idol",
+   "displayName": "Stout Idol",
+   "type": 28,
+   "typeName": "IDOL_1x2",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.62,
+   "gridSize": [
+    1,
+    2
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyNonClassSpecific",
+   "minimumDropLevel": 11,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Stout Lagonian Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Stout Weaver Idol",
+     "displayName": "Stout Weaver Idol",
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 29,
+   "name": "Grand Idol",
+   "displayName": "Grand Idol",
+   "type": 29,
+   "typeName": "IDOL_3x1",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.33,
+   "gridSize": [
+    3,
+    1
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyClassSpecific",
+   "minimumDropLevel": 25,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Grand Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Grand Glass Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Grand Solar Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Grand Bone Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 4,
+     "name": "Grand Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 5,
+     "name": "Heretical Grand Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 6,
+     "name": "Heretical Grand Glass Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Heretical Grand Solar Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 8,
+     "name": "Heretical Grand Bone Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Heretical Grand Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 10,
+     "name": "Grand Primal Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 11,
+     "name": "Grand Arcane Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 12,
+     "name": "Grand Iron Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 13,
+     "name": "Grand Spectral Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 14,
+     "name": "Grand Umbral Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 15,
+     "name": "Grand Ash Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 30,
+   "name": "Large Idol",
+   "displayName": "Large Idol",
+   "type": 30,
+   "typeName": "IDOL_1x3",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.33,
+   "gridSize": [
+    1,
+    3
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyClassSpecific",
+   "minimumDropLevel": 25,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Large Nomad Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Large Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Large Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Large Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 4,
+     "name": "Large Shadow Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 5,
+     "name": "Heretical Large Nomad Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 6,
+     "name": "Heretical Large Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Heretical Large Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 8,
+     "name": "Heretical Large Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Heretical Large Shadow Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 10,
+     "name": "Large Primal Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 11,
+     "name": "Large Arcane Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 12,
+     "name": "Large Iron Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 13,
+     "name": "Large Spectral Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    },
+    {
+     "subTypeID": 14,
+     "name": "Large Umbral Omen Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "OmenIdol",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 31,
+   "name": "Ornate Idol",
+   "displayName": "Ornate Idol",
+   "type": 31,
+   "typeName": "IDOL_4x1",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": 0,
+   "gridSize": [
+    4,
+    1
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyClassSpecific",
+   "minimumDropLevel": 30,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Ornate Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Ornate Glass Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Ornate Solar Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Ornate Bone Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 4,
+     "name": "Ornate Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 5,
+     "name": "Heretical Ornate Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 6,
+     "name": "Heretical Ornate Glass Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Heretical Ornate Solar Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 8,
+     "name": "Heretical Ornate Bone Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Heretical Ornate Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 32,
+   "name": "Huge Idol",
+   "displayName": "Huge Idol",
+   "type": 32,
+   "typeName": "IDOL_1x4",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": 0,
+   "gridSize": [
+    1,
+    4
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyClassSpecific",
+   "minimumDropLevel": 30,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Huge Nomad Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Huge Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Huge Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Huge Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 4,
+     "name": "Huge Shadow Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 5,
+     "name": "Heretical Huge Nomad Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 6,
+     "name": "Heretical Huge Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Heretical Huge Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 8,
+     "name": "Heretical Huge Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Heretical Huge Shadow Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 33,
+   "name": "Adorned Idol",
+   "displayName": "Adorned Idol",
+   "type": 33,
+   "typeName": "IDOL_2x2",
+   "isWeapon": false,
+   "isIdol": true,
+   "maximumAffixes": 2,
+   "maxSockets": 0,
+   "affixEffectModifier": -0.05,
+   "gridSize": [
+    2,
+    2
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyClassSpecific",
+   "minimumDropLevel": 20,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Adorned Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Adorned Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 2,
+     "name": "Adorned Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Adorned Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 4,
+     "name": "Adorned Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 5,
+     "name": "Adorned Silver Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 6,
+     "name": "Adorned Volcano Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Heretical Adorned Heorot Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Primalist"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 8,
+     "name": "Heretical Adorned Arcane Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Mage"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Heretical Adorned Rahyeh Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Sentinel"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 10,
+     "name": "Heretical Adorned Immortal Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Acolyte"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 11,
+     "name": "Heretical Adorned Majasan Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [
+      "Rogue"
+     ],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 12,
+     "name": "Adorned Discarded Idol",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 1,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    }
+   ]
+  },
+  {
+   "baseTypeID": 41,
+   "name": "Idol Altar",
+   "displayName": "Idol Altar",
+   "type": 41,
+   "typeName": "IDOL_ALTAR",
+   "isWeapon": false,
+   "isIdol": false,
+   "maximumAffixes": 4,
+   "maxSockets": 0,
+   "affixEffectModifier": 0,
+   "gridSize": [
+    2,
+    2
+   ],
+   "classAffinity": [],
+   "subTypeClassSpecificity": "OnlyNonClassSpecific",
+   "minimumDropLevel": 20,
+   "obsoleteItemType": 0,
+   "subItems": [
+    {
+     "subTypeID": 0,
+     "name": "Twisted Altar",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 1,
+     "name": "Jagged Altar",
+     "displayName": null,
+     "levelRequirement": 65,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 5,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 2.0,
+       "maxValue": 2.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 2,
+     "name": "Skyward Altar",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 3,
+     "name": "Spire Altar",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 23,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 7.0,
+       "maxValue": 24.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 4,
+     "name": "Carcinised Altar",
+     "displayName": null,
+     "levelRequirement": 32,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 24,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 64.0,
+       "maxValue": 256.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 5,
+     "name": "Visage Altar",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 19,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 6.0,
+       "maxValue": 10.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 6,
+     "name": "Lunar Altar",
+     "displayName": null,
+     "levelRequirement": 0,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 7,
+     "name": "Ocular Altar",
+     "displayName": null,
+     "levelRequirement": 32,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 7,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 2.0,
+       "maxValue": 2.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 8,
+     "name": "Archaic Altar",
+     "displayName": null,
+     "levelRequirement": 50,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": []
+    },
+    {
+     "subTypeID": 9,
+     "name": "Impervious Altar",
+     "displayName": null,
+     "levelRequirement": 65,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 12,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 15.0,
+       "maxValue": 35.0
+      },
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 5,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 2.0,
+       "maxValue": 2.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 10,
+     "name": "Prophesied Altar",
+     "displayName": null,
+     "levelRequirement": 60,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 3,
+       "extraTag": 0,
+       "modType": "INCREASED",
+       "rounding": "Hundredth",
+       "value": 0.1,
+       "maxValue": 0.4
+      }
+     ]
+    },
+    {
+     "subTypeID": 11,
+     "name": "Pyramidal Altar",
+     "displayName": null,
+     "levelRequirement": 76,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 21,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Hundredth",
+       "value": 0.1,
+       "maxValue": 0.1
+      },
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 5,
+       "extraTag": 0,
+       "modType": "ADDED",
+       "rounding": "Integer",
+       "value": 2.0,
+       "maxValue": 2.0
+      }
+     ]
+    },
+    {
+     "subTypeID": 12,
+     "name": "Auric Altar",
+     "displayName": null,
+     "levelRequirement": 79,
+     "classRequirement": [],
+     "subClassRequirement": null,
+     "cannotDrop": 0,
+     "isCorruptedSubtype": 0,
+     "isLegacySubType": 0,
+     "obsoleteItem": 0,
+     "affixEffectiveness": "Default",
+     "implicits": [
+      {
+       "property": 130,
+       "propertyName": "IdolAltarProperty",
+       "specialTag": 0,
+       "tags": 20,
+       "extraTag": 0,
+       "modType": "MORE",
+       "rounding": "Hundredth",
+       "value": 0.02,
+       "maxValue": 0.02
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1469 @@
+{
+ "AT": {
+  "underlying": "int",
+  "flags": true,
+  "source": "dump/cs/DiffableCs/LE/AT.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "None"
+   },
+   {
+    "id": 1,
+    "name": "Physical"
+   },
+   {
+    "id": 2,
+    "name": "Lightning"
+   },
+   {
+    "id": 4,
+    "name": "Cold"
+   },
+   {
+    "id": 8,
+    "name": "Fire"
+   },
+   {
+    "id": 16,
+    "name": "Void"
+   },
+   {
+    "id": 32,
+    "name": "Necrotic"
+   },
+   {
+    "id": 64,
+    "name": "Poison"
+   },
+   {
+    "id": 128,
+    "name": "Elemental"
+   },
+   {
+    "id": 256,
+    "name": "Spell"
+   },
+   {
+    "id": 512,
+    "name": "Melee"
+   },
+   {
+    "id": 1024,
+    "name": "Throwing"
+   },
+   {
+    "id": 2048,
+    "name": "Bow"
+   },
+   {
+    "id": 4096,
+    "name": "DoT"
+   },
+   {
+    "id": 8192,
+    "name": "Minion"
+   },
+   {
+    "id": 16384,
+    "name": "Totem"
+   },
+   {
+    "id": 32768,
+    "name": "PetResisted"
+   },
+   {
+    "id": 65536,
+    "name": "Potion"
+   },
+   {
+    "id": 131072,
+    "name": "Buff"
+   },
+   {
+    "id": 262144,
+    "name": "Channelling"
+   },
+   {
+    "id": 524288,
+    "name": "Transform"
+   },
+   {
+    "id": 1048576,
+    "name": "LowLife"
+   },
+   {
+    "id": 2097152,
+    "name": "HighLife"
+   },
+   {
+    "id": 4194304,
+    "name": "FullLife"
+   },
+   {
+    "id": 8388608,
+    "name": "Hit"
+   },
+   {
+    "id": 16777216,
+    "name": "Curse"
+   },
+   {
+    "id": 33554432,
+    "name": "Ailment"
+   },
+   {
+    "id": 67108864,
+    "name": "Crit_deprecated"
+   },
+   {
+    "id": 134217728,
+    "name": "Kill_deprecated"
+   },
+   {
+    "id": 268435456,
+    "name": "Die_deprecated"
+   }
+  ],
+  "note": "Ability/stat tag bitmask (Stats.Stat.tags @0x14). Elemental(128) on a stat matches any of Lightning|Cold|Fire on the ability. LowLife/HighLife/FullLife are added to checkTags from Stats.atLowHealth/atHighHealth/atFullHealth."
+ },
+ "ETag": {
+  "underlying": "int",
+  "flags": true,
+  "source": "dump/cs/DiffableCs/LE/ETag.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "None"
+   },
+   {
+    "id": 1,
+    "name": "Physical"
+   },
+   {
+    "id": 2,
+    "name": "Lightning"
+   },
+   {
+    "id": 4,
+    "name": "Cold"
+   },
+   {
+    "id": 8,
+    "name": "Fire"
+   },
+   {
+    "id": 16,
+    "name": "Void"
+   },
+   {
+    "id": 32,
+    "name": "Necrotic"
+   },
+   {
+    "id": 64,
+    "name": "Poison"
+   },
+   {
+    "id": 128,
+    "name": "Melee"
+   },
+   {
+    "id": 256,
+    "name": "Ranged"
+   },
+   {
+    "id": 512,
+    "name": "Summoner"
+   },
+   {
+    "id": 1024,
+    "name": "Buffer"
+   },
+   {
+    "id": 2048,
+    "name": "Immobile"
+   },
+   {
+    "id": 4096,
+    "name": "VeryMobile"
+   },
+   {
+    "id": 8192,
+    "name": "NonDamaging"
+   }
+  ],
+  "note": "Enemy archetype tags (not used for stat matching)."
+ },
+ "ModType": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/BaseStats.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "ADDED"
+   },
+   {
+    "id": 1,
+    "name": "INCREASED"
+   },
+   {
+    "id": 2,
+    "name": "MORE"
+   },
+   {
+    "id": 3,
+    "name": "QUOTIENT"
+   }
+  ],
+  "note": "BaseStats+ModType. QUOTIENT stores more = 1/(1+x)-1 (Stats.StatOfType) or removes a more value (AddStatModifier/ChangeStatModifier)."
+ },
+ "DamageType": {
+  "underlying": "byte",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/DamageType.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "PHYSICAL"
+   },
+   {
+    "id": 1,
+    "name": "FIRE"
+   },
+   {
+    "id": 2,
+    "name": "COLD"
+   },
+   {
+    "id": 3,
+    "name": "LIGHTNING"
+   },
+   {
+    "id": 4,
+    "name": "NECROTIC"
+   },
+   {
+    "id": 5,
+    "name": "VOID"
+   },
+   {
+    "id": 6,
+    "name": "POISON"
+   }
+  ]
+ },
+ "ResistanceStatType": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/ResistanceStatType.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "NotResistance"
+   },
+   {
+    "id": 1,
+    "name": "IndividualElementalResistance"
+   },
+   {
+    "id": 2,
+    "name": "IndividualPhysicalOrVoidResistance"
+   },
+   {
+    "id": 3,
+    "name": "CombinedResistance"
+   },
+   {
+    "id": 4,
+    "name": "IndividualNecroticOrPoisonResistance"
+   }
+  ]
+ },
+ "ConditionalDamageProperty": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/ConditionalDamageProperty.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "ToStunnedEnemies"
+   },
+   {
+    "id": 1,
+    "name": "ToLowHealthEnemies"
+   },
+   {
+    "id": 2,
+    "name": "ToHighHealthEnemies"
+   },
+   {
+    "id": 3,
+    "name": "ToFullHealthEnemies"
+   },
+   {
+    "id": 4,
+    "name": "ToBossesAndRareEnemies"
+   },
+   {
+    "id": 5,
+    "name": "ToIgnitedEnemies"
+   },
+   {
+    "id": 6,
+    "name": "PerStackOfPoisonUpTo30"
+   },
+   {
+    "id": 7,
+    "name": "PerStackOfBleedUpTo30"
+   },
+   {
+    "id": 8,
+    "name": "ToChilledEnemies"
+   },
+   {
+    "id": 9,
+    "name": "ToSlowedEnemies"
+   },
+   {
+    "id": 10,
+    "name": "ToShockedEnemies"
+   },
+   {
+    "id": 11,
+    "name": "ToEnemiesWithLessRemainingHealthThanYourCurrentWard"
+   },
+   {
+    "id": 12,
+    "name": "ToEnemiesWithABrandOfDeception"
+   },
+   {
+    "id": 13,
+    "name": "ToCursedEnemies"
+   },
+   {
+    "id": 14,
+    "name": "ToBrandedEnemies"
+   },
+   {
+    "id": 15,
+    "name": "ToBrandedBossesAndRares"
+   },
+   {
+    "id": 16,
+    "name": "ToMovingEnemies"
+   },
+   {
+    "id": 17,
+    "name": "ToBossesButNotRares"
+   },
+   {
+    "id": 18,
+    "name": "PerStackOfArmourShredUpTo14"
+   },
+   {
+    "id": 19,
+    "name": "ToBleedingEnemies"
+   },
+   {
+    "id": 20,
+    "name": "ToFrozenEnemies"
+   },
+   {
+    "id": 21,
+    "name": "PerNegativeAilmentOnTheTarget"
+   },
+   {
+    "id": 22,
+    "name": "ToFearedOrSlowed"
+   },
+   {
+    "id": 23,
+    "name": "PerCurse"
+   },
+   {
+    "id": 24,
+    "name": "ToBossesAndMovingEnemies"
+   },
+   {
+    "id": 25,
+    "name": "ToDamnedEnemies"
+   },
+   {
+    "id": 26,
+    "name": "PerNegativeAilmentOnTheTargetUpTo8"
+   },
+   {
+    "id": 27,
+    "name": "ToSlowedOrImmobilized"
+   },
+   {
+    "id": 28,
+    "name": "ToLivingHumans"
+   },
+   {
+    "id": 29,
+    "name": "ToNettedEnemies"
+   },
+   {
+    "id": 30,
+    "name": "PerSlow"
+   },
+   {
+    "id": 31,
+    "name": "ToFalconMarkedEnemies"
+   },
+   {
+    "id": 32,
+    "name": "ToFrozenOrChilledEnemies"
+   },
+   {
+    "id": 33,
+    "name": "ToIgnitedOrShockedEnemies"
+   },
+   {
+    "id": 34,
+    "name": "ToSpreadingFlamesEnemies"
+   },
+   {
+    "id": 35,
+    "name": "ToFearedEnemies"
+   },
+   {
+    "id": 36,
+    "name": "ToElectrifiedEnemies"
+   },
+   {
+    "id": 37,
+    "name": "ToPetrifiedEnemies"
+   },
+   {
+    "id": 38,
+    "name": "PerStackOfFrostbiteUpTo30"
+   },
+   {
+    "id": 39,
+    "name": "PerStackOfShockUpTo30"
+   },
+   {
+    "id": 40,
+    "name": "ToBossesAndRaresWhenAboveHalfMana"
+   },
+   {
+    "id": 41,
+    "name": "ForBleedPerStackOfPoisonUpTo200"
+   },
+   {
+    "id": 42,
+    "name": "ForPoisonPerStackOfBleedUpTo200"
+   },
+   {
+    "id": 43,
+    "name": "PerDistance"
+   },
+   {
+    "id": 44,
+    "name": "ToPoisonedEnemies"
+   },
+   {
+    "id": 45,
+    "name": "ToImmobilizedEnemies"
+   },
+   {
+    "id": 46,
+    "name": "ToBlindedEnemies"
+   },
+   {
+    "id": 47,
+    "name": "ToFrostbittenEnemies"
+   }
+  ],
+  "note": "specialTag of SP 117/131/132/133 (GlobalConditionalDamage/Penetration/CritChance/CritMulti)."
+ },
+ "AilmentID": {
+  "underlying": "byte",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/AilmentID.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "None"
+   },
+   {
+    "id": 1,
+    "name": "Ignite"
+   },
+   {
+    "id": 2,
+    "name": "Bleed"
+   },
+   {
+    "id": 3,
+    "name": "Chill"
+   },
+   {
+    "id": 4,
+    "name": "Possess"
+   },
+   {
+    "id": 5,
+    "name": "Shock"
+   },
+   {
+    "id": 6,
+    "name": "Slow"
+   },
+   {
+    "id": 7,
+    "name": "Poison"
+   },
+   {
+    "id": 8,
+    "name": "ArmourShred"
+   },
+   {
+    "id": 9,
+    "name": "TimeRot"
+   },
+   {
+    "id": 10,
+    "name": "FutureAttack"
+   },
+   {
+    "id": 11,
+    "name": "Laceration"
+   },
+   {
+    "id": 12,
+    "name": "AbyssalDecay"
+   },
+   {
+    "id": 13,
+    "name": "StackingAbyssalDecay"
+   },
+   {
+    "id": 14,
+    "name": "Blind"
+   },
+   {
+    "id": 15,
+    "name": "SerpentVenom"
+   },
+   {
+    "id": 16,
+    "name": "Frailty"
+   },
+   {
+    "id": 17,
+    "name": "MarkedForDeath"
+   },
+   {
+    "id": 18,
+    "name": "Plague"
+   },
+   {
+    "id": 19,
+    "name": "Ravage"
+   },
+   {
+    "id": 20,
+    "name": "Root"
+   },
+   {
+    "id": 21,
+    "name": "Fear"
+   },
+   {
+    "id": 22,
+    "name": "DamageBoost"
+   },
+   {
+    "id": 23,
+    "name": "Frostbite"
+   },
+   {
+    "id": 24,
+    "name": "SpreadingFlames"
+   },
+   {
+    "id": 25,
+    "name": "FireballStackForExplosion"
+   },
+   {
+    "id": 26,
+    "name": "VoidEssence"
+   },
+   {
+    "id": 27,
+    "name": "HolyAuraStackForFlamBurst"
+   },
+   {
+    "id": 28,
+    "name": "PoisonResShred"
+   },
+   {
+    "id": 29,
+    "name": "NecroticResShred"
+   },
+   {
+    "id": 30,
+    "name": "VoidResShred"
+   },
+   {
+    "id": 31,
+    "name": "Stagger"
+   },
+   {
+    "id": 32,
+    "name": "DivineEssence"
+   },
+   {
+    "id": 33,
+    "name": "Haste"
+   },
+   {
+    "id": 34,
+    "name": "Frenzy"
+   },
+   {
+    "id": 35,
+    "name": "Swiftness"
+   },
+   {
+    "id": 36,
+    "name": "PoisonStackForExplosion"
+   },
+   {
+    "id": 37,
+    "name": "AvalancheStackForFissure"
+   },
+   {
+    "id": 38,
+    "name": "TempestsMight"
+   },
+   {
+    "id": 39,
+    "name": "Damned"
+   },
+   {
+    "id": 40,
+    "name": "Pestilence"
+   },
+   {
+    "id": 41,
+    "name": "DisintegrateStackForExplosion"
+   },
+   {
+    "id": 42,
+    "name": "FireResShred"
+   },
+   {
+    "id": 43,
+    "name": "MeleeDefShred"
+   },
+   {
+    "id": 44,
+    "name": "Stalwart"
+   },
+   {
+    "id": 45,
+    "name": "Inspiration"
+   },
+   {
+    "id": 46,
+    "name": "DummyHealingWhileNotTakingDamage"
+   },
+   {
+    "id": 47,
+    "name": "Deadly"
+   },
+   {
+    "id": 48,
+    "name": "AspectOfTheBoarVisuals"
+   },
+   {
+    "id": 49,
+    "name": "AspectOfTheSharkVisuals"
+   },
+   {
+    "id": 50,
+    "name": "StackingAspectOfTheSharkVisuals"
+   },
+   {
+    "id": 51,
+    "name": "AspectOfTheViperVisuals"
+   },
+   {
+    "id": 52,
+    "name": "AspectOfTheLynxVisuals"
+   },
+   {
+    "id": 53,
+    "name": "ArcaneMark"
+   },
+   {
+    "id": 54,
+    "name": "Immobilized"
+   },
+   {
+    "id": 55,
+    "name": "SparkCharge"
+   },
+   {
+    "id": 56,
+    "name": "CriticalEffluence"
+   },
+   {
+    "id": 57,
+    "name": "ArcaneAscendance"
+   },
+   {
+    "id": 58,
+    "name": "BoneCurse"
+   },
+   {
+    "id": 59,
+    "name": "SpiritPlague"
+   },
+   {
+    "id": 60,
+    "name": "ShrineHaste"
+   },
+   {
+    "id": 61,
+    "name": "Contempt"
+   },
+   {
+    "id": 62,
+    "name": "ShrineReflect"
+   },
+   {
+    "id": 63,
+    "name": "ShrineStun"
+   },
+   {
+    "id": 64,
+    "name": "ShrineCrit"
+   },
+   {
+    "id": 65,
+    "name": "ShrineManatee"
+   },
+   {
+    "id": 66,
+    "name": "Shapeshifter"
+   },
+   {
+    "id": 67,
+    "name": "Ferocity"
+   },
+   {
+    "id": 68,
+    "name": "DoomBrand"
+   },
+   {
+    "id": 69,
+    "name": "NecroticBoneCurse"
+   },
+   {
+    "id": 70,
+    "name": "Apocalypse"
+   },
+   {
+    "id": 71,
+    "name": "Flurry1Tag"
+   },
+   {
+    "id": 72,
+    "name": "Flurry2Tag"
+   },
+   {
+    "id": 73,
+    "name": "PhysicalResShred"
+   },
+   {
+    "id": 74,
+    "name": "ColdResShred"
+   },
+   {
+    "id": 75,
+    "name": "LightningResShred"
+   },
+   {
+    "id": 76,
+    "name": "Enrage"
+   },
+   {
+    "id": 77,
+    "name": "LightningInfusion"
+   },
+   {
+    "id": 78,
+    "name": "EfficaciousToxin"
+   },
+   {
+    "id": 79,
+    "name": "ShadowDaggers"
+   },
+   {
+    "id": 80,
+    "name": "MirageForm"
+   },
+   {
+    "id": 81,
+    "name": "SilverShroud"
+   },
+   {
+    "id": 82,
+    "name": "DuskShroud"
+   },
+   {
+    "id": 83,
+    "name": "CrimsonShroud"
+   },
+   {
+    "id": 84,
+    "name": "SmokeBlades"
+   },
+   {
+    "id": 85,
+    "name": "CriticalVulnerability"
+   },
+   {
+    "id": 86,
+    "name": "Sharpshooter"
+   },
+   {
+    "id": 87,
+    "name": "ShrineExperienceBuff"
+   },
+   {
+    "id": 88,
+    "name": "AspectOfTheCrow"
+   },
+   {
+    "id": 89,
+    "name": "AncientFlight"
+   },
+   {
+    "id": 90,
+    "name": "Doom"
+   },
+   {
+    "id": 91,
+    "name": "MoltenInfusion"
+   },
+   {
+    "id": 92,
+    "name": "StoneStare"
+   },
+   {
+    "id": 93,
+    "name": "Electrify"
+   },
+   {
+    "id": 94,
+    "name": "TotemArmor"
+   },
+   {
+    "id": 95,
+    "name": "SciurineRage"
+   },
+   {
+    "id": 96,
+    "name": "Darkness"
+   },
+   {
+    "id": 97,
+    "name": "CorruptedHeraldry"
+   },
+   {
+    "id": 98,
+    "name": "MimicFeast"
+   },
+   {
+    "id": 99,
+    "name": "VoidBarrierVisuals"
+   },
+   {
+    "id": 100,
+    "name": "Immunity"
+   },
+   {
+    "id": 101,
+    "name": "SnakeInfection"
+   },
+   {
+    "id": 102,
+    "name": "AmbushBuff"
+   },
+   {
+    "id": 103,
+    "name": "AspectOfTheSpider"
+   },
+   {
+    "id": 104,
+    "name": "TempestPaws"
+   },
+   {
+    "id": 105,
+    "name": "BrandOfTrespass"
+   },
+   {
+    "id": 106,
+    "name": "BrandOfSubjugation"
+   },
+   {
+    "id": 107,
+    "name": "BrandOfDeception"
+   },
+   {
+    "id": 108,
+    "name": "RunewordCataclysm"
+   },
+   {
+    "id": 109,
+    "name": "RunewordHurricane"
+   },
+   {
+    "id": 110,
+    "name": "RunewordAvalanche"
+   },
+   {
+    "id": 111,
+    "name": "RunewordInferno"
+   },
+   {
+    "id": 112,
+    "name": "UNUSED"
+   },
+   {
+    "id": 113,
+    "name": "Decrepify"
+   },
+   {
+    "id": 114,
+    "name": "SpiritKindling"
+   },
+   {
+    "id": 115,
+    "name": "Withering"
+   },
+   {
+    "id": 116,
+    "name": "Revolution"
+   },
+   {
+    "id": 117,
+    "name": "Penance"
+   },
+   {
+    "id": 118,
+    "name": "Torment"
+   },
+   {
+    "id": 119,
+    "name": "UNUSED2"
+   },
+   {
+    "id": 120,
+    "name": "AcidSkin"
+   },
+   {
+    "id": 121,
+    "name": "Anguish"
+   },
+   {
+    "id": 122,
+    "name": "Witchfire"
+   },
+   {
+    "id": 123,
+    "name": "Chained"
+   },
+   {
+    "id": 124,
+    "name": "TheGate"
+   },
+   {
+    "id": 125,
+    "name": "FalconMark"
+   },
+   {
+    "id": 126,
+    "name": "Netted"
+   },
+   {
+    "id": 127,
+    "name": "TalonBlades"
+   },
+   {
+    "id": 128,
+    "name": "HealingHandsHealOverTime"
+   },
+   {
+    "id": 129,
+    "name": "AterrothFrailty"
+   },
+   {
+    "id": 130,
+    "name": "AterrothShock"
+   },
+   {
+    "id": 131,
+    "name": "AterrothChill"
+   },
+   {
+    "id": 132,
+    "name": "AterrothCurse"
+   },
+   {
+    "id": 133,
+    "name": "AterrothTimeRot"
+   },
+   {
+    "id": 134,
+    "name": "SilkAilment"
+   },
+   {
+    "id": 135,
+    "name": "ChosenErasedAilment"
+   },
+   {
+    "id": 136,
+    "name": "Spiders"
+   },
+   {
+    "id": 137,
+    "name": "ExposedFlesh"
+   },
+   {
+    "id": 138,
+    "name": "BerserkTrigger"
+   },
+   {
+    "id": 139,
+    "name": "StoneAegis"
+   },
+   {
+    "id": 140,
+    "name": "Fireclaws"
+   },
+   {
+    "id": 141,
+    "name": "FlamingHeraldry"
+   },
+   {
+    "id": 142,
+    "name": "Hemorrhage"
+   },
+   {
+    "id": 143,
+    "name": "AllResReduction"
+   },
+   {
+    "id": 144,
+    "name": "ScathingLight"
+   },
+   {
+    "id": 145,
+    "name": "DawnShroud"
+   },
+   {
+    "id": 146,
+    "name": "AspectOfTheGroleVisuals"
+   },
+   {
+    "id": 147,
+    "name": "Bulwark"
+   },
+   {
+    "id": 148,
+    "name": "BulwarkRadiance"
+   },
+   {
+    "id": 149,
+    "name": "Disemboweled"
+   },
+   {
+    "id": 150,
+    "name": "AntiTraversal"
+   }
+  ],
+  "note": "specialTag of SP 1/42/43/115/120/128; tags/specialTag of SP 100 (AilmentConversion: tags=to, specialTag=from)."
+ },
+ "HitEventTag": {
+  "underlying": "byte",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/HitEventTag.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "None"
+   },
+   {
+    "id": 1,
+    "name": "Hit"
+   },
+   {
+    "id": 2,
+    "name": "Crit"
+   },
+   {
+    "id": 3,
+    "name": "Kill"
+   },
+   {
+    "id": 4,
+    "name": "Freeze"
+   },
+   {
+    "id": 5,
+    "name": "Stun"
+   },
+   {
+    "id": 6,
+    "name": "Block"
+   },
+   {
+    "id": 7,
+    "name": "MeleeHit"
+   }
+  ],
+  "note": "specialTag for hit-event taggable properties (GetStatValueForHitEvents: bit (1<<(tag-1)) must be in HitEvents)."
+ },
+ "TrackerPropertyID": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/TrackerPropertyID.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "None"
+   },
+   {
+    "id": 1,
+    "name": "CrystalWindStacksUsedOnCast"
+   },
+   {
+    "id": 2,
+    "name": "DiveBombMoreDamageDebuff"
+   },
+   {
+    "id": 3,
+    "name": "HailOfArrowsLessHitDamage"
+   },
+   {
+    "id": 4,
+    "name": "DetArrowMoreHitDmgInHailOfArrows"
+   },
+   {
+    "id": 5,
+    "name": "OmenTetherBuff"
+   },
+   {
+    "id": 6,
+    "name": "SoulFeastMoreHitDamage"
+   },
+   {
+    "id": 7,
+    "name": "DrainLifeLessDamageFromRecentlyDamaged"
+   },
+   {
+    "id": 8,
+    "name": "ShadowRendShadowMoreHitDamage"
+   }
+  ],
+  "note": "Stored in Stat.tags for SP 123 TrackerProperty."
+ },
+ "IdolAltarPropertyID": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/IdolAltarPropertyID.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "MaximumOmenIdols"
+   },
+   {
+    "id": 1,
+    "name": "EffectOfPrefixesAndSuffixesInRefractedSlots"
+   },
+   {
+    "id": 2,
+    "name": "EffectOfPrefixesInRefractedSlots"
+   },
+   {
+    "id": 3,
+    "name": "EffectOfSuffixesInRefractedSlots"
+   },
+   {
+    "id": 4,
+    "name": "EffectOfIdolEnchantsInRefractedSlots"
+   },
+   {
+    "id": 5,
+    "name": "WeaverIdolLimit"
+   },
+   {
+    "id": 6,
+    "name": "HereticalIdolLimit"
+   },
+   {
+    "id": 7,
+    "name": "AdornedIdolLimit"
+   },
+   {
+    "id": 8,
+    "name": "CorruptedIdolLimit"
+   },
+   {
+    "id": 9,
+    "name": "DodgeRatingPerCorruptedIdol"
+   },
+   {
+    "id": 10,
+    "name": "ManaPerCorruptedIdol"
+   },
+   {
+    "id": 11,
+    "name": "ArmourPerCorruptedIdol"
+   },
+   {
+    "id": 12,
+    "name": "WardDecayThresholdPerCorruptedIdol"
+   },
+   {
+    "id": 13,
+    "name": "HealthPerHereticalIdol"
+   },
+   {
+    "id": 14,
+    "name": "WardPerSecondPerHereticalIdol"
+   },
+   {
+    "id": 15,
+    "name": "ReducedBonusDamageFromCritsPerHereticalIdol"
+   },
+   {
+    "id": 16,
+    "name": "ManaRegenPerOrnateIdol"
+   },
+   {
+    "id": 17,
+    "name": "IncreasedHealthPerHugeIdol"
+   },
+   {
+    "id": 18,
+    "name": "IncreasedHasteEffectPerOmenIdol"
+   },
+   {
+    "id": 19,
+    "name": "HealthPerOmenIdol"
+   },
+   {
+    "id": 20,
+    "name": "DamageToBossesPerUniqueOrLegendaryIdol"
+   },
+   {
+    "id": 21,
+    "name": "ICRSIfThereAreNoLargerIdolsAboveSmallerOnes"
+   },
+   {
+    "id": 22,
+    "name": "HealthPerIdolInARefractedSlot"
+   },
+   {
+    "id": 23,
+    "name": "ManaPerIdolInARefractedSlot"
+   },
+   {
+    "id": 24,
+    "name": "ArmourPerIdolInARefractedSlot"
+   },
+   {
+    "id": 25,
+    "name": "WardDecayThresholdPerIdolInARefractedSlot"
+   },
+   {
+    "id": 26,
+    "name": "StrengthPerHereticalIdol"
+   },
+   {
+    "id": 27,
+    "name": "DexterityPerHereticalIdol"
+   },
+   {
+    "id": 28,
+    "name": "VitalityPerHereticalIdol"
+   },
+   {
+    "id": 29,
+    "name": "HealingEffectivenessPerHereticalIdol"
+   },
+   {
+    "id": 30,
+    "name": "EleResPerHereticalIdol"
+   }
+  ]
+ },
+ "NodeStatApplication": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/NodeStatApplication.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "Default"
+   },
+   {
+    "id": 1,
+    "name": "Global"
+   },
+   {
+    "id": 2,
+    "name": "OnCast"
+   },
+   {
+    "id": 3,
+    "name": "OnCastPreMutation"
+   }
+  ]
+ },
+ "NodeStatScaling": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/NodeStatScaling.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "PerPoint"
+   },
+   {
+    "id": 1,
+    "name": "None"
+   },
+   {
+    "id": 2,
+    "name": "Threshold"
+   }
+  ],
+  "note": "AutomaticNodeStat.GetValue: PerPoint=value*points, None=value, Threshold=points>=threshold?value:0"
+ },
+ "Attribute": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/CoreAttribute.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "Strength"
+   },
+   {
+    "id": 1,
+    "name": "Vitality"
+   },
+   {
+    "id": 2,
+    "name": "Intelligence"
+   },
+   {
+    "id": 3,
+    "name": "Dexterity"
+   },
+   {
+    "id": 4,
+    "name": "Attunement"
+   }
+  ],
+  "note": "CoreAttribute+Attribute"
+ },
+ "SpecificityType": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/Tags.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "Tags"
+   },
+   {
+    "id": 1,
+    "name": "Ability"
+   },
+   {
+    "id": 2,
+    "name": "TagsPrimalistOnly"
+   },
+   {
+    "id": 3,
+    "name": "TagsMageOnly"
+   },
+   {
+    "id": 4,
+    "name": "TagsSentinelOnly"
+   },
+   {
+    "id": 5,
+    "name": "TagsAcolyteOnly"
+   },
+   {
+    "id": 6,
+    "name": "TagsRogueOnly"
+   },
+   {
+    "id": 7,
+    "name": "TagsStrength"
+   },
+   {
+    "id": 8,
+    "name": "TagsVitality"
+   },
+   {
+    "id": 9,
+    "name": "TagsIntelligence"
+   },
+   {
+    "id": 10,
+    "name": "TagsDexterity"
+   },
+   {
+    "id": 11,
+    "name": "TagsAttunement"
+   }
+  ],
+  "note": "Tags+SpecificityType"
+ },
+ "MinionOrSituationTag": {
+  "underlying": "int",
+  "flags": false,
+  "source": "dump/cs/DiffableCs/LE/Tags.cs",
+  "values": [
+   {
+    "id": 0,
+    "name": "Self"
+   },
+   {
+    "id": 1,
+    "name": "Minion"
+   },
+   {
+    "id": 2,
+    "name": "Totem"
+   },
+   {
+    "id": 3,
+    "name": "SelfOnPotionUse"
+   },
+   {
+    "id": 4,
+    "name": "SelfWhileChannelling"
+   },
+   {
+    "id": 5,
+    "name": "SelfWhileTransformed"
+   }
+  ]
+ }
+}

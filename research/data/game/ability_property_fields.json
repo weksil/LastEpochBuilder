@@ -1,0 +1,5043 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "GameAssembly.dll AbilityStatsMutatorManager.UpdateAbilityStats @0x182401c20 (byte-pattern walk, tools/extract/ap_switch.py)",
+ "schema": {
+  "abilityID": "Stat.tags of SP 58 (AbilityID)",
+  "specialTag": "index into AbilityPropertyList[ability].properties",
+  "op": "add | assign | flag=(added>eps) | flag|=(added>eps) | more-combine | complex | unknown",
+  "field": "AbilityStatsMutatorManager field receiving stat.addedValue (read by that skill's mutator)"
+ },
+ "problems": [
+  [
+   "unknown insn",
+   "0x1824173dc",
+   "0fb7ca83e90f0f847803000083e9010f",
+   "8",
+   "19"
+  ],
+  [
+   "unknown insn",
+   "0x182416e1d",
+   "f30f108380010000f30f58471cf30f11",
+   "24",
+   "24"
+  ],
+  [
+   "unknown insn",
+   "0x182415725",
+   "83c0bf83f80a0f87840800004898418b",
+   "59",
+   "78"
+  ],
+  [
+   "unknown insn",
+   "0x182415026",
+   "0fb7ca83e9610f844603000083e9010f",
+   "79",
+   "101"
+  ],
+  [
+   "unknown insn",
+   "0x182414561",
+   "0fb7ca83e96a0f841106000083e9010f",
+   "102",
+   "118"
+  ],
+  [
+   "unknown insn",
+   "0x182412bba",
+   "0568ffffff83f80a0f874c0c00004898",
+   "147",
+   "167"
+  ],
+  [
+   "unknown insn",
+   "0x18240fb8f",
+   "0fb7ca81e9ac0000000f84892e000083",
+   "168",
+   "235"
+  ],
+  [
+   "unknown insn",
+   "0x18240f6f5",
+   "0506ffffff83f8060f87cd64ffff4898",
+   "236",
+   "256"
+  ],
+  [
+   "unknown insn",
+   "0x18240e397",
+   "41b82301000066413bd00f862c050000",
+   "268",
+   "318"
+  ],
+  [
+   "unknown insn",
+   "0x18240c80f",
+   "05b0feffff83f8050f87090600004898",
+   "325",
+   "379"
+  ],
+  [
+   "unknown insn",
+   "0x18240b7a8",
+   "41b89b01000066413bd00f860f060000",
+   "380",
+   "445"
+  ],
+  [
+   "unknown insn",
+   "0x1824098d4",
+   "41b8e901000066413bd00f86c60e0000",
+   "446",
+   "553"
+  ],
+  [
+   "unknown insn",
+   "0x182408cc8",
+   "41b84402000066413bd00f86c2070000",
+   "554",
+   "690"
+  ],
+  [
+   "unknown insn",
+   "0x1824081a6",
+   "0fb7ca81e9ce0200000f84b303000083",
+   "704",
+   "722"
+  ],
+  [
+   "cmp16",
+   "0x182406d7c",
+   "663bd6"
+  ],
+  [
+   "unknown insn",
+   "0x182406b4b",
+   "488bcfe8bdb4bffd0fb6471183f8090f",
+   "815",
+   "815"
+  ],
+  [
+   "unknown insn",
+   "0x182406cf8",
+   "488bcfe810b3bffd0fb64f1185c97452",
+   "816",
+   "816"
+  ],
+  [
+   "unknown insn",
+   "0x182405e08",
+   "0fb7ca81e99a0300000f848c09000083",
+   "817",
+   "65535"
+  ],
+  [
+   "inner unknown",
+   "0x18240e331",
+   "84c0751af30f10471c0f2fc70f868d78"
+  ]
+ ],
+ "data": [
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 0,
+   "caseVA": "0x182417a20",
+   "op": "add",
+   "fieldOffset": "0xd20",
+   "field": "fireballPierceChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 1,
+   "caseVA": "0x182417a3a",
+   "op": "complex",
+   "fieldOffset": "0xd24",
+   "field": "extraProjectilesForFireball",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 2,
+   "caseVA": "0x182417a59",
+   "op": "add",
+   "fieldOffset": "0xd28",
+   "field": "percentFireballBaseDamageConvertedToLightning",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 3,
+   "caseVA": "0x182417a73",
+   "op": "add",
+   "fieldOffset": "0xd2c",
+   "field": "fireballSparkChargeChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 4,
+   "caseVA": "0x182417a8d",
+   "op": "add",
+   "fieldOffset": "0xd30",
+   "field": "fireballIgniteToShockConversion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 5,
+   "caseVA": "0x182417aa7",
+   "op": "add",
+   "fieldOffset": "0x7e0",
+   "field": "chanceToGain20ManaWhenYouCastFireballOrRunebolt",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 6,
+   "caseVA": "0x182417ac1",
+   "op": "add",
+   "fieldOffset": "0xd34",
+   "field": "chanceToCastGlyphOfDomionOnHitWithFireball",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 7,
+   "caseVA": "0x182417adb",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xd38",
+   "field": "physicalConversionForFireball",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 8,
+   "caseVA": "0x182417af6",
+   "op": "add",
+   "fieldOffset": "0xd3c",
+   "field": "addedSpellDamagePer20MaxHealthForFireball",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 9,
+   "caseVA": "0x182417b10",
+   "op": "add",
+   "fieldOffset": "0xd40",
+   "field": "increasedStunChanceWithFireball",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 10,
+   "caseVA": "0x182417b2a",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xd44",
+   "field": "noIgniteForFireball",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 11,
+   "caseVA": "0x182417b45",
+   "op": "add",
+   "fieldOffset": "0xd48",
+   "field": "manaRestoredOnDirectFireballUseThatHits",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 12,
+   "caseVA": "0x182417b5f",
+   "op": "add",
+   "fieldOffset": "0xd4c",
+   "field": "wardGainedOnDirectFireballUseThatHits",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 13,
+   "caseVA": "0x182417b79",
+   "op": "complex",
+   "fieldOffset": "0xd50",
+   "field": "forksPerFireball",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 14,
+   "caseVA": "0x182417b98",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xd54",
+   "field": "fireballOrbitsYou",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 15,
+   "caseVA": "0x182417bb3",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xd55",
+   "field": "largeLobbedFireballMode",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 1,
+   "abilityIDName": "fireball",
+   "specialTag": 16,
+   "caseVA": "0x182417bce",
+   "op": "add",
+   "fieldOffset": "0xd58",
+   "field": "addedFireballManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 0,
+   "caseVA": "0x182417c0c",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x9c4",
+   "field": "meteorConvertedToLightning",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 1,
+   "caseVA": "0x182417c2b",
+   "op": "add",
+   "fieldOffset": "0x9c8",
+   "field": "increasedMeteorFallSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 2,
+   "caseVA": "0x182417c45",
+   "op": "add",
+   "fieldOffset": "0x9cc",
+   "field": "meteorAddedCooldown",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 3,
+   "caseVA": "0x182417c5f",
+   "op": "add",
+   "fieldOffset": "0x9d0",
+   "field": "meteorMoreHitDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 4,
+   "caseVA": "0x182417c79",
+   "op": "add",
+   "fieldOffset": "0x9d4",
+   "field": "meteorMoreDotDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 5,
+   "caseVA": "0x182417c93",
+   "op": "add",
+   "fieldOffset": "0x9d8",
+   "field": "meteorMoreRadius",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 6,
+   "caseVA": "0x182417cad",
+   "op": "add",
+   "fieldOffset": "0x9dc",
+   "field": "meteorMoreDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 7,
+   "caseVA": "0x182417cc7",
+   "op": "add",
+   "fieldOffset": "0x9e0",
+   "field": "meteorMoreManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 8,
+   "caseVA": "0x182417ce1",
+   "op": "add",
+   "fieldOffset": "0x9e4",
+   "field": "meteorSubMeteorMoreTargetArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 9,
+   "caseVA": "0x182417cfb",
+   "op": "add",
+   "fieldOffset": "0x9e8",
+   "field": "meteorMaxManaToAddedManaCostRatio",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 10,
+   "caseVA": "0x182417d15",
+   "op": "add",
+   "fieldOffset": "0x9ec",
+   "field": "meteorImpactCastFlameWaveDelay",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 11,
+   "caseVA": "0x182417d2f",
+   "op": "complex",
+   "fieldOffset": "0x9f0",
+   "field": "meteorAddedMeteorsOnDirect",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 12,
+   "caseVA": "0x182417d4e",
+   "op": "add",
+   "fieldOffset": "0x9f4",
+   "field": "meteorIncreasedMeteorFallDelay",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 13,
+   "caseVA": "0x182417d68",
+   "op": "add",
+   "fieldOffset": "0x9f8",
+   "field": "meteorManaConsumeToSpawnBee",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 14,
+   "caseVA": "0x182417d82",
+   "op": "complex",
+   "fieldOffset": "0x9fc",
+   "field": "meteorCelestialWaveDirectStacks",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 15,
+   "caseVA": "0x182417da1",
+   "op": "complex",
+   "fieldOffset": "0xa00",
+   "field": "meteorCreatesBurningGround",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 16,
+   "caseVA": "0x182417dce",
+   "op": "complex",
+   "fieldOffset": "0xa01",
+   "field": "meteorColdConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 17,
+   "caseVA": "0x182417dfb",
+   "op": "add",
+   "fieldOffset": "0xa04",
+   "field": "meteorFreezeRatePerManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 18,
+   "caseVA": "0x182417e15",
+   "op": "add",
+   "fieldOffset": "0xa08",
+   "field": "meteorMoreDamagePer2ManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 7,
+   "abilityIDName": "meteor",
+   "specialTag": 19,
+   "caseVA": "0x182417e2f",
+   "op": "add",
+   "fieldOffset": "0xa0c",
+   "field": "meteorAuraModeManaDrain",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 0,
+   "caseVA": "0x182417034",
+   "op": "add",
+   "fieldOffset": "0x194",
+   "field": "chanceToBleedOnHitForSquirrels",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 1,
+   "caseVA": "0x18241704e",
+   "op": "add",
+   "fieldOffset": "0x198",
+   "field": "chanceToShredPhysOnHitForSquirrels",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 2,
+   "caseVA": "0x182417068",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 3,
+   "caseVA": "0x182417090",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1c4",
+   "field": "canSummonWolvesUpToMaxCompanions",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 4,
+   "caseVA": "0x1824170aa",
+   "op": "add",
+   "fieldOffset": "0x19c",
+   "field": "wolfLightningRetaliationChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 5,
+   "caseVA": "0x1824170c4",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1c2",
+   "field": "wolfStunImmunity",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 6,
+   "caseVA": "0x1824170de",
+   "op": "add",
+   "fieldOffset": "0x1a0",
+   "field": "summonWolfCritChanceForWolves",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 7,
+   "caseVA": "0x1824170f8",
+   "op": "add",
+   "fieldOffset": "0x1a4",
+   "field": "summonWolfChanceToHowlOnCrit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 8,
+   "caseVA": "0x182417112",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1c5",
+   "field": "summonWolfCountAsTwoForLimit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 9,
+   "caseVA": "0x182417137",
+   "op": "add",
+   "fieldOffset": "0x1a8",
+   "field": "summonWolfIncreasedSize",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 10,
+   "caseVA": "0x182417151",
+   "op": "add",
+   "fieldOffset": "0x1b0",
+   "field": "summonWolfAddedPlayerMeleeDamagePerActiveWolf",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 11,
+   "caseVA": "0x18241716b",
+   "op": "add",
+   "fieldOffset": "0x1ac",
+   "field": "summonWolfIncreasedPlayerMeleeAttackSpeedPerActiveWolf",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 12,
+   "caseVA": "0x182417185",
+   "op": "add",
+   "fieldOffset": "0x1b4",
+   "field": "summonWolfChanceToCastWindTempestOnWolfHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 13,
+   "caseVA": "0x18241719f",
+   "op": "add",
+   "fieldOffset": "0x1b8",
+   "field": "summonWolfChanceToCastWindTempestOnHowl",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 14,
+   "caseVA": "0x1824171b9",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1c0",
+   "field": "summonWolfHowlBecomesHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 15,
+   "caseVA": "0x1824171de",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1c1",
+   "field": "summonWolfWolvesHealthPercentageSetToAverageOnHowl",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 8,
+   "abilityIDName": "summonWolf",
+   "specialTag": 16,
+   "caseVA": "0x182417203",
+   "op": "more-combine",
+   "fieldOffset": "0x1bc",
+   "field": "summonWolfWolvesLessDamageFor3SecOnHowl",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 0,
+   "caseVA": "0x18241723e",
+   "op": "add",
+   "fieldOffset": "0xb74",
+   "field": "increasedElementalNovaArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 1,
+   "caseVA": "0x182417258",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xb78",
+   "field": "targetedElementalNova",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 2,
+   "caseVA": "0x182417273",
+   "op": "add",
+   "fieldOffset": "0xb7c",
+   "field": "increasedElementalNovaAreaWithSupernova",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 3,
+   "caseVA": "0x18241728d",
+   "op": "add",
+   "fieldOffset": "0xb80",
+   "field": "addedDamageWithSupernova",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 4,
+   "caseVA": "0x1824172a7",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xb84",
+   "field": "forceTriElementalNova",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 5,
+   "caseVA": "0x1824172c2",
+   "op": "add",
+   "fieldOffset": "0xb88",
+   "field": "elementalPenetrationWithElementalNovaPer10pUncappedFireColdAndLightningResistance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 6,
+   "caseVA": "0x1824172dc",
+   "op": "more-combine",
+   "fieldOffset": "0xb8c",
+   "field": "moreElementalNovaDotTDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 7,
+   "caseVA": "0x1824172f3",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xb90",
+   "field": "elementalNovaCastsFrostClawIfShareElements",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 8,
+   "caseVA": "0x18241730e",
+   "op": "add",
+   "fieldOffset": "0xb94",
+   "field": "iceNovaFrostbiteChancePerNovaType",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 9,
+   "caseVA": "0x182417328",
+   "op": "more-combine",
+   "fieldOffset": "0xb98",
+   "field": "moreDamageWithElementalNova",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 10,
+   "caseVA": "0x18241733f",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xb9c",
+   "field": "elementalNovaCenteredOnNearbyEnemyToTarget",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 11,
+   "caseVA": "0x18241735a",
+   "op": "add",
+   "fieldOffset": "0xba0",
+   "field": "lightningNovaLingeringAuraDurationOn6sCD",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 12,
+   "caseVA": "0x182417374",
+   "op": "add",
+   "fieldOffset": "0xba4",
+   "field": "iceNovaLingeringAuraDurationOn6sCD",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 13,
+   "caseVA": "0x18241738e",
+   "op": "add",
+   "fieldOffset": "0xba8",
+   "field": "fireNovaLingeringAuraDurationOn6sCD",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 14,
+   "caseVA": "0x1824173a8",
+   "op": "add",
+   "fieldOffset": "0xbac",
+   "field": "elementalNovaLessArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 12,
+   "abilityIDName": "nova",
+   "specialTag": 15,
+   "caseVA": "0x1824173c2",
+   "op": "add",
+   "fieldOffset": "0xbb0",
+   "field": "elementalNovaChanceCast3NovasInATriangle",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 0,
+   "caseVA": "0x182416c6b",
+   "op": "add",
+   "fieldOffset": "0x6f0",
+   "field": "tornadoFireResShred",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 1,
+   "caseVA": "0x182416c85",
+   "op": "add",
+   "fieldOffset": "0x6f4",
+   "field": "tornadoChanceSmallAvalancheBoulder",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 2,
+   "caseVA": "0x182416c9f",
+   "op": "add",
+   "fieldOffset": "0x6f8",
+   "field": "tornadoChancePerTornadoDupeStormStack",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 3,
+   "caseVA": "0x182416cb9",
+   "op": "add",
+   "fieldOffset": "0x6fc",
+   "field": "tornadoIncMoveSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 4,
+   "caseVA": "0x182416cd3",
+   "op": "add",
+   "fieldOffset": "0x700",
+   "field": "tornadoAddedManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 5,
+   "caseVA": "0x182416ced",
+   "op": "more-combine",
+   "fieldOffset": "0x704",
+   "field": "tornadoMoreDamagePerMaelstrom",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 6,
+   "caseVA": "0x182416d04",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x708",
+   "field": "tornadoColdConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 7,
+   "caseVA": "0x182416d29",
+   "op": "add",
+   "fieldOffset": "0x70c",
+   "field": "tornadoPhysShredChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 8,
+   "caseVA": "0x182416d43",
+   "op": "add",
+   "fieldOffset": "0x710",
+   "field": "tornadoArmorShredChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 9,
+   "caseVA": "0x182416d5d",
+   "op": "add",
+   "fieldOffset": "0x714",
+   "field": "tornadoSlowChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 10,
+   "caseVA": "0x182416d77",
+   "op": "add",
+   "fieldOffset": "0x718",
+   "field": "tornadoSpeedFromMoveSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 11,
+   "caseVA": "0x182416d91",
+   "op": "more-combine",
+   "fieldOffset": "0x71c",
+   "field": "tornadoMoreDamagePerMoveSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 12,
+   "caseVA": "0x182416da8",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x720",
+   "field": "tornadoLineMode",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 13,
+   "caseVA": "0x182416dcd",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x721",
+   "field": "tornadoHoming",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 22,
+   "abilityIDName": "tornado",
+   "specialTag": 14,
+   "caseVA": "0x182416df2",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x722",
+   "field": "tornadoAttachToMinion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 0,
+   "caseVA": "0x182416e5b",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x880",
+   "field": "manaStrikeConvertedToCold",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 1,
+   "caseVA": "0x182416e7a",
+   "op": "add",
+   "fieldOffset": "0x884",
+   "field": "manaStrikeFreezeRatePer1pUncappedEndurance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 2,
+   "caseVA": "0x182416e94",
+   "op": "more-combine",
+   "fieldOffset": "0x888",
+   "field": "manaStrikeMoreElementalDamageIfEnchantWeaponIsActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 3,
+   "caseVA": "0x182416eab",
+   "op": "add",
+   "fieldOffset": "0x88c",
+   "field": "manaStrikeIgniteChanceIfEnchantWeaponIsActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 4,
+   "caseVA": "0x182416ec5",
+   "op": "add",
+   "fieldOffset": "0x890",
+   "field": "manaStrikeChanceRepeatAttackIfHitAnyEnemy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 5,
+   "caseVA": "0x182416edf",
+   "op": "add",
+   "fieldOffset": "0x894",
+   "field": "manaStrikeChanceInflictBrandOfDeceptionOnNextSpellHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 6,
+   "caseVA": "0x182416ef9",
+   "op": "add",
+   "fieldOffset": "0x898",
+   "field": "manaStrikeChanceRetaliateWithFirebrandToEnemyHitIn4m",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 7,
+   "caseVA": "0x182416f13",
+   "op": "complex",
+   "fieldOffset": "0x89c",
+   "field": "manaStrikeTeleportsYouToTargetIfLess6m",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 8,
+   "caseVA": "0x182416f40",
+   "op": "complex",
+   "fieldOffset": "0x89d",
+   "field": "manaStrikeFireConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 9,
+   "caseVA": "0x182416f6d",
+   "op": "add",
+   "fieldOffset": "0x8a0",
+   "field": "manaStrikeWardPercentConsumptionOnCast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 10,
+   "caseVA": "0x182416f87",
+   "op": "more-combine",
+   "fieldOffset": "0x8a4",
+   "field": "manaStrikeMoreDamagePerWardConsumed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 11,
+   "caseVA": "0x182416f9e",
+   "op": "add",
+   "fieldOffset": "0x8a8",
+   "field": "manaStrikeWardOnHitToHealthOnHitConvertedMod",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 12,
+   "caseVA": "0x182416fb8",
+   "op": "add",
+   "fieldOffset": "0x8ac",
+   "field": "manaStrikeChanceCastElementalNovaOnEnemyHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 13,
+   "caseVA": "0x182416fd2",
+   "op": "add",
+   "fieldOffset": "0x8b0",
+   "field": "manaStrikeFrostbiteChanceIfEnchantWeaponIsActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 29,
+   "abilityIDName": "manaStrike",
+   "specialTag": 14,
+   "caseVA": "0x182416fec",
+   "op": "add",
+   "fieldOffset": "0x8b4",
+   "field": "manaStrikeElectrifyChanceIfEnchantWeaponIsActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 0,
+   "caseVA": "0x182416675",
+   "op": "complex",
+   "fieldOffset": "0x8b8",
+   "field": "convertLightningBlastToCold",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 1,
+   "caseVA": "0x18241669f",
+   "op": "complex",
+   "fieldOffset": "0x8bc",
+   "field": "lightningBlastAdditionalChains",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 2,
+   "caseVA": "0x1824166be",
+   "op": "add",
+   "fieldOffset": "0x8c0",
+   "field": "lightningBlastChanceFor4AdditionalChains",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 3,
+   "caseVA": "0x1824166d8",
+   "op": "complex",
+   "fieldOffset": "0x8c4",
+   "field": "staticChargesGainedOnDirectLightningBlast",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 4,
+   "caseVA": "0x1824166f7",
+   "op": "more-combine",
+   "fieldOffset": "0x8c8",
+   "field": "moreLightningBlastDamageToHighHealth",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 5,
+   "caseVA": "0x18241670e",
+   "op": "more-combine",
+   "fieldOffset": "0x8cc",
+   "field": "moreLightningBlastDamageWhileAtHighHealth",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 6,
+   "caseVA": "0x182416725",
+   "op": "add",
+   "fieldOffset": "0x8d0",
+   "field": "chanceToCastStaticOrbOnDirectLightningBlastCastThatHits",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 7,
+   "caseVA": "0x18241673f",
+   "op": "add",
+   "fieldOffset": "0x8d4",
+   "field": "chanceToAutoCastLightningBlastAtRandomNearbyWhileMovingInCombat",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 8,
+   "caseVA": "0x182416759",
+   "op": "complex",
+   "fieldOffset": "0x8d8",
+   "field": "maxManaConsumedOnDirectLightningBlastCastWhileAtPositiveManaForAdditionalChains",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 9,
+   "caseVA": "0x182416778",
+   "op": "more-combine",
+   "fieldOffset": "0x8dc",
+   "field": "moreLightningBlastDamageEvery5s",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 10,
+   "caseVA": "0x18241678f",
+   "op": "complex",
+   "fieldOffset": "0x8e0",
+   "field": "addedLightningBlastChainsEvery5s",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 11,
+   "caseVA": "0x1824167ae",
+   "op": "add",
+   "fieldOffset": "0x8e4",
+   "field": "increasedLightningBlastChainRange",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 12,
+   "caseVA": "0x1824167c8",
+   "op": "more-combine",
+   "fieldOffset": "0x8e8",
+   "field": "moreLightningBlastDamageToEnemies5mAway",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 13,
+   "caseVA": "0x1824167df",
+   "op": "complex",
+   "fieldOffset": "0x8ec",
+   "field": "repeatLightningBlastCastsOver3sOnDirectCast",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 14,
+   "caseVA": "0x1824167fe",
+   "op": "complex",
+   "fieldOffset": "0x8f0",
+   "field": "addedLightningBlastManaCost",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 39,
+   "abilityIDName": "lightningBlast",
+   "specialTag": 15,
+   "caseVA": "0x18241681d",
+   "op": "add",
+   "fieldOffset": "0x8f4",
+   "field": "addedLightningBlastCooldownDuration",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 0,
+   "caseVA": "0x18241685b",
+   "op": "add",
+   "fieldOffset": "0xae8",
+   "field": "increasedGlacierArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 1,
+   "caseVA": "0x182416875",
+   "op": "add",
+   "fieldOffset": "0xaec",
+   "field": "coldPenWithGlacier",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 2,
+   "caseVA": "0x18241688f",
+   "op": "complex",
+   "fieldOffset": "0xaf0",
+   "field": "glacierFrostWallOnEliteHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 3,
+   "caseVA": "0x1824168bc",
+   "op": "complex",
+   "fieldOffset": "0xaf1",
+   "field": "glacierAllMedium",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 4,
+   "caseVA": "0x1824168e9",
+   "op": "add",
+   "fieldOffset": "0xaf4",
+   "field": "glacierChanceOnColdMeleeHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 5,
+   "caseVA": "0x182416903",
+   "op": "add",
+   "fieldOffset": "0xaf8",
+   "field": "glacierFrostWallMoreDamageOnEliteHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 6,
+   "caseVA": "0x18241691d",
+   "op": "more-combine",
+   "fieldOffset": "0xafc",
+   "field": "glacierIceBarrageAlignedMoreDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 7,
+   "caseVA": "0x182416934",
+   "op": "add",
+   "fieldOffset": "0xb00",
+   "field": "glacierIceBarrageAlignedHasteDuration",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 8,
+   "caseVA": "0x18241694e",
+   "op": "add",
+   "fieldOffset": "0xb04",
+   "field": "glacierFrostbiteChancePer5FreezeMulti",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 9,
+   "caseVA": "0x182416968",
+   "op": "add",
+   "fieldOffset": "0xb08",
+   "field": "glacierIceVortexChanceOnHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 10,
+   "caseVA": "0x182416982",
+   "op": "add",
+   "fieldOffset": "0xb0c",
+   "field": "glacierColdPenPer2UncapColdResForIceVortex",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 11,
+   "caseVA": "0x18241699c",
+   "op": "add",
+   "fieldOffset": "0xb10",
+   "field": "glacierAddedManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 12,
+   "caseVA": "0x1824169b6",
+   "op": "add",
+   "fieldOffset": "0xb14",
+   "field": "glacierCritMultiToChilled",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 13,
+   "caseVA": "0x1824169d0",
+   "op": "add",
+   "fieldOffset": "0xb18",
+   "field": "glacierCritMultiToFrozen",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 14,
+   "caseVA": "0x1824169ea",
+   "op": "add",
+   "fieldOffset": "0xb1c",
+   "field": "glacierCritMultiToFrostbite",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 47,
+   "abilityIDName": "glacier",
+   "specialTag": 15,
+   "caseVA": "0x182416a04",
+   "op": "complex",
+   "fieldOffset": "0xb20",
+   "field": "glacierRandomTargetsInCone",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 0,
+   "caseVA": "0x182416a47",
+   "op": "add",
+   "fieldOffset": "0x1f28",
+   "field": "increasedAreaWithAcidFlask",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 1,
+   "caseVA": "0x182416a61",
+   "op": "add",
+   "fieldOffset": "0x1f2c",
+   "field": "chanceToSummonBeesWithAcidFlask",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 2,
+   "caseVA": "0x182416a7b",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1f30",
+   "field": "acidFlaskBuffsBees",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 3,
+   "caseVA": "0x182416a96",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1f31",
+   "field": "acidFlaskConsumesPotionForAdditionalThrow",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 4,
+   "caseVA": "0x182416ab1",
+   "op": "more-combine",
+   "fieldOffset": "0x1f34",
+   "field": "acidFlaskAdditionalThrowMoreDamageWhenConsumingPotion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 5,
+   "caseVA": "0x182416ac8",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1f38",
+   "field": "acidFlaskConvertedToCold",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 6,
+   "caseVA": "0x182416ae2",
+   "op": "more-combine",
+   "fieldOffset": "0x1f3c",
+   "field": "acidFlaskMoreHitToChilled",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 7,
+   "caseVA": "0x182416af9",
+   "op": "more-combine",
+   "fieldOffset": "0x1f40",
+   "field": "acidFlaskMoreHitToFrostbite",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 8,
+   "caseVA": "0x182416b10",
+   "op": "more-combine",
+   "fieldOffset": "0x1f44",
+   "field": "acidFlaskMoreHitToFrozen",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 9,
+   "caseVA": "0x182416b27",
+   "op": "add",
+   "fieldOffset": "0x1f48",
+   "field": "acidFlaskMirageChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 10,
+   "caseVA": "0x182416b41",
+   "op": "more-combine",
+   "fieldOffset": "0x1f4c",
+   "field": "acidFlaskMoreDamagePerCasterPoisonStack",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 11,
+   "caseVA": "0x182416b58",
+   "op": "complex",
+   "fieldOffset": "0x1f50",
+   "field": "acidFlaskOrPotionPoisonStacksToCaster",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 12,
+   "caseVA": "0x182416b77",
+   "op": "add",
+   "fieldOffset": "0x1f54",
+   "field": "acidFlaskChanceToBounce",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 13,
+   "caseVA": "0x182416b91",
+   "op": "add",
+   "fieldOffset": "0x1f58",
+   "field": "acidFlaskShockToPoisonChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 14,
+   "caseVA": "0x182416bab",
+   "op": "add",
+   "fieldOffset": "0x1f5c",
+   "field": "acidFlaskArmorShredToPoisonChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 15,
+   "caseVA": "0x182416bc5",
+   "op": "add",
+   "fieldOffset": "0x1f60",
+   "field": "acidFlaskSlowToPoisonChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 16,
+   "caseVA": "0x182416bdf",
+   "op": "add",
+   "fieldOffset": "0x1f64",
+   "field": "acidFlaskPotionHealthAsAddedThrowing",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 17,
+   "caseVA": "0x182416bf9",
+   "op": "add",
+   "fieldOffset": "0x1f68",
+   "field": "acidFlaskThrowingDamagePerPotionSlot",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 18,
+   "caseVA": "0x182416c13",
+   "op": "add",
+   "fieldOffset": "0x1f6c",
+   "field": "acidFlaskPoisonChancePerPotionSlot",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 50,
+   "abilityIDName": "acidFlask",
+   "specialTag": 19,
+   "caseVA": "0x182416c2d",
+   "op": "add",
+   "fieldOffset": "0x1f70",
+   "field": "acidFlaskChanceToThrowFlaskOnEvadeTraversal",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 0,
+   "caseVA": "0x182416353",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x4c0",
+   "field": "summonBearGetsFireClawsOnFireAbilityUse",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 1,
+   "caseVA": "0x182416378",
+   "op": "add",
+   "fieldOffset": "0x4c4",
+   "field": "summonBearTotalHealthShareRatio",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 2,
+   "caseVA": "0x182416392",
+   "op": "complex",
+   "fieldOffset": "0x4c8",
+   "field": "summonBearAddedArmor",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 3,
+   "caseVA": "0x1824163b1",
+   "op": "add",
+   "fieldOffset": "0x4cc",
+   "field": "summonBearIncreasedArmorPerCreatorUncappedColdRes",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 4,
+   "caseVA": "0x1824163cb",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x4d0",
+   "field": "summonBearColdConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 5,
+   "caseVA": "0x1824163f0",
+   "op": "add",
+   "fieldOffset": "0x4d4",
+   "field": "summonBearEarthquakeMimicDelay",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 6,
+   "caseVA": "0x18241640a",
+   "op": "add",
+   "fieldOffset": "0x4d8",
+   "field": "summonBearTeleportCooldown",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 7,
+   "caseVA": "0x182416424",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x4dc",
+   "field": "bearRoarCleanses",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 8,
+   "caseVA": "0x182416449",
+   "op": "add",
+   "fieldOffset": "0x4e0",
+   "field": "increasedArmorForBear",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 9,
+   "caseVA": "0x182416463",
+   "op": "complex",
+   "fieldOffset": "0x4e4",
+   "field": "addedArmorWithBear",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 10,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 11,
+   "caseVA": "0x182416482",
+   "op": "add",
+   "fieldOffset": "0x4e8",
+   "field": "percentOfMaxHealthPlayersHealedFromBearRoar",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 56,
+   "abilityIDName": "summonBear",
+   "specialTag": 12,
+   "caseVA": "0x18241649c",
+   "op": "complex",
+   "fieldOffset": "0x4ec",
+   "field": "upheavalTargetsOnBearRoar",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 0,
+   "caseVA": "0x1824164df",
+   "op": "add",
+   "fieldOffset": "0x670",
+   "field": "thornTotemSelfBleedPerTotemSummoned",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 1,
+   "caseVA": "0x1824164f9",
+   "op": "add",
+   "fieldOffset": "0x674",
+   "field": "thornTotemDoubleProjectilesChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 2,
+   "caseVA": "0x182416513",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x678",
+   "field": "castEarthquakeOnThornTotemDirectCast",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 3,
+   "caseVA": "0x182416538",
+   "op": "add",
+   "fieldOffset": "0x67c",
+   "field": "percentConsumedEarthquakeManaOnCastFromSummonThornTotem",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 4,
+   "caseVA": "0x182416552",
+   "op": "add",
+   "fieldOffset": "0x680",
+   "field": "thornTotemReflectedToAttackersAndPercentReflectedShareRation",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 5,
+   "caseVA": "0x18241656c",
+   "op": "add",
+   "fieldOffset": "0x684",
+   "field": "chanceCastThornShieldOnThornTotemEnemyHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 6,
+   "caseVA": "0x182416586",
+   "op": "complex",
+   "fieldOffset": "0x688",
+   "field": "addedMaximumThornTotem",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 7,
+   "caseVA": "0x1824165a5",
+   "op": "add",
+   "fieldOffset": "0x68c",
+   "field": "increasedDamageToThornTotem",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 8,
+   "caseVA": "0x1824165bf",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x690",
+   "field": "thornTotemCanTargetAllies",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 9,
+   "caseVA": "0x1824165e4",
+   "op": "add",
+   "fieldOffset": "0x694",
+   "field": "thornTotemRestoreHeathOnAllyHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 10,
+   "caseVA": "0x1824165fe",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x698",
+   "field": "thornTotemCanFuryLeap",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 58,
+   "abilityIDName": "summonThornTotem",
+   "specialTag": 11,
+   "caseVA": "0x182416623",
+   "op": "add",
+   "fieldOffset": "0x69c",
+   "field": "chanceCreateThornTotemAfterMovementSkillWithin10mToEnemy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 0,
+   "caseVA": "0x18241557d",
+   "op": "add",
+   "fieldOffset": "0x5fc",
+   "field": "serpentStrikeSnakeOnKillChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 1,
+   "caseVA": "0x182415597",
+   "op": "add",
+   "fieldOffset": "0x600",
+   "field": "serpentStrikeLocustOnHitChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 2,
+   "caseVA": "0x1824155b1",
+   "op": "add",
+   "fieldOffset": "0x604",
+   "field": "serpentStrikeKillOrEliteHitMissHealthToPoisonMinion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 3,
+   "caseVA": "0x1824155cb",
+   "op": "add",
+   "fieldOffset": "0x608",
+   "field": "serpentStrikeKillOrEliteHitSecFrenzyToPoisonMinion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 4,
+   "caseVA": "0x1824155e5",
+   "op": "add",
+   "fieldOffset": "0x60c",
+   "field": "serpentStrikeKillOrEliteHitPoisonChanceThornTotem",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 5,
+   "caseVA": "0x1824155ff",
+   "op": "add",
+   "fieldOffset": "0x610",
+   "field": "serpentStrikeSlowChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 6,
+   "caseVA": "0x182415619",
+   "op": "more-combine",
+   "fieldOffset": "0x614",
+   "field": "serpentStrikeMoreDamageToSlowed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 7,
+   "caseVA": "0x182415630",
+   "op": "add",
+   "fieldOffset": "0x618",
+   "field": "serpentStrikeBossHitChanceUniquePrimalSerpent",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 8,
+   "caseVA": "0x18241564a",
+   "op": "complex",
+   "fieldOffset": "0x61c",
+   "field": "poisonMinionCountThatCopySerpentStrikeOnDirect",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 9,
+   "caseVA": "0x182415669",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x620",
+   "field": "serpentStrikeCanUseStaff",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 10,
+   "caseVA": "0x18241568e",
+   "op": "complex",
+   "fieldOffset": "0x624",
+   "field": "mysticSnakeCountForSerpentStrike",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 11,
+   "caseVA": "0x1824156ad",
+   "op": "complex",
+   "fieldOffset": "0x628",
+   "field": "addedManaCostForSerpentStrike",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 12,
+   "caseVA": "0x1824156cc",
+   "op": "add",
+   "fieldOffset": "0x62c",
+   "field": "addedCritChanceForThridSerpentStrikes",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 13,
+   "caseVA": "0x1824156e6",
+   "op": "more-combine",
+   "fieldOffset": "0x630",
+   "field": "moreHitDamageForThridSerpentStrikes",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 61,
+   "abilityIDName": "serpentStrike",
+   "specialTag": 14,
+   "caseVA": "0x1824156fd",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x634",
+   "field": "nonThirdSerpentStrikesNoCrit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 0,
+   "caseVA": "0x182414d95",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x138d",
+   "field": "devouringOrbImmediateVoidRift",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 1,
+   "caseVA": "0x182414dba",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x138e",
+   "field": "castVoidbeamOnDevouringOrbEnd",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 2,
+   "caseVA": "0x182414ddf",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x138f",
+   "field": "devouringOrbsWanderRandomly",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 3,
+   "caseVA": "0x182414e04",
+   "op": "more-combine",
+   "fieldOffset": "0x1390",
+   "field": "moreDamageForDevouringOrb",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 4,
+   "caseVA": "0x182414e1b",
+   "op": "add",
+   "fieldOffset": "0x1394",
+   "field": "chanceForDevouringOrbToMoveToNearbyEnemyOnKill",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 5,
+   "caseVA": "0x182414e35",
+   "op": "complex",
+   "fieldOffset": "0x1398",
+   "field": "addedDevouringOrbCharges",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 6,
+   "caseVA": "0x182414e54",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x139c",
+   "field": "detonateDevouringOrbOnErasingStrikeHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 7,
+   "caseVA": "0x182414e79",
+   "op": "add",
+   "fieldOffset": "0x13a0",
+   "field": "devouringOrbInitialRiftCastInterval",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 8,
+   "caseVA": "0x182414e93",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x13a4",
+   "field": "devouringOrbProjectileMode",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 88,
+   "abilityIDName": "devouringOrb",
+   "specialTag": 9,
+   "caseVA": "0x182414eb8",
+   "op": "add",
+   "fieldOffset": "0x13a8",
+   "field": "devouringOrbChanceForBossOrRareHitToTriggerNearbyDeathReaction",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 0,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 1,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 2,
+   "caseVA": "0x182414ef6",
+   "op": "add",
+   "fieldOffset": "0x1054",
+   "field": "manaGainedOnRiveFirstHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 3,
+   "caseVA": "0x182414f10",
+   "op": "more-combine",
+   "fieldOffset": "0x1038",
+   "field": "moreRiveDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 4,
+   "caseVA": "0x182414f27",
+   "op": "add",
+   "fieldOffset": "0x103c",
+   "field": "riveAddedComboTimer",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 5,
+   "caseVA": "0x182414f41",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1040",
+   "field": "riveLunges",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 6,
+   "caseVA": "0x182414f66",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1041",
+   "field": "riveSkipSecond",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 7,
+   "caseVA": "0x182414f8b",
+   "op": "more-combine",
+   "fieldOffset": "0x1044",
+   "field": "riveMoreAilmentDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 8,
+   "caseVA": "0x182414fa2",
+   "op": "add",
+   "fieldOffset": "0x1048",
+   "field": "riveFrenzyChanceOnEliteHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 9,
+   "caseVA": "0x182414fbc",
+   "op": "more-combine",
+   "fieldOffset": "0x104c",
+   "field": "riveMoreDamageWithFrenzy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 10,
+   "caseVA": "0x182414fd3",
+   "op": "complex",
+   "fieldOffset": "0x1050",
+   "field": "riveNumUsesWithIncAttackSpeed",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 11,
+   "caseVA": "0x182414ff2",
+   "op": "add",
+   "fieldOffset": "0x1058",
+   "field": "rive1DivineBoltChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 91,
+   "abilityIDName": "rive1",
+   "specialTag": 12,
+   "caseVA": "0x18241500c",
+   "op": "add",
+   "fieldOffset": "0x105c",
+   "field": "rive1AddedManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 0,
+   "caseVA": "0x1824140be",
+   "op": "add",
+   "fieldOffset": "0x1830",
+   "field": "addedCritChanceForSkeletons",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 1,
+   "caseVA": "0x1824140d8",
+   "op": "add",
+   "fieldOffset": "0x1834",
+   "field": "percentDamageReflectForSkeletons",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 2,
+   "caseVA": "0x1824140f2",
+   "op": "add",
+   "fieldOffset": "0x1838",
+   "field": "addedSummonSkeleElementDamageBasedOnLowestPlayerElementProtection",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 3,
+   "caseVA": "0x18241410c",
+   "op": "add",
+   "fieldOffset": "0x183c",
+   "field": "increasedSummonSkeletonDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 4,
+   "caseVA": "0x182414126",
+   "op": "complex",
+   "fieldOffset": "0x1840",
+   "field": "addedSkeletonSummonCap",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 5,
+   "caseVA": "0x182414145",
+   "op": "add",
+   "fieldOffset": "0x1844",
+   "field": "chanceToResummonSkeletonsAfter3Seconds",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 6,
+   "caseVA": "0x18241415f",
+   "op": "add",
+   "fieldOffset": "0x1848",
+   "field": "percentOfPlayerPoisonDamageForSkeletonRogues",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 7,
+   "caseVA": "0x182414179",
+   "op": "add",
+   "fieldOffset": "0x184c",
+   "field": "physicalPenetrationForSkeletons",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 8,
+   "caseVA": "0x182414193",
+   "op": "add",
+   "fieldOffset": "0x1850",
+   "field": "poisonPenetrationForSkeletons",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 9,
+   "caseVA": "0x1824141ad",
+   "op": "complex",
+   "fieldOffset": "0x1854",
+   "field": "noSummonSkeletons",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 10,
+   "caseVA": "0x1824141da",
+   "op": "complex",
+   "fieldOffset": "0x185c",
+   "field": "summonSkeletonMarrowShardOnDeath",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 11,
+   "caseVA": "0x182414207",
+   "op": "add",
+   "fieldOffset": "0x1860",
+   "field": "summonSkeletonWarriorHarvestCooldown",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 12,
+   "caseVA": "0x182414221",
+   "op": "add",
+   "fieldOffset": "0x1864",
+   "field": "summonSkeletonFrenzySummonChanceOnKillOrElite",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 13,
+   "caseVA": "0x18241423b",
+   "op": "add",
+   "fieldOffset": "0x1868",
+   "field": "summonSkeletonWardPerSecondPerActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 14,
+   "caseVA": "0x182414255",
+   "op": "add",
+   "fieldOffset": "0x186c",
+   "field": "summonSkeletonWardDecayThreshPerActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 15,
+   "caseVA": "0x18241426f",
+   "op": "more-combine",
+   "fieldOffset": "0x1870",
+   "field": "summonSkeletonWanderingSpiritDamageOnDoubleDeath",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 16,
+   "caseVA": "0x182414286",
+   "op": "add",
+   "fieldOffset": "0x1874",
+   "field": "summonSkeletonAddedArmor",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 17,
+   "caseVA": "0x1824142a0",
+   "op": "add",
+   "fieldOffset": "0x1878",
+   "field": "summonSkeletonIncAttackSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 18,
+   "caseVA": "0x1824142ba",
+   "op": "add",
+   "fieldOffset": "0x187c",
+   "field": "summonSkeletonIncCastSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 19,
+   "caseVA": "0x1824142d4",
+   "op": "add",
+   "fieldOffset": "0x1880",
+   "field": "summonSkeletonIncCooldownRecoverySpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 20,
+   "caseVA": "0x1824142ee",
+   "op": "add",
+   "fieldOffset": "0x1884",
+   "field": "summonSkeletonBoneCurseChanceWhenHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 21,
+   "caseVA": "0x182414308",
+   "op": "complex",
+   "fieldOffset": "0x1855",
+   "field": "doubledMaxSkeletons",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 120,
+   "abilityIDName": "summonSkeleton",
+   "specialTag": 22,
+   "caseVA": "0x182414335",
+   "op": "add",
+   "fieldOffset": "0x1858",
+   "field": "skeletonsGainHasteAndFrenzyDurationOnSummon",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 0,
+   "caseVA": "0x182414372",
+   "op": "add",
+   "fieldOffset": "0x1494",
+   "field": "increasedRipBloodAndBloodSplatterDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 1,
+   "caseVA": "0x18241438c",
+   "op": "add",
+   "fieldOffset": "0x1498",
+   "field": "chanceToCastRipBloodAt5NearbyTargetsOnMeleeHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 2,
+   "caseVA": "0x1824143a6",
+   "op": "add",
+   "fieldOffset": "0x149c",
+   "field": "addedHealthFromRipBlood",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 3,
+   "caseVA": "0x1824143c0",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x14c4",
+   "field": "ripBloodEverySecondDuringBleedOverload",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 4,
+   "caseVA": "0x1824143db",
+   "op": "add",
+   "fieldOffset": "0x14a0",
+   "field": "ripBloodAddedBleedChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 5,
+   "caseVA": "0x1824143f5",
+   "op": "add",
+   "fieldOffset": "0x14a4",
+   "field": "ripBloodAddedSpellDamageFor6s",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 6,
+   "caseVA": "0x18241440f",
+   "op": "complex",
+   "fieldOffset": "0x14c6",
+   "field": "ripBloodGainCoagulatedBloodStackOnRareOrBossHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 7,
+   "caseVA": "0x18241443c",
+   "op": "complex",
+   "fieldOffset": "0x14c7",
+   "field": "ripBloodIsACone",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 8,
+   "caseVA": "0x182414469",
+   "op": "more-combine",
+   "fieldOffset": "0x14a8",
+   "field": "ripBloodLessCastSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 9,
+   "caseVA": "0x182414480",
+   "op": "more-combine",
+   "fieldOffset": "0x14ac",
+   "field": "ripBloodMoreDamageToRareAndBosses",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 10,
+   "caseVA": "0x182414497",
+   "op": "add",
+   "fieldOffset": "0x14b0",
+   "field": "ripBloodChanceToSpawnBloodSlimeOnHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 11,
+   "caseVA": "0x1824144b1",
+   "op": "add",
+   "fieldOffset": "0x14b4",
+   "field": "ripBloodChanceToCauseBloodEruptionOnHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 12,
+   "caseVA": "0x1824144cb",
+   "op": "more-combine",
+   "fieldOffset": "0x14b8",
+   "field": "ripBloodMoreHitDamagePerBleedStack",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 13,
+   "caseVA": "0x1824144e2",
+   "op": "complex",
+   "fieldOffset": "0x14c5",
+   "field": "ripBloodTriggerInstantBleedOnHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 14,
+   "caseVA": "0x18241450f",
+   "op": "add",
+   "fieldOffset": "0x14bc",
+   "field": "ripBloodPercentageOfBloodOrbOverhealingGrantedAsWard",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 137,
+   "abilityIDName": "ripBlood",
+   "specialTag": 15,
+   "caseVA": "0x182414529",
+   "op": "add",
+   "fieldOffset": "0x14c0",
+   "field": "ripBloodChanceForBloodOrbToTargetEnemy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 0,
+   "caseVA": "0x182413b0e",
+   "op": "add",
+   "fieldOffset": "0x1680",
+   "field": "chanceToGain50WardOnSkeletonOrSkeletonMageSacrifice",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 1,
+   "caseVA": "0x182413b28",
+   "op": "add",
+   "fieldOffset": "0x1684",
+   "field": "chanceToGain50WardOnWraithSacrifice",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 2,
+   "caseVA": "0x182413b42",
+   "op": "add",
+   "fieldOffset": "0x1688",
+   "field": "addedSpellPhysicalDamageForSacrifice",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 3,
+   "caseVA": "0x182413b5c",
+   "op": "add",
+   "fieldOffset": "0x168c",
+   "field": "increasedAreaWithSacrifice",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 4,
+   "caseVA": "0x182413b76",
+   "op": "complex",
+   "fieldOffset": "0x1690",
+   "field": "sacrificeSummonBloodSlime",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 5,
+   "caseVA": "0x182413b95",
+   "op": "add",
+   "fieldOffset": "0x1694",
+   "field": "sacrificeOnEnemyBelowHealthWhileInCombat",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 6,
+   "caseVA": "0x182413baf",
+   "op": "complex",
+   "fieldOffset": "0x1698",
+   "field": "sacrificeColdConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 7,
+   "caseVA": "0x182413bdc",
+   "op": "add",
+   "fieldOffset": "0x169c",
+   "field": "sacrificeChanceToFreezeMinionInsteadOfKill",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 8,
+   "caseVA": "0x182413bf6",
+   "op": "complex",
+   "fieldOffset": "0x16a0",
+   "field": "sacrificeNecroticConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 9,
+   "caseVA": "0x182413c23",
+   "op": "add",
+   "fieldOffset": "0x16a4",
+   "field": "sacrificeChanceCastOnMinionHitBelow10HealthIfEnemyIn3M",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 10,
+   "caseVA": "0x182413c3d",
+   "op": "more-combine",
+   "fieldOffset": "0x16a8",
+   "field": "sacrificeMoreDamagePer100HealthOfSacrificedMinion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 11,
+   "caseVA": "0x182413c54",
+   "op": "complex",
+   "fieldOffset": "0x16ac",
+   "field": "sacrificeNotConsumeMinionOnDirectCast",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 12,
+   "caseVA": "0x182413c81",
+   "op": "add",
+   "fieldOffset": "0x16b0",
+   "field": "sacrificeAddedSecondsCD",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 13,
+   "caseVA": "0x182413c9b",
+   "op": "more-combine",
+   "fieldOffset": "0x16b4",
+   "field": "sacrificeMoreDamageOnDirectCast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 14,
+   "caseVA": "0x182413cb2",
+   "op": "complex",
+   "fieldOffset": "0x16b8",
+   "field": "sacrificeSpreadToXNearestMinionsOfSameTypeDirectCast",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 15,
+   "caseVA": "0x182413cd1",
+   "op": "add",
+   "fieldOffset": "0x16bc",
+   "field": "sacrificeConsumePercentOfCurrentHealthOnDirectCast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 16,
+   "caseVA": "0x182413ceb",
+   "op": "add",
+   "fieldOffset": "0x16c0",
+   "field": "sacrificeAddedSpellDamagePerConsumedHealthOnDirectCast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 17,
+   "caseVA": "0x182413d05",
+   "op": "add",
+   "fieldOffset": "0x16c4",
+   "field": "sacrificeIncreasedAreaWhenSacrificedAbom",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 18,
+   "caseVA": "0x182413d1f",
+   "op": "add",
+   "fieldOffset": "0x16c8",
+   "field": "sacrificeIncreasedDamageWhenSacrificedAbom",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 140,
+   "abilityIDName": "sacrifice",
+   "specialTag": 19,
+   "caseVA": "0x182413d39",
+   "op": "complex",
+   "fieldOffset": "0x16cc",
+   "field": "sacrificeResummonMinionsWhenSacrificeAbom",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 0,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 1,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 2,
+   "caseVA": "0x182405bd0",
+   "op": "unknown",
+   "fieldOffset": null,
+   "field": null,
+   "fieldType": null
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 3,
+   "caseVA": "0x182413d8e",
+   "op": "complex",
+   "fieldOffset": "0x1794",
+   "field": "maxBoneMoundsForMarrowShards",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 4,
+   "caseVA": "0x182413dad",
+   "op": "add",
+   "fieldOffset": "0x1798",
+   "field": "percentageOfCurrentHealthConsumedToCastMarrowShardsOnDirectMeleeFirstHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 5,
+   "caseVA": "0x182413dc7",
+   "op": "add",
+   "fieldOffset": "0x179c",
+   "field": "chanceForSkeletonStyleMinionsToAlsoCastMarrowShards",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 6,
+   "caseVA": "0x182413de1",
+   "op": "add",
+   "fieldOffset": "0x17a0",
+   "field": "maxIncreasedRateOfFireForChannelledMarrowShards",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 7,
+   "caseVA": "0x182413dfb",
+   "op": "complex",
+   "fieldOffset": "0x17a4",
+   "field": "addedProjectilesForDirectCastMarrowShards",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 8,
+   "caseVA": "0x182413e1a",
+   "op": "complex",
+   "fieldOffset": "0x17a8",
+   "field": "marrowShardsAlsoConsumesEqualWard",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 9,
+   "caseVA": "0x182413e47",
+   "op": "add",
+   "fieldOffset": "0x17ac",
+   "field": "addedSpellDamagePer100HealthAndWardConsumedForMarrowShards",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 10,
+   "caseVA": "0x182413e61",
+   "op": "complex",
+   "fieldOffset": "0x17b0",
+   "field": "extraProjectilesForMarrowShardsFiredInNova",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 11,
+   "caseVA": "0x182413e80",
+   "op": "add",
+   "fieldOffset": "0x17b4",
+   "field": "increasedHealthConsumptionForMarrowShards",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 12,
+   "caseVA": "0x182413e9a",
+   "op": "add",
+   "fieldOffset": "0x17b8",
+   "field": "percentMaxHealthConsumedToEnableReturning",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 143,
+   "abilityIDName": "marrowShards",
+   "specialTag": 13,
+   "caseVA": "0x182413eb4",
+   "op": "more-combine",
+   "fieldOffset": "0x17bc",
+   "field": "moreProjectileSpeedWhileNotReturningPer2PercentMissingHealth",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 0,
+   "caseVA": "0x182413eee",
+   "op": "add",
+   "fieldOffset": "0x1aa8",
+   "field": "chanceToSummonPutridWraithInstead",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 1,
+   "caseVA": "0x182413f08",
+   "op": "add",
+   "fieldOffset": "0x1aac",
+   "field": "chanceToSummonFlameWraithInstead",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 2,
+   "caseVA": "0x182413f22",
+   "op": "add",
+   "fieldOffset": "0x1ab0",
+   "field": "additionalMaxWraiths",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 3,
+   "caseVA": "0x182413f3c",
+   "op": "add",
+   "fieldOffset": "0x1ab4",
+   "field": "wraithOnKillChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 4,
+   "caseVA": "0x182413f56",
+   "op": "add",
+   "fieldOffset": "0x1ab8",
+   "field": "wraithOnWraithKillChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 5,
+   "caseVA": "0x182413f70",
+   "op": "add",
+   "fieldOffset": "0x1abc",
+   "field": "infernalShadeOnWraithKillChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 6,
+   "caseVA": "0x182413f8a",
+   "op": "add",
+   "fieldOffset": "0x1ac0",
+   "field": "increasedWraithMeleeArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 7,
+   "caseVA": "0x182413fa4",
+   "op": "add",
+   "fieldOffset": "0x1ac4",
+   "field": "summonWraithSummonsWraithlordInsteadChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 8,
+   "caseVA": "0x182413fbe",
+   "op": "add",
+   "fieldOffset": "0x1ac8",
+   "field": "summonWraithAllResPenFor3SecOnMinionHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 9,
+   "caseVA": "0x182413fd8",
+   "op": "add",
+   "fieldOffset": "0x1acc",
+   "field": "summonWraithChanceRestoreWraithCurrentHealthAndReduceHealthDecayOnSpellCrit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 10,
+   "caseVA": "0x182413ff2",
+   "op": "complex",
+   "fieldOffset": "0x1ad0",
+   "field": "summonWraithTeleportLowesHealthWraithIfAtMaxWraith",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 11,
+   "caseVA": "0x18241401f",
+   "op": "add",
+   "fieldOffset": "0x1ad4",
+   "field": "summonWraithRestoreMissingHealthLowestHealthWraithAtMaxWraith",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 12,
+   "caseVA": "0x182414039",
+   "op": "complex",
+   "fieldOffset": "0x1ad8",
+   "field": "summonWraithGainsAbilityToTeleport",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 13,
+   "caseVA": "0x182414066",
+   "op": "add",
+   "fieldOffset": "0x1adc",
+   "field": "summonWraithProjectilePierceChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 146,
+   "abilityIDName": "summonWraith",
+   "specialTag": 14,
+   "caseVA": "0x182414080",
+   "op": "add",
+   "fieldOffset": "0x1ae0",
+   "field": "summonWraithHarvestBaseCD",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 0,
+   "caseVA": "0x18240f4cf",
+   "op": "complex",
+   "fieldOffset": "0xc70",
+   "field": "fireConversionForIceBarrage",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 1,
+   "caseVA": "0x18240f4fc",
+   "op": "complex",
+   "fieldOffset": "0xc74",
+   "field": "targetsPiercedByIceBarrage",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 2,
+   "caseVA": "0x18240f51b",
+   "op": "add",
+   "fieldOffset": "0xc78",
+   "field": "chanceForIceShardToBeFireballInIceBarrage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 3,
+   "caseVA": "0x18240f535",
+   "op": "more-combine",
+   "fieldOffset": "0xc7c",
+   "field": "moreFireballDamageAsIceBarrageReplacement",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 4,
+   "caseVA": "0x18240f54c",
+   "op": "more-combine",
+   "fieldOffset": "0xc80",
+   "field": "moreColdDamageTakenWhileIceBarrageActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 5,
+   "caseVA": "0x18240f563",
+   "op": "complex",
+   "fieldOffset": "0xc84",
+   "field": "armorWhileIceBarrageActive",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 6,
+   "caseVA": "0x18240f582",
+   "op": "complex",
+   "fieldOffset": "0xc88",
+   "field": "stunAvoidanceWhileIceBarrageActive",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 7,
+   "caseVA": "0x18240f5a1",
+   "op": "add",
+   "fieldOffset": "0xc8c",
+   "field": "reducedIceBarrageFireRate",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 8,
+   "caseVA": "0x18240f5bb",
+   "op": "more-combine",
+   "fieldOffset": "0xc90",
+   "field": "lessIceBarrageDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 9,
+   "caseVA": "0x18240f5d2",
+   "op": "complex",
+   "fieldOffset": "0xc94",
+   "field": "iceBarrageTargetsRandomly",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 10,
+   "caseVA": "0x18240f5ff",
+   "op": "add",
+   "fieldOffset": "0xc98",
+   "field": "chanceToRepeatAnyDirectColdSkillsWhileIceBarrageActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 11,
+   "caseVA": "0x18240f619",
+   "op": "more-combine",
+   "fieldOffset": "0xc9c",
+   "field": "lessCooldownForIceBarrage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 12,
+   "caseVA": "0x18240f630",
+   "op": "complex",
+   "fieldOffset": "0xca0",
+   "field": "iceBarrageNoFollow",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 13,
+   "caseVA": "0x18240f65d",
+   "op": "complex",
+   "fieldOffset": "0xca4",
+   "field": "maxActiveIceBarrages",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 14,
+   "caseVA": "0x18240f67c",
+   "op": "more-combine",
+   "fieldOffset": "0xca8",
+   "field": "lessCastSpeedWhileIceBarrageActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 15,
+   "caseVA": "0x18240f693",
+   "op": "more-combine",
+   "fieldOffset": "0xcac",
+   "field": "lessMoveSpeedWhileIceBarrageActive",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 16,
+   "caseVA": "0x18240f6aa",
+   "op": "more-combine",
+   "fieldOffset": "0xcb0",
+   "field": "moreIceBarrageDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 17,
+   "caseVA": "0x18240f6c1",
+   "op": "add",
+   "fieldOffset": "0xcb4",
+   "field": "addedIceBarrageCritChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 246,
+   "abilityIDName": "iceBarrage",
+   "specialTag": 18,
+   "caseVA": "0x18240f6db",
+   "op": "more-combine",
+   "fieldOffset": "0xcb8",
+   "field": "maxMoreDamageForIceBarrageAtMaxRange",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 0,
+   "caseVA": "0x18240ef40",
+   "op": "add",
+   "fieldOffset": "0x19d4",
+   "field": "enemiesPer10IntelligenceToTormentWhenYouCastSoulFeast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 1,
+   "caseVA": "0x18240ef5a",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x19d8",
+   "field": "tormentYourselfWhenYouStartCastingSoulFeast",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 2,
+   "caseVA": "0x18240ef74",
+   "op": "add",
+   "fieldOffset": "0x19dc",
+   "field": "secondsOfHasteWhenYouCastSoulFeast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 3,
+   "caseVA": "0x18240ef8e",
+   "op": "add",
+   "fieldOffset": "0x19e0",
+   "field": "chthonicFissureChanceOnSoulFeastHitVsBossesAndRaresIfNoActiveFissure",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 4,
+   "caseVA": "0x18240efa8",
+   "op": "add",
+   "fieldOffset": "0x19e4",
+   "field": "soulFeastAddedManaEfficiency",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 5,
+   "caseVA": "0x18240efc2",
+   "op": "add",
+   "fieldOffset": "0x19e8",
+   "field": "soulFeastChanceToWitherOnHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 6,
+   "caseVA": "0x18240efdc",
+   "op": "add",
+   "fieldOffset": "0x19ec",
+   "field": "chanceApplyPoisonFromSoulFeastPerStackOfPoisonOnActor",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 7,
+   "caseVA": "0x18240eff6",
+   "op": "add",
+   "fieldOffset": "0x19f0",
+   "field": "soulFeastChanceCastChaosBoltsOnSoulReturn",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 8,
+   "caseVA": "0x18240f010",
+   "op": "add",
+   "fieldOffset": "0x19f4",
+   "field": "soulFeastCastChanceWhileChannelingAnotherAbility",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 9,
+   "caseVA": "0x18240f02a",
+   "op": "add",
+   "fieldOffset": "0x19f8",
+   "field": "soulFeastPercentOfManaCostIfCastWhileChannelingAnotherAbility",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 10,
+   "caseVA": "0x18240f044",
+   "op": "complex",
+   "fieldOffset": "0x19fc",
+   "field": "soulFeastFromAmountOfCursedEnemiesAutoCastEvery2Sec",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 11,
+   "caseVA": "0x18240f063",
+   "op": "more-combine",
+   "fieldOffset": "0x1a00",
+   "field": "soulFeastMoreHitDamageIfTargetHasSoulFeastHitInLast6Sec",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 12,
+   "caseVA": "0x18240f07a",
+   "op": "complex",
+   "fieldOffset": "0x1a04",
+   "field": "castSoulFeastWhenCursedSelf",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 13,
+   "caseVA": "0x18240f0a7",
+   "op": "add",
+   "fieldOffset": "0x1a08",
+   "field": "castSoulFeastWhenCursedSelfCooldown",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 14,
+   "caseVA": "0x18240f0c1",
+   "op": "add",
+   "fieldOffset": "0x1a0c",
+   "field": "soulFeastManaCostPercentWhenCastAfterCursingSelf",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 15,
+   "caseVA": "0x18240f0db",
+   "op": "add",
+   "fieldOffset": "0x1a14",
+   "field": "soulFeastChanceOnReturnGoToMinionAndGrantFrenzy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 16,
+   "caseVA": "0x18240f0f5",
+   "op": "add",
+   "fieldOffset": "0x1a10",
+   "field": "soulFeastChanceApplyDamnedHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 261,
+   "abilityIDName": "soulFeast",
+   "specialTag": 17,
+   "caseVA": "0x18240f10f",
+   "op": "add",
+   "fieldOffset": "0x1a18",
+   "field": "soulFeastChanceApplyAilmentOnHitPerAilmentStackOnYou",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 0,
+   "caseVA": "0x18240f151",
+   "op": "complex",
+   "fieldOffset": "0x1e20",
+   "field": "addedShurikens",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 1,
+   "caseVA": "0x18240f170",
+   "op": "add",
+   "fieldOffset": "0x1e24",
+   "field": "shurikenBleedChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 2,
+   "caseVA": "0x18240f18a",
+   "op": "add",
+   "fieldOffset": "0x1e28",
+   "field": "addedLightningDamageWithShurikens",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 3,
+   "caseVA": "0x18240f1a4",
+   "op": "add",
+   "fieldOffset": "0x1e2c",
+   "field": "percentShurikenBaseDamageConvertedToLightning",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 4,
+   "caseVA": "0x18240f1be",
+   "op": "add",
+   "fieldOffset": "0x1c20",
+   "field": "chanceFor3ExtraRicochetsWithShurikens",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 5,
+   "caseVA": "0x18240f1d8",
+   "op": "complex",
+   "fieldOffset": "0x1e30",
+   "field": "shurikensDecoyAlsoThrows",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 6,
+   "caseVA": "0x18240f205",
+   "op": "complex",
+   "fieldOffset": "0x1e31",
+   "field": "shurikensDirectShadowOnHit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 7,
+   "caseVA": "0x18240f232",
+   "op": "complex",
+   "fieldOffset": "0x1e32",
+   "field": "shurikensDirectNoShadowUse",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 8,
+   "caseVA": "0x18240f25f",
+   "op": "complex",
+   "fieldOffset": "0x1e33",
+   "field": "shurikensApplyRandomAilment",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 9,
+   "caseVA": "0x18240f28c",
+   "op": "add",
+   "fieldOffset": "0x1e34",
+   "field": "shurikensPercEvadeCDRestoredOnDirect",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 10,
+   "caseVA": "0x18240f2a6",
+   "op": "more-combine",
+   "fieldOffset": "0x1e38",
+   "field": "shurikensMoreDamagerPerShock",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 11,
+   "caseVA": "0x18240f2bd",
+   "op": "add",
+   "fieldOffset": "0x1e40",
+   "field": "shurikensChanceFor2Additional",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 12,
+   "caseVA": "0x18240f2d7",
+   "op": "add",
+   "fieldOffset": "0x1e44",
+   "field": "shurikensChanceFor4Additional",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 13,
+   "caseVA": "0x18240f2f1",
+   "op": "add",
+   "fieldOffset": "0x1e48",
+   "field": "shurikensAddThrowDmgPerDuskShroud",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 14,
+   "caseVA": "0x18240f30b",
+   "op": "add",
+   "fieldOffset": "0x1e4c",
+   "field": "shurikensChancePerSecondToUseWhileMoving",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 263,
+   "abilityIDName": "shurikens",
+   "specialTag": 15,
+   "caseVA": "0x18240f325",
+   "op": "more-combine",
+   "fieldOffset": "0x1e3c",
+   "field": "shurikensMoreDamagerPerIgnite",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 0,
+   "caseVA": "0x18240f35f",
+   "op": "add",
+   "fieldOffset": "0x124c",
+   "field": "chanceFor30AddedShieldThrowFireDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 1,
+   "caseVA": "0x18240f379",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1250",
+   "field": "shieldThrowDamageConvertedToVoid",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 2,
+   "caseVA": "0x18240f394",
+   "op": "add",
+   "fieldOffset": "0x1254",
+   "field": "increasedShieldThrowCritChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 3,
+   "caseVA": "0x18240f3ae",
+   "op": "add",
+   "fieldOffset": "0x1258",
+   "field": "shieldThrowDamagePer10DamageReflectedToAttackers",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 4,
+   "caseVA": "0x18240f3c8",
+   "op": "add",
+   "fieldOffset": "0x125c",
+   "field": "chanceToHammerThrowOnShieldThrowRicochet",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 5,
+   "caseVA": "0x18240f3e2",
+   "op": "add",
+   "fieldOffset": "0x1260",
+   "field": "increasedCritChancePerDexForShieldThrow",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 6,
+   "caseVA": "0x18240f3fc",
+   "op": "complex",
+   "fieldOffset": "0x1264",
+   "field": "maxRicochetsAt35PercentChance",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 7,
+   "caseVA": "0x18240f41b",
+   "op": "add",
+   "fieldOffset": "0x1268",
+   "field": "chanceToGetSingleRingOfShieldOnShieldThrowReturn",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 8,
+   "caseVA": "0x18240f435",
+   "op": "complex",
+   "fieldOffset": "0x126c",
+   "field": "durationToExtendCurrentRebukeOnShieldThrowReturn",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 9,
+   "caseVA": "0x18240f454",
+   "op": "complex",
+   "fieldOffset": "0x1270",
+   "field": "spellDamageOnShieldThrowRicochetsUntilShieldThrowCDEnds",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 10,
+   "caseVA": "0x18240f473",
+   "op": "add",
+   "fieldOffset": "0x1274",
+   "field": "shieldThrowRingShieldThrowDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 267,
+   "abilityIDName": "shieldThrow",
+   "specialTag": 11,
+   "caseVA": "0x18240f48d",
+   "op": "add",
+   "fieldOffset": "0x1278",
+   "field": "shieldThrowChanceForkFirstRichochet",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 0,
+   "caseVA": "0x18240e187",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x1cc",
+   "field": "canSummonRaptorsUpToCompanionLimit",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 1,
+   "caseVA": "0x18240e1a1",
+   "op": "add",
+   "fieldOffset": "0x1d0",
+   "field": "reducedRaptorSize",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 2,
+   "caseVA": "0x18240e1bb",
+   "op": "more-combine",
+   "fieldOffset": "0x268",
+   "field": "moreRaptorDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 3,
+   "caseVA": "0x18240e1d2",
+   "op": "add",
+   "fieldOffset": "0x26c",
+   "field": "raptorArmorShredChancePerActiveWolf",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 4,
+   "caseVA": "0x18240e1ec",
+   "op": "add",
+   "fieldOffset": "0x270",
+   "field": "raptorDamagePercentLeechedAsHealthPerActiveStormCrow",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 5,
+   "caseVA": "0x18240e206",
+   "op": "more-combine",
+   "fieldOffset": "0x274",
+   "field": "moreRaptorDamagePerOtherActiveCompanion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 6,
+   "caseVA": "0x18240e21d",
+   "op": "add",
+   "fieldOffset": "0x278",
+   "field": "increasedRaptorMovementSpeedPerNonRaptorCompanionSpecialised",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 7,
+   "caseVA": "0x18240e237",
+   "op": "more-combine",
+   "fieldOffset": "0x27c",
+   "field": "moreRaptorDamagePerNonRaptorCompanionSpecialised",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 8,
+   "caseVA": "0x18240e24e",
+   "op": "add",
+   "fieldOffset": "0x280",
+   "field": "increasedRaptorMeleeAttackSpeedFor8sOnAnyCompanionAbilityUse",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 9,
+   "caseVA": "0x18240e268",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x284",
+   "field": "warcryThatStunsOrFreezesRefreshesRampageCooldown",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 10,
+   "caseVA": "0x18240e28d",
+   "op": "complex",
+   "fieldOffset": "0x288",
+   "field": "healthRestoredToYouWithRaptorRampageAndLeapAttackWhenYouAreHitAndLeftBelow35Percent",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 11,
+   "caseVA": "0x18240e2ac",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x28c",
+   "field": "raptorsReviveDownedCompanionOnRampage",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 12,
+   "caseVA": "0x18240e2d1",
+   "op": "add",
+   "fieldOffset": "0x290",
+   "field": "increasedDodgeRatingWithRaptorTripledWhileRampaging",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 13,
+   "caseVA": "0x18240e2eb",
+   "op": "add",
+   "fieldOffset": "0x294",
+   "field": "increasedMeleeAttackSpeedWithRaptorTripledWhileRampaging",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 321,
+   "abilityIDName": "summonRaptor",
+   "specialTag": 14,
+   "caseVA": "0x18240e305",
+   "op": "complex",
+   "fieldOffset": "0x298",
+   "field": "randomNonRaptorCompanionsAlsoRampage",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 0,
+   "caseVA": "0x18240872e",
+   "op": "add",
+   "fieldOffset": "0xa10",
+   "field": "wardPerSecondInGlyphOfDominion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 1,
+   "caseVA": "0x182408748",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xa14",
+   "field": "modifiersToFireAuraAreaAlsoApplyToGlyphOfDominion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 2,
+   "caseVA": "0x182408763",
+   "op": "add",
+   "fieldOffset": "0xa18",
+   "field": "fireAuraChancePerSecondInGlyphOfDominion",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 3,
+   "caseVA": "0x18240877d",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xa1c",
+   "field": "ailmentsToShredConversionWhileInGlyphOfDominion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 4,
+   "caseVA": "0x182408798",
+   "op": "complex",
+   "fieldOffset": "0xa20",
+   "field": "totalRunesAutoRegeneratedOnInvocationCastWhileInGlyphOfDominion",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 5,
+   "caseVA": "0x1824087b7",
+   "op": "add",
+   "fieldOffset": "0xa24",
+   "field": "increasedGlyphOfDomAreaPerRah",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 6,
+   "caseVA": "0x1824087d1",
+   "op": "add",
+   "fieldOffset": "0xa28",
+   "field": "frostbiteChanceForGlyphOfDomPerHeo",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 7,
+   "caseVA": "0x1824087eb",
+   "op": "add",
+   "fieldOffset": "0xa2c",
+   "field": "increasedGlyphOfDomDurationPerGon",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 8,
+   "caseVA": "0x182408805",
+   "op": "more-combine",
+   "fieldOffset": "0xa30",
+   "field": "moreGlyphOfDomDamagePerActiveRunewordOnCast",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 9,
+   "caseVA": "0x18240881c",
+   "op": "add",
+   "fieldOffset": "0xa34",
+   "field": "reducedGlyphOfDomArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 10,
+   "caseVA": "0x182408836",
+   "op": "complex",
+   "fieldOffset": "0xa38",
+   "field": "glyphOfDominionNoDoT",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 11,
+   "caseVA": "0x182408860",
+   "op": "add",
+   "fieldOffset": "0xa3c",
+   "field": "reducedGlyphOfDomDuration",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 12,
+   "caseVA": "0x18240887a",
+   "op": "more-combine",
+   "fieldOffset": "0xa40",
+   "field": "moreDamageGlyphOfDomExplosionDoubledIfOneEnemy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 13,
+   "caseVA": "0x182408891",
+   "op": "more-combine",
+   "fieldOffset": "0xa44",
+   "field": "moreDamageGlyphOfDomExplosionTriggeredEarlyByStaticOrbExplodingInIt",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 14,
+   "caseVA": "0x1824088a8",
+   "op": "complex",
+   "fieldOffset": "0xa48",
+   "field": "wardGainedOnEnemyDeathInGlyphOfDom",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 15,
+   "caseVA": "0x1824088c7",
+   "op": "add",
+   "fieldOffset": "0xa4c",
+   "field": "chanceToRecastGlyphOfDomOnExploKillOrRareBossHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 694,
+   "abilityIDName": "glyphOfDominion",
+   "specialTag": 16,
+   "caseVA": "0x1824088e1",
+   "op": "more-combine",
+   "fieldOffset": "0xa50",
+   "field": "moreGlyphOfDomDamagePerSpellCastInsideIt",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 0,
+   "caseVA": "0x182408920",
+   "op": "add",
+   "fieldOffset": "0xd5c",
+   "field": "flameRushIncreasedSpeedAndDistance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 1,
+   "caseVA": "0x18240893a",
+   "op": "add",
+   "fieldOffset": "0xd60",
+   "field": "flameRushRatioReceiveModifiersFromVolcanicOrbSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 2,
+   "caseVA": "0x182408954",
+   "op": "add",
+   "fieldOffset": "0xd64",
+   "field": "flameRushSpellDamagePerFireAura",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 3,
+   "caseVA": "0x18240896e",
+   "op": "add",
+   "fieldOffset": "0xd68",
+   "field": "flameRushIncreasedSpeedAndRangePerRuneConsumed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 4,
+   "caseVA": "0x182408988",
+   "op": "add",
+   "fieldOffset": "0xd6c",
+   "field": "flameRushIncreasedOrbRadius",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 5,
+   "caseVA": "0x1824089a2",
+   "op": "more-combine",
+   "fieldOffset": "0xd70",
+   "field": "flameRushMoreFireDamageByConsumeRuneEmber",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 6,
+   "caseVA": "0x1824089b9",
+   "op": "add",
+   "fieldOffset": "0xd74",
+   "field": "flameRushAddedMeleeDamageForNextMeleeOnOrbHit",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 7,
+   "caseVA": "0x1824089d3",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xd78",
+   "field": "flameRushVoidConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 8,
+   "caseVA": "0x1824089ee",
+   "op": "add",
+   "fieldOffset": "0xd7c",
+   "field": "flameRushIncreasedAreaOnFrostWallCross",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 9,
+   "caseVA": "0x182408a08",
+   "op": "more-combine",
+   "fieldOffset": "0xd80",
+   "field": "flameRushMoreDamageOnFrostWallCross",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 10,
+   "caseVA": "0x182408a1f",
+   "op": "add",
+   "fieldOffset": "0xd84",
+   "field": "flameRushChanceToCastRuneboltAtNearbyEnemy",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 696,
+   "abilityIDName": "flameRush",
+   "specialTag": 11,
+   "caseVA": "0x182408a39",
+   "op": "more-combine",
+   "fieldOffset": "0xd88",
+   "field": "flameRushMoreDamagePerMeterTraveled",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 0,
+   "caseVA": "0x182408a73",
+   "op": "add",
+   "fieldOffset": "0xb28",
+   "field": "increasedFrostWallDuration",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 1,
+   "caseVA": "0x182408a8d",
+   "op": "add",
+   "fieldOffset": "0xb2c",
+   "field": "frostbiteChancePerSecondWithFrostWall",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 2,
+   "caseVA": "0x182408aa7",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0xb30",
+   "field": "frostWallConvertedToFire",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 3,
+   "caseVA": "0x182408ac1",
+   "op": "add",
+   "fieldOffset": "0xb34",
+   "field": "igniteChancePerSecondWithFrostWall",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 4,
+   "caseVA": "0x182408adb",
+   "op": "complex",
+   "fieldOffset": "0xb31",
+   "field": "frostWallLeapBack",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 5,
+   "caseVA": "0x182408b08",
+   "op": "complex",
+   "fieldOffset": "0xb38",
+   "field": "frostWallDirectPlayerPassVolcanicOrb",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 6,
+   "caseVA": "0x182408b35",
+   "op": "complex",
+   "fieldOffset": "0xb39",
+   "field": "frostWallMovesForward",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 7,
+   "caseVA": "0x182408b62",
+   "op": "add",
+   "fieldOffset": "0xb3c",
+   "field": "frostWallFreezeMultiLeftInGlyph",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 8,
+   "caseVA": "0x182408b7c",
+   "op": "add",
+   "fieldOffset": "0xb40",
+   "field": "frostWallChillChanceLeftInGlyph",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 9,
+   "caseVA": "0x182408b96",
+   "op": "add",
+   "fieldOffset": "0xb44",
+   "field": "frostWallFrostbiteChanceBothInGlyph",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 10,
+   "caseVA": "0x182408bb0",
+   "op": "more-combine",
+   "fieldOffset": "0xb48",
+   "field": "frostWallMoreDamageRightInGlyph",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 11,
+   "caseVA": "0x182408bc7",
+   "op": "add",
+   "fieldOffset": "0xb4c",
+   "field": "frostWallEleNovaChancePerPillarOnEnemyPass",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 12,
+   "caseVA": "0x182408be1",
+   "op": "add",
+   "fieldOffset": "0xb50",
+   "field": "frostWallAddedFreezeRate",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 13,
+   "caseVA": "0x182408bfb",
+   "op": "more-combine",
+   "fieldOffset": "0xb54",
+   "field": "frostWallMoreDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 14,
+   "caseVA": "0x182408c12",
+   "op": "add",
+   "fieldOffset": "0xb58",
+   "field": "frostWallDirectLightningBlastCopyChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 15,
+   "caseVA": "0x182408c2c",
+   "op": "add",
+   "fieldOffset": "0xb5c",
+   "field": "frostWallDirectFireballCopyChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 16,
+   "caseVA": "0x182408c46",
+   "op": "add",
+   "fieldOffset": "0xb60",
+   "field": "frostWallDirectFrostClawCopyChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 17,
+   "caseVA": "0x182408c60",
+   "op": "add",
+   "fieldOffset": "0xb64",
+   "field": "frostWallStaticOrbChanceOnEnemyPass",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 18,
+   "caseVA": "0x182408c7a",
+   "op": "add",
+   "fieldOffset": "0xb68",
+   "field": "frostWallStaticChargesOnEnemyPass",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 19,
+   "caseVA": "0x182408c94",
+   "op": "add",
+   "fieldOffset": "0xb6c",
+   "field": "frostWallWardOnEnemyPass",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 703,
+   "abilityIDName": "frostWall",
+   "specialTag": 20,
+   "caseVA": "0x182408cae",
+   "op": "add",
+   "fieldOffset": "0xb70",
+   "field": "frostWallFrostClawChanceOnEnemyPass",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 0,
+   "caseVA": "0x182407e14",
+   "op": "add",
+   "fieldOffset": "0x7f8",
+   "field": "chanceToCastLightningBlastOnCritWithFrostClaw",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 1,
+   "caseVA": "0x182407e2e",
+   "op": "add",
+   "fieldOffset": "0x7fc",
+   "field": "wardOnCritWithFrostClaw",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 2,
+   "caseVA": "0x182407e48",
+   "op": "add",
+   "fieldOffset": "0x800",
+   "field": "manaEfficiencyWithFrostClaw",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 3,
+   "caseVA": "0x182407e62",
+   "op": "add",
+   "fieldOffset": "0x804",
+   "field": "elementalPenetrationWithFrostClaw",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 4,
+   "caseVA": "0x182407e7c",
+   "op": "add",
+   "fieldOffset": "0xe04",
+   "field": "chanceToShredColdResFrostclaw",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 5,
+   "caseVA": "0x182407e96",
+   "op": "add",
+   "fieldOffset": "0xe08",
+   "field": "chanceToShredColdResFrostclawIfNoManaCost",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 6,
+   "caseVA": "0x182407eb0",
+   "op": "add",
+   "fieldOffset": "0xe0c",
+   "field": "frostClawBleedChanceConvertedToFrostbite",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 7,
+   "caseVA": "0x182407eca",
+   "op": "more-combine",
+   "fieldOffset": "0xe10",
+   "field": "frostClawMoreAilmentDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 8,
+   "caseVA": "0x182407ee1",
+   "op": "complex",
+   "fieldOffset": "0xe14",
+   "field": "frostClawNoPierce",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 9,
+   "caseVA": "0x182407f13",
+   "op": "complex",
+   "fieldOffset": "0xe18",
+   "field": "frostClawGainStackOfIcicleBladeOnDirectCast",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 10,
+   "caseVA": "0x182407f32",
+   "op": "complex",
+   "fieldOffset": "0xe1c",
+   "field": "frostClawOnlyOneProjectile",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 11,
+   "caseVA": "0x182407f64",
+   "op": "more-combine",
+   "fieldOffset": "0xe20",
+   "field": "frostClawMoreDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 12,
+   "caseVA": "0x182407f7b",
+   "op": "complex",
+   "fieldOffset": "0xe24",
+   "field": "frostClawLeapTowards",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 13,
+   "caseVA": "0x182407fad",
+   "op": "add",
+   "fieldOffset": "0xe28",
+   "field": "frostClawAddedCDSeconds",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 14,
+   "caseVA": "0x182407fc7",
+   "op": "add",
+   "fieldOffset": "0xe2c",
+   "field": "frostClawChanceCastRunicInvocationOnTarget",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 708,
+   "abilityIDName": "frostClaw",
+   "specialTag": 15,
+   "caseVA": "0x182407fe1",
+   "op": "add",
+   "fieldOffset": "0xe30",
+   "field": "frostClawChanceReplaceBurstWithGlacier",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 0,
+   "caseVA": "0x182408023",
+   "op": "add",
+   "fieldOffset": "0x17c0",
+   "field": "chaosBoltsDirectCastChanceFor3AdditionalProjectiles",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 1,
+   "caseVA": "0x18240803d",
+   "op": "flag=(added>eps)",
+   "fieldOffset": "0x17c4",
+   "field": "halfOfAddedMeleeDamageOnEquippedWeaponsAsSpellDamageForChaosBolts",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 2,
+   "caseVA": "0x182408057",
+   "op": "add",
+   "fieldOffset": "0x17c8",
+   "field": "increasedCastSpeedOfChaosBolts",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 3,
+   "caseVA": "0x182408071",
+   "op": "complex",
+   "fieldOffset": "0x17cc",
+   "field": "secondaryChaosBoltTargetRadiusAroundPlayer",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 4,
+   "caseVA": "0x182408090",
+   "op": "more-combine",
+   "fieldOffset": "0x17d0",
+   "field": "moreDamageToSecondaryChaosBolts",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 5,
+   "caseVA": "0x1824080a7",
+   "op": "add",
+   "fieldOffset": "0x17d4",
+   "field": "chanceToCastSacrificeOnKillByChaosBolts",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 6,
+   "caseVA": "0x1824080c1",
+   "op": "add",
+   "fieldOffset": "0x17d8",
+   "field": "reducedAreaForSecondaryChaosBoltTargets",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 7,
+   "caseVA": "0x1824080db",
+   "op": "add",
+   "fieldOffset": "0x17dc",
+   "field": "increasedAreaForChaosBoltExplosions",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 8,
+   "caseVA": "0x1824080f5",
+   "op": "add",
+   "fieldOffset": "0x17e0",
+   "field": "increasedAreaForSecondaryChaosBoltTargets",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 9,
+   "caseVA": "0x18240810f",
+   "op": "more-combine",
+   "fieldOffset": "0x17e4",
+   "field": "moreHitDamageChaosBoltsPerNegativeAilmentTypeOnTarget",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 10,
+   "caseVA": "0x182408126",
+   "op": "complex",
+   "fieldOffset": "0x17e8",
+   "field": "stacksOfTwoRandomAilmentsToApplyWithChaosBolts",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 11,
+   "caseVA": "0x182408145",
+   "op": "add",
+   "fieldOffset": "0x17ec",
+   "field": "chaosBoltsChanceFireSingleProjectileWhileCursed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 12,
+   "caseVA": "0x18240815f",
+   "op": "add",
+   "fieldOffset": "0x17f0",
+   "field": "chaosBoltsLessDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 715,
+   "abilityIDName": "chaosBolts",
+   "specialTag": 13,
+   "caseVA": "0x182408179",
+   "op": "complex",
+   "fieldOffset": "0x17f5",
+   "field": "chaosBoltCastGrantsGazeOfChaos",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 0,
+   "caseVA": "0x182406993",
+   "op": "add",
+   "fieldOffset": "0x1d60",
+   "field": "heartseekerRecurveChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 1,
+   "caseVA": "0x1824069ad",
+   "op": "complex",
+   "fieldOffset": "0x1d64",
+   "field": "heartseekerDartMode",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 2,
+   "caseVA": "0x1824069da",
+   "op": "add",
+   "fieldOffset": "0x1d68",
+   "field": "heartseekerThrowingDamagePer5Dex",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 3,
+   "caseVA": "0x1824069f4",
+   "op": "more-combine",
+   "fieldOffset": "0x1d6c",
+   "field": "moreDamageWithHeartseeker",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 4,
+   "caseVA": "0x182406a0b",
+   "op": "add",
+   "fieldOffset": "0x1d70",
+   "field": "minimumHeartseekerRecurveChance",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 5,
+   "caseVA": "0x182406a25",
+   "op": "more-combine",
+   "fieldOffset": "0x1d74",
+   "field": "moreHeartseekerHitDamageToChilledOrFrozen",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 6,
+   "caseVA": "0x182406a3c",
+   "op": "complex",
+   "fieldOffset": "0x1d78",
+   "field": "freezeRateWithHeartseekerColdConverted",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 7,
+   "caseVA": "0x182406a5b",
+   "op": "more-combine",
+   "fieldOffset": "0x1d7c",
+   "field": "moreHitDamageGainedByHeartseekerOnNewTargetSelection",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 8,
+   "caseVA": "0x182406a72",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1d80",
+   "field": "selectNewTargetInsteadOfRecurveForHeartseeker",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 9,
+   "caseVA": "0x182406a97",
+   "op": "add",
+   "fieldOffset": "0x1d84",
+   "field": "heartseekerRecurveChancePerIncreasedMoveSpeed",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 10,
+   "caseVA": "0x182406ab1",
+   "op": "more-combine",
+   "fieldOffset": "0x1d88",
+   "field": "moreHeartseekerPoisonDamageGainedperPoisonOnTargetSelection",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 11,
+   "caseVA": "0x182406ac8",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x1d8c",
+   "field": "poisonBurstWhenHeartseekerRecurvesOnSingleTargetFiveTimes",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 12,
+   "caseVA": "0x182406aed",
+   "op": "more-combine",
+   "fieldOffset": "0x1d90",
+   "field": "moreHeartseekerHitDamageToMoving",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 13,
+   "caseVA": "0x182406b04",
+   "op": "complex",
+   "fieldOffset": "0x1d94",
+   "field": "slowStacksOnFirstHitWithHeartseekerPerTarget",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 807,
+   "abilityIDName": "heartseeker",
+   "specialTag": 14,
+   "caseVA": "0x182406b23",
+   "op": "add",
+   "fieldOffset": "0x1d98",
+   "field": "chanceOnDirectHeartseekerForBallistaToFireHeartseekerWithNextShot",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 0,
+   "caseVA": "0x182405c8a",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x21fd",
+   "field": "shadowRendAlsoCastsOtherWeaponVersion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 1,
+   "caseVA": "0x182405caf",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x21fe",
+   "field": "shadowRendNoPlayerMovement",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 2,
+   "caseVA": "0x182405cd4",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x21ff",
+   "field": "shadowRendInfiniteCDResetOnEvade",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 3,
+   "caseVA": "0x182405cf9",
+   "op": "more-combine",
+   "fieldOffset": "0x2200",
+   "field": "shadowRendShadowMoreHitDamageAfterInitAttack",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 4,
+   "caseVA": "0x182405d10",
+   "op": "complex",
+   "fieldOffset": "0x2204",
+   "field": "shadowRendInitialBowAttackPierceEnemies",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 5,
+   "caseVA": "0x182405d2f",
+   "op": "add",
+   "fieldOffset": "0x2208",
+   "field": "shadowRendInitialMeleeAttackIncArea",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 6,
+   "caseVA": "0x182405d49",
+   "op": "more-combine",
+   "fieldOffset": "0x220c",
+   "field": "shadowRendInitialAttackMoreDamage",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 7,
+   "caseVA": "0x182405d60",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x2210",
+   "field": "shadowRendThrowingConversion",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 8,
+   "caseVA": "0x182405d85",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x2211",
+   "field": "shadowRendCreateRandom2ShadowsInsteadOf1",
+   "fieldType": "bool"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 9,
+   "caseVA": "0x182405daa",
+   "op": "add",
+   "fieldOffset": "0x2214",
+   "field": "shadowRendHealthThreshold",
+   "fieldType": "float"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 10,
+   "caseVA": "0x182405dc4",
+   "op": "complex",
+   "fieldOffset": "0x2218",
+   "field": "shadowRendAttackAmountOfEnemiesWithPuncture",
+   "fieldType": "int"
+  },
+  {
+   "abilityID": 881,
+   "abilityIDName": "shadowRend",
+   "specialTag": 11,
+   "caseVA": "0x182405de3",
+   "op": "flag|=(added>eps)",
+   "fieldOffset": "0x221c",
+   "field": "shadowRendShadowCreatesDreamSlash",
+   "fieldType": "bool"
+  }
+ ]
+}

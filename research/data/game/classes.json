@@ -1,0 +1,2139 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "CharacterClass assets via Character Class List (AssetBundles/PermaLoad)",
+ "schema": "see research/07a_assets_core_data.md §classes",
+ "hiddenBaseMods": [
+  {
+   "property": 2,
+   "propertyName": "AttackSpeed",
+   "modType": "ADDED",
+   "value": 1.0,
+   "tags": 0,
+   "source": "BaseStats.SetInitialValues"
+  },
+  {
+   "property": 3,
+   "propertyName": "CastSpeed",
+   "modType": "ADDED",
+   "value": 1.0,
+   "tags": 0,
+   "source": "BaseStats.SetInitialValues"
+  },
+  {
+   "property": 9,
+   "propertyName": "Movespeed",
+   "modType": "MORE",
+   "value": 0.05,
+   "tags": 0,
+   "source": "CharacterStats.SetInitialValues"
+  },
+  {
+   "property": 9,
+   "propertyName": "Movespeed",
+   "modType": "MORE",
+   "value": 0.1,
+   "tags": 8192,
+   "tagNames": [
+    "Minion"
+   ],
+   "source": "CharacterStats.SetInitialValues"
+  },
+  {
+   "property": 45,
+   "propertyName": "IncreasedStunChance",
+   "modType": "INCREASED",
+   "value": 1.0,
+   "tags": 2560,
+   "tagNames": [
+    "Melee",
+    "Bow"
+   ],
+   "source": "CharacterStats.SetInitialValues"
+  },
+  {
+   "property": 6,
+   "propertyName": "DamageTaken",
+   "modType": "MORE",
+   "value": -0.6,
+   "tags": 40960,
+   "tagNames": [
+    "Minion",
+    "PetResisted"
+   ],
+   "source": "CharacterStats.SetInitialValues"
+  }
+ ],
+ "formulas": {
+  "Health": "RoundHalfEven((baseHealth + L*healthPerLevel + ΣaddedHealth) * (1+Σinc) * Π(1+more))",
+  "Mana": "RoundHalfEven((baseMana + L*manaPerLevel + Σadded) * (1+Σinc) * Πmore)",
+  "HealthRegen": "(healthRegen + L*healthRegenPerLevel + Σadded) * (1+Σinc) * Πmore",
+  "StunAvoidance": "baseStunAvoidance + L*stunAvoidancePerLevel (+ mods)",
+  "EnduranceThreshold": "(1+inc76)*((maxMore96 + enduranceThresholdPerHealth + A96)*maxHealth + baseEnduranceThreshold + L*enduranceThresholdPerLevel + A76)*more76",
+  "MinionDamageMore": "L >= first ? (L-first+1)*moreMinionDamagePerLevel : 0   (tags Minion)",
+  "MinionDamageTakenMore": "L >= first ? -(L-first+1)*lessMinionDamageTakenPerLevel : 0   (tags Minion)",
+  "levelMultiplier": "L (not L-1): SetInitialValues calls onLevelChange(0, L)"
+ },
+ "data": [
+  {
+   "classID": 0,
+   "classIDName": "Primalist",
+   "className": "Primalist",
+   "treeID": "pr-1",
+   "passiveTree": {
+    "name": "Primalist",
+    "treeID": "pr-1",
+    "version": 12,
+    "nodeCount": 111,
+    "nodesPerMastery": {
+     "0": 15,
+     "1": 33,
+     "2": 32,
+     "3": 31
+    }
+   },
+   "specialTagForClassSpecificLevelOfSkillsStats": 2,
+   "base": {
+    "baseHealth": 100,
+    "healthPerLevel": 10,
+    "baseMana": 50,
+    "manaPerLevel": 0.50506,
+    "manaRegen": 8,
+    "healthRegen": 6,
+    "healthRegenPerLevel": 0.14,
+    "baseStrength": 2,
+    "baseVitality": 0,
+    "baseIntelligence": 0,
+    "baseDexterity": 0,
+    "baseAttunement": 1,
+    "baseStunAvoidance": 250,
+    "stunAvoidancePerLevel": 5,
+    "baseEndurance": 0.2,
+    "baseEnduranceThreshold": 0,
+    "enduranceThresholdPerLevel": 0,
+    "enduranceThresholdPerHealth": 0.2,
+    "baseMoreDoTDamageTaken": -0.15
+   },
+   "minionScaling": {
+    "firstLevelForMinionScaling": 26,
+    "moreMinionDamagePerLevel": 0.008,
+    "lessMinionDamageTakenPerLevel": 0.008
+   },
+   "levelMods": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "modType": "ADDED",
+     "base": 100,
+     "perLevel": 10
+    },
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "modType": "ADDED",
+     "base": 50,
+     "perLevel": 0.50506
+    },
+    {
+     "property": 17,
+     "propertyName": "HealthRegen",
+     "modType": "ADDED",
+     "base": 6,
+     "perLevel": 0.14
+    },
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "modType": "ADDED",
+     "base": 8,
+     "perLevel": 0
+    },
+    {
+     "property": 12,
+     "propertyName": "StunAvoidance",
+     "modType": "ADDED",
+     "base": 250,
+     "perLevel": 5
+    },
+    {
+     "property": 75,
+     "propertyName": "Endurance",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 76,
+     "propertyName": "EnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 96,
+     "propertyName": "MaximumHealthGainedAsEnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "modType": "MORE",
+     "tags": 4096,
+     "tagNames": [
+      "DoT"
+     ],
+     "base": -0.15,
+     "perLevel": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "modType": "ADDED",
+     "base": 2,
+     "perLevel": 0
+    },
+    {
+     "property": 20,
+     "propertyName": "Vitality",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 21,
+     "propertyName": "Intelligence",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 22,
+     "propertyName": "Dexterity",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 23,
+     "propertyName": "Attunement",
+     "modType": "ADDED",
+     "base": 1,
+     "perLevel": 0
+    }
+   ],
+   "masteries": [
+    {
+     "masteryIndex": 0,
+     "name": "Primalist",
+     "localizationKey": "Class_Primalist",
+     "masteryAbility": null,
+     "abilities": [
+      {
+       "asset": "Eterras Blessing",
+       "name": "Eterra's Blessing",
+       "playerAbilityID": "eb5656",
+       "level": 5
+      },
+      {
+       "asset": "Warcry",
+       "name": "Warcry",
+       "playerAbilityID": "wc57",
+       "level": 10
+      },
+      {
+       "asset": "SummonStormCrow",
+       "name": "Summon Storm Crows",
+       "playerAbilityID": "ssc50",
+       "level": 15
+      },
+      {
+       "asset": "SerpentStrike",
+       "name": "Serpent Strike",
+       "playerAbilityID": "st31et",
+       "level": 20
+      }
+     ],
+     "passiveNodes": 15
+    },
+    {
+     "masteryIndex": 1,
+     "name": "Beastmaster",
+     "localizationKey": "Mastery_Beastmaster",
+     "masteryAbility": {
+      "asset": "SummonRaptor",
+      "name": "Summon Raptor",
+      "playerAbilityID": "srtor"
+     },
+     "abilities": [
+      {
+       "asset": "SummonBear",
+       "name": "Summon Bear",
+       "playerAbilityID": "be36ar",
+       "level": 5
+      },
+      {
+       "asset": "SummonScorpion",
+       "name": "Summon Scorpion",
+       "playerAbilityID": "sc36pi",
+       "level": 15
+      },
+      {
+       "asset": "SummonFrenzyTotem",
+       "name": "Summon Frenzy Totem",
+       "playerAbilityID": "sf37",
+       "level": 25
+      },
+      {
+       "asset": "SummonSabertooth",
+       "name": "Summon Sabertooth",
+       "playerAbilityID": "sa36oh",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 33
+    },
+    {
+     "masteryIndex": 2,
+     "name": "Shaman",
+     "localizationKey": "Mastery_Shaman",
+     "masteryAbility": {
+      "asset": "SummonStormTotem",
+      "name": "Summon Storm Totem",
+      "playerAbilityID": "st38ml"
+     },
+     "abilities": [
+      {
+       "asset": "Tornado",
+       "name": "Tornado",
+       "playerAbilityID": "to50",
+       "level": 5
+      },
+      {
+       "asset": "EarthquakeSlam",
+       "name": "Earthquake",
+       "playerAbilityID": "eq5s",
+       "level": 15
+      },
+      {
+       "asset": "Avalanche",
+       "name": "Avalanche",
+       "playerAbilityID": "av75ch",
+       "level": 25
+      },
+      {
+       "asset": "PrimalistSummonElemental",
+       "name": "Summon Tide Elemental",
+       "playerAbilityID": "su3lem",
+       "level": 30
+      }
+     ],
+     "passiveNodes": 32
+    },
+    {
+     "masteryIndex": 3,
+     "name": "Druid",
+     "localizationKey": "Mastery_Druid",
+     "masteryAbility": {
+      "asset": "WerebearForm",
+      "name": "Werebear Form",
+      "playerAbilityID": "wb8fo"
+     },
+     "abilities": [
+      {
+       "asset": "SprigganForm",
+       "name": "Spriggan Form",
+       "playerAbilityID": "sf5rd",
+       "level": 5
+      },
+      {
+       "asset": "SummonSpriggan",
+       "name": "Summon Spriggan",
+       "playerAbilityID": "sp38",
+       "level": 15
+      },
+      {
+       "asset": "Swarmblade Form",
+       "name": "Swarmblade Form",
+       "playerAbilityID": "sbf4m",
+       "level": 25
+      },
+      {
+       "asset": "EntanglingRoots",
+       "name": "Entangling Roots",
+       "playerAbilityID": "er6no",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 31
+    }
+   ],
+   "basicAttackReplacer": {
+    "asset": "Swipe",
+    "name": "Swipe",
+    "playerAbilityID": "sw43"
+   },
+   "defaultAbilities": [
+    {
+     "asset": "SummonWolf",
+     "name": "Summon Wolf",
+     "playerAbilityID": "wo42"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Primalist Evade",
+     "name": "Evade",
+     "playerAbilityID": "evade3"
+    }
+   ],
+   "knownAbilities": [
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "SummonWolf",
+     "name": "Summon Wolf",
+     "playerAbilityID": "wo42"
+    }
+   ],
+   "unlockableAbilities": [
+    {
+     "asset": "GatheringStormMelee",
+     "name": "Gathering Storm",
+     "playerAbilityID": "ga2st",
+     "level": 2
+    },
+    {
+     "asset": "FuryLeap",
+     "name": "Fury Leap",
+     "playerAbilityID": "fl13",
+     "level": 3
+    },
+    {
+     "asset": "SummonThornTotem",
+     "name": "Summon Thorn Totem",
+     "playerAbilityID": "th39",
+     "level": 4
+    },
+    {
+     "asset": "Swipe",
+     "name": "Swipe",
+     "playerAbilityID": "sw43",
+     "level": 5
+    },
+    {
+     "asset": "TempestStrike",
+     "name": "Tempest Strike",
+     "playerAbilityID": "ts85i",
+     "level": 10
+    },
+    {
+     "asset": "Maelstrom",
+     "name": "Maelstrom",
+     "playerAbilityID": "mas54",
+     "level": 12
+    },
+    {
+     "asset": "Upheaval",
+     "name": "Upheaval",
+     "playerAbilityID": "uph41",
+     "level": 14
+    }
+   ],
+   "startingItems": [
+    {
+     "baseType": 5,
+     "subtype": 0,
+     "container": 4
+    },
+    {
+     "baseType": 1,
+     "subtype": 24,
+     "container": 3
+    },
+    {
+     "baseType": 2,
+     "subtype": 3,
+     "container": 7
+    },
+    {
+     "baseType": 3,
+     "subtype": 7,
+     "container": 8
+    }
+   ]
+  },
+  {
+   "classID": 1,
+   "classIDName": "Mage",
+   "className": "Mage",
+   "treeID": "mg-1",
+   "passiveTree": {
+    "name": "Mage",
+    "treeID": "mg-1",
+    "version": 7,
+    "nodeCount": 108,
+    "nodesPerMastery": {
+     "0": 15,
+     "1": 31,
+     "2": 32,
+     "3": 30
+    }
+   },
+   "specialTagForClassSpecificLevelOfSkillsStats": 3,
+   "base": {
+    "baseHealth": 100,
+    "healthPerLevel": 10,
+    "baseMana": 50,
+    "manaPerLevel": 0.50506,
+    "manaRegen": 8,
+    "healthRegen": 6,
+    "healthRegenPerLevel": 0.14,
+    "baseStrength": 0,
+    "baseVitality": 0,
+    "baseIntelligence": 3,
+    "baseDexterity": 0,
+    "baseAttunement": 0,
+    "baseStunAvoidance": 250,
+    "stunAvoidancePerLevel": 5,
+    "baseEndurance": 0.2,
+    "baseEnduranceThreshold": 0,
+    "enduranceThresholdPerLevel": 0,
+    "enduranceThresholdPerHealth": 0.2,
+    "baseMoreDoTDamageTaken": -0.15
+   },
+   "minionScaling": {
+    "firstLevelForMinionScaling": 26,
+    "moreMinionDamagePerLevel": 0.008,
+    "lessMinionDamageTakenPerLevel": 0.008
+   },
+   "levelMods": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "modType": "ADDED",
+     "base": 100,
+     "perLevel": 10
+    },
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "modType": "ADDED",
+     "base": 50,
+     "perLevel": 0.50506
+    },
+    {
+     "property": 17,
+     "propertyName": "HealthRegen",
+     "modType": "ADDED",
+     "base": 6,
+     "perLevel": 0.14
+    },
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "modType": "ADDED",
+     "base": 8,
+     "perLevel": 0
+    },
+    {
+     "property": 12,
+     "propertyName": "StunAvoidance",
+     "modType": "ADDED",
+     "base": 250,
+     "perLevel": 5
+    },
+    {
+     "property": 75,
+     "propertyName": "Endurance",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 76,
+     "propertyName": "EnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 96,
+     "propertyName": "MaximumHealthGainedAsEnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "modType": "MORE",
+     "tags": 4096,
+     "tagNames": [
+      "DoT"
+     ],
+     "base": -0.15,
+     "perLevel": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 20,
+     "propertyName": "Vitality",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 21,
+     "propertyName": "Intelligence",
+     "modType": "ADDED",
+     "base": 3,
+     "perLevel": 0
+    },
+    {
+     "property": 22,
+     "propertyName": "Dexterity",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 23,
+     "propertyName": "Attunement",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    }
+   ],
+   "masteries": [
+    {
+     "masteryIndex": 0,
+     "name": "Mage",
+     "localizationKey": "Class_Mage",
+     "masteryAbility": null,
+     "abilities": [
+      {
+       "asset": "Glacier",
+       "name": "Glacier",
+       "playerAbilityID": "gl14",
+       "level": 5
+      },
+      {
+       "asset": "Disintegrate",
+       "name": "Disintegrate",
+       "playerAbilityID": "dig5",
+       "level": 10
+      },
+      {
+       "asset": "VolcanicOrb",
+       "name": "Volcanic Orb",
+       "playerAbilityID": "vo54",
+       "level": 15
+      },
+      {
+       "asset": "Focus",
+       "name": "Focus",
+       "playerAbilityID": "vm53dx",
+       "level": 20
+      }
+     ],
+     "passiveNodes": 15
+    },
+    {
+     "masteryIndex": 1,
+     "name": "Sorcerer",
+     "localizationKey": "Mastery_Sorcerer",
+     "masteryAbility": {
+      "asset": "Meteor",
+      "name": "Meteor",
+      "playerAbilityID": "me27"
+     },
+     "abilities": [
+      {
+       "asset": "StaticOrb",
+       "name": "Static Orb",
+       "playerAbilityID": "so35a",
+       "level": 5
+      },
+      {
+       "asset": "IceBarrage",
+       "name": "Ice Barrage",
+       "playerAbilityID": "ib5g3",
+       "level": 15
+      },
+      {
+       "asset": "ArcaneAscendance",
+       "name": "Arcane Ascendance",
+       "playerAbilityID": "arcas",
+       "level": 30
+      },
+      {
+       "asset": "BlackHole",
+       "name": "Black Hole",
+       "playerAbilityID": "bh2",
+       "level": 40
+      }
+     ],
+     "passiveNodes": 31
+    },
+    {
+     "masteryIndex": 2,
+     "name": "Spellblade",
+     "localizationKey": "Mastery_Spellblade",
+     "masteryAbility": {
+      "asset": "ShatterStrike",
+      "name": "Shatter Strike",
+      "playerAbilityID": "ss3tre"
+     },
+     "abilities": [
+      {
+       "asset": "FlameReave",
+       "name": "Flame Reave",
+       "playerAbilityID": "fr11mv",
+       "level": 5
+      },
+      {
+       "asset": "EnchantWeapon",
+       "name": "Enchant Weapon",
+       "playerAbilityID": "sb44eQ",
+       "level": 15
+      },
+      {
+       "asset": "Firebrand",
+       "name": "Firebrand",
+       "playerAbilityID": "f1b4d",
+       "level": 30
+      },
+      {
+       "asset": "Surge",
+       "name": "Surge",
+       "playerAbilityID": "su5g3",
+       "level": 40
+      }
+     ],
+     "passiveNodes": 32
+    },
+    {
+     "masteryIndex": 3,
+     "name": "Runemaster",
+     "localizationKey": "Mastery_Runemaster",
+     "masteryAbility": {
+      "asset": "Runemaster 04 Runic Invocation",
+      "name": "Runic Invocation",
+      "playerAbilityID": "rn7iv"
+     },
+     "abilities": [
+      {
+       "asset": "Runemaster 06 Flame Rush",
+       "name": "Flame Rush",
+       "playerAbilityID": "fl71ds",
+       "level": 5
+      },
+      {
+       "asset": "Runemaster 01 Frost Wall",
+       "name": "Frost Wall",
+       "playerAbilityID": "fr4wl",
+       "level": 15
+      },
+      {
+       "asset": "Runemaster 05c1 Runebolt Fire",
+       "name": "Runebolt",
+       "playerAbilityID": "fb8fe",
+       "level": 30
+      },
+      {
+       "asset": "Runemaster 02 Glyph of Dominion",
+       "name": "Glyph of Dominion",
+       "playerAbilityID": "gy2dm",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 30
+    }
+   ],
+   "basicAttackReplacer": {
+    "asset": "ManaStrike",
+    "name": "Mana Strike",
+    "playerAbilityID": "ms26"
+   },
+   "defaultAbilities": [
+    {
+     "asset": "LightningBlast",
+     "name": "Lightning Blast",
+     "playerAbilityID": "lb23il"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Mage Evade",
+     "name": "Evade",
+     "playerAbilityID": "evade2"
+    }
+   ],
+   "knownAbilities": [
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "LightningBlast",
+     "name": "Lightning Blast",
+     "playerAbilityID": "lb23il"
+    }
+   ],
+   "unlockableAbilities": [
+    {
+     "asset": "Fireball",
+     "name": "Fireball",
+     "playerAbilityID": "fi9",
+     "level": 2
+    },
+    {
+     "asset": "SnapFreeze",
+     "name": "Snap Freeze",
+     "playerAbilityID": "sw31a",
+     "level": 3
+    },
+    {
+     "asset": "ElementalNova",
+     "name": "Elemental Nova",
+     "playerAbilityID": "en6",
+     "level": 4
+    },
+    {
+     "asset": "ManaStrike",
+     "name": "Mana Strike",
+     "playerAbilityID": "ms26",
+     "level": 5
+    },
+    {
+     "asset": "FlameWard",
+     "name": "Flame Ward",
+     "playerAbilityID": "fw3d",
+     "level": 7
+    },
+    {
+     "asset": "Teleport",
+     "name": "Teleport",
+     "playerAbilityID": "te44",
+     "level": 9
+    },
+    {
+     "asset": "Frost Claw",
+     "name": "Frost Claw",
+     "playerAbilityID": "frc87w",
+     "level": 12
+    },
+    {
+     "asset": "Static",
+     "name": "Static",
+     "playerAbilityID": "st47ic",
+     "level": 15
+    }
+   ],
+   "startingItems": [
+    {
+     "baseType": 8,
+     "subtype": 0,
+     "container": 4
+    },
+    {
+     "baseType": 1,
+     "subtype": 16,
+     "container": 3
+    },
+    {
+     "baseType": 2,
+     "subtype": 3,
+     "container": 7
+    },
+    {
+     "baseType": 3,
+     "subtype": 7,
+     "container": 8
+    }
+   ]
+  },
+  {
+   "classID": 2,
+   "classIDName": "Sentinel",
+   "className": "Sentinel",
+   "treeID": "kn-1",
+   "passiveTree": {
+    "name": "Knight",
+    "treeID": "kn-1",
+    "version": 12,
+    "nodeCount": 110,
+    "nodesPerMastery": {
+     "0": 15,
+     "1": 31,
+     "2": 32,
+     "3": 32
+    }
+   },
+   "specialTagForClassSpecificLevelOfSkillsStats": 4,
+   "base": {
+    "baseHealth": 100,
+    "healthPerLevel": 10,
+    "baseMana": 50,
+    "manaPerLevel": 0.50506,
+    "manaRegen": 8,
+    "healthRegen": 6,
+    "healthRegenPerLevel": 0.14,
+    "baseStrength": 2,
+    "baseVitality": 1,
+    "baseIntelligence": 0,
+    "baseDexterity": 0,
+    "baseAttunement": 0,
+    "baseStunAvoidance": 250,
+    "stunAvoidancePerLevel": 5,
+    "baseEndurance": 0.2,
+    "baseEnduranceThreshold": 0,
+    "enduranceThresholdPerLevel": 0,
+    "enduranceThresholdPerHealth": 0.2,
+    "baseMoreDoTDamageTaken": -0.15
+   },
+   "minionScaling": {
+    "firstLevelForMinionScaling": 26,
+    "moreMinionDamagePerLevel": 0.008,
+    "lessMinionDamageTakenPerLevel": 0.008
+   },
+   "levelMods": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "modType": "ADDED",
+     "base": 100,
+     "perLevel": 10
+    },
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "modType": "ADDED",
+     "base": 50,
+     "perLevel": 0.50506
+    },
+    {
+     "property": 17,
+     "propertyName": "HealthRegen",
+     "modType": "ADDED",
+     "base": 6,
+     "perLevel": 0.14
+    },
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "modType": "ADDED",
+     "base": 8,
+     "perLevel": 0
+    },
+    {
+     "property": 12,
+     "propertyName": "StunAvoidance",
+     "modType": "ADDED",
+     "base": 250,
+     "perLevel": 5
+    },
+    {
+     "property": 75,
+     "propertyName": "Endurance",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 76,
+     "propertyName": "EnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 96,
+     "propertyName": "MaximumHealthGainedAsEnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "modType": "MORE",
+     "tags": 4096,
+     "tagNames": [
+      "DoT"
+     ],
+     "base": -0.15,
+     "perLevel": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "modType": "ADDED",
+     "base": 2,
+     "perLevel": 0
+    },
+    {
+     "property": 20,
+     "propertyName": "Vitality",
+     "modType": "ADDED",
+     "base": 1,
+     "perLevel": 0
+    },
+    {
+     "property": 21,
+     "propertyName": "Intelligence",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 22,
+     "propertyName": "Dexterity",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 23,
+     "propertyName": "Attunement",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    }
+   ],
+   "masteries": [
+    {
+     "masteryIndex": 0,
+     "name": "Sentinel",
+     "localizationKey": "Class_Sentinel",
+     "masteryAbility": null,
+     "abilities": [
+      {
+       "asset": "Rebuke",
+       "name": "Rebuke",
+       "playerAbilityID": "re82ke",
+       "level": 5
+      },
+      {
+       "asset": "ShieldRush",
+       "name": "Shield Rush",
+       "playerAbilityID": "sr31hu",
+       "level": 10
+      },
+      {
+       "asset": "Multistrike",
+       "name": "Multistrike",
+       "playerAbilityID": "multis",
+       "level": 15
+      },
+      {
+       "asset": "Smite",
+       "name": "Smite",
+       "playerAbilityID": "sm87r4",
+       "level": 20
+      }
+     ],
+     "passiveNodes": 15
+    },
+    {
+     "masteryIndex": 1,
+     "name": "Void Knight",
+     "localizationKey": "Mastery_VoidKnight",
+     "masteryAbility": {
+      "asset": "ErasingStrike",
+      "name": "Erasing Strike",
+      "playerAbilityID": "es6ai"
+     },
+     "abilities": [
+      {
+       "asset": "VolatileReversal",
+       "name": "Volatile Reversal",
+       "playerAbilityID": "vr53sl",
+       "level": 5
+      },
+      {
+       "asset": "AbyssalEchoes",
+       "name": "Abyssal Echoes",
+       "playerAbilityID": "ab0lh",
+       "level": 10
+      },
+      {
+       "asset": "DevouringOrb",
+       "name": "Devouring Orb",
+       "playerAbilityID": "do5vr",
+       "level": 15
+      },
+      {
+       "asset": "Anomaly",
+       "name": "Anomaly",
+       "playerAbilityID": "an0my",
+       "level": 30
+      }
+     ],
+     "passiveNodes": 31
+    },
+    {
+     "masteryIndex": 2,
+     "name": "Forge Guard",
+     "localizationKey": "Mastery_Forge_Guard",
+     "masteryAbility": {
+      "asset": "ForgeStrike",
+      "name": "Forge Strike",
+      "playerAbilityID": "fs3e3"
+     },
+     "abilities": [
+      {
+       "asset": "ShieldThrow",
+       "name": "Shield Throw",
+       "playerAbilityID": "st31io",
+       "level": 5
+      },
+      {
+       "asset": "ManifestArmor",
+       "name": "Manifest Armor",
+       "playerAbilityID": "ma6hdr",
+       "level": 15
+      },
+      {
+       "asset": "Ring Of Shields",
+       "name": "Ring Of Shields",
+       "playerAbilityID": "rs31hi",
+       "level": 30
+      },
+      {
+       "asset": "SmeltersWrath",
+       "name": "Smelter's Wrath",
+       "playerAbilityID": "st4th",
+       "level": 40
+      }
+     ],
+     "passiveNodes": 32
+    },
+    {
+     "masteryIndex": 3,
+     "name": "Paladin",
+     "localizationKey": "Mastery_Paladin",
+     "masteryAbility": {
+      "asset": "HolyAura",
+      "name": "Holy Aura",
+      "playerAbilityID": "ah443"
+     },
+     "abilities": [
+      {
+       "asset": "HealingHands",
+       "name": "Healing Hands",
+       "playerAbilityID": "hh7pa3",
+       "level": 5
+      },
+      {
+       "asset": "RadiantLance",
+       "name": "Radiant Lance",
+       "playerAbilityID": "ra1an",
+       "level": 15
+      },
+      {
+       "asset": "Judgement",
+       "name": "Judgement",
+       "playerAbilityID": "pa67ju",
+       "level": 30
+      },
+      {
+       "asset": "SigilsOfHope",
+       "name": "Symbols of Hope",
+       "playerAbilityID": "si4lgl",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 32
+    }
+   ],
+   "basicAttackReplacer": {
+    "asset": "Rive1",
+    "name": "Rive",
+    "playerAbilityID": "sndr1"
+   },
+   "defaultAbilities": [
+    {
+     "asset": "Vengeance",
+     "name": "Vengeance",
+     "playerAbilityID": "gs15de"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Sentinel Evade",
+     "name": "Evade",
+     "playerAbilityID": "evade5"
+    }
+   ],
+   "knownAbilities": [
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Vengeance",
+     "name": "Vengeance",
+     "playerAbilityID": "gs15de"
+    }
+   ],
+   "unlockableAbilities": [
+    {
+     "asset": "Warpath",
+     "name": "Warpath",
+     "playerAbilityID": "va53st",
+     "level": 2
+    },
+    {
+     "asset": "HammerThrow",
+     "name": "Hammer Throw",
+     "playerAbilityID": "ht16aw",
+     "level": 3
+    },
+    {
+     "asset": "Lunge",
+     "name": "Lunge",
+     "playerAbilityID": "lu25ng",
+     "level": 4
+    },
+    {
+     "asset": "Rive1",
+     "name": "Rive",
+     "playerAbilityID": "sndr1",
+     "level": 5
+    },
+    {
+     "asset": "ShieldBash",
+     "name": "Shield Bash",
+     "playerAbilityID": "sb4h",
+     "level": 7
+    },
+    {
+     "asset": "Javelin",
+     "name": "Javelin",
+     "playerAbilityID": "javeli",
+     "level": 18
+    },
+    {
+     "asset": "VoidCleave",
+     "name": "Void Cleave",
+     "playerAbilityID": "v01cv",
+     "level": 19
+    }
+   ],
+   "startingItems": [
+    {
+     "baseType": 9,
+     "subtype": 3,
+     "container": 4
+    },
+    {
+     "baseType": 1,
+     "subtype": 32,
+     "container": 3
+    },
+    {
+     "baseType": 18,
+     "subtype": 3,
+     "container": 5
+    },
+    {
+     "baseType": 2,
+     "subtype": 3,
+     "container": 7
+    },
+    {
+     "baseType": 3,
+     "subtype": 7,
+     "container": 8
+    }
+   ]
+  },
+  {
+   "classID": 3,
+   "classIDName": "Acolyte",
+   "className": "Acolyte",
+   "treeID": "ac-1",
+   "passiveTree": {
+    "name": "Acolyte",
+    "treeID": "ac-1",
+    "version": 4,
+    "nodeCount": 109,
+    "nodesPerMastery": {
+     "0": 15,
+     "1": 29,
+     "2": 34,
+     "3": 31
+    }
+   },
+   "specialTagForClassSpecificLevelOfSkillsStats": 5,
+   "base": {
+    "baseHealth": 100,
+    "healthPerLevel": 10,
+    "baseMana": 50,
+    "manaPerLevel": 0.50506,
+    "manaRegen": 8,
+    "healthRegen": 6,
+    "healthRegenPerLevel": 0.14,
+    "baseStrength": 0,
+    "baseVitality": 1,
+    "baseIntelligence": 2,
+    "baseDexterity": 0,
+    "baseAttunement": 0,
+    "baseStunAvoidance": 250,
+    "stunAvoidancePerLevel": 5,
+    "baseEndurance": 0.2,
+    "baseEnduranceThreshold": 0,
+    "enduranceThresholdPerLevel": 0,
+    "enduranceThresholdPerHealth": 0.2,
+    "baseMoreDoTDamageTaken": -0.15
+   },
+   "minionScaling": {
+    "firstLevelForMinionScaling": 26,
+    "moreMinionDamagePerLevel": 0.008,
+    "lessMinionDamageTakenPerLevel": 0.008
+   },
+   "levelMods": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "modType": "ADDED",
+     "base": 100,
+     "perLevel": 10
+    },
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "modType": "ADDED",
+     "base": 50,
+     "perLevel": 0.50506
+    },
+    {
+     "property": 17,
+     "propertyName": "HealthRegen",
+     "modType": "ADDED",
+     "base": 6,
+     "perLevel": 0.14
+    },
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "modType": "ADDED",
+     "base": 8,
+     "perLevel": 0
+    },
+    {
+     "property": 12,
+     "propertyName": "StunAvoidance",
+     "modType": "ADDED",
+     "base": 250,
+     "perLevel": 5
+    },
+    {
+     "property": 75,
+     "propertyName": "Endurance",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 76,
+     "propertyName": "EnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 96,
+     "propertyName": "MaximumHealthGainedAsEnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "modType": "MORE",
+     "tags": 4096,
+     "tagNames": [
+      "DoT"
+     ],
+     "base": -0.15,
+     "perLevel": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 20,
+     "propertyName": "Vitality",
+     "modType": "ADDED",
+     "base": 1,
+     "perLevel": 0
+    },
+    {
+     "property": 21,
+     "propertyName": "Intelligence",
+     "modType": "ADDED",
+     "base": 2,
+     "perLevel": 0
+    },
+    {
+     "property": 22,
+     "propertyName": "Dexterity",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 23,
+     "propertyName": "Attunement",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    }
+   ],
+   "masteries": [
+    {
+     "masteryIndex": 0,
+     "name": "Acolyte",
+     "localizationKey": "Class_Acolyte",
+     "masteryAbility": null,
+     "abilities": [
+      {
+       "asset": "HungeringSouls",
+       "name": "Hungering Souls",
+       "playerAbilityID": "hs18gu",
+       "level": 5
+      },
+      {
+       "asset": "SummonBoneGolem",
+       "name": "Summon Bone Golem",
+       "playerAbilityID": "bg36nl",
+       "level": 10
+      },
+      {
+       "asset": "SpiritPlague",
+       "name": "Spirit Plague",
+       "playerAbilityID": "sp5g2",
+       "level": 15
+      },
+      {
+       "asset": "InfernalShade",
+       "name": "Infernal Shade",
+       "playerAbilityID": "is40",
+       "level": 20
+      }
+     ],
+     "passiveNodes": 15
+    },
+    {
+     "masteryIndex": 1,
+     "name": "Necromancer",
+     "localizationKey": "Mastery_Necromancer",
+     "masteryAbility": {
+      "asset": "SummonWraith",
+      "name": "Summon Wraith",
+      "playerAbilityID": "sw42ih"
+     },
+     "abilities": [
+      {
+       "asset": "SummonMage",
+       "name": "Summon Skeletal Mage",
+       "playerAbilityID": "sm4g",
+       "level": 5
+      },
+      {
+       "asset": "Sacrifice",
+       "name": "Sacrifice",
+       "playerAbilityID": "sf31rc",
+       "level": 10
+      },
+      {
+       "asset": "DreadShade",
+       "name": "Dread Shade",
+       "playerAbilityID": "ds4d3",
+       "level": 30
+      },
+      {
+       "asset": "AssembleAbomination",
+       "name": "Assemble Abomination",
+       "playerAbilityID": "aa710",
+       "level": 40
+      }
+     ],
+     "passiveNodes": 29
+    },
+    {
+     "masteryIndex": 2,
+     "name": "Lich",
+     "localizationKey": "Mastery_Lich",
+     "masteryAbility": {
+      "asset": "ReaperForm",
+      "name": "Reaper Form",
+      "playerAbilityID": "rf1azz"
+     },
+     "abilities": [
+      {
+       "asset": "DrainLife",
+       "name": "Drain Life",
+       "playerAbilityID": "dl73",
+       "level": 5
+      },
+      {
+       "asset": "AuraOfDecay",
+       "name": "Aura Of Decay",
+       "playerAbilityID": "ad0ry",
+       "level": 10
+      },
+      {
+       "asset": "Flay 1",
+       "name": "Flay",
+       "playerAbilityID": "fl44",
+       "level": 30
+      },
+      {
+       "asset": "DeathSeal",
+       "name": "Death Seal",
+       "playerAbilityID": "ds34l",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 34
+    },
+    {
+     "masteryIndex": 3,
+     "name": "Warlock",
+     "localizationKey": "Mastery_Warlock",
+     "masteryAbility": {
+      "asset": "Warlock 04 Chthonic Fissure",
+      "name": "Chthonic Fissure",
+      "playerAbilityID": "ch0fs"
+     },
+     "abilities": [
+      {
+       "asset": "Warlock 01 Chaos Bolts",
+       "name": "Chaos Bolts",
+       "playerAbilityID": "ch4bo",
+       "level": 5
+      },
+      {
+       "asset": "Warlock 02 Ghostflame",
+       "name": "Ghostflame",
+       "playerAbilityID": "gh0fl",
+       "level": 15
+      },
+      {
+       "asset": "Warlock 03 SoulFeast",
+       "name": "Soul Feast",
+       "playerAbilityID": "fe8at",
+       "level": 30
+      },
+      {
+       "asset": "Warlock 05 Profane Veil",
+       "name": "Profane Veil",
+       "playerAbilityID": "pr5fm",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 31
+    }
+   ],
+   "basicAttackReplacer": {
+    "asset": "Harvest",
+    "name": "Harvest",
+    "playerAbilityID": "ha84"
+   },
+   "defaultAbilities": [
+    {
+     "asset": "RipBlood",
+     "name": "Rip Blood",
+     "playerAbilityID": "rb31pl"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Acolyte Evade",
+     "name": "Evade",
+     "playerAbilityID": "evade1"
+    }
+   ],
+   "knownAbilities": [
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "RipBlood",
+     "name": "Rip Blood",
+     "playerAbilityID": "rb31pl"
+    }
+   ],
+   "unlockableAbilities": [
+    {
+     "asset": "SummonSkeleton",
+     "name": "Summon Skeleton",
+     "playerAbilityID": "ss37kl",
+     "level": 2
+    },
+    {
+     "asset": "MarrowShards",
+     "name": "Marrow Shards",
+     "playerAbilityID": "bp2nk",
+     "level": 3
+    },
+    {
+     "asset": "WanderingSpirits",
+     "name": "Wandering Spirits",
+     "playerAbilityID": "ws54hm",
+     "level": 4
+    },
+    {
+     "asset": "Harvest",
+     "name": "Harvest",
+     "playerAbilityID": "ha84",
+     "level": 5
+    },
+    {
+     "asset": "BoneCurse",
+     "name": "Bone Curse",
+     "playerAbilityID": "bc53",
+     "level": 7
+    },
+    {
+     "asset": "Transplant",
+     "name": "Transplant",
+     "playerAbilityID": "ts50pl",
+     "level": 9
+    },
+    {
+     "asset": "SummonVolatileZombie",
+     "name": "Summon Volatile Zombie",
+     "playerAbilityID": "svz81",
+     "level": 16
+    }
+   ],
+   "startingItems": [
+    {
+     "baseType": 8,
+     "subtype": 7,
+     "container": 4
+    },
+    {
+     "baseType": 1,
+     "subtype": 8,
+     "container": 3
+    },
+    {
+     "baseType": 2,
+     "subtype": 3,
+     "container": 7
+    },
+    {
+     "baseType": 3,
+     "subtype": 7,
+     "container": 8
+    }
+   ]
+  },
+  {
+   "classID": 4,
+   "classIDName": "Rogue",
+   "className": "Rogue",
+   "treeID": "rg-1",
+   "passiveTree": {
+    "name": "Rogue",
+    "treeID": "rg-1",
+    "version": 0,
+    "nodeCount": 103,
+    "nodesPerMastery": {
+     "0": 15,
+     "1": 29,
+     "2": 29,
+     "3": 30
+    }
+   },
+   "specialTagForClassSpecificLevelOfSkillsStats": 6,
+   "base": {
+    "baseHealth": 100,
+    "healthPerLevel": 10,
+    "baseMana": 50,
+    "manaPerLevel": 0.50506,
+    "manaRegen": 8,
+    "healthRegen": 6,
+    "healthRegenPerLevel": 0.14,
+    "baseStrength": 0,
+    "baseVitality": 0,
+    "baseIntelligence": 0,
+    "baseDexterity": 3,
+    "baseAttunement": 0,
+    "baseStunAvoidance": 250,
+    "stunAvoidancePerLevel": 5,
+    "baseEndurance": 0.2,
+    "baseEnduranceThreshold": 0,
+    "enduranceThresholdPerLevel": 0,
+    "enduranceThresholdPerHealth": 0.2,
+    "baseMoreDoTDamageTaken": -0.15
+   },
+   "minionScaling": {
+    "firstLevelForMinionScaling": 26,
+    "moreMinionDamagePerLevel": 0.008,
+    "lessMinionDamageTakenPerLevel": 0.008
+   },
+   "levelMods": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "modType": "ADDED",
+     "base": 100,
+     "perLevel": 10
+    },
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "modType": "ADDED",
+     "base": 50,
+     "perLevel": 0.50506
+    },
+    {
+     "property": 17,
+     "propertyName": "HealthRegen",
+     "modType": "ADDED",
+     "base": 6,
+     "perLevel": 0.14
+    },
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "modType": "ADDED",
+     "base": 8,
+     "perLevel": 0
+    },
+    {
+     "property": 12,
+     "propertyName": "StunAvoidance",
+     "modType": "ADDED",
+     "base": 250,
+     "perLevel": 5
+    },
+    {
+     "property": 75,
+     "propertyName": "Endurance",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 76,
+     "propertyName": "EnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 96,
+     "propertyName": "MaximumHealthGainedAsEnduranceThreshold",
+     "modType": "ADDED",
+     "base": 0.2,
+     "perLevel": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "modType": "MORE",
+     "tags": 4096,
+     "tagNames": [
+      "DoT"
+     ],
+     "base": -0.15,
+     "perLevel": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 20,
+     "propertyName": "Vitality",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 21,
+     "propertyName": "Intelligence",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    },
+    {
+     "property": 22,
+     "propertyName": "Dexterity",
+     "modType": "ADDED",
+     "base": 3,
+     "perLevel": 0
+    },
+    {
+     "property": 23,
+     "propertyName": "Attunement",
+     "modType": "ADDED",
+     "base": 0,
+     "perLevel": 0
+    }
+   ],
+   "masteries": [
+    {
+     "masteryIndex": 0,
+     "name": "Rogue",
+     "localizationKey": "Class_Rogue",
+     "masteryAbility": null,
+     "abilities": [
+      {
+       "asset": "Smoke Bomb",
+       "name": "Smoke Bomb",
+       "playerAbilityID": "smbmb",
+       "level": 5
+      },
+      {
+       "asset": "Bladestorm Throw",
+       "name": "Bladestorm",
+       "playerAbilityID": "bl5st",
+       "level": 10
+      },
+      {
+       "asset": "SummonBallista",
+       "name": "Ballista",
+       "playerAbilityID": "ba1574",
+       "level": 15
+      },
+      {
+       "asset": "Umbral Blades 1",
+       "name": "Umbral Blades",
+       "playerAbilityID": "ub5d9",
+       "level": 20
+      }
+     ],
+     "passiveNodes": 15
+    },
+    {
+     "masteryIndex": 1,
+     "name": "Bladedancer",
+     "localizationKey": "Mastery_Bladedancer",
+     "masteryAbility": {
+      "asset": "DancingStrike1",
+      "name": "Dancing Strikes",
+      "playerAbilityID": "dacn33"
+     },
+     "abilities": [
+      {
+       "asset": "ShadowCascade",
+       "name": "Shadow Cascade",
+       "playerAbilityID": "dagg3",
+       "level": 5
+      },
+      {
+       "asset": "Dreamslash",
+       "name": "Dreamslash",
+       "playerAbilityID": "dr4sl",
+       "level": 10
+      },
+      {
+       "asset": "Lethal Mirage",
+       "name": "Lethal Mirage",
+       "playerAbilityID": "mira59",
+       "level": 30
+      },
+      {
+       "asset": "SynchronizedStrike",
+       "name": "Synchronized Strike",
+       "playerAbilityID": "sync5",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 29
+    },
+    {
+     "masteryIndex": 2,
+     "name": "Marksman",
+     "localizationKey": "Mastery_Marksman",
+     "masteryAbility": {
+      "asset": "DetonatingArrow",
+      "name": "Detonating Arrow",
+      "playerAbilityID": "detar"
+     },
+     "abilities": [
+      {
+       "asset": "RogueMultishot",
+       "name": "Multishot",
+       "playerAbilityID": "mush9",
+       "level": 5
+      },
+      {
+       "asset": "DarkQuiver",
+       "name": "Dark Quiver",
+       "playerAbilityID": "dqv5",
+       "level": 15
+      },
+      {
+       "asset": "Heartseeker",
+       "name": "Heartseeker",
+       "playerAbilityID": "htsk5",
+       "level": 30
+      },
+      {
+       "asset": "HailOfArrows",
+       "name": "Hail of Arrows",
+       "playerAbilityID": "exvol8",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 29
+    },
+    {
+     "masteryIndex": 3,
+     "name": "Falconer",
+     "localizationKey": "Mastery_Falconer",
+     "masteryAbility": {
+      "asset": "Falconer 00 Falconry",
+      "name": "Falconry",
+      "playerAbilityID": "falc0"
+     },
+     "abilities": [
+      {
+       "asset": "Falconer 04 Explosive Trap",
+       "name": "Explosive Trap",
+       "playerAbilityID": "ex4tp",
+       "level": 5
+      },
+      {
+       "asset": "Falconer 05 Net",
+       "name": "Net",
+       "playerAbilityID": "ne01t",
+       "level": 15
+      },
+      {
+       "asset": "Falconer 02 Aerial Assault",
+       "name": "Aerial Assault",
+       "playerAbilityID": "aa989",
+       "level": 30
+      },
+      {
+       "asset": "Falconer 03 Dive Bomb",
+       "name": "Dive Bomb",
+       "playerAbilityID": "db992",
+       "level": 35
+      }
+     ],
+     "passiveNodes": 30
+    }
+   ],
+   "basicAttackReplacer": {
+    "asset": "Puncture",
+    "name": "Puncture",
+    "playerAbilityID": "pun22"
+   },
+   "defaultAbilities": [
+    {
+     "asset": "Flurry",
+     "name": "Flurry",
+     "playerAbilityID": "flur3"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "NullAbility",
+     "name": null,
+     "playerAbilityID": "na28"
+    },
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Rogue Evade",
+     "name": "Evade",
+     "playerAbilityID": "evade4"
+    }
+   ],
+   "knownAbilities": [
+    {
+     "asset": "BasicPlayerAttack",
+     "name": "Attack",
+     "playerAbilityID": "ba1"
+    },
+    {
+     "asset": "Flurry",
+     "name": "Flurry",
+     "playerAbilityID": "flur3"
+    }
+   ],
+   "unlockableAbilities": [
+    {
+     "asset": "Shurikens",
+     "name": "Shurikens",
+     "playerAbilityID": "srk21",
+     "level": 2
+    },
+    {
+     "asset": "ShadowRend",
+     "name": "Shadow Rend",
+     "playerAbilityID": "sh4re",
+     "level": 3
+    },
+    {
+     "asset": "AcidFlask",
+     "name": "Acid Flask",
+     "playerAbilityID": "aacfl",
+     "level": 4
+    },
+    {
+     "asset": "Puncture",
+     "name": "Puncture",
+     "playerAbilityID": "pun22",
+     "level": 5
+    },
+    {
+     "asset": "Shift",
+     "name": "Shift",
+     "playerAbilityID": "shiif",
+     "level": 6
+    },
+    {
+     "asset": "CinderStrike",
+     "name": "Cinder Strike",
+     "playerAbilityID": "cstri",
+     "level": 7
+    },
+    {
+     "asset": "Decoy",
+     "name": "Decoy",
+     "playerAbilityID": "deeco",
+     "level": 16
+    }
+   ],
+   "startingItems": [
+    {
+     "baseType": 9,
+     "subtype": 3,
+     "container": 4
+    },
+    {
+     "baseType": 1,
+     "subtype": 43,
+     "container": 3
+    },
+    {
+     "baseType": 2,
+     "subtype": 3,
+     "container": 7
+    },
+    {
+     "baseType": 3,
+     "subtype": 7,
+     "container": 8
+    }
+   ]
+  }
+ ]
+}

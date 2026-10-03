@@ -1,0 +1,3863 @@
+[
+ {
+  "tree": "weaver",
+  "treeID": "weaver",
+  "class": "LE.Factions.TheWeaver",
+  "kind": "weaver",
+  "method": "TheWeaver.UpdateWeaverTreeNode @0x1820DDE40 (decoded from the binary: Cpp2IL dump truncated)",
+  "jump_tables": [
+   {
+    "table": "0x1820DE7F4",
+    "first_effect": 0,
+    "count": 65
+   },
+   {
+    "table": "0x1820DE8F8",
+    "first_effect": 101,
+    "count": 31
+   },
+   {
+    "table": "0x1820DE974",
+    "first_effect": 151,
+    "count": 41
+   }
+  ],
+  "errors": [],
+  "nodes": [
+   {
+    "id": 1,
+    "name": "Node_EchoRewardNoExperienceRewardsFromEchoes",
+    "displayName": "Shifted Knowledge",
+    "maxPoints": 1,
+    "nodeEffect": 1,
+    "nodeEffectName": "EchoRewardNoExperienceRewardsFromEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoExperienceRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Echoes you discover on your echo web that would have had {Experience} rewards have a different random reward instead."
+   },
+   {
+    "id": 2,
+    "name": "Node_EchoRewardNoGoldRewardsFromEchoes",
+    "displayName": "Giveaway Coins",
+    "maxPoints": 1,
+    "nodeEffect": 2,
+    "nodeEffectName": "EchoRewardNoGoldRewardsFromEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoGoldRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Echoes you discover on your echo web that would have had {Gold} rewards have a different random reward instead."
+   },
+   {
+    "id": 3,
+    "name": "Node_EchoRewardNoRuneRewardsFromEchoes",
+    "displayName": "Runic Diversion",
+    "maxPoints": 1,
+    "nodeEffect": 3,
+    "nodeEffectName": "EchoRewardNoRuneRewardsFromEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoRuneRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Echoes you discover on your echo web that would have had {Rune} rewards have a different random reward instead."
+   },
+   {
+    "id": 4,
+    "name": "Node_EchoRewardNoArenaKeyRewardsFromEchoes",
+    "displayName": "Keyless Exchange",
+    "maxPoints": 1,
+    "nodeEffect": 4,
+    "nodeEffectName": "EchoRewardNoArenaKeyRewardsFromEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoArenaKeyRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Echoes you discover on your echo web that would have had {Arena Key} rewards have a different random reward instead."
+   },
+   {
+    "id": 5,
+    "name": "Node_EchoRewardNoGlyphRewardsFromEchoes",
+    "displayName": "Rewritten Reality",
+    "maxPoints": 1,
+    "nodeEffect": 5,
+    "nodeEffectName": "EchoRewardNoGlyphRewardsFromEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoGlyphRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Echoes you discover on your echo web that would have had {Glyph} rewards have a different random reward instead."
+   },
+   {
+    "id": 6,
+    "name": "Node_EchoRewardIncludeDungeonKeysRewardGroup",
+    "displayName": "Vaulted Keychain",
+    "maxPoints": 5,
+    "nodeEffect": 6,
+    "nodeEffectName": "EchoRewardIncludeDungeonKeysRewardGroup",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncludeDungeonKeysRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "80% Increased Chance"
+    ],
+    "description": "Your echoes have a higher chance to spawn with a new reward type which grants {Dungeon Keys} and {Dungeon Key Charms}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      80.0
+     ],
+     "matched": [],
+     "unmatched": [
+      80.0
+     ]
+    }
+   },
+   {
+    "id": 7,
+    "name": "Node_EchoRewardIncludeMemoryAmberRewardGroup",
+    "displayName": "Elder Sap",
+    "maxPoints": 3,
+    "nodeEffect": 7,
+    "nodeEffectName": "EchoRewardIncludeMemoryAmberRewardGroup",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncludeMemoryAmberRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "50% Increased Chance"
+    ],
+    "description": "You have a chance for your echoes to spawn with the {Memory Amber} reward type.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      50.0
+     ],
+     "matched": [],
+     "unmatched": [
+      50.0
+     ]
+    }
+   },
+   {
+    "id": 8,
+    "name": "Node_EchoRewardIncludeWovenEchoRewardGroup",
+    "displayName": "Entwined Spoils",
+    "maxPoints": 3,
+    "nodeEffect": 8,
+    "nodeEffectName": "EchoRewardIncludeWovenEchoRewardGroup",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncludeWovenEchoRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "50% Increased Chance"
+    ],
+    "description": "Your echoes have a chance to spawn with a new reward type which grants {Woven Echoes}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      50.0
+     ],
+     "matched": [],
+     "unmatched": [
+      50.0
+     ]
+    }
+   },
+   {
+    "id": 9,
+    "name": "Node_EchoRewardBaseRewardCanDouble",
+    "displayName": "Enthralling Bounty",
+    "maxPoints": 4,
+    "nodeEffect": 9,
+    "nodeEffectName": "EchoRewardBaseRewardCanDouble",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoSpecificRewardsChanceToBeDoubled>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Double Reward Chance"
+    ],
+    "description": "Your echo rewards have a chance to be doubled on completion.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 10,
+    "name": "Node_EchoRewardChanceForExperienceOnEchoCompletion",
+    "displayName": "Tomes of Insight",
+    "maxPoints": 2,
+    "nodeEffect": 10,
+    "nodeEffectName": "EchoRewardChanceForExperienceOnEchoCompletion",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ExperienceTomeChanceOnEchoCompletionOrChampionKill>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Experience Tome Drop Chance"
+    ],
+    "description": "You have a chance for experience tomes to drop when you complete an echo objective.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 11,
+    "name": "Node_EchoRewardChanceForGoldOnEchoCompletion",
+    "displayName": "Golden Treasures",
+    "maxPoints": 2,
+    "nodeEffect": 11,
+    "nodeEffectName": "EchoRewardChanceForGoldOnEchoCompletion",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChanceForGoldOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Piles Of Gold Chance"
+    ],
+    "description": "You have a chance for a pile of gold to drop when you complete an echo objective.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 12,
+    "name": "Node_EchoRewardChanceForGlyphsOnEchoCompletion",
+    "displayName": "Echoed Inscriptions",
+    "maxPoints": 2,
+    "nodeEffect": 12,
+    "nodeEffectName": "EchoRewardChanceForGlyphsOnEchoCompletion",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChanceForGlyphsOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Pile Of Glyphs Chance"
+    ],
+    "description": "You have a chance for a pile of {Glyphs} to drop when you complete an echo objective.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 13,
+    "name": "Node_EchoRewardChanceForRunesOnEchoCompletion",
+    "displayName": "Runic Hoard",
+    "maxPoints": 2,
+    "nodeEffect": 13,
+    "nodeEffectName": "EchoRewardChanceForRunesOnEchoCompletion",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChanceForRunesOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Pile Of Runes Chance"
+    ],
+    "description": "You have a chance for a pile of {Runes} to drop when you complete an echo objective.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 21,
+    "name": "Node_EchoWebNoArenaEchoes",
+    "displayName": "Eclipsed Battleground",
+    "maxPoints": 1,
+    "nodeEffect": 21,
+    "nodeEffectName": "EchoWebNoArenaEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoArenaEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Arena echoes no longer appear on your echo web."
+   },
+   {
+    "id": 22,
+    "name": "Node_EchoWebNoBeaconsMoreSpiders",
+    "displayName": "8 Eyes in the Dark",
+    "maxPoints": 1,
+    "nodeEffect": 22,
+    "nodeEffectName": "EchoWebNoBeaconsMoreSpiders",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<NoBeaconsFromSpidersNode>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     },
+     {
+      "target": "TheWeaver.<ChanceForAdditionalSpiderlings>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Chance for additional Spiderling Packs"
+    ],
+    "description": "Beacons never appear.\n\nYour echoes have a chance to contain additional spiderling packs. ",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 23,
+    "name": "Node_EchoWebArenaEchoesMoreCommon",
+    "displayName": "Call of the Duellist",
+    "maxPoints": 5,
+    "nodeEffect": 23,
+    "nodeEffectName": "EchoWebArenaEchoesMoreCommon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ArenaEchoesWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Increased Arena Echo Spawn Chance"
+    ],
+    "description": "{Arena} echoes are more common on your echo web.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 24,
+    "name": "Node_EchoWebReplaceArenaWithSuperArena",
+    "displayName": "Gladiatory Crucible",
+    "maxPoints": 3,
+    "nodeEffect": 24,
+    "nodeEffectName": "EchoWebReplaceArenaWithSuperArena",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ReplaceArenaWithSuperArenaChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.34,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "34# Super Arena Echo Chance"
+    ],
+    "description": "Your {Arena} echoes have a chance to be replaced by more difficult {Super Arena} echoes, which contain additional {Champions}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      34.0
+     ],
+     "matched": [
+      34.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 25,
+    "name": "Node_EchoWebReplaceBeaconWithSuperBeacon",
+    "displayName": "Beacon of the Ascended",
+    "maxPoints": 1,
+    "nodeEffect": 25,
+    "nodeEffectName": "EchoWebReplaceBeaconWithSuperBeacon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ReplaceBeaconWithSuperBeaconChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.35,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "35% Super Beacon Chance"
+    ],
+    "description": "{Beacons} in your echo web have a chance to be replaced by {Super Beacons}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      35.0
+     ],
+     "matched": [
+      35.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 41,
+    "name": "Node_ImprintContainerEnemiesDropMoreItemsOfType",
+    "displayName": "Commoner’s Riches",
+    "maxPoints": 1,
+    "nodeEffect": 41,
+    "nodeEffectName": "ImprintContainerEnemiesDropMoreItemsOfType",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EnemiesCanDropPileOfSimilarItems>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Place a weapon or jewelry item to imprint it in this slot to have a small chance to drop a pile of similar items when killing enemies in your regular echoes."
+   },
+   {
+    "id": 42,
+    "name": "Node_ImprintContainerCachesDropMoreItemsOfType",
+    "displayName": "Sealed Riches",
+    "maxPoints": 1,
+    "nodeEffect": 42,
+    "nodeEffectName": "ImprintContainerCachesDropMoreItemsOfType",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<OnCacheOpenedChanceForSimilarItems>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.029,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "6% Socketed Item Drop Chance"
+    ],
+    "description": "Place an armor or weapon item to imprint it in this slot to have a chance to drop a pile of similar items when opening {Lost Caches} in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      6.0
+     ],
+     "matched": [],
+     "unmatched": [
+      6.0
+     ]
+    }
+   },
+   {
+    "id": 43,
+    "name": "Node_ImprintContainerEchoCompletionsDropMoreItemsOfType",
+    "displayName": "Echoing Riches",
+    "maxPoints": 1,
+    "nodeEffect": 43,
+    "nodeEffectName": "ImprintContainerEchoCompletionsDropMoreItemsOfType",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<CanHaveSimilarItemsOnEchoCompletion>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "50% Maximum Chance To Drop"
+    ],
+    "description": "Place an armor or jewelry item to imprint it in this slot to have a chance to drop a pile of similar items as an extra reward when you receive echo rewards.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      50.0
+     ],
+     "matched": [],
+     "unmatched": [
+      50.0
+     ]
+    }
+   },
+   {
+    "id": 44,
+    "name": "Node_ImprintContainerChampionsDropMoreItemsOfType",
+    "displayName": "Warlord’s Riches",
+    "maxPoints": 1,
+    "nodeEffect": 44,
+    "nodeEffectName": "ImprintContainerChampionsDropMoreItemsOfType",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ImprintContainerChampionsChanceToDropMoreItemsOfType>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "3% Pile Of Items Drop Chance"
+    ],
+    "description": "Place an item to imprint it in this slot to make {Champions} sometimes drop a pile of items of the same item type that always have a sealed affix matching one of the affixes on the imprinted item. \n\nThe tier of the sealed affix can roll up to the tier of the corresponding affix on the item. The number of items in the pile is equal to the number of affixes on the item.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      3.0
+     ],
+     "matched": [
+      3.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 45,
+    "name": "Node_ImprintContainerSpawnMoreWovenEchoesOfType",
+    "displayName": "Woven Riches",
+    "maxPoints": 1,
+    "nodeEffect": 45,
+    "nodeEffectName": "ImprintContainerSpawnMoreWovenEchoesOfType",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ImprintContainerSpawnMoreWovenEchoesOfType>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Place a {Woven Echo} to imprint it in this slot for it to have a chance to spawn on your echo web when a new echo is generated."
+   },
+   {
+    "id": 46,
+    "name": "Node_ImprintContainerSpawnMoreWovenEchoesOfTypeSecond",
+    "displayName": "Loomed Riches",
+    "maxPoints": 1,
+    "nodeEffect": 46,
+    "nodeEffectName": "ImprintContainerSpawnMoreWovenEchoesOfTypeSecond",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ImprintContainerSpawnMoreWovenEchoesOfTypeSecond>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Place a {Woven Echo} to imprint it in this slot for it to have a chance to spawn on your echo web when a new echo is generated."
+   },
+   {
+    "id": 51,
+    "name": "Node_EchoesBonusStabilityFromEchoModifier",
+    "displayName": "Anchored Reality",
+    "maxPoints": 3,
+    "nodeEffect": 51,
+    "nodeEffectName": "EchoesBonusStabilityFromEchoModifier",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedBonusStability>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Increased Bonus Timeline Stability"
+    ],
+    "description": "You gain increased bonus {Timeline Stability} from killing enemies in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 52,
+    "name": "Node_EchoesLessArenaWaves",
+    "displayName": "Swift Trial",
+    "maxPoints": 2,
+    "nodeEffect": 52,
+    "nodeEffectName": "EchoesLessArenaWaves",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LessArenaWaves>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "-1 Fewer Arena Waves"
+    ],
+    "description": "Your {Arena} echoes contain fewer waves.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      1.0
+     ],
+     "matched": [
+      1.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 53,
+    "name": "Node_EchoesRunePrisonsMoreCommon",
+    "displayName": "Exiled But Not Forgotten",
+    "maxPoints": 5,
+    "nodeEffect": 53,
+    "nodeEffectName": "EchoesRunePrisonsMoreCommon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RunePrisonsChanceToSpawnTwoMages>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.2,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "20% Twinned Mage Chance"
+    ],
+    "description": "{Rune Prisons} have a chance to spawn two {Exiled Mages} inside your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      20.0
+     ],
+     "matched": [
+      20.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 54,
+    "name": "Node_EchoesSpawnDungeonPacksThatDropKeysAndUniques",
+    "displayName": "Warden’s Echo",
+    "maxPoints": 2,
+    "nodeEffect": 54,
+    "nodeEffectName": "EchoesSpawnDungeonPacksThatDropKeysAndUniques",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoesSpawnDungeonPacksChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Rare And Dungeon Enemy Pack Chance"
+    ],
+    "description": "Your echoes have a chance to spawn a rare enemy alongside a pack from a specific dungeon, that drop that dungeon’s respective key and have a chance to drop the respective dungeon boss’s unique items.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 55,
+    "name": "Node_EchoesIncreasedChanceToDropWeaversWillItems",
+    "displayName": "Woven Treasures",
+    "maxPoints": 3,
+    "nodeEffect": 55,
+    "nodeEffectName": "EchoesIncreasedChanceToDropWeaversWillItems",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RareEnemiesChanceToWeaversWillItem>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.RareEnemiesChanceToWeaversWillItemPerPointAllocated)"
+      },
+      "per_point_value": {
+       "value": 0.02,
+       "source": "tooltip (D?): field is serialized in an asset, not in the ctor"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "2% Chance To Drop Weaver's Will Item"
+    ],
+    "description": "Rare enemies in your echoes have a chance to drop a {Weaver’s Will} item.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      2.0
+     ],
+     "matched": [],
+     "unmatched": [
+      2.0
+     ]
+    }
+   },
+   {
+    "id": 56,
+    "name": "Node_EchoesZerrickFollowsYou",
+    "displayName": "Zerrick's Aid",
+    "maxPoints": 2,
+    "nodeEffect": 56,
+    "nodeEffectName": "EchoesZerrickFollowsYou",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ZerrickSpawnChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0,
+       "flat": 0.07
+      }
+     },
+     {
+      "target": "TheWeaver.<MoreGoldWithZerrick>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.85,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "85% Increased Gold Drops"
+    ],
+    "description": "You have a 7% chance for {Zerrick} to join you in your echoes, who fights alongside you and increases your gold drops significantly.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      85.0
+     ],
+     "matched": [
+      85.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 57,
+    "name": "Node_EchoesIncreasedChanceToSpawnNemesis",
+    "displayName": "Fated Nemesis",
+    "maxPoints": 3,
+    "nodeEffect": 57,
+    "nodeEffectName": "EchoesIncreasedChanceToSpawnNemesis",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedChanceToSpawnNemesis>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "8% Increased Nemesis Spawn Rate"
+    ],
+    "description": "{Nemesis} encounters are more common in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      8.0
+     ],
+     "matched": [
+      8.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 58,
+    "name": "Node_EchoesOnCacheOpenedChanceForAdditionalRandomExaltedItem",
+    "displayName": "Exalted Find",
+    "maxPoints": 3,
+    "nodeEffect": 58,
+    "nodeEffectName": "EchoesOnCacheOpenedChanceForAdditionalRandomExaltedItem",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<AdditionalExaltedItemsInCaches>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+1 Additional Exalted Items"
+    ],
+    "description": "{Lost Caches} drop an additional exalted item in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      1.0
+     ],
+     "matched": [
+      1.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 59,
+    "name": "Node_EchoesSpawnFavorCacheChance",
+    "displayName": "Gift of Allegiance",
+    "maxPoints": 2,
+    "nodeEffect": 59,
+    "nodeEffectName": "EchoesSpawnFavorCacheChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<SpawnFavorCacheChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Favor Cache Spawn Chance"
+    ],
+    "description": "You have a chance for {Favor Caches} to spawn in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 60,
+    "name": "Node_EchoesSpawnSecondBossForBossObjectiveChance",
+    "displayName": "Twinned Tyrants",
+    "maxPoints": 2,
+    "nodeEffect": 60,
+    "nodeEffectName": "EchoesSpawnSecondBossForBossObjectiveChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<SpawnSecondBossForBossObjectiveChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Boss Conversion Chance"
+    ],
+    "description": "Boss objective echoes have a chance to contain two bosses instead of one. They deal more damage, have more health, and drop an additional unique item when slain.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 61,
+    "name": "Node_EchoesShadeCanAmbushYou",
+    "displayName": "The Abyssal Trap",
+    "maxPoints": 1,
+    "nodeEffect": 61,
+    "nodeEffectName": "EchoesShadeCanAmbushYou",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoesChanceForShadeAmbush>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.065,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "A random {Shade of Orobyss} can sometimes ambush you in your echoes.\n\nThis Shade has normal item drops and it scales off of distance, like any other Shade."
+   },
+   {
+    "id": 62,
+    "name": "Node_EchoesRareEnemiesAlwaysEnraged",
+    "displayName": "Fury and Fortune",
+    "maxPoints": 1,
+    "nodeEffect": 62,
+    "nodeEffectName": "EchoesRareEnemiesAlwaysEnraged",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoesRareEnemiesAlwaysEnraged>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     },
+     {
+      "target": "TheWeaver.<EchoesRareEnemiesRuneOrGlyphPileChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.12,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "All rare enemies are permanently {Enraged}, but they drop additional {Runes} and {Glyphs}."
+   },
+   {
+    "id": 63,
+    "name": "Node_EchoesDisableCorruptionIncreaseWhenKillingShade",
+    "displayName": "Purged Horizon",
+    "maxPoints": 1,
+    "nodeEffect": 63,
+    "nodeEffectName": "EchoesDisableCorruptionIncreaseWhenKillingShade",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoesDisableCorruptionIncreaseWhenKillingShade>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Killing {Shades of Orobyss} no longer grants corruption in your Timelines."
+   },
+   {
+    "id": 64,
+    "name": "Node_EchoesChanceForBossesAndRareEnemiesToBePossessed",
+    "displayName": "Outrider Souls",
+    "maxPoints": 2,
+    "nodeEffect": 64,
+    "nodeEffectName": "EchoesChanceForBossesAndRareEnemiesToBePossessed",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoesChanceForBossesAndRareEnemiesToBePossessed>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<ArenaEchoLastWavePossessChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Bosses And Rares Possession Chance",
+     "15% Arena Echo Enemies Possession Chance"
+    ],
+    "description": "Bosses and rare enemies in your echoes have a chance to be possessed by {Souls of the Erased}.\n\nAdditionally, some enemies in the last wave of your {Arena Echoes} have a chance to be possessed by {Souls of the Erased}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0,
+      15.0
+     ],
+     "matched": [
+      5.0,
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 101,
+    "name": "Node_SpecificRewardsWeaversWillSometimesLucky",
+    "displayName": "Prime Weaver",
+    "maxPoints": 3,
+    "nodeEffect": 101,
+    "nodeEffectName": "SpecificRewardsWeaversWillSometimesLucky",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<WeaversWillLuckyRollChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.WeaversWillLuckyRollChancePerPointAllocated)"
+      },
+      "per_point_value": {
+       "value": 0.1,
+       "source": "tooltip (D?): field is serialized in an asset, not in the ctor"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Weaver's Will Lucky Chance"
+    ],
+    "description": "{Weaver's Will} value in unique items found in your echoes has a chance to be rolled twice and keep the higher value.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [],
+     "unmatched": [
+      10.0
+     ]
+    }
+   },
+   {
+    "id": 102,
+    "name": "Node_SpecificRewardsUpgradedWeaponsFromNemesisDropChance",
+    "displayName": "Forsaken Weaponry",
+    "maxPoints": 1,
+    "nodeEffect": 102,
+    "nodeEffectName": "SpecificRewardsUpgradedWeaponsFromNemesisDropChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<UpgradableWeaponsFromNemesisDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "When a {Nemesis} escapes through a portal after being {Empowered}, it drops exalted weapons that can be upgraded if you kill a {Harbinger}."
+   },
+   {
+    "id": 103,
+    "name": "Node_SpecificRewardsMemoryAmberDropRateModifier",
+    "displayName": "Memories of Fortune",
+    "maxPoints": 3,
+    "nodeEffect": 103,
+    "nodeEffectName": "SpecificRewardsMemoryAmberDropRateModifier",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedMemoryAmberDropRate>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Memory Amber Drop Chance"
+    ],
+    "description": "You have increased drop rate of {Memory Amber} in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 104,
+    "name": "Node_SpecificRewardsExiledMageDropLevelOfSkillItemsChance",
+    "displayName": "Opulent Usurpers",
+    "maxPoints": 3,
+    "nodeEffect": 104,
+    "nodeEffectName": "SpecificRewardsExiledMageDropLevelOfSkillItemsChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ExiledMageDropLevelOfSkillItemsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.<ExiledMageDropLevelOfSkillItemsChancePerPointAllocated>k__BackingField)"
+      },
+      "per_point_value": {
+       "value": 0.15,
+       "source": "TheWeaver..ctor: this+0x80 = 0x3e19999a (D)"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Pile Of Items Drop Chance"
+    ],
+    "description": "{Exiled Mages} in your echoes have a chance to drop a pile of items with +level of skill affixes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [],
+     "unmatched": [
+      15.0
+     ]
+    }
+   },
+   {
+    "id": 105,
+    "name": "Node_SpecificRewardsIncreasedChanceForBossWovenEchoes",
+    "displayName": "Call of the Firstborn",
+    "maxPoints": 4,
+    "nodeEffect": 105,
+    "nodeEffectName": "SpecificRewardsIncreasedChanceForBossWovenEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<BossWovenEchoesDoubleDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Duplicated Drop Chance"
+    ],
+    "description": "When a {Boss Woven Echo} drops it has a chance to be duplicated.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 121,
+    "name": "Node_CemeteriesIncreasedSpawnRate",
+    "displayName": "Graveborn Paths",
+    "maxPoints": 2,
+    "nodeEffect": 121,
+    "nodeEffectName": "CemeteriesIncreasedSpawnRate",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<CemeteryEchoesWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Cemetery Spawn Rate"
+    ],
+    "description": "{Cemeteries} are more common on your echo web.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 122,
+    "name": "Node_TombsIncreasedSpawnRate",
+    "displayName": "Grand Catacombs",
+    "maxPoints": 3,
+    "nodeEffect": 122,
+    "nodeEffectName": "TombsIncreasedSpawnRate",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombOccurrenceRateModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Tombs Chance"
+    ],
+    "description": "{Tombs of the Erased} are more common on your echo web.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 123,
+    "name": "Node_TombsAndCemeteriesIncreasedPackSize",
+    "displayName": "Burial Grounds",
+    "maxPoints": 3,
+    "nodeEffect": 123,
+    "nodeEffectName": "TombsAndCemeteriesIncreasedPackSize",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Increased Pack Size"
+    ],
+    "description": "Your {Tombs} and {Cemeteries} have increased monster pack size.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 124,
+    "name": "Node_TombsAndArenasIncreasedPackSizeButDropMemoryAmberWhenCompleted",
+    "displayName": "Hallowed Depths",
+    "maxPoints": 1,
+    "nodeEffect": 124,
+    "nodeEffectName": "TombsAndArenasIncreasedPackSizeButDropMemoryAmberWhenCompleted",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ArenaEchoesDropMemoryAmberOnCompletion>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     },
+     {
+      "target": "TheWeaver.<TombsIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.04,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<ArenaEchoesIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "4% Increased Tombs Pack Size",
+     "8% Increased Arena Echo Pack Size"
+    ],
+    "description": "Your {Tombs of the Erased} have increased packsize.\nYour {Arena} echoes have increased packsize.\nYour {Arena} echoes drop {Memory Amber} on completion.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      4.0,
+      8.0
+     ],
+     "matched": [
+      4.0,
+      8.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 125,
+    "name": "Node_TombsAndCemeteriesRareEnemiesChanceToDropWovenEchoes",
+    "displayName": "Necropolis of the Weaver",
+    "maxPoints": 3,
+    "nodeEffect": 125,
+    "nodeEffectName": "TombsAndCemeteriesRareEnemiesChanceToDropWovenEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesRareEnemiesChanceToDropWovenEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+3% Woven Echo Drop Chance"
+    ],
+    "description": "Rare enemies inside your {Tombs} and {Cemeteries} have an additional chance to drop {Woven Echoes}\r.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      3.0
+     ],
+     "matched": [
+      3.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 126,
+    "name": "Node_TombsAndCemeteriesRareEnemiesChanceToDropTimelineBossLoot",
+    "displayName": "Bountiful Sarcophagy",
+    "maxPoints": 3,
+    "nodeEffect": 126,
+    "nodeEffectName": "TombsAndCemeteriesRareEnemiesChanceToDropTimelineBossLoot",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesRareEnemiesChanceToDropTimelineBossLoot>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.001,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+0.1% Timeline Boss Reward Drop Chance"
+    ],
+    "description": "Rare enemies in your {Tombs} and {Cemeteries of the Erased} have a small chance to drop that timeline's boss specific rewards.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      0.1
+     ],
+     "matched": [
+      0.1
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 127,
+    "name": "Node_TombsAndCemeteriesSpawnBonusNemesis",
+    "displayName": "Warden of the Dead",
+    "maxPoints": 3,
+    "nodeEffect": 127,
+    "nodeEffectName": "TombsAndCemeteriesSpawnBonusNemesis",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesBonusNemesisChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.34,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "34# Possessed Nemesis Chance"
+    ],
+    "description": "{Tombs} and {Cemeteries of the Erased} in your echoes have a chance to include a {Possessed Nemesis} encounter.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      34.0
+     ],
+     "matched": [
+      34.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 128,
+    "name": "Node_TombsAndCemeteriesSpawnBonusExiledMage",
+    "displayName": "Graveyard Prisons",
+    "maxPoints": 1,
+    "nodeEffect": 128,
+    "nodeEffectName": "TombsAndCemeteriesSpawnBonusExiledMage",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesGuaranteedExiledMage>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Your {Tombs} and {Cemeteries} have a guaranteed {Rune Prison} with a {Posessed Exiled Mage}."
+   },
+   {
+    "id": 129,
+    "name": "Node_TombsAndCemeteriesMasqueNpcFollowsYou",
+    "displayName": "Woven Masque",
+    "maxPoints": 1,
+    "nodeEffect": 129,
+    "nodeEffectName": "TombsAndCemeteriesMasqueNpcFollowsYou",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<SpawnMasqueChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.25,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "25% Masque Chance"
+    ],
+    "description": "You have a chance for {Masque} to accompany you in {Tombs} and {Cemeteries}. He provides defensive buffs and casts spells at enemies.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      25.0
+     ],
+     "matched": [
+      25.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 130,
+    "name": "Node_TombsAndCemeteriesSilkenCocoonsIncreasedChanceForHostileSoul",
+    "displayName": "Darkwoven Threads",
+    "maxPoints": 3,
+    "nodeEffect": 130,
+    "nodeEffectName": "TombsAndCemeteriesSilkenCocoonsIncreasedChanceForHostileSoul",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesSilkenCocoonsIncreasedChanceForHostileSoul>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.8,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "80% Increased Incubated Silk Chance"
+    ],
+    "description": "{Silken Cocoons} have a higher chance to contain {Incubated Silk} in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      80.0
+     ],
+     "matched": [
+      80.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 131,
+    "name": "Node_TombsAndShadeChanceToDropGazeOfOrobyssWovenEcho",
+    "displayName": "Reflections of Orobyss",
+    "maxPoints": 2,
+    "nodeEffect": 131,
+    "nodeEffectName": "TombsAndShadeChanceToDropGazeOfOrobyssWovenEcho",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ShadeAndTombBossShadeGauntletDropChanceMultiplier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "Completing a {Tomb of the Erased} or killing a {Shade of Orobyss} in your echoes has a chance to drop the {Confluence of Oblivion}.\n\nThe {Confluence of Oblivion} is a woven echo that is guarded by a {Gauntlet of Shades}."
+   },
+   {
+    "id": 151,
+    "name": "Node_LootLizardsDropExaltedItemsChance",
+    "displayName": "Lizard’s Inheritance",
+    "maxPoints": 3,
+    "nodeEffect": 151,
+    "nodeEffectName": "LootLizardsDropExaltedItemsChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LootLizardsDropExaltedItemsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "5% Exalted Items Pile Chance"
+    ],
+    "description": "{Loot Lizards} in your echoes have a chance to drop a pile of exalted items.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 152,
+    "name": "Node_LootLizardsChanceOnChampionAggro",
+    "displayName": "Greedy Lizards",
+    "maxPoints": 3,
+    "nodeEffect": 152,
+    "nodeEffectName": "LootLizardsChanceOnChampionAggro",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LizardOnChampionAggroChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+5% Loot Lizard Chance"
+    ],
+    "description": "{Champions} have a chance to be accompanied by a {Blue} or {Green Loot Lizard}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0
+     ],
+     "matched": [
+      5.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 153,
+    "name": "Node_LootLizardsShrinesMoreCommon",
+    "displayName": "Scaled Shrines",
+    "maxPoints": 2,
+    "nodeEffect": 153,
+    "nodeEffectName": "LootLizardsShrinesMoreCommon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LootLizardsShrinesSpawnModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Loot Lizard Shrines"
+    ],
+    "description": "{Loot Lizard} shrines are more common in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 154,
+    "name": "Node_LootLizardsOnCacheOpenedChance",
+    "displayName": "Hidden Scales",
+    "maxPoints": 2,
+    "nodeEffect": 154,
+    "nodeEffectName": "LootLizardsOnCacheOpenedChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LootLizardOnCacheOpenedChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Loot Lizard From Cache Chance"
+    ],
+    "description": "Opening a cache in your echoes has a chance to spawn a {Loot Lizard}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      15.0
+     ],
+     "matched": [
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 155,
+    "name": "Node_LootLizardsDropUniqueItemAndTailChance",
+    "displayName": "Gilded Tails",
+    "maxPoints": 1,
+    "nodeEffect": 155,
+    "nodeEffectName": "LootLizardsDropUniqueItemAndTailChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedLizardTailDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<LootLizardUniqueDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     " Guaranteed Unique Item",
+     " Double Lizard Tail Chance"
+    ],
+    "description": "{Loot Lizards} in your echoes always drop a unique item and they have double the chance to drop their tail."
+   },
+   {
+    "id": 156,
+    "name": "Node_LootLizardsMoreCommon",
+    "displayName": "Hoarding Reptiles",
+    "maxPoints": 3,
+    "nodeEffect": 156,
+    "nodeEffectName": "LootLizardsMoreCommon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<LootLizardsSpawnModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Loot Lizard Spawn Rate"
+    ],
+    "description": "{Loot Lizards} spawn more often in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 161,
+    "name": "Node_ChampionsAdditionalOneSpawns",
+    "displayName": "Dual Destruction",
+    "maxPoints": 3,
+    "nodeEffect": 161,
+    "nodeEffectName": "ChampionsAdditionalOneSpawns",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChanceForChampionsToHaveAFriend>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.13,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "13% Twinned Champions Chance"
+    ],
+    "description": "{Champions} have a chance to appear in pairs in your Echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      13.0
+     ],
+     "matched": [
+      13.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 162,
+    "name": "Node_ChampionsIncreasedSpawnRate",
+    "displayName": "Heroic Gauntlet",
+    "maxPoints": 3,
+    "nodeEffect": 162,
+    "nodeEffectName": "ChampionsIncreasedSpawnRate",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChampionSpawnRateModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.12,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "12% Increased Champion Spawn Chance"
+    ],
+    "description": "{Champions} are much more common in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      12.0
+     ],
+     "matched": [
+      12.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 163,
+    "name": "Node_ChampionsChanceToDropUniquesWithLP",
+    "displayName": "Echoed Legends",
+    "maxPoints": 1,
+    "nodeEffect": 163,
+    "nodeEffectName": "ChampionsChanceToDropUniquesWithLP",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropUniquesWithLP>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "1% Uniques With Legendary Potential Chance"
+    ],
+    "description": "{Champions} in your echoes have a chance to drop uniques with at least 1 {Legendary Potential}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      1.0
+     ],
+     "matched": [
+      1.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 164,
+    "name": "Node_ChampionsChanceToDropMoreExaltedButSpawnsMore",
+    "displayName": "Exalted Challenger",
+    "maxPoints": 2,
+    "nodeEffect": 164,
+    "nodeEffectName": "ChampionsChanceToDropMoreExaltedButSpawnsMore",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropMoreExalted>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<ChampionSpawnRateModifierFromMoreExaltedDrops>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Champion Spawn Rate",
+     "5% Exalted Item Drop Chance"
+    ],
+    "description": "Your echoes have a high chance to spawn a {Champion}.\n\nAdditionally, {Champions} have a chance to drop additional exalted items in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0,
+      10.0
+     ],
+     "matched": [
+      5.0,
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 165,
+    "name": "Node_RareEnemiesChanceToDropDungeonCharms",
+    "displayName": "Gatekeeper’s Bounty",
+    "maxPoints": 2,
+    "nodeEffect": 165,
+    "nodeEffectName": "RareEnemiesChanceToDropDungeonCharms",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RareEnemiesChanceToDropDungeonCharms>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+1% Dungeon Key Modifier Chance"
+    ],
+    "description": "Rare enemies have an additional chance to drop Dungeon Keys and Dungeon Key Charms.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      1.0
+     ],
+     "matched": [
+      1.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 166,
+    "name": "Node_ChampionsChanceToDropWovenEchoes",
+    "displayName": "Woven Fortunes",
+    "maxPoints": 3,
+    "nodeEffect": 166,
+    "nodeEffectName": "ChampionsChanceToDropWovenEchoes",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropWovenEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "3% Pile Of Woven Echoes Chance"
+    ],
+    "description": "You have a chance for {Champions} in your regular echoes to drop a pile of {Woven Echoes}.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      3.0
+     ],
+     "matched": [
+      3.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 167,
+    "name": "Node_ChampionsChanceToSpawnAndFightExiledMage",
+    "displayName": "The Mage Bane",
+    "maxPoints": 2,
+    "nodeEffect": 167,
+    "nodeEffectName": "ChampionsChanceToSpawnAndFightExiledMage",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChanceForChampionToFightExiledMage>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.22,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "22% Champion Appearance Chance"
+    ],
+    "description": "When you open a {Rune Prison}, there is a chance that a {Champion} will appear to fight the {Exiled Mage}.\r",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      22.0
+     ],
+     "matched": [
+      22.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 168,
+    "name": "Node_ChampionsAndBossesInEchoesDropAdditionalGoldAndChanceToDropUnique",
+    "displayName": "Regal Foes",
+    "maxPoints": 2,
+    "nodeEffect": 168,
+    "nodeEffectName": "ChampionsAndBossesInEchoesDropAdditionalGoldAndChanceToDropUnique",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ChampionsAndBossesAddedGoldPiles>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<ChampionsAndBossesChanceToDropUniqueItem>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+1% Unique Item Chance"
+    ],
+    "description": "Bosses and {Champions} in your echoes drop an additional pile of gold and have an additional chance to drop a unique item.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      1.0
+     ],
+     "matched": [
+      1.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 181,
+    "name": "Node_TimeBeastMoreCommon",
+    "displayName": "Age of Beasts",
+    "maxPoints": 3,
+    "nodeEffect": 181,
+    "nodeEffectName": "TimeBeastMoreCommon",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedChanceToSpawnTimeBeast>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "10% Increased Rift Beast chance"
+    ],
+    "description": "{Rift Beasts} are more common in your echoes.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 182,
+    "name": "Node_TimeBeastMinions",
+    "displayName": "Riven Gateway",
+    "maxPoints": 1,
+    "nodeEffect": 182,
+    "nodeEffectName": "TimeBeastMinions",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<ExtraSpawnersWithTimeBeastRiftChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "{Rift Beasts} that emerge from rifts are accompanied by other enemies from the Ancient Era that drop Ancient Bones when slain."
+   },
+   {
+    "id": 183,
+    "name": "Node_TimeBeastIncreasedCrystallizedChance",
+    "displayName": "Crystal Growth",
+    "maxPoints": 3,
+    "nodeEffect": 183,
+    "nodeEffectName": "TimeBeastIncreasedCrystallizedChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedChanceForCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<MoreDamageWithCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<MoreHealthWithCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "15% Increased Crystallized Heart Chance",
+     "15% More Health With Crystallized Heart",
+     "5% More Damage With Crystallized Heart"
+    ],
+    "description": "{Rift Beasts} have higher chance to have {Crystallized Hearts}, and Rift Beasts with Crystallized Hearts have more health and damage (multiplicative with other modifiers).",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      5.0,
+      15.0
+     ],
+     "matched": [
+      5.0,
+      15.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 184,
+    "name": "Node_TimeBeastCanAmbushYou",
+    "displayName": "Primordial Ambush",
+    "maxPoints": 1,
+    "nodeEffect": 184,
+    "nodeEffectName": "TimeBeastCanAmbushYou",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<EchoChanceForTimeBeastAmbush>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<IncreasedDropOnlyUniqueChanceForTimeBeast>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [],
+    "description": "You have a chance to be ambushed by randomly evolved {Rift Beasts} in your echoes.\n\nThese Rift Beasts have a slightly higher chance to drop {Primordial Unique Items} that cannot be purchased from {Skarven Bloodhorn}."
+   },
+   {
+    "id": 185,
+    "name": "Node_GenerateMoreEchoChains",
+    "displayName": "Memories of the Observer",
+    "maxPoints": 1,
+    "nodeEffect": 185,
+    "nodeEffectName": "GenerateMoreEchoChains",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<GenerateMoreEchoChains>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     },
+     {
+      "target": "TheWeaver.<NoBeaconsFromChainsNode>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     " Regular Echoes Appear in Chains"
+    ],
+    "description": "Most regular echoes in your echo web appear in {Echo Chains} rather than as single echoes.\n\nCemeteries and imprinted Woven Echoes appear to the sides of chains rather than inside them.\n\nBeacons no longer appear."
+   },
+   {
+    "id": 186,
+    "name": "Node_GenerateMoreOmenEchoChains",
+    "displayName": "Plentiful Windows",
+    "maxPoints": 4,
+    "nodeEffect": 186,
+    "nodeEffectName": "GenerateMoreOmenEchoChains",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<IncreasedOmenEchoChainsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.2,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "20% Increased Omen Echo chain chance"
+    ],
+    "description": "Omen Echo Chains are more likely to spawn",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      20.0
+     ],
+     "matched": [
+      20.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 187,
+    "name": "Node_RoamingOmensInEchoesChance",
+    "displayName": "Inescapable Omens",
+    "maxPoints": 3,
+    "nodeEffect": 187,
+    "nodeEffectName": "RoamingOmensInEchoesChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RoamingOmensInEchoesChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.13,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "13% Chance of Roaming Omens to appear in any echo"
+    ],
+    "description": "Roaming Omens have a chance to spawn in any echo",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      13.0
+     ],
+     "matched": [
+      13.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 188,
+    "name": "Node_OmenSpawnVoidChampionsChance",
+    "displayName": "Omen's Soldiers",
+    "maxPoints": 2,
+    "nodeEffect": 188,
+    "nodeEffectName": "OmenSpawnVoidChampionsChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<OmenSpawnVoidChampionsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.22,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "22% Chance for Omens to spawn a void Champion"
+    ],
+    "description": "Omens have a chance to summon void Champions during Omen Windows encounters",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      22.0
+     ],
+     "matched": [
+      22.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 189,
+    "name": "Node_RageOfMorditasEchoesIncreasedSpawnChance",
+    "displayName": "Ubiquity of Rage",
+    "maxPoints": 2,
+    "nodeEffect": 189,
+    "nodeEffectName": "RageOfMorditasEchoesIncreasedSpawnChance",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RageOfMorditasSpawnModifierInEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+10% Rage of Morditas Chance"
+    ],
+    "description": "Echoes are more likely to contain Rage of Morditas encounters.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      10.0
+     ],
+     "matched": [
+      10.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 190,
+    "name": "Node_RageOfMorditasRewardExclusivesAndStrongerGauntlet",
+    "displayName": "Seekers of Ice and Blood",
+    "maxPoints": 4,
+    "nodeEffect": 190,
+    "nodeEffectName": "RageOfMorditasRewardExclusivesAndStrongerGauntlet",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RageOfMorditasRewardExclusiveWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.5,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<RageOfMorditasGauntletEnemyDamageModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     "+50% Rage of Morditas Specific Item Spawn Rate",
+     "+8% Rage of Morditas Enemy Damage"
+    ],
+    "description": "Unique items and item subtypes that are specific to the Rage of Morditas encounter are significantly more common, but Enemies in the second phase of Rage of Morditas encounters deal more damage.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      8.0,
+      50.0
+     ],
+     "matched": [
+      8.0,
+      50.0
+     ],
+     "unmatched": []
+    }
+   },
+   {
+    "id": 191,
+    "name": "Node_RageOfMorditasGauntletOmensAndCorruptedRewardCopies",
+    "displayName": "Portents of Blood",
+    "maxPoints": 1,
+    "nodeEffect": 191,
+    "nodeEffectName": "RageOfMorditasGauntletOmensAndCorruptedRewardCopies",
+    "status": "auto",
+    "effects": [
+     {
+      "target": "TheWeaver.<RageOfMorditasRewardDropsCorruptedCopiesChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.5,
+       "flat": 0
+      }
+     },
+     {
+      "target": "TheWeaver.<RageOfMorditasGauntletOmenReplacementChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      }
+     }
+    ],
+    "review": [],
+    "tooltip": [
+     " Pile of Corrupted Items from Rage of Morditas",
+     "100% Omen in Rage of Morditas Chance"
+    ],
+    "description": "A single random enemy in the second phase of Rage of Morditas encounters is replaced by a random Omen.\n\nWhen you receive an equipment item as a reward of a Rage of Morditas encounter, you will receive two additional corrupted copies.",
+    "tooltip_check": {
+     "tooltip_numbers": [
+      100.0
+     ],
+     "matched": [
+      100.0
+     ],
+     "unmatched": []
+    }
+   }
+  ],
+  "effects_by_enum": [
+   {
+    "effect": "EchoRewardNoExperienceRewardsFromEchoes",
+    "value": 1,
+    "update": [
+     {
+      "target": "TheWeaver.<NoExperienceRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardNoGoldRewardsFromEchoes",
+    "value": 2,
+    "update": [
+     {
+      "target": "TheWeaver.<NoGoldRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardNoRuneRewardsFromEchoes",
+    "value": 3,
+    "update": [
+     {
+      "target": "TheWeaver.<NoRuneRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardNoArenaKeyRewardsFromEchoes",
+    "value": 4,
+    "update": [
+     {
+      "target": "TheWeaver.<NoArenaKeyRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardNoGlyphRewardsFromEchoes",
+    "value": 5,
+    "update": [
+     {
+      "target": "TheWeaver.<NoGlyphRewardsFromEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardIncludeDungeonKeysRewardGroup",
+    "value": 6,
+    "update": [
+     {
+      "target": "TheWeaver.<IncludeDungeonKeysRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardIncludeMemoryAmberRewardGroup",
+    "value": 7,
+    "update": [
+     {
+      "target": "TheWeaver.<IncludeMemoryAmberRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardIncludeWovenEchoRewardGroup",
+    "value": 8,
+    "update": [
+     {
+      "target": "TheWeaver.<IncludeWovenEchoRewardWeightRank>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardBaseRewardCanDouble",
+    "value": 9,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoSpecificRewardsChanceToBeDoubled>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardChanceForExperienceOnEchoCompletion",
+    "value": 10,
+    "update": [
+     {
+      "target": "TheWeaver.<ExperienceTomeChanceOnEchoCompletionOrChampionKill>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardChanceForGoldOnEchoCompletion",
+    "value": 11,
+    "update": [
+     {
+      "target": "TheWeaver.<ChanceForGoldOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardChanceForGlyphsOnEchoCompletion",
+    "value": 12,
+    "update": [
+     {
+      "target": "TheWeaver.<ChanceForGlyphsOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoRewardChanceForRunesOnEchoCompletion",
+    "value": 13,
+    "update": [
+     {
+      "target": "TheWeaver.<ChanceForRunesOnEchoCompletion>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoWebNoArenaEchoes",
+    "value": 21,
+    "update": [
+     {
+      "target": "TheWeaver.<NoArenaEchoes>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoWebNoBeaconsMoreSpiders",
+    "value": 22,
+    "update": [
+     {
+      "target": "TheWeaver.<NoBeaconsFromSpidersNode>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<ChanceForAdditionalSpiderlings>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoWebArenaEchoesMoreCommon",
+    "value": 23,
+    "update": [
+     {
+      "target": "TheWeaver.<ArenaEchoesWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoWebReplaceArenaWithSuperArena",
+    "value": 24,
+    "update": [
+     {
+      "target": "TheWeaver.<ReplaceArenaWithSuperArenaChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.34,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoWebReplaceBeaconWithSuperBeacon",
+    "value": 25,
+    "update": [
+     {
+      "target": "TheWeaver.<ReplaceBeaconWithSuperBeaconChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.35,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerEnemiesDropMoreItemsOfType",
+    "value": 41,
+    "update": [
+     {
+      "target": "TheWeaver.<EnemiesCanDropPileOfSimilarItems>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerCachesDropMoreItemsOfType",
+    "value": 42,
+    "update": [
+     {
+      "target": "TheWeaver.<OnCacheOpenedChanceForSimilarItems>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.029,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerEchoCompletionsDropMoreItemsOfType",
+    "value": 43,
+    "update": [
+     {
+      "target": "TheWeaver.<CanHaveSimilarItemsOnEchoCompletion>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerChampionsDropMoreItemsOfType",
+    "value": 44,
+    "update": [
+     {
+      "target": "TheWeaver.<ImprintContainerChampionsChanceToDropMoreItemsOfType>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerSpawnMoreWovenEchoesOfType",
+    "value": 45,
+    "update": [
+     {
+      "target": "TheWeaver.<ImprintContainerSpawnMoreWovenEchoesOfType>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ImprintContainerSpawnMoreWovenEchoesOfTypeSecond",
+    "value": 46,
+    "update": [
+     {
+      "target": "TheWeaver.<ImprintContainerSpawnMoreWovenEchoesOfTypeSecond>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesBonusStabilityFromEchoModifier",
+    "value": 51,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedBonusStability>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesLessArenaWaves",
+    "value": 52,
+    "update": [
+     {
+      "target": "TheWeaver.<LessArenaWaves>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesRunePrisonsMoreCommon",
+    "value": 53,
+    "update": [
+     {
+      "target": "TheWeaver.<RunePrisonsChanceToSpawnTwoMages>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.2,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesSpawnDungeonPacksThatDropKeysAndUniques",
+    "value": 54,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoesSpawnDungeonPacksChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesIncreasedChanceToDropWeaversWillItems",
+    "value": 55,
+    "update": [
+     {
+      "target": "TheWeaver.<RareEnemiesChanceToWeaversWillItem>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.RareEnemiesChanceToWeaversWillItemPerPointAllocated)"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesZerrickFollowsYou",
+    "value": 56,
+    "update": [
+     {
+      "target": "TheWeaver.<ZerrickSpawnChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0,
+       "flat": 0.07
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<MoreGoldWithZerrick>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.85,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesIncreasedChanceToSpawnNemesis",
+    "value": 57,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedChanceToSpawnNemesis>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesOnCacheOpenedChanceForAdditionalRandomExaltedItem",
+    "value": 58,
+    "update": [
+     {
+      "target": "TheWeaver.<AdditionalExaltedItemsInCaches>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesSpawnFavorCacheChance",
+    "value": 59,
+    "update": [
+     {
+      "target": "TheWeaver.<SpawnFavorCacheChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesSpawnSecondBossForBossObjectiveChance",
+    "value": 60,
+    "update": [
+     {
+      "target": "TheWeaver.<SpawnSecondBossForBossObjectiveChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesShadeCanAmbushYou",
+    "value": 61,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoesChanceForShadeAmbush>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.065,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesRareEnemiesAlwaysEnraged",
+    "value": 62,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoesRareEnemiesAlwaysEnraged>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<EchoesRareEnemiesRuneOrGlyphPileChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.12,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesDisableCorruptionIncreaseWhenKillingShade",
+    "value": 63,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoesDisableCorruptionIncreaseWhenKillingShade>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "EchoesChanceForBossesAndRareEnemiesToBePossessed",
+    "value": 64,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoesChanceForBossesAndRareEnemiesToBePossessed>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<ArenaEchoLastWavePossessChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "SpecificRewardsWeaversWillSometimesLucky",
+    "value": 101,
+    "update": [
+     {
+      "target": "TheWeaver.<WeaversWillLuckyRollChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.WeaversWillLuckyRollChancePerPointAllocated)"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "SpecificRewardsUpgradedWeaponsFromNemesisDropChance",
+    "value": 102,
+    "update": [
+     {
+      "target": "TheWeaver.<UpgradableWeaponsFromNemesisDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "SpecificRewardsMemoryAmberDropRateModifier",
+    "value": 103,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedMemoryAmberDropRate>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "SpecificRewardsExiledMageDropLevelOfSkillItemsChance",
+    "value": 104,
+    "update": [
+     {
+      "target": "TheWeaver.<ExiledMageDropLevelOfSkillItemsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "expr": "(p * TheWeaver.<ExiledMageDropLevelOfSkillItemsChancePerPointAllocated>k__BackingField)"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "SpecificRewardsIncreasedChanceForBossWovenEchoes",
+    "value": 105,
+    "update": [
+     {
+      "target": "TheWeaver.<BossWovenEchoesDoubleDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "CemeteriesIncreasedSpawnRate",
+    "value": 121,
+    "update": [
+     {
+      "target": "TheWeaver.<CemeteryEchoesWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsIncreasedSpawnRate",
+    "value": 122,
+    "update": [
+     {
+      "target": "TheWeaver.<TombOccurrenceRateModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesIncreasedPackSize",
+    "value": 123,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndArenasIncreasedPackSizeButDropMemoryAmberWhenCompleted",
+    "value": 124,
+    "update": [
+     {
+      "target": "TheWeaver.<ArenaEchoesDropMemoryAmberOnCompletion>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<TombsIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.04,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<ArenaEchoesIncreasedPackSize>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesRareEnemiesChanceToDropWovenEchoes",
+    "value": 125,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesRareEnemiesChanceToDropWovenEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesRareEnemiesChanceToDropTimelineBossLoot",
+    "value": 126,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesRareEnemiesChanceToDropTimelineBossLoot>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.001,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesSpawnBonusNemesis",
+    "value": 127,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesBonusNemesisChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.34,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesSpawnBonusExiledMage",
+    "value": 128,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesGuaranteedExiledMage>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesMasqueNpcFollowsYou",
+    "value": 129,
+    "update": [
+     {
+      "target": "TheWeaver.<SpawnMasqueChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.25,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndCemeteriesSilkenCocoonsIncreasedChanceForHostileSoul",
+    "value": 130,
+    "update": [
+     {
+      "target": "TheWeaver.<TombsAndCemeteriesSilkenCocoonsIncreasedChanceForHostileSoul>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.8,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TombsAndShadeChanceToDropGazeOfOrobyssWovenEcho",
+    "value": 131,
+    "update": [
+     {
+      "target": "TheWeaver.<ShadeAndTombBossShadeGauntletDropChanceMultiplier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsDropExaltedItemsChance",
+    "value": 151,
+    "update": [
+     {
+      "target": "TheWeaver.<LootLizardsDropExaltedItemsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsChanceOnChampionAggro",
+    "value": 152,
+    "update": [
+     {
+      "target": "TheWeaver.<LizardOnChampionAggroChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsShrinesMoreCommon",
+    "value": 153,
+    "update": [
+     {
+      "target": "TheWeaver.<LootLizardsShrinesSpawnModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsOnCacheOpenedChance",
+    "value": 154,
+    "update": [
+     {
+      "target": "TheWeaver.<LootLizardOnCacheOpenedChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsDropUniqueItemAndTailChance",
+    "value": 155,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedLizardTailDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<LootLizardUniqueDropChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "LootLizardsMoreCommon",
+    "value": 156,
+    "update": [
+     {
+      "target": "TheWeaver.<LootLizardsSpawnModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsAdditionalOneSpawns",
+    "value": 161,
+    "update": [
+     {
+      "target": "TheWeaver.<ChanceForChampionsToHaveAFriend>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.13,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsIncreasedSpawnRate",
+    "value": 162,
+    "update": [
+     {
+      "target": "TheWeaver.<ChampionSpawnRateModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.12,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsChanceToDropUniquesWithLP",
+    "value": 163,
+    "update": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropUniquesWithLP>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsChanceToDropMoreExaltedButSpawnsMore",
+    "value": 164,
+    "update": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropMoreExalted>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<ChampionSpawnRateModifierFromMoreExaltedDrops>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "RareEnemiesChanceToDropDungeonCharms",
+    "value": 165,
+    "update": [
+     {
+      "target": "TheWeaver.<RareEnemiesChanceToDropDungeonCharms>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsChanceToDropWovenEchoes",
+    "value": 166,
+    "update": [
+     {
+      "target": "TheWeaver.<ChampionsChanceToDropWovenEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.03,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsChanceToSpawnAndFightExiledMage",
+    "value": 167,
+    "update": [
+     {
+      "target": "TheWeaver.<ChanceForChampionToFightExiledMage>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.22,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "ChampionsAndBossesInEchoesDropAdditionalGoldAndChanceToDropUnique",
+    "value": 168,
+    "update": [
+     {
+      "target": "TheWeaver.<ChampionsAndBossesAddedGoldPiles>k__BackingField",
+      "type": "int",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<ChampionsAndBossesChanceToDropUniqueItem>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.01,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TimeBeastMoreCommon",
+    "value": 181,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedChanceToSpawnTimeBeast>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TimeBeastMinions",
+    "value": 182,
+    "update": [
+     {
+      "target": "TheWeaver.<ExtraSpawnersWithTimeBeastRiftChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TimeBeastIncreasedCrystallizedChance",
+    "value": 183,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedChanceForCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<MoreDamageWithCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.05,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<MoreHealthWithCrystallizedHeart>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.15,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "TimeBeastCanAmbushYou",
+    "value": 184,
+    "update": [
+     {
+      "target": "TheWeaver.<EchoChanceForTimeBeastAmbush>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<IncreasedDropOnlyUniqueChanceForTimeBeast>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "GenerateMoreEchoChains",
+    "value": 185,
+    "update": [
+     {
+      "target": "TheWeaver.<GenerateMoreEchoChains>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<NoBeaconsFromChainsNode>k__BackingField",
+      "type": "bool",
+      "value": {
+       "expr": "p > 0"
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "GenerateMoreOmenEchoChains",
+    "value": 186,
+    "update": [
+     {
+      "target": "TheWeaver.<IncreasedOmenEchoChainsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.2,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "RoamingOmensInEchoesChance",
+    "value": 187,
+    "update": [
+     {
+      "target": "TheWeaver.<RoamingOmensInEchoesChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.13,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "OmenSpawnVoidChampionsChance",
+    "value": 188,
+    "update": [
+     {
+      "target": "TheWeaver.<OmenSpawnVoidChampionsChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.22,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "RageOfMorditasEchoesIncreasedSpawnChance",
+    "value": 189,
+    "update": [
+     {
+      "target": "TheWeaver.<RageOfMorditasSpawnModifierInEchoes>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "RageOfMorditasRewardExclusivesAndStrongerGauntlet",
+    "value": 190,
+    "update": [
+     {
+      "target": "TheWeaver.<RageOfMorditasRewardExclusiveWeightModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.5,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<RageOfMorditasGauntletEnemyDamageModifier>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.08,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   },
+   {
+    "effect": "RageOfMorditasGauntletOmensAndCorruptedRewardCopies",
+    "value": 191,
+    "update": [
+     {
+      "target": "TheWeaver.<RageOfMorditasRewardDropsCorruptedCopiesChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 0.5,
+       "flat": 0
+      },
+      "conds": []
+     },
+     {
+      "target": "TheWeaver.<RageOfMorditasGauntletOmenReplacementChance>k__BackingField",
+      "type": "float",
+      "value": {
+       "per_point": 1,
+       "flat": 0
+      },
+      "conds": []
+     }
+    ]
+   }
+  ]
+ }
+]

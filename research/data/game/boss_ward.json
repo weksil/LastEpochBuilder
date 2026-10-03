@@ -1,0 +1,3330 @@
+{
+ "_schema": "boss_ward.json: per boss/miniboss ActorData -> boss-ward settings. breakpoints = health fractions (of maxHealth) at which the boss gains ward; prefab inputs: bossWardDecayEffectiveTimeModifier (Actor+0x1D4), health.{healthSerialisation,effectiveHealthModifier}; wardDecay = derived decay timescale. Formula: research/07j sec.3.",
+ "defaultBreakpoints": [
+  0.33,
+  0.67
+ ],
+ "globalPlayerProperties": "see global_player_properties.json (bossWardGainModifier -0.25, bossWardPercentDecay 0.04, ...PerSecond 0.005, ...PerSquareSecond 3e-5, baseBossWardDecayEffectiveTimeDivisor 0.75, ...PerEffectiveHealthMultiplier 0.0075)",
+ "data": [
+  {
+   "actorData": "AbominationBoss",
+   "actorName": "Abomination",
+   "id": -2116536998,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_7f3db627971ef88e.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 80.0,
+    "maxHealth": 6000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.3575,
+    "timeScaleK": 0.7366482504604052,
+    "secondsToZeroNoRetentionNoRegen": 18.082037496842627
+   }
+  },
+  {
+   "actorData": "Admiral Harton",
+   "actorName": "Admiral Harton",
+   "id": 1180123720,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "CampaignOnly",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.30000001192092896,
+    0.44999998807907104,
+    0.6000000238418579,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_49e239834ae12833.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 36.0,
+    "maxHealth": 30000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.0274999999999999,
+    "timeScaleK": 0.9732360097323602,
+    "secondsToZeroNoRetentionNoRegen": 13.6864040721958
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Argentus",
+   "actorName": "Harbinger of Pride",
+   "id": 531311464,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_ccf11803481752b0.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 230.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.4825,
+    "timeScaleK": 0.4028197381671702,
+    "secondsToZeroNoRetentionNoRegen": 33.067151444502265
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Frost Lich",
+   "actorName": "Harbinger of War",
+   "id": 278777705,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_55a6e515a7dc02a6.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 230.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.4825,
+    "timeScaleK": 0.4028197381671702,
+    "secondsToZeroNoRetentionNoRegen": 33.067151444502265
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Gaspar",
+   "actorName": "Harbinger of Fear",
+   "id": -385316299,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_089f4bfd51593e36.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 230.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.4825,
+    "timeScaleK": 0.4028197381671702,
+    "secondsToZeroNoRetentionNoRegen": 33.067151444502265
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Lagon",
+   "actorName": "Harbinger of Chaos",
+   "id": -1243109278,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_e567dd9b52b22d84.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 230.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.4825,
+    "timeScaleK": 0.4028197381671702,
+    "secondsToZeroNoRetentionNoRegen": 33.067151444502265
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - pre-Aberroth",
+   "actorName": "Harbinger of Cruelty",
+   "id": 776273750,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_521d62e7d7cc9b33.bundle",
+   "bossWardDecayEffectiveTimeModifier": 2.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 500.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 4.5075,
+    "timeScaleK": 0.6655574043261231,
+    "secondsToZeroNoRetentionNoRegen": 20.01345218342987
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Uber Aberroth",
+   "actorName": "Harbinger of Regret",
+   "id": -536710808,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.33000001311302185,
+    0.6700000166893005
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_850a599f31132bd3.bundle",
+   "bossWardDecayEffectiveTimeModifier": 2.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 1925.0,
+    "maxHealth": 5000000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 15.195,
+    "timeScaleK": 0.19743336623889438,
+    "secondsToZeroNoRetentionNoRegen": 67.46631301768538
+   }
+  },
+  {
+   "actorData": "AgileHarbinger - Void Harton",
+   "actorName": "Harbinger of Treason",
+   "id": -1471528143,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_5c079024323941c1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 230.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.4825,
+    "timeScaleK": 0.4028197381671702,
+    "secondsToZeroNoRetentionNoRegen": 33.067151444502265
+   }
+  },
+  {
+   "actorData": "Aterroth",
+   "actorName": "Aberroth",
+   "id": -1994517111,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.20000000298023224,
+    0.36000001430511475,
+    0.5,
+    0.6399999856948853,
+    0.800000011920929
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_8f215b4465d2bbda.bundle",
+   "bossWardDecayEffectiveTimeModifier": 9.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 3180.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 24.607499999999998,
+    "timeScaleK": 0.40638016864777005,
+    "secondsToZeroNoRetentionNoRegen": 32.77743924151417
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Abomination",
+   "actorName": "Harbinger of Defilement",
+   "id": -1475128826,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_9a7e6b3e84d175cb.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 260.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.7075,
+    "timeScaleK": 0.3693444136657433,
+    "secondsToZeroNoRetentionNoRegen": 36.06417423403419
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Fire Shamans",
+   "actorName": "Harbinger of Ash",
+   "id": 1753217694,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_7b9ee197f09eadc7.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 260.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.7075,
+    "timeScaleK": 0.3693444136657433,
+    "secondsToZeroNoRetentionNoRegen": 36.06417423403419
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Heorot",
+   "actorName": "Harbinger of Tyranny",
+   "id": 1785368292,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_fb980b13dd383442.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 260.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.7075,
+    "timeScaleK": 0.3693444136657433,
+    "secondsToZeroNoRetentionNoRegen": 36.06417423403419
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - pre-Aberroth",
+   "actorName": "Harbinger of Brutality",
+   "id": 751150706,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_df96140085df24d3.bundle",
+   "bossWardDecayEffectiveTimeModifier": 2.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 550.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 4.8825,
+    "timeScaleK": 0.6144393241167434,
+    "secondsToZeroNoRetentionNoRegen": 21.678464844280942
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Uber Aberroth",
+   "actorName": "Harbinger of Denial",
+   "id": -1607218428,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.33000001311302185,
+    0.6700000166893005
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_27e48db54dae01f1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 2.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 1610.0,
+    "maxHealth": 6000000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 12.8325,
+    "timeScaleK": 0.23378141437755698,
+    "secondsToZeroNoRetentionNoRegen": 56.97673325432364
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Undead Dragon",
+   "actorName": "Harbinger of Destruction",
+   "id": -2120364353,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_82bc7f5f5766221d.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 260.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.7075,
+    "timeScaleK": 0.3693444136657433,
+    "secondsToZeroNoRetentionNoRegen": 36.06417423403419
+   }
+  },
+  {
+   "actorData": "BruteHarbinger - Void Rahyeh",
+   "actorName": "Harbinger of Hatred",
+   "id": -1985653298,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_d007b4d2a749e731.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 260.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.7075,
+    "timeScaleK": 0.3693444136657433,
+    "secondsToZeroNoRetentionNoRegen": 36.06417423403419
+   }
+  },
+  {
+   "actorData": "Chonker Drake",
+   "actorName": "Ignixiros",
+   "id": -2120922463,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.30000001192092896,
+    0.699999988079071
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_c848f7627c3dd30a.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 160.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.9575,
+    "timeScaleK": 0.5108556832694764,
+    "secondsToZeroNoRetentionNoRegen": 26.074098268927766
+   }
+  },
+  {
+   "actorData": "D60 Zerrick",
+   "actorName": "Spymaster Zerrick",
+   "id": -744980298,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.33,
+    0.67
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_0644cff3e19baa31.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 36.0,
+    "maxHealth": 40000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.0274999999999999,
+    "timeScaleK": 0.9732360097323602,
+    "secondsToZeroNoRetentionNoRegen": 13.6864040721958
+   }
+  },
+  {
+   "actorData": "DraalQueen",
+   "actorName": "Draal Queen",
+   "id": 1633980152,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_01f706e3b2a582cf.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 210.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.3325,
+    "timeScaleK": 0.4287245444801715,
+    "secondsToZeroNoRetentionNoRegen": 31.069136251480977
+   }
+  },
+  {
+   "actorData": "E90 Admiral Harton",
+   "actorName": "Admiral Harton",
+   "id": 970667598,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "CampaignOnly",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.30000001192092896,
+    0.44999998807907104,
+    0.6000000238418579,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_c3abf4ff6e3fd3b7.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 65.0,
+    "maxHealth": 50000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.245,
+    "timeScaleK": 0.8032128514056224,
+    "secondsToZeroNoRetentionNoRegen": 16.583526102076668
+   }
+  },
+  {
+   "actorData": "E90 Zerrick",
+   "actorName": "Spymaster Zerrick",
+   "id": -2073473014,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.32999998331069946,
+    0.6699999570846558
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_d6c6f6f40dd0a617.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 50.0,
+    "maxHealth": 45000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.1325,
+    "timeScaleK": 0.8830022075055187,
+    "secondsToZeroNoRetentionNoRegen": 15.085014707310702
+   }
+  },
+  {
+   "actorData": "Elder Pannion Husk",
+   "actorName": "The Husk of Elder Pannion",
+   "id": 226804630,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "CampaignOnly",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_19e07cdb23cabba1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 35.0,
+    "maxHealth": 4000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.02,
+    "timeScaleK": 0.9803921568627451,
+    "secondsToZeroNoRetentionNoRegen": 13.586503312544737
+   }
+  },
+  {
+   "actorData": "Emperors Remains",
+   "actorName": "Emperor's Remains",
+   "id": -1232941774,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "CampaignOnly",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.19999998807907104,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.7999999523162842
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_bd386bbbaf8dacf5.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 32.0,
+    "maxHealth": 4000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 0.9975,
+    "timeScaleK": 1.0025062656641603,
+    "secondsToZeroNoRetentionNoRegen": 13.286801033591544
+   }
+  },
+  {
+   "actorData": "Fire Lich Boss",
+   "actorName": "Fire Lich Cremorus",
+   "id": -1937423195,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_2188b1b1f04f50af.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 60.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.2075,
+    "timeScaleK": 0.8281573498964803,
+    "secondsToZeroNoRetentionNoRegen": 16.084022303821346
+   }
+  },
+  {
+   "actorData": "Frost Lich",
+   "actorName": "Frost Lich Formosus",
+   "id": -1403671592,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.2199999988079071,
+    0.4000000059604645,
+    0.6000000238418579,
+    0.7799999713897705
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_044597968163fba1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 130.0,
+    "maxHealth": 437111
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.7325,
+    "timeScaleK": 0.5772005772005773,
+    "secondsToZeroNoRetentionNoRegen": 23.077075479395837
+   }
+  },
+  {
+   "actorData": "Gaspar Husk Boss",
+   "actorName": "The Husk of Elder Gaspar",
+   "id": -773596628,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.2199999988079071,
+    0.4000000059604645,
+    0.6000000238418579,
+    0.7799999713897705
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_3a95770c2e2f5fcb.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 150.0,
+    "maxHealth": 4000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8825,
+    "timeScaleK": 0.5312084993359893,
+    "secondsToZeroNoRetentionNoRegen": 25.075090672417126
+   }
+  },
+  {
+   "actorData": "HaruspexOrianDrake Boss Endgame",
+   "actorName": "Seeker of the Shards",
+   "id": -917253172,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.3499999940395355,
+    0.6000000238418579,
+    0.800000011920929
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_8e77e354f4bafb11.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 130.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.7325,
+    "timeScaleK": 0.5772005772005773,
+    "secondsToZeroNoRetentionNoRegen": 23.077075479395837
+   }
+  },
+  {
+   "actorData": "Heorot Boss",
+   "actorName": "Heorot",
+   "id": 613029492,
+   "actorType": "Boss",
+   "level": 1,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_c1c30262848a7178.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 150.0,
+    "maxHealth": 1000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8825,
+    "timeScaleK": 0.5312084993359893,
+    "secondsToZeroNoRetentionNoRegen": 25.075090672417126
+   }
+  },
+  {
+   "actorData": "Lagon Boss Tentacle Enemy",
+   "actorName": "Lagon, God of Storms",
+   "id": -1676952666,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_e920cd90c352c556.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 146.76600646972656,
+    "maxHealth": 3000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8582450485229491,
+    "timeScaleK": 0.5381421577282627,
+    "secondsToZeroNoRetentionNoRegen": 24.752012262036178
+   }
+  },
+  {
+   "actorData": "LagonBoss",
+   "actorName": "Lagon, God of Storms",
+   "id": -1097019238,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_48d75a50a288531c.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 146.76600646972656,
+    "maxHealth": 3000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8582450485229491,
+    "timeScaleK": 0.5381421577282627,
+    "secondsToZeroNoRetentionNoRegen": 24.752012262036178
+   }
+  },
+  {
+   "actorData": "LagonBoss Monolith",
+   "actorName": "Lagon, God of Storms",
+   "id": 1912772590,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_3a1e3d952d6b7b5b.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 200.0,
+    "maxHealth": 3000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.2575,
+    "timeScaleK": 0.44296788482835,
+    "secondsToZeroNoRetentionNoRegen": 30.070128654970336
+   }
+  },
+  {
+   "actorData": "LootRex",
+   "actorName": "Giant Lutasaur",
+   "id": -346205687,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.5,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_2408668048d76ea1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 76.30000305175781,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.3297500228881836,
+    "timeScaleK": 0.7520210436455005,
+    "secondsToZeroNoRetentionNoRegen": 17.712404991006615
+   }
+  },
+  {
+   "actorData": "Majasa",
+   "actorName": "Majasa",
+   "id": -1534835249,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_83393b38be67d2ad.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 87.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.41,
+    "timeScaleK": 0.7092198581560284,
+    "secondsToZeroNoRetentionNoRegen": 18.781342814400077
+   }
+  },
+  {
+   "actorData": "Majasa Boss Phase 2",
+   "actorName": "Majasa",
+   "id": 2024632655,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_45ff8b18414d988a.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 60.0,
+    "maxHealth": 18000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.2075,
+    "timeScaleK": 0.8281573498964803,
+    "secondsToZeroNoRetentionNoRegen": 16.084022303821346
+   }
+  },
+  {
+   "actorData": "Majasa Endgame Phase 1",
+   "actorName": "Goddess of the Sands",
+   "id": 560343654,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_7e143a53307fd17f.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 190.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.1825,
+    "timeScaleK": 0.4581901489117984,
+    "secondsToZeroNoRetentionNoRegen": 29.071121058459696
+   }
+  },
+  {
+   "actorData": "Majasa Endgame Phase 2",
+   "actorName": "Goddess of Blood",
+   "id": 560451463,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_233cce247ee5eb52.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 350.0,
+    "maxHealth": 18000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 3.3825,
+    "timeScaleK": 0.29563932002956395,
+    "secondsToZeroNoRetentionNoRegen": 45.055242602629974
+   }
+  },
+  {
+   "actorData": "Morditas Boss",
+   "actorName": "Morditas",
+   "id": -869416554,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.30000001192092896,
+    0.5,
+    0.699999988079071
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_53ce8060bb661a04.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 150.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8825,
+    "timeScaleK": 0.5312084993359893,
+    "secondsToZeroNoRetentionNoRegen": 25.075090672417126
+   }
+  },
+  {
+   "actorData": "Morditas Boss Pinnacle",
+   "actorName": "Morditas",
+   "id": 1070449342,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.20000000298023224,
+    0.4000000059604645,
+    0.6000000238418579,
+    0.800000011920929
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_3206f63c0f852605.bundle",
+   "bossWardDecayEffectiveTimeModifier": 9.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 15000.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 113.2575,
+    "timeScaleK": 0.08829437344105247,
+    "secondsToZeroNoRetentionNoRegen": 150.8601371490721
+   }
+  },
+  {
+   "actorData": "Observer",
+   "actorName": "The Observer",
+   "id": 146359048,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.20000000298023224,
+    0.44999998807907104,
+    0.800000011920929
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_2da64909f33bf3d1.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 600.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 5.257499999999999,
+    "timeScaleK": 0.19020446980504044,
+    "secondsToZeroNoRetentionNoRegen": 70.03043251539603
+   }
+  },
+  {
+   "actorData": "Osprix Heorot Spear Boss Emerging",
+   "actorName": "God Hunter Argentus",
+   "id": -1196594516,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.3999999761581421,
+    0.5999999642372131,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_f92562121b0564d7.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 140.0,
+    "maxHealth": 130
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8074999999999999,
+    "timeScaleK": 0.5532503457814661,
+    "secondsToZeroNoRetentionNoRegen": 24.07608307590648
+   }
+  },
+  {
+   "actorData": "Shade of Orobyss Boss",
+   "actorName": "Shade of Orobyss",
+   "id": -92108426,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "sceneassets_WE523_unity.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 58.0,
+    "maxHealth": 6000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.1925,
+    "timeScaleK": 0.8385744234800839,
+    "secondsToZeroNoRetentionNoRegen": 15.884220784519213
+   }
+  },
+  {
+   "actorData": "Shamans Boss",
+   "actorName": "Volcanic Shaman",
+   "id": -1215163338,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.23999999463558197,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.7599999904632568
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_98c745fadbca524f.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 65.0,
+    "maxHealth": 219762
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.245,
+    "timeScaleK": 0.8032128514056224,
+    "secondsToZeroNoRetentionNoRegen": 16.583526102076668
+   }
+  },
+  {
+   "actorData": "Stone Titan Heart Boss",
+   "actorName": "Stone Titan's Heart",
+   "id": -1038666338,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.23999999463558197,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.7599999904632568
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_654a9f2e159fbed7.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 50.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.1325,
+    "timeScaleK": 0.8830022075055187,
+    "secondsToZeroNoRetentionNoRegen": 15.085014707310702
+   }
+  },
+  {
+   "actorData": "Super Shade",
+   "actorName": "Vision of the Observer",
+   "id": 412318172,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": true,
+   "breakpoints": [
+    0.19999000430107117,
+    0.3999899923801422,
+    0.5999900102615356,
+    0.7998999953269958
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_65f0ae5a24ae20fc.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 2500.0,
+    "maxHealth": 6000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 19.5075,
+    "timeScaleK": 0.05126233499935922,
+    "secondsToZeroNoRetentionNoRegen": 259.84187585241807
+   }
+  },
+  {
+   "actorData": "Uber Aterroth",
+   "actorName": "Herald of Oblivion",
+   "id": -1937627579,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.20000000298023224,
+    0.36000001430511475,
+    0.5,
+    0.6399999856948853,
+    0.800000011920929
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_202adc0879475543.bundle",
+   "bossWardDecayEffectiveTimeModifier": 9.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 28169.0,
+    "maxHealth": 20000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 212.025,
+    "timeScaleK": 0.047164249498879846,
+    "secondsToZeroNoRetentionNoRegen": 282.41944753355864
+   }
+  },
+  {
+   "actorData": "Undead Dragon Boss",
+   "actorName": "Emperor of Corpses",
+   "id": -20831495,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.23000000417232513,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.7699999809265137
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_b54929bc6263d170.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 185.0,
+    "maxHealth": 18000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.145,
+    "timeScaleK": 0.4662004662004662,
+    "secondsToZeroNoRetentionNoRegen": 28.571617260204373
+   }
+  },
+  {
+   "actorData": "Void Harton",
+   "actorName": "Harton's Husk",
+   "id": -1293332752,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.25,
+    0.41999998688697815,
+    0.5799999833106995,
+    0.75
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_35cd80236b76f06b.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 165.0,
+    "maxHealth": 30000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.9949999999999999,
+    "timeScaleK": 0.5012531328320803,
+    "secondsToZeroNoRetentionNoRegen": 26.573602067183085
+   }
+  },
+  {
+   "actorData": "Void Rahyeh",
+   "actorName": "Rahyeh, The Black Sun",
+   "id": -873238975,
+   "actorType": "Boss",
+   "level": 1,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.2199999988079071,
+    0.4000000059604645,
+    0.6000000238418579,
+    0.7799999713897705
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_480879be54f8cfe7.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 150.0,
+    "maxHealth": 1000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.8825,
+    "timeScaleK": 0.5312084993359893,
+    "secondsToZeroNoRetentionNoRegen": 25.075090672417126
+   }
+  },
+  {
+   "actorData": "VoidNagasa Boss",
+   "actorName": "Chronomancer Julra",
+   "id": -1171758602,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.2199999988079071,
+    0.4000000059604645,
+    0.6000000238418579,
+    0.7799999713897705
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_d134f85564aa87ee.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 80.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.3575,
+    "timeScaleK": 0.7366482504604052,
+    "secondsToZeroNoRetentionNoRegen": 18.082037496842627
+   }
+  },
+  {
+   "actorData": "YrunBoss",
+   "actorName": "Yrun",
+   "id": 504730763,
+   "actorType": "Boss",
+   "level": 49,
+   "bossWardCondition": "CampaignOnly",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.3050000071525574,
+    0.5,
+    0.6949999928474426
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_ff57cf4efdc5c0f8.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 81.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 1.365,
+    "timeScaleK": 0.7326007326007326,
+    "secondsToZeroNoRetentionNoRegen": 18.181938256493694
+   }
+  },
+  {
+   "actorData": "YrunBoss Endgame",
+   "actorName": "Yrun, Champion of Morditas",
+   "id": 1524298236,
+   "actorType": "Boss",
+   "level": 49,
+   "bossWardCondition": "Always",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.3050000071525574,
+    0.5,
+    0.6949999928474426
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_553b8342640cf6bd.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 210.0,
+    "maxHealth": 50
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 2.3325,
+    "timeScaleK": 0.4287245444801715,
+    "secondsToZeroNoRetentionNoRegen": 31.069136251480977
+   }
+  },
+  {
+   "actorData": "Yulia",
+   "actorName": "Pontifex Yulia",
+   "id": 582275330,
+   "actorType": "Boss",
+   "level": 1,
+   "bossWardCondition": "Always",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [
+    0.33,
+    0.67
+   ],
+   "hasBossWard": true,
+   "actorBundle": "assets_39a3e0bbaf2505f0.bundle",
+   "bossWardDecayEffectiveTimeModifier": 0.0,
+   "health": {
+    "healthSerialisation": 1,
+    "effectiveHealthModifier": 2.3347227573394775,
+    "maxHealth": 4000
+   },
+   "wardStats": [],
+   "wardDecay": {
+    "divisor": 0.7750104206800461,
+    "timeScaleK": 1.2903052311509993,
+    "secondsToZeroNoRetentionNoRegen": 10.32321730179033
+   }
+  },
+  {
+   "actorData": "Ancient_Dragon",
+   "actorName": "Primeval Dragon",
+   "id": -716103628,
+   "actorType": "Boss",
+   "level": 18,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Apophis",
+   "actorName": "Apophis",
+   "id": 1981098644,
+   "actorType": "Boss",
+   "level": 59,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Baroness Boss",
+   "actorName": "The Baroness",
+   "id": 900786432,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "BellBrotherBartholomew",
+   "actorName": "Bell Brother Bartholomew",
+   "id": -1981310677,
+   "actorType": "MiniBoss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "BloodGorgon Miniboss Spire Guardian 02",
+   "actorName": "Blood Spire Guardian",
+   "id": -203644852,
+   "actorType": "MiniBoss",
+   "level": 35,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Boss Dummy",
+   "actorName": "Boss Training Dummy",
+   "id": 1838990243,
+   "actorType": "Boss",
+   "level": 0,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Brewdekaiser",
+   "actorName": "Brewdekaiser",
+   "id": -2096443586,
+   "actorType": "MiniBoss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Burning Flesh",
+   "actorName": "Infernal Flesh",
+   "id": -237540015,
+   "actorType": "Boss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "C VoidWormBoss",
+   "actorName": "Idol of Ruin",
+   "id": 1539469495,
+   "actorType": "Boss",
+   "level": 26,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Crystallized Orchidian",
+   "actorName": "Crystal Lotus",
+   "id": -1829096745,
+   "actorType": "Boss",
+   "level": 56,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "DesertBeastMiniboss",
+   "actorName": "Spine Hunter Alpha",
+   "id": 2108354616,
+   "actorType": "MiniBoss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "DesertGoliathMiniboss",
+   "actorName": "Scarab Brood Keeper",
+   "id": -260131843,
+   "actorType": "MiniBoss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "DraalQueenCampaign",
+   "actorName": "Draal Queen",
+   "id": -1803277970,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Elder Pannion Husk Monolith",
+   "actorName": "Yulia's Husk",
+   "id": -1270718210,
+   "actorType": "MiniBoss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "EmeraldNagasaMiniboss",
+   "actorName": "Scalebane Guild Leader",
+   "id": -815269967,
+   "actorType": "Boss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "EmeraldNagasaMiniboss Endgame",
+   "actorName": "Emerald Assassin Vi'rua",
+   "id": -1302899954,
+   "actorType": "Boss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Fallen Haruspex R3Q20 Boss",
+   "actorName": "Oracle of the Black Sun",
+   "id": 1903347993,
+   "actorType": "Boss",
+   "level": 40,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Fateweaver Atropos (Dual Blades)",
+   "actorName": "Fateweaver Atropos",
+   "id": -222320256,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Fateweaver Clotho (Rapier)",
+   "actorName": "Fateweaver Clotho",
+   "id": -636255595,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Fateweaver Lachesis (Staff)",
+   "actorName": "Fateweaver Lachesis",
+   "id": -261741673,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ForgedSoldier",
+   "actorName": "Forged Soldier",
+   "id": 545608841,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ForgedSoldier Spire Guardian 04",
+   "actorName": "Flame Spire Guardian",
+   "id": 191066979,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "FrozenFlesh",
+   "actorName": "Fist of Morditas",
+   "id": -267293922,
+   "actorType": "MiniBoss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "GemScorpionBoss",
+   "actorName": "Argolos The Blessed",
+   "id": -1304147659,
+   "actorType": "Boss",
+   "level": 37,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "GemScorpionKeeperNagasa",
+   "actorName": "Beastmaster Ul'Thera",
+   "id": 976033367,
+   "actorType": "MiniBoss",
+   "level": 33,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Giant Ice Block Enemy",
+   "actorName": "Yulia's Prison",
+   "id": 1699893647,
+   "actorType": "Boss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Giant T_Rex Miniboss",
+   "actorName": "Tyrant of the Forest",
+   "id": -727800515,
+   "actorType": "Boss",
+   "level": 58,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "GiantWeatheredSanctuaryStatue",
+   "actorName": "Sanctuary Guardian",
+   "id": 1950101698,
+   "actorType": "Boss",
+   "level": 18,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "GiantWeatheredStatue",
+   "actorName": "Temple Guardian",
+   "id": -4030344,
+   "actorType": "Boss",
+   "level": 21,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "GiantWeatheredStatue Endgame",
+   "actorName": "Temple Guardian",
+   "id": -782772311,
+   "actorType": "Boss",
+   "level": 21,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Grael Miniboss",
+   "actorName": "Grael",
+   "id": 959990549,
+   "actorType": "Boss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Grael Spirit for Heorot Boss fight",
+   "actorName": "Spirit of Grael",
+   "id": -1003404273,
+   "actorType": "MiniBoss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Harbinger Crab",
+   "actorName": "Harbinger of Carcinization",
+   "id": -886107066,
+   "actorType": "Boss",
+   "level": 51,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Haruspex Orian",
+   "actorName": "Haruspex Orian",
+   "id": 1614174541,
+   "actorType": "Boss",
+   "level": 4,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Haruspex Orian Z40",
+   "actorName": "",
+   "id": 352046475,
+   "actorType": "Boss",
+   "level": 4,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "HaruspexOrianDrake Boss",
+   "actorName": "Haruspex Orian",
+   "id": -193259903,
+   "actorType": "Boss",
+   "level": 8,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Ice Elemental Boss",
+   "actorName": "Spreading Frost",
+   "id": 828122019,
+   "actorType": "Boss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "IMEmpireScorpionC Spire Guardian 01",
+   "actorName": "Bone Spire Guardian",
+   "id": -259202727,
+   "actorType": "MiniBoss",
+   "level": 34,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Imperial Researcher",
+   "actorName": "Calus the Demented Scholar",
+   "id": -1810353389,
+   "actorType": "MiniBoss",
+   "level": 33,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ImperialEraEnemy03 Miniboss",
+   "actorName": "Sirenis the Accuser",
+   "id": -685709462,
+   "actorType": "Boss",
+   "level": 26,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ImperialFlameCaptain",
+   "actorName": "Flame Guard Sulla",
+   "id": 1643309374,
+   "actorType": "Boss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ImperialInquisitorCaptain",
+   "actorName": "Inquisitor Captain Nerva",
+   "id": 105227042,
+   "actorType": "Boss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "ImperialSiegeCaptain",
+   "actorName": "Siege Captain Caliga",
+   "id": -253501654,
+   "actorType": "Boss",
+   "level": 25,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Imprisoned Mage Boss",
+   "actorName": "Exiled Mage",
+   "id": -1574766559,
+   "actorType": "Boss",
+   "level": 6,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Jehmheim Spirit for Heorot Boss fight",
+   "actorName": "Spirit of Jormun",
+   "id": 992455533,
+   "actorType": "MiniBoss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Liath",
+   "actorName": "Architect Liath",
+   "id": 2114519544,
+   "actorType": "Boss",
+   "level": 53,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Liath Random Echo",
+   "actorName": "Architect Liath",
+   "id": -1093985572,
+   "actorType": "Boss",
+   "level": 53,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Liath WE503",
+   "actorName": "Projection of Liath",
+   "id": 569147662,
+   "actorType": "Boss",
+   "level": 53,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Lightning Dragon",
+   "actorName": "Ba'ahl",
+   "id": -509284289,
+   "actorType": "Boss",
+   "level": 100,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Lightning Dragon Random Echo",
+   "actorName": "Thunder Dragon",
+   "id": -1249764999,
+   "actorType": "Boss",
+   "level": 100,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Lightning Dragon Variant",
+   "actorName": "Set",
+   "id": 937799622,
+   "actorType": "Boss",
+   "level": 100,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Lightning Dragon Variant 1",
+   "actorName": "Ada",
+   "id": -1767561899,
+   "actorType": "Boss",
+   "level": 100,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "LightningLichMiniboss",
+   "actorName": "Praetor Taranis",
+   "id": -1474402726,
+   "actorType": "Boss",
+   "level": 27,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "LightningSoulCage",
+   "actorName": "Storm Cage",
+   "id": 1554200719,
+   "actorType": "Boss",
+   "level": 29,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "MerunaOgre Spire Guardian 03",
+   "actorName": "Moon Spire Guardian",
+   "id": -339988640,
+   "actorType": "MiniBoss",
+   "level": 52,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Mini Chonker Drake",
+   "actorName": "Mirror Drake",
+   "id": 151613516,
+   "actorType": "Boss",
+   "level": 61,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "MinibossFireGolem",
+   "actorName": "Bone Furnace",
+   "id": -403916584,
+   "actorType": "Boss",
+   "level": 33,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Mirrored Ice Elemental Boss",
+   "actorName": "Spreading Frost",
+   "id": -906607901,
+   "actorType": "Boss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "MortalHunterMiniboss",
+   "actorName": "Headhunter Lavian",
+   "id": 586133465,
+   "actorType": "Boss",
+   "level": 26,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "MortalHunterMiniboss D30",
+   "actorName": "Venator Ealos",
+   "id": -40446790,
+   "actorType": "MiniBoss",
+   "level": 33,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "MortalHunterMiniboss Spire Guardian 05",
+   "actorName": "Venom Spire Guardian",
+   "id": 42047004,
+   "actorType": "MiniBoss",
+   "level": 26,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Nearly Dead Ancient Dragon",
+   "actorName": "Injured Dragon",
+   "id": 1844494974,
+   "actorType": "Boss",
+   "level": 100,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldier",
+   "actorName": "Nemesis Soldier",
+   "id": 1037347152,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierBlood",
+   "actorName": "Bloodsteel Nemesis",
+   "id": 212310496,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierCold",
+   "actorName": "Rimesteel Nemesis",
+   "id": 1214528646,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierLightning",
+   "actorName": "Stormsteel Nemesis",
+   "id": 598069594,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierPoison",
+   "actorName": "Rotsteel Nemesis",
+   "id": -19436708,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierUltimate",
+   "actorName": "Vengeance Incarnate",
+   "id": 962692807,
+   "actorType": "Boss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "NemesisSoldierVoid",
+   "actorName": "Voidborne Nemesis",
+   "id": -2043573034,
+   "actorType": "MiniBoss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Omen (Cold)",
+   "actorName": "Omen of Solitude",
+   "id": -567754498,
+   "actorType": "MiniBoss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Omen (Fire)",
+   "actorName": "Omen of Strife",
+   "id": 743281432,
+   "actorType": "MiniBoss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Omen (Lightning)",
+   "actorName": "Omen of Havoc",
+   "id": -91293512,
+   "actorType": "MiniBoss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Omen (Void)",
+   "actorName": "Omen of Silence",
+   "id": -441815186,
+   "actorType": "MiniBoss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Orchirian The Rampant",
+   "actorName": "Orchirian The Rampant",
+   "id": -2090360615,
+   "actorType": "Boss",
+   "level": 40,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Orchirian WE507",
+   "actorName": "Invasive Overgrowth",
+   "id": -56764783,
+   "actorType": "Boss",
+   "level": 40,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Ortra'ek the Survivor",
+   "actorName": "Ortra'ek the Survivor",
+   "id": 826640520,
+   "actorType": "Boss",
+   "level": 35,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Osprix Firemage Boss Emerging",
+   "actorName": "Sturiax the Burning Sky",
+   "id": 1200872422,
+   "actorType": "Boss",
+   "level": 3,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Osprix Holy Zealot Boss",
+   "actorName": "Brightblade Palarus",
+   "id": -1653589509,
+   "actorType": "Boss",
+   "level": 6,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Osprix Lightmage Boss Emerging",
+   "actorName": "Pontifex Aurelus",
+   "id": 978658028,
+   "actorType": "Boss",
+   "level": 51,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "PaladinVoidCultist Spire Guardian 08",
+   "actorName": "Void Spire Guardian",
+   "id": -1178410901,
+   "actorType": "MiniBoss",
+   "level": 18,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Pannion Student Miniboss",
+   "actorName": "Pannion's Student",
+   "id": -371534168,
+   "actorType": "MiniBoss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Pannion Student Miniboss Endgame",
+   "actorName": "Voidfused Sorcerer",
+   "id": 1693366809,
+   "actorType": "Boss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Pannion Student Miniboss Variant",
+   "actorName": "Pannion's Student",
+   "id": -1243782813,
+   "actorType": "MiniBoss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Pannion Student Miniboss Variant 1",
+   "actorName": "Pannion's Student",
+   "id": 156327282,
+   "actorType": "MiniBoss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Primalist Champion",
+   "actorName": "Alfrig Wolfmaw",
+   "id": -945748452,
+   "actorType": "Boss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Prophet of Ruin",
+   "actorName": "Prophet of Ruin",
+   "id": 873561547,
+   "actorType": "Boss",
+   "level": 25,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Rogue Champion",
+   "actorName": "The Crimson Blade",
+   "id": -1731304829,
+   "actorType": "Boss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "RubyNagasaMiniboss",
+   "actorName": "Ruby Captain Arjani",
+   "id": -948707573,
+   "actorType": "MiniBoss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Rune Warden",
+   "actorName": "Rune Warden",
+   "id": 910625317,
+   "actorType": "MiniBoss",
+   "level": 25,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "SandLichMiniboss",
+   "actorName": "Praetor Vul'arta",
+   "id": 136457114,
+   "actorType": "Boss",
+   "level": 34,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "SapphireNagasa miniboss",
+   "actorName": "Stormthrower Zael",
+   "id": 1524277191,
+   "actorType": "Boss",
+   "level": 57,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Scalebane Caster Swarmkeeper",
+   "actorName": "Scalebane Swarmkeeper",
+   "id": 264119982,
+   "actorType": "Boss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Scalebane Melee BodyGuard",
+   "actorName": "Scalebane Bodyguard",
+   "id": 1016999119,
+   "actorType": "MiniBoss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Scalebane Rogue GuildLeader",
+   "actorName": "Scalebane Guild Leader",
+   "id": -1106314644,
+   "actorType": "Boss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Scalebane Rogue GuildLeader Endgame",
+   "actorName": "Scalebane Guild Leader",
+   "id": -1431645559,
+   "actorType": "Boss",
+   "level": 55,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Sentinel Champion",
+   "actorName": "Vaion the Arsenal",
+   "id": -1601532949,
+   "actorType": "Boss",
+   "level": 50,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Siege Golem Spire Guardian 06",
+   "actorName": "Siege Spire Guardian",
+   "id": 142766991,
+   "actorType": "MiniBoss",
+   "level": 51,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Soul Generator",
+   "actorName": "Soul Repository",
+   "id": 119972720,
+   "actorType": "MiniBoss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Soul Generator Chapter B",
+   "actorName": "Soul Repository",
+   "id": -473712389,
+   "actorType": "MiniBoss",
+   "level": 17,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Soul Generator Miniboss",
+   "actorName": "Formosus' Phylactery",
+   "id": 1065969618,
+   "actorType": "MiniBoss",
+   "level": 75,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Soul Generators in Abomination Boss Fight",
+   "actorName": "Soul Vessel",
+   "id": 1086215592,
+   "actorType": "Boss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "SoulWarden Miniboss",
+   "actorName": "The Stygian Warden",
+   "id": 1146462906,
+   "actorType": "Boss",
+   "level": 34,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "SoulWarden Spire Guardian 07",
+   "actorName": "Soul Spire Guardian",
+   "id": 1786006385,
+   "actorType": "MiniBoss",
+   "level": 34,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Stone Titan Boss",
+   "actorName": "The Mountain Beneath",
+   "id": -426068726,
+   "actorType": "Boss",
+   "level": 20,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Strigine Gladiator Miniboss",
+   "actorName": "",
+   "id": -510227550,
+   "actorType": "MiniBoss",
+   "level": 63,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Swamp Fiend Undead",
+   "actorName": "Misshapen Remains",
+   "id": 919835205,
+   "actorType": "MiniBoss",
+   "level": 38,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "SwampFiend Void",
+   "actorName": "Abyssal Fiend",
+   "id": 640218278,
+   "actorType": "Boss",
+   "level": 22,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TempleGuardian-DualAxes",
+   "actorName": "Temple Guardian",
+   "id": -1052109792,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TempleGuardian-HeavyAxe",
+   "actorName": "Temple Guardian",
+   "id": 1424639478,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TempleGuardian-Staff",
+   "actorName": "Temple Guardian",
+   "id": -1777375765,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TempleGuardian-SwordShield",
+   "actorName": "Temple Guardian",
+   "id": -887827893,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TheOmenOfSilenceChapterA",
+   "actorName": "The Omen Of Silence",
+   "id": -1634898978,
+   "actorType": "Boss",
+   "level": 12,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TheOmenOfSilenceChapterB",
+   "actorName": "The Omen Of Silence",
+   "id": -1635078657,
+   "actorType": "Boss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TheOmenOfSilenceChapterD",
+   "actorName": "The Omen Of Silence",
+   "id": -1635011135,
+   "actorType": "Boss",
+   "level": 35,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TheOmenOfSilenceEndGame",
+   "actorName": "The Omen Of Silence",
+   "id": 1076712149,
+   "actorType": "Boss",
+   "level": 24,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Time Beast",
+   "actorName": "Rift Beast",
+   "id": -430441764,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Time Beast Champion",
+   "actorName": "Rift Beast",
+   "id": 2008523909,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Tomb_Boss_Test",
+   "actorName": "Harbinger of Brutality",
+   "id": -650027043,
+   "actorType": "Boss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "TombGuardian",
+   "actorName": "Tomb Guardian",
+   "id": -1923355867,
+   "actorType": "MiniBoss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Twin Dragon (Fire) Boss",
+   "actorName": "Surtok",
+   "id": -1311880429,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Twin Dragon (Ice) Boss",
+   "actorName": "Vinteros",
+   "id": 1580952438,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Undead Wengari Boss",
+   "actorName": "Undead Wengari Matriarch",
+   "id": 531366777,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Uulikos The Betrayer",
+   "actorName": "Uulikos The Betrayer",
+   "id": 1979758439,
+   "actorType": "Boss",
+   "level": 8,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Vessel of Chaos",
+   "actorName": "Vessel of Chaos",
+   "id": 1171332419,
+   "actorType": "Boss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Vessel of Memory",
+   "actorName": "Vessel of Memory",
+   "id": -141999956,
+   "actorType": "Boss",
+   "level": 54,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Void Amalgamation",
+   "actorName": "Void Amalgamation",
+   "id": -926499019,
+   "actorType": "Boss",
+   "level": 19,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Void Amalgamation R3Q10",
+   "actorName": "The Hollow Maw",
+   "id": 986645260,
+   "actorType": "Boss",
+   "level": 19,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Void Worm Backup Dancers",
+   "actorName": "Idol of Ruin",
+   "id": 766892087,
+   "actorType": "Boss",
+   "level": 90,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Void Worm Boss",
+   "actorName": "Idol of Loathing",
+   "id": 1465033096,
+   "actorType": "Boss",
+   "level": 13,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Voidfused Forge",
+   "actorName": "Voidfused Forge",
+   "id": 1724755020,
+   "actorType": "Boss",
+   "level": 9,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidMaul R3Q10 Boss",
+   "actorName": "The Hollow Maw",
+   "id": -315863133,
+   "actorType": "Boss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidMaulArenaBoss",
+   "actorName": "The Effigy of Oblivion",
+   "id": -1255478465,
+   "actorType": "MiniBoss",
+   "level": 14,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidMaulBoss",
+   "actorName": "The Effigy of Oblivion",
+   "id": 1554227246,
+   "actorType": "MiniBoss",
+   "level": 12,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidPenance",
+   "actorName": "Void Penance",
+   "id": -489447392,
+   "actorType": "Boss",
+   "level": 10,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidPenance Spire Guardian 10",
+   "actorName": "Imprisoned Spire Guardian",
+   "id": -1046999301,
+   "actorType": "MiniBoss",
+   "level": 10,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "VoidProtector",
+   "actorName": "",
+   "id": 1605677618,
+   "actorType": "Boss",
+   "level": 38,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Matriarch",
+   "actorName": "Wengari Matriarch",
+   "id": -1798569366,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Matriarch Monolith",
+   "actorName": "Wengari Matriarch",
+   "id": -1247668750,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Patriarch",
+   "actorName": "Wengari Patriarch",
+   "id": -1835466879,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Patriarch Monolith",
+   "actorName": "Wengari Patriarch",
+   "id": 498068843,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Raider Boss",
+   "actorName": "Wengari Beastmaster",
+   "id": -1916671757,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Wengari Raider Boss Spire Guardian 09",
+   "actorName": "Wengari Spire Guardian",
+   "id": -276315756,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "WengariBerserkerBoss",
+   "actorName": "Wengari Raid Leader",
+   "id": -1207790537,
+   "actorType": "MiniBoss",
+   "level": 47,
+   "bossWardCondition": "Never",
+   "breakpointType": "Default",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Winged Fire Boss",
+   "actorName": "Covenant of Dominion",
+   "id": -1574562535,
+   "actorType": "MiniBoss",
+   "level": 51,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Woven Firstborn",
+   "actorName": "Woven Firstborn",
+   "id": 1125048456,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Woven Firstborn Uber",
+   "actorName": "Woven Firstborn",
+   "id": -1273874452,
+   "actorType": "Boss",
+   "level": 60,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  },
+  {
+   "actorData": "Zerrick",
+   "actorName": "Spymaster Zerrick",
+   "id": -1392188472,
+   "actorType": "Boss",
+   "level": 38,
+   "bossWardCondition": "Never",
+   "breakpointType": "Custom",
+   "manuallyTriggered": false,
+   "breakpoints": [],
+   "hasBossWard": false
+  }
+ ]
+}

@@ -1,0 +1,1212 @@
+{
+ "gameVersion": "1.5.0",
+ "skill": "Holy Aura (AbilityID 187 holyAura, tree ah443, HolyAuraTree)",
+ "sources": [
+  "dump/decomp/LE.dll/HolyAuraMutator.c + ISIL HolyAuraMutator.txt (.ctor, Mutate, OnMutatorUpdate)",
+  "AuraMutator ISIL (.cctor, Mutate)",
+  "HolyAuraTree.updateMutator",
+  "BuffOnAllyHit.Apply/addBuffToList",
+  "StatBuffs.addBuff(Buff)",
+  "Buff.generateName",
+  "AbilityStatsMutatorManager.UpdateAbilityStats case 0xBB",
+  "KnightTree.updateMutator (passives)",
+  "prefab typetrees via UnityPy (HolyAura, Aura, mutators)"
+ ],
+ "constants": {
+  "auraStatsMultiplier_k": 2.0,
+  "auraStatsMultiplier_note": "HolyAuraMutator..ctor writes 0x40000000; prefab serialises 2.0; HolyAuraTree.updateMutator writes 0x40000000 again. No other writer.",
+  "HolyAuraTree_copy_multiplier": 2.0,
+  "HolyAuraTree_copy_note": "hard-coded 0x40000000 (NOT read from auraStatsMultiplier)",
+  "castInterval_s": 0.5,
+  "castInterval_src": "HolyAuraMutator..ctor +0x1A4 = 0x3F000000",
+  "passiveHolyAuraDuration_s": 4.0,
+  "passiveHolyAuraDuration_src": "HolyAuraMutator..ctor +0x158 = 0x40800000 (= basePassiveHolyAuraDuration/MAX_BUFF_DURATION const 4)",
+  "passiveAuraBuffDuration_s": 4.0,
+  "passiveAuraBuffDuration_src": "AuraMutator.Mutate passes constant 4.0 (0x184561DD4) as duration to every addBuffToList",
+  "activeBuffDuration": "clamp(boostDuration - timeSinceActiveCast + castInterval + 0.1, castInterval + 0.1, 4.0), boostDuration=(1+increasedBoostDuration)*4",
+  "boostDurationBase_s": 4.0,
+  "boostDurationWithConcentration_s": 6.0,
+  "auraRadius_m": 20.0,
+  "auraRadius_src": "SphereCollider radius 20 (trigger), scale 1, on prefabs HolyAura (active) and Aura (passive, AbilityID 190); AuraMutator.increasedRadius is dead",
+  "hitDetector": {
+   "ignoreCreator": false,
+   "canApplyToSameAllyAgain": false,
+   "objectLifetime_s": 1.0
+  },
+  "cooldown_base_s": 10.0,
+  "manaCost": 30.0,
+  "instantCastForPlayer": true,
+  "buffNameFormat": "Buff.generateName(identifier, stat) = format(identifier, SP, AT, specialTag, extraTag, added>0, increased>0); same name on the same actor REPLACES the old buff (StatBuffs.addBuff(Buff) -> removeBuffsWithName)",
+  "identifiers": {
+   "defaults": "default aura mutator",
+   "tree_and_most_extras": "aura mutator",
+   "mana_regen_extra": "extra aura mutator",
+   "personal_flame_burst": "Aura Personal Flame Burst"
+  },
+  "flameBurstBaseStacks": 9,
+  "flameBurstBaseStacks_src": "AuraMutator.baseFieryInquisitionStacksOnMeleeHit const 9 (0x184561DD8)"
+ },
+ "defaultStats": [
+  {
+   "sp": "ElementalResistance",
+   "spId": 52,
+   "kind": "added",
+   "tags": "None",
+   "value": 0.15,
+   "src": "AuraMutator..cctor, const 0x18471CD50"
+  },
+  {
+   "sp": "Damage",
+   "spId": 0,
+   "kind": "increased",
+   "tags": "None",
+   "value": 0.3,
+   "src": "AuraMutator..cctor, const 0x184561DBC"
+  }
+ ],
+ "X": {
+  "definition": "X = mgr.holyAuraIncreasedEffect(+0x114C) + increasedEffectFromPassives; M = 1 + X (additive inside, multiplicative on the stat)",
+  "mgr.holyAuraIncreasedEffect": "sum of the added value of every AbilityPropertyStat(ability 187 holyAura, index/specialTag 0) on the caster. Only source found in 1.5.0 data: Paladin passive \"Paladin Covenant\" (Covenant of Light) +0.04 per point, max 5 -> +0.20. No affix/unique/idol/blessing/weaver writes it.",
+  "increasedEffectFromPassives": "HolyAuraMutator(+0x140)/AuraMutator(+0x134): written by KnightTree.updateMutator = 0.1 * points of \"Paladin Increased Holy Aura Effectiveness\" - a node name that does NOT exist in the tree data (code_node_names_not_in_tree). Effective value 0 in 1.5.0. Holy Aura tree does not write it.",
+  "applies_to": "passive: defaults, tree stats, mana regen, block/Str, movespeed, stun avoidance. active: same plus health regen (active) and immunity property. Does NOT apply to personal flame-burst buff, ward on activation, slow chance, health globe, cleanse."
+ },
+ "pipeline": {
+  "passive_AuraMutator.Mutate": {
+   "when": "HolyAuraMutator.OnMutatorUpdate every castInterval=0.5 s, ability present, and NOT inside the boost window; skipped if inactiveWhileOnCooldown && Holy Aura on cooldown. Spawns an Aura object (ability 190) at the caster; sphere r=20 hits allies incl. the caster.",
+   "duration_s": 4.0,
+   "buffs": [
+    "defaults (not if disableDefaultStats): value_default * M",
+    "AuraMutator.statsToApply (raw node stats): v * M",
+    "mana regen: IncreasedStat(ManaRegen, mgr.holyAuraIncManaRegen) * M   [name extra aura mutator]",
+    "block effectiveness: AddedStat(BlockEffectiveness, Strength*mgr.holyAuraBlockEffectivenessPerStrength) * M",
+    "movespeed: IncreasedStat(Movespeed, mgr.holyAuraIncreasedMovespeed) * M",
+    "stun avoidance: IncreasedStat(StunAvoidance, mgr.holyAuraIncreasedStunAvoidance) * M",
+    "holyAuraPersonalMinionsOnly -> BuffOnAllyHit.onlyApplyToCreatorsMinions (caster itself excluded)"
+   ],
+   "caster_only": "canFlameBurst: personal buff AilmentChanceStat(HolyAuraStackForFlameBurst, Melee) = 9 + addedStacks, 4 s, no M"
+  },
+  "active_HolyAuraMutator.Mutate": {
+   "when": "player casts Holy Aura (isRecastOfActive=false, timeSinceActiveCast:=0) and OnMutatorUpdate re-casts the active object every 0.5 s while timeSinceActiveCast <= (1+increasedBoostDuration)*4 (isRecastOfActive=true). In that window the passive object is NOT cast, the active buffs (same names) replace the passive ones.",
+   "duration_s": "clamp(boost - timeSince + 0.6, 0.6, 4.0)",
+   "buffs": [
+    "defaults: value_default * k * M  (k=2.0) -> ER 0.30, Damage inc 0.60 (times M)",
+    "HolyAuraMutator.statsToApply (tree copy already x2): (2v) * M   - NOT multiplied by k again",
+    "mana regen: holyAuraIncManaRegen * k * M",
+    "block effectiveness: Strength*perStr * k * M",
+    "movespeed: holyAuraIncreasedMovespeed * k * M",
+    "stun avoidance: holyAuraIncreasedStunAvoidance * k * M",
+    "health regen (active only): AddedStat(HealthRegen, mgr.holyAuraHealthRegenInActiveMode) * M  (NO k)",
+    "slow/chill immunity (mgr.holyAuraActiveSlowImmune or ...ChillImmune): PlayerProperty 450 = 1.0 * M (boolean in effect)"
+   ],
+   "caster_only": "canFlameBurst: AilmentChanceStat(HolyAuraStackForFlameBurst, Melee) = k*9 + addedStacks, duration = clamped buff duration, no M",
+   "first_cast_only": [
+    "wardGainedOnActivation (GiveResourcesOnHit.wardOnHit)",
+    "activeCleanse (CleanseAilmentsOnHit all negatives)",
+    "mgr.holyAuraMoreIgniteDamageOnActivation: AmplifyDamageOfAilmentOfType(Ignite, value, onlyFromSpecificActor=caster) on enemies with Ignite and Manhattan distance < 20 from caster"
+   ],
+   "every_tick": [
+    "mgr.holyAuraElectrifyChancePerSecondPerAttunement: RepeatedlyApplyAilmentsInRadius (r=10 m) chance = Attunement*value*castInterval",
+    "slow chance chanceToSlowEnemiesEverySecond*castInterval",
+    "fear (mgr flag) r=10 m",
+    "blind (mgr flag)",
+    "reset evade/traversal cooldowns (mgr flag)"
+   ]
+  },
+  "application_to_actor": "BuffOnAllyHit.Apply -> for each Buff: new Buff(copy, duration) -> StatBuffs.addBuff(Buff): removes buffs of the same name, adds the buff, stat is added to the actor Stats as an ordinary stat (no further multiplier). Refreshed every 0.5 s.",
+  "name_collisions": "Names collide when identifier+SP+tags+specialTag+extraTag+(added>0)+(increased>0) are equal. Active replaces passive by design. Edge: mgr block-per-Strength extra (AddedStat BlockEffectiveness tags 0) has the same name as tree node Mighty Shield BlockEffectiveness and is added later in the list -> it REPLACES (does not add to) the tree value."
+ },
+ "nodes": [
+  {
+   "id": 2,
+   "name": "Holy Aura Fire Damage After Melee Hits",
+   "displayName": "Flame Burst",
+   "maxPoints": 1,
+   "tooltip": [
+    " Flame Burst"
+   ],
+   "stats": [
+    {
+     "ctor": "AilmentChanceStat",
+     "ailment": "HolyAuraStackForFlamBurst",
+     "tags": "Melee",
+     "kind": "ailment_chance",
+     "perPoint": 1,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 2.0,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.canFlameBurst",
+     "perPoint": 0,
+     "flat": 1
+    },
+    {
+     "target": "AuraMutator.canFlameBurst",
+     "perPoint": 0,
+     "flat": 1
+    }
+   ],
+   "nonStatSemantics": "Flame Burst: canFlameBurst=1 on HolyAuraMutator(+0x14C) and AuraMutator(+0x138). Personal buff on the caster's own StatBuffs (name 'Aura Personal Flame Burst', no (1+X)): AilmentChanceStat(HolyAuraStackForFlameBurst, Melee) = 9 + addedFieryInquisitionStacksOnMeleeHit (passive, 4 s) or 2.0*9 + added (active, clamped duration). The node also puts the same ailment chance stat (1.0 passive / 2.0 active) * M into the ally buff list."
+  },
+  {
+   "id": 3,
+   "name": "Holy Aura Increased Flame Burst Final Hit",
+   "displayName": "Improved Flame Burst",
+   "maxPoints": 4,
+   "tooltip": [
+    "+50% Flame Burst Damage"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyFlameBurstMutator.finalHitDamageMultiplier",
+     "perPoint": 0.5,
+     "flat": 0
+    },
+    {
+     "target": "HolyAuraMutator.finalHitDamageMultiplier",
+     "perPoint": 0.5,
+     "flat": 0
+    }
+   ],
+   "nonStatSemantics": "Improved Flame Burst: finalHitDamageMultiplier=0.5*p on HolyAuraMutator and HolyFlameBurstMutator; DPS applier 'more' = (1 + 0.5*p) on Holy Flame Burst hit (read only by getDPSAppliersForDPSCalculation). Not a buff, not scaled by X or k."
+  },
+  {
+   "id": 4,
+   "name": "Holy Aura Increased Attack and Cast Speed",
+   "displayName": "Fanaticism",
+   "maxPoints": 3,
+   "tooltip": [
+    "+3% Attack Speed",
+    "+3% Cast Speed"
+   ],
+   "stats": [
+    {
+     "ctor": "IncreasedStat",
+     "property": "AttackSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "perPoint": 0.03,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.06,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "IncreasedStat",
+     "property": "CastSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "perPoint": 0.03,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.06,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 5,
+   "name": "Holy Aura Added Crit Chance",
+   "displayName": "True Strike",
+   "maxPoints": 4,
+   "tooltip": [
+    "10% Increased Crit Chance"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "CriticalChance",
+     "tags": "None",
+     "kind": "increased",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 6,
+   "name": "Holy Aura Increased Crit Multi",
+   "displayName": "Extreme Zeal",
+   "maxPoints": 3,
+   "tooltip": [
+    "+5% Critical Multiplier"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "CriticalMultiplier",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 7,
+   "name": "Holy Aura Fire Damage",
+   "displayName": "Firestorm",
+   "maxPoints": 5,
+   "tooltip": [
+    "10% Increased Global Fire Damage",
+    "10% Increased Global Lightning Damage"
+   ],
+   "stats": [
+    {
+     "ctor": "IncreasedStat",
+     "property": "Damage",
+     "tags": "Fire",
+     "kind": "increased",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "IncreasedStat",
+     "property": "Damage",
+     "tags": "Lightning",
+     "kind": "increased",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 8,
+   "name": "Holy Aura Added Ignite On Hit Chance",
+   "displayName": "Rahyeh's Devotion",
+   "maxPoints": 3,
+   "tooltip": [
+    "+5% Ignite Chance",
+    "+5% Electrify Chance"
+   ],
+   "stats": [
+    {
+     "ctor": "AilmentChanceStat",
+     "ailment": "Ignite",
+     "tags": "None",
+     "kind": "ailment_chance",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "AilmentChanceStat",
+     "ailment": "Electrify",
+     "tags": "None",
+     "kind": "ailment_chance",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 9,
+   "name": "Holy Aura Added Elemental Penetration",
+   "displayName": "Rahyeh's Fury",
+   "maxPoints": 2,
+   "tooltip": [
+    "+5% Fire Penetration",
+    "+5% Lightning Penetration"
+   ],
+   "stats": [
+    {
+     "ctor": "AddedStat",
+     "property": "Penetration",
+     "tags": "Fire",
+     "kind": "added",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "AddedStat",
+     "property": "Penetration",
+     "tags": "Lightning",
+     "kind": "added",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 10,
+   "name": "Holy Aura Physical Damage",
+   "displayName": "Call To Arms",
+   "maxPoints": 5,
+   "tooltip": [
+    "+10% Physical Damage"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "Damage",
+     "tags": "Physical",
+     "kind": "increased",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 11,
+   "name": "Holy Aura Throwing Damage And Stun Chance",
+   "displayName": "Strength From Afar",
+   "maxPoints": 4,
+   "tooltip": [
+    "+12% Throwing Attack Damage",
+    "+12% Increased Throwing Attack Stun Chance"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "Damage",
+     "tags": "Throwing",
+     "kind": "increased",
+     "perPoint": 0.12,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.24,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "Stat(...)",
+     "property": "IncreasedStunChance",
+     "tags": "Throwing",
+     "kind": "increased",
+     "perPoint": 0.12,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.24,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 12,
+   "name": "Holy Aura Added Ele Prot",
+   "displayName": "Shelter from the Storm",
+   "maxPoints": 5,
+   "tooltip": [
+    "+5% Elemental Resistance",
+    "+3% Endurance"
+   ],
+   "stats": [
+    {
+     "ctor": "AddedStat",
+     "property": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "AddedStat",
+     "property": "Endurance",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.03,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.06,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 13,
+   "name": "Holy Aura Increased Dodge Chance",
+   "displayName": "Swiftness",
+   "maxPoints": 3,
+   "tooltip": [
+    "+20 Dodge Rating"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "DodgeRating",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 20,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 40.0,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 14,
+   "name": "Holy Aura Increased Healing Effectiveness",
+   "displayName": "Redemption",
+   "maxPoints": 4,
+   "tooltip": [
+    "+10% Increased Healing"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "IncreasedHealing",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 15,
+   "name": "Holy Aura Boost Duration",
+   "displayName": "Concentration",
+   "maxPoints": 1,
+   "tooltip": [
+    "+50% Duration",
+    "+5 Cooldown (seconds)",
+    " Holy Aura Disabled During Cooldown"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.increasedBoostDuration",
+     "perPoint": 0,
+     "flat": 0.5
+    },
+    {
+     "target": "HolyAuraMutator.inactiveWhileOnCooldown",
+     "perPoint": 0,
+     "flat": 1
+    },
+    {
+     "target": "cooldown",
+     "addedCooldownLengthSeconds": 5.0
+    }
+   ],
+   "nonStatSemantics": "Concentration: increasedBoostDuration=+0.5 -> boost window = (1+0.5)*4 = 6 s; inactiveWhileOnCooldown=1 -> passive aura is NOT cast while Holy Aura is on cooldown; cooldown +5 s (SetCooldown addedCooldownLength=5). Not scaled by X or k."
+  },
+  {
+   "id": 16,
+   "name": "Holy Aura Poison Resist And Cleanse",
+   "displayName": "Purification",
+   "maxPoints": 1,
+   "tooltip": [
+    "+20% Poison Resistance",
+    " Cleanses Ailments"
+   ],
+   "stats": [
+    {
+     "ctor": "AddedStat",
+     "property": "PoisonResistance",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0,
+     "flat": 0.2,
+     "valueField": "added",
+     "passiveFinal": "flat*M",
+     "activeFinal": "2*flat*M",
+     "activePerPoint": 0.0,
+     "activeFlat": 0.4
+    }
+   ],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.activeCleanse",
+     "perPoint": 0,
+     "flat": 1
+    }
+   ],
+   "nonStatSemantics": "Purification: activeCleanse=1 (first, non-recast active object gets CleanseAilmentsOnHit chance 1.0, cleanseAllNegative, targetType allies). Stat PoisonResistance +0.2 passive / +0.4 active, *M."
+  },
+  {
+   "id": 17,
+   "name": "Holy Aura Slow Aura",
+   "displayName": "Demoralizing Aura",
+   "maxPoints": 2,
+   "tooltip": [
+    "50% Slow Chance When Active"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.chanceToSlowEnemiesEverySecond",
+     "perPoint": 0.5,
+     "flat": 0
+    }
+   ],
+   "nonStatSemantics": "Demoralizing Aura: chanceToSlowEnemiesEverySecond=0.5*p; each ACTIVE tick (every castInterval=0.5 s) adds ChanceToApplyAilmentsOnHit(Slow) chance = castInterval*0.5*p = 0.25*p per object. Active only. Not scaled by X or k."
+  },
+  {
+   "id": 18,
+   "name": "Holy Aura Throwing Attack Speed And Haste Chance",
+   "displayName": "Expedite",
+   "maxPoints": 3,
+   "tooltip": [
+    "+3% Throwing Attack Speed",
+    "+3% Haste Chance"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "AttackSpeed",
+     "tags": "Throwing",
+     "kind": "increased",
+     "perPoint": 0.03,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.06,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "Stat(...)",
+     "property": "HasteOnHitChance",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.03,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.06,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 19,
+   "name": "Holy Aura Increased Health Regeneration",
+   "displayName": "Vital Boon",
+   "maxPoints": 4,
+   "tooltip": [
+    "+10% Health Regen"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "HealthRegen",
+     "tags": "None",
+     "kind": "increased",
+     "perPoint": 0.1,
+     "flat": 0,
+     "valueField": "increased",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.2,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 20,
+   "name": "Holy Aura Ward Generation",
+   "displayName": "Faith",
+   "maxPoints": 5,
+   "tooltip": [
+    "3 Ward Regen Per Second"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "WardRegen",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 3.0,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 6.0,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 21,
+   "name": "Holy Aura Ward Retention",
+   "displayName": "Shielded By Faith",
+   "maxPoints": 4,
+   "tooltip": [
+    "+5% Ward Retention"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "WardRetention",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 0.05,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 0.1,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 22,
+   "name": "Holy Aura Ward Boost",
+   "displayName": "Faith's Reward",
+   "maxPoints": 1,
+   "tooltip": [
+    "400 Ward Granted On Activation",
+    "+5 Cooldown"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.wardGainedOnActivation",
+     "perPoint": 0,
+     "flat": 400.0
+    },
+    {
+     "target": "cooldown",
+     "addedCooldownLengthSeconds": 5.0
+    }
+   ],
+   "nonStatSemantics": "Faith Reward: wardGainedOnActivation=400: GiveResourcesOnHit.wardOnHit += 400 on the FIRST active object only (isRecastOfActive=false); +5 s cooldown. Not scaled by X or k."
+  },
+  {
+   "id": 23,
+   "name": "Holy Aura Block Prot And Health On Block",
+   "displayName": "Mighty Shield",
+   "maxPoints": 4,
+   "tooltip": [
+    "+30 Block Effectiveness",
+    "2 Health Gained On Block"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "BlockEffectiveness",
+     "tags": "None",
+     "kind": "added",
+     "perPoint": 30.0,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 60.0,
+     "activeFlat": 0.0
+    },
+    {
+     "ctor": "Stat(...)",
+     "property": "HealthGain",
+     "tags": "None",
+     "kind": "added",
+     "specialTag": "6",
+     "perPoint": 2,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 4.0,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 24,
+   "name": "Holy Aura Ward On Block",
+   "displayName": "Against The Odds",
+   "maxPoints": 3,
+   "tooltip": [
+    "7 Ward Gained On Block"
+   ],
+   "stats": [
+    {
+     "ctor": "Stat(...)",
+     "property": "WardGain",
+     "tags": "None",
+     "kind": "added",
+     "specialTag": "6",
+     "perPoint": 7.0,
+     "flat": 0,
+     "valueField": "added",
+     "passiveFinal": "perPoint*points*M",
+     "activeFinal": "2*perPoint*points*M",
+     "activePerPoint": 14.0,
+     "activeFlat": 0.0
+    }
+   ],
+   "fields": [],
+   "nonStatSemantics": null
+  },
+  {
+   "id": 26,
+   "name": "Holy Aura Health Globe Chance On Kill",
+   "displayName": "Hope",
+   "maxPoints": 1,
+   "tooltip": [
+    "12% Health Globe Chance"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyAuraMutator.healthGlobeOnNearbyEnemyDeathChance",
+     "perPoint": 0.12,
+     "flat": 0
+    }
+   ],
+   "nonStatSemantics": "Hope: healthGlobeOnNearbyEnemyDeathChance=0.12: OnActorDeath (not for unsummoned), enemy dies within 30 m of the caster mutator, RNG roll 12% -> spawns ability 0x14B (health globe). Independent of the buff pipeline."
+  },
+  {
+   "id": 28,
+   "name": "Holy Aura Flame Burst Area",
+   "displayName": "Inner Flame",
+   "maxPoints": 2,
+   "tooltip": [
+    "+1 Stacks on Melee Hit",
+    "+25% Flame Burst Area"
+   ],
+   "stats": [],
+   "fields": [
+    {
+     "target": "HolyFlameBurstMutator.increasedArea",
+     "perPoint": 0.25,
+     "flat": 0
+    },
+    {
+     "target": "HolyAuraMutator.addedFieryInquisitionStacksOnMeleeHit",
+     "perPoint": 1,
+     "flat": 0
+    },
+    {
+     "target": "AuraMutator.addedFieryInquisitionStacksOnMeleeHit",
+     "perPoint": 1,
+     "flat": 0
+    }
+   ],
+   "nonStatSemantics": "Inner Flame: HolyFlameBurstMutator.increasedArea=+0.25*p; HolyAuraMutator.addedFieryInquisitionStacksOnMeleeHit and AuraMutator.addedFieryInquisitionStacksOnMeleeHit = +1*p (feeds the personal flame-burst stack chance: passive 9+p, active 18+p)."
+  }
+ ],
+ "examples": {
+  "A_default_only_X0": {
+   "X": 0.0,
+   "M": 1.0,
+   "passive": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.15,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.3,
+     "source": "default"
+    }
+   ],
+   "active": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.3,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "default"
+    }
+   ]
+  },
+  "B_covenant5_fanaticism3_shelter5_firestorm5": {
+   "X": 0.2,
+   "M": 1.2,
+   "passive": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.18,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.36,
+     "source": "default"
+    },
+    {
+     "stat": "AttackSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.108,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "CastSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.108,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.3,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Endurance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.18,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Fire",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Lightning",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "Holy Aura Fire Damage"
+    }
+   ],
+   "active": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.36,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.72,
+     "source": "default"
+    },
+    {
+     "stat": "AttackSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.216,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "CastSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.216,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.6,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Endurance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.36,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Fire",
+     "kind": "increased",
+     "value": 1.2,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Lightning",
+     "kind": "increased",
+     "value": 1.2,
+     "source": "Holy Aura Fire Damage"
+    }
+   ]
+  },
+  "C_B_plus_dominion_mana25_flame_burst": {
+   "X": 0.2,
+   "M": 1.2,
+   "passive": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.18,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.36,
+     "source": "default"
+    },
+    {
+     "stat": "AttackSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.108,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "CastSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.108,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.3,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Endurance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.18,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Fire",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Lightning",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "HolyAuraStackForFlamBurst",
+     "tags": "Melee",
+     "kind": "ailment_chance",
+     "value": 1.2,
+     "source": "Holy Aura Fire Damage After Melee Hits"
+    },
+    {
+     "stat": "PoisonResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.24,
+     "source": "Holy Aura Poison Resist And Cleanse"
+    },
+    {
+     "stat": "ManaRegen",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.3,
+     "source": "extra"
+    }
+   ],
+   "active": [
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.36,
+     "source": "default"
+    },
+    {
+     "stat": "Damage",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.72,
+     "source": "default"
+    },
+    {
+     "stat": "AttackSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.216,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "CastSpeed",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.216,
+     "source": "Holy Aura Increased Attack and Cast Speed"
+    },
+    {
+     "stat": "ElementalResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.6,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Endurance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.36,
+     "source": "Holy Aura Added Ele Prot"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Fire",
+     "kind": "increased",
+     "value": 1.2,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "Damage",
+     "tags": "Lightning",
+     "kind": "increased",
+     "value": 1.2,
+     "source": "Holy Aura Fire Damage"
+    },
+    {
+     "stat": "HolyAuraStackForFlamBurst",
+     "tags": "Melee",
+     "kind": "ailment_chance",
+     "value": 2.4,
+     "source": "Holy Aura Fire Damage After Melee Hits"
+    },
+    {
+     "stat": "PoisonResistance",
+     "tags": "None",
+     "kind": "added",
+     "value": 0.48,
+     "source": "Holy Aura Poison Resist And Cleanse"
+    },
+    {
+     "stat": "ManaRegen",
+     "tags": "None",
+     "kind": "increased",
+     "value": 0.6,
+     "source": "extra"
+    }
+   ]
+  }
+ },
+ "conflict_resolution": {
+  "07j": "Correct for the ACTIVE path only (HolyAuraMutator: defaults*2.0, tree copy not re-multiplied). Missing: (1+X) factor, the passive AuraMutator path, extras, durations.",
+  "07h": "Correct (value * [k if useAuraStatsMultiplier] * (1+X)); flag is true for defaults and the mana regen/block/movespeed/stun extras, false for tree list, health regen and immunity. X comes from the display class (mgr.holyAuraIncreasedEffect + increasedEffectFromPassives); 07h only noted that +0x140 is not read inside the local function itself.",
+  "07c": "Correct: node stat -> AuraMutator.statsToApply (x1) and x2 copy -> HolyAuraMutator.statsToApply. Open question resolved: both lists reach the same recipients (caster + allies in 20 m); passive uses list 1 continuously, active uses list 2 during the boost window.",
+  "haiku_draft": "Mostly wrong/misleading: treats active buff as caster-only and passive as allies-only (both hit everyone, ignoreCreator=0); calls increasedEffectFromPassives a tree increased-aura-effect value (it is always 0; real X is mgr.holyAuraIncreasedEffect from passive Covenant of Light); misses the 4.0 s / 0.5 s timing, same-name replacement, extras, flame-burst personal buff."
+ }
+}

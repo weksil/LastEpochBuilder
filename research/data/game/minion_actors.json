@@ -1,0 +1,849 @@
+[
+ {
+  "actorData": "PrimalWolf",
+  "actorName": "Primal Wolf",
+  "id": -1710676233,
+  "actorBundle": "assets_5c5fece30ea3ceba.bundle",
+  "summonedBy": [
+   "SummonWolf"
+  ],
+  "abilities": [
+   "PrimalWolf 01 melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "Thorn Totem",
+  "actorName": "Thorn Totem",
+  "id": 437229610,
+  "actorBundle": "assets_fb5a3dadb9d7f80c.bundle",
+  "summonedBy": [
+   "SummonThornTotem"
+  ],
+  "abilities": [
+   "ThornTotemAttack"
+  ]
+ },
+ {
+  "actorData": "Spriggan",
+  "actorName": "Spriggan",
+  "id": 641778985,
+  "actorBundle": "assets_a3a6afa50fbe61e5.bundle",
+  "summonedBy": [
+   "SummonSpriggan"
+  ],
+  "abilities": [
+   "ThornVolley",
+   "LeafShield",
+   "EnsnaringRoots"
+  ]
+ },
+ {
+  "actorData": "Frenzy Totem",
+  "actorName": "Frenzy Totem",
+  "id": -16753547,
+  "actorBundle": "assets_6d4b0033bff01498.bundle",
+  "summonedBy": [
+   "SummonFrenzyTotem"
+  ],
+  "abilities": [
+   "FrenzyAura"
+  ]
+ },
+ {
+  "actorData": "PrimalBear",
+  "actorName": "Primal Bear",
+  "id": -587495951,
+  "actorBundle": "assets_e06f842e405bf72d.bundle",
+  "summonedBy": [
+   "SummonBear"
+  ],
+  "abilities": [
+   "PrimalBear 01 melee attack",
+   "BasicEnemyMelee",
+   "ThornTotemAttack",
+   "Swipe",
+   "Bear Ability"
+  ]
+ },
+ {
+  "actorData": "SummonedWraith",
+  "actorName": "Wraith",
+  "id": -1265228635,
+  "actorBundle": "assets_a75e2316cd06276f.bundle",
+  "summonedBy": [
+   "SummonWraith",
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Wraith 01 Melee",
+   "BasicEnemyMelee",
+   "SummonWraith"
+  ]
+ },
+ {
+  "actorData": "SummonedBoneGolem",
+  "actorName": "Bone Golem",
+  "id": 1643132262,
+  "actorBundle": "assets_c8d0c1f08b9261b9.bundle",
+  "summonedBy": [
+   "SummonBoneGolem",
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Bone Golem 02 Big Slam",
+   "Bone Golem 03 Leap Slam",
+   "golemMelee",
+   "Bone Golem Rampage",
+   "BasicEnemyMelee",
+   "SummonBoneGolem",
+   "BoneShatter"
+  ]
+ },
+ {
+  "actorData": "StormTotem",
+  "actorName": "Storm Totem",
+  "id": -1295824592,
+  "actorBundle": "assets_5e22454fccdde44f.bundle",
+  "summonedBy": [
+   "SummonStormTotem"
+  ],
+  "abilities": [
+   "LightningStorm"
+  ]
+ },
+ {
+  "actorData": "PrimalSabertooth",
+  "actorName": "Primal Sabertooth",
+  "id": -862371762,
+  "actorBundle": "assets_f9b98356d2a89650.bundle",
+  "summonedBy": [
+   "SummonSabertooth"
+  ],
+  "abilities": [
+   "PrimalSabertooth 01 Melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "PrimalScorpion",
+  "actorName": "Primal Scorpion",
+  "id": -1016943854,
+  "actorBundle": "assets_a8439393eb97073b.bundle",
+  "summonedBy": [
+   "SummonScorpion"
+  ],
+  "abilities": [
+   "ScorpionTailMelee",
+   "ScorpionMeleeComboStart"
+  ]
+ },
+ {
+  "actorData": "Manifest Shield",
+  "actorName": "Manifested Shield",
+  "id": 1284530888,
+  "actorBundle": "assets_5bf7ed7e7f839ace.bundle",
+  "summonedBy": [
+   "Ring Of Shields"
+  ],
+  "abilities": [
+   "FrenzyAura"
+  ]
+ },
+ {
+  "actorData": "ManifestedArmor",
+  "actorName": "Manifested Armor",
+  "id": -1887051005,
+  "actorBundle": "assets_5648a2f5fb4f6712.bundle",
+  "summonedBy": [
+   "ManifestArmor"
+  ],
+  "abilities": [
+   "Manifest Armor 01 Melee",
+   "ManifestArmor",
+   "Manifest Armor 03 Whirlwind Strike",
+   "Manifest Armor 04 Charge",
+   "Rive3",
+   "Manifest Armor 05 Fire Nova"
+  ]
+ },
+ {
+  "actorData": "Summon_Raptor",
+  "actorName": "Primal Raptor",
+  "id": -2022339802,
+  "actorBundle": "assets_b7ec8aea2b4d2c37.bundle",
+  "summonedBy": [
+   "SummonRaptor"
+  ],
+  "abilities": [
+   "FeatheredRaptorJumpSlash",
+   "BasicEnemyMelee",
+   "PoisonBoltAoD"
+  ]
+ },
+ {
+  "actorData": "SummonedRunicElemental",
+  "actorName": "Frost Elemental",
+  "id": 492106838,
+  "actorBundle": "assets_213ad15fccd55309.bundle",
+  "summonedBy": [
+   "SummonRunicElemental"
+  ],
+  "abilities": [
+   "IceBolt"
+  ]
+ },
+ {
+  "actorData": "Vine Wall",
+  "actorName": "Root Wall",
+  "id": 660161470,
+  "actorBundle": "assets_212a1418838d4a7d.bundle",
+  "summonedBy": [
+   "RuneWall"
+  ],
+  "abilities": []
+ },
+ {
+  "actorData": "SummonedBloodGolem",
+  "actorName": "Blood Golem",
+  "id": 1345331096,
+  "actorBundle": "assets_bbecc6ca52b586f9.bundle",
+  "summonedBy": [
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Bone Golem 09 Blood Orb",
+   "Bone Golem 02 Big Slam",
+   "Bone Golem 03 Leap Slam",
+   "golemMelee",
+   "Bone Golem Rampage",
+   "BasicEnemyMelee",
+   "SummonBoneGolem"
+  ]
+ },
+ {
+  "actorData": "SummonedPyreGolem",
+  "actorName": "Pyre Golem",
+  "id": 1705464854,
+  "actorBundle": "assets_142256d76e4d2de1.bundle",
+  "summonedBy": [
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Bone Golem 02 Big Slam",
+   "Bone Golem 03 Leap Slam",
+   "golemMelee",
+   "Bone Golem Rampage",
+   "BasicEnemyMelee",
+   "SummonBoneGolem",
+   "Pyre Golem InfernalAura"
+  ]
+ },
+ {
+  "actorData": "SummonedSpectralGolem",
+  "actorName": "Deathchill Golem",
+  "id": 359133292,
+  "actorBundle": "assets_701d90e2e3ba8271.bundle",
+  "summonedBy": [
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Bone Golem 10 Freezing Grasp",
+   "Bone Golem 02 Big Slam",
+   "Bone Golem 03 Leap Slam",
+   "golemMelee",
+   "Bone Golem Rampage",
+   "BasicEnemyMelee",
+   "SummonBoneGolem"
+  ]
+ },
+ {
+  "actorData": "SummonedSkeleton",
+  "actorName": "Skeleton Warrior",
+  "id": 1383321345,
+  "actorBundle": "assets_85320942399baa97.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonSKeletonWarrior"
+  ],
+  "abilities": [
+   "BasicEnemyMelee",
+   "DeathSlash",
+   "BoneArmor",
+   "SummonSkeleton"
+  ]
+ },
+ {
+  "actorData": "SummonedSkeletonArcher",
+  "actorName": "Skeleton Archer",
+  "id": 355475600,
+  "actorBundle": "assets_69b489393b2f831b.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonSKeletonArcher"
+  ],
+  "abilities": [
+   "Summon Skeleton Archer Bow Attack",
+   "FireArrow",
+   "IceArrow",
+   "SummonSkeleton"
+  ]
+ },
+ {
+  "actorData": "SummonedSkeletonRogue",
+  "actorName": "Skeleton Rogue",
+  "id": 1891272207,
+  "actorBundle": "assets_2e67673e06fc33a4.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonSkeletonRogue"
+  ],
+  "abilities": [
+   "Skeleton Rogue Shift",
+   "Skeleton Rogue Shurikens",
+   "Skeleton Rogue Melee",
+   "BasicEnemyMelee",
+   "SummonSkeleton",
+   "ShadowCascade"
+  ]
+ },
+ {
+  "actorData": "SummonedSkeletonMage",
+  "actorName": "Skeleton Mage",
+  "id": -1420193661,
+  "actorBundle": "assets_923bb0b878c88c4b.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "OldSummonSKeletonMage"
+  ],
+  "abilities": [
+   "Skeletal Mages Necrotic Projectile",
+   "HungeringSouls",
+   "NecroticMortar",
+   "Sacrifice",
+   "ProfaneOblation",
+   "SummonMage"
+  ]
+ },
+ {
+  "actorData": "SummonedCryomancer",
+  "actorName": "Cryomancer",
+  "id": -102425999,
+  "actorBundle": "assets_4f7bca411928a9fb.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonCryomancer"
+  ],
+  "abilities": [
+   "Skeletal Mages Cold Projectile",
+   "NecroticMortar",
+   "Sacrifice",
+   "ProfaneOblation",
+   "SummonMage",
+   "WovenIce"
+  ]
+ },
+ {
+  "actorData": "SummonedDeathKnight",
+  "actorName": "Death Knight",
+  "id": 1085152191,
+  "actorBundle": "assets_f2aa1d05098debdf.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonDeathKnight"
+  ],
+  "abilities": [
+   "DeathKnightHarvest",
+   "Basic Death Knight Melee",
+   "HungeringSouls",
+   "NecroticMortar",
+   "Sacrifice",
+   "ProfaneOblation",
+   "SummonMage"
+  ]
+ },
+ {
+  "actorData": "SummonedPyromancer",
+  "actorName": "Pyromancer",
+  "id": 65903566,
+  "actorBundle": "assets_8402c3842cf15d5b.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonPyromancer"
+  ],
+  "abilities": [
+   "Skeletal Mages Fire Projectile",
+   "NecroticMortar",
+   "Sacrifice",
+   "ProfaneOblation",
+   "SummonMage"
+  ]
+ },
+ {
+  "actorData": "SummonedFlameWraith",
+  "actorName": "Flame Wraith",
+  "id": 92841036,
+  "actorBundle": "assets_7857c14fbf2c38c9.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonFlameWraith"
+  ],
+  "abilities": [
+   "FireWraith_Fireball",
+   "SummonWraith"
+  ]
+ },
+ {
+  "actorData": "SummonedPutridWraith",
+  "actorName": "Putrid Wraith",
+  "id": 1838649367,
+  "actorBundle": "assets_f10ca2202ebef05f.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonPutridWraith"
+  ],
+  "abilities": [
+   "PoisonBoltAoD",
+   "SummonWraith"
+  ]
+ },
+ {
+  "actorData": "SummonedVolatileZombie",
+  "actorName": "Volatile Zombie",
+  "id": 1770252146,
+  "actorBundle": "assets_a05b22cbeec35238.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonVolatileZombie"
+  ],
+  "abilities": [
+   "Suicide",
+   "VolatileZombieExplosion"
+  ]
+ },
+ {
+  "actorData": "SummonedDreadRevenant",
+  "actorName": "Dread Revenant",
+  "id": -599709349,
+  "actorBundle": "assets_8e995d91550d046e.bundle",
+  "summonedBy": [
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "SummonedRevenant 02 WeaponThrow",
+   "SummonedRevenant 01 Melee",
+   "BasicEnemyMelee",
+   "DreadShade"
+  ]
+ },
+ {
+  "actorData": "SummonedAbomination",
+  "actorName": "Assembled Abomination",
+  "id": 182890515,
+  "actorBundle": "assets_74e79ae9813aa018.bundle",
+  "summonedBy": [
+   "AssembleAbomination"
+  ],
+  "abilities": [
+   "Abomination Consume Minions",
+   "Abomination Melee",
+   "BasicEnemyMelee",
+   "AssembleAbomination",
+   "Abomination Minion Stomp",
+   "Abomination Double Strike",
+   "soulReave",
+   "TailSlam",
+   "BoneNova"
+  ]
+ },
+ {
+  "actorData": "SummonedBloodWraith",
+  "actorName": "Blood Specter",
+  "id": -4618665,
+  "actorBundle": "assets_fc451acce65677ba.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonBloodWraith"
+  ],
+  "abilities": [
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "SummonedRevenant",
+  "actorName": "Revenant",
+  "id": 67753793,
+  "actorBundle": "assets_37ba289cc9a7d7d1.bundle",
+  "summonedBy": [
+   "AssembleAbomination",
+   "SummonRevenant"
+  ],
+  "abilities": [
+   "SummonedRevenant 02 WeaponThrow",
+   "SummonedRevenant 01 Melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "Ice Shield",
+  "actorName": "Ice Shield",
+  "id": -696289366,
+  "actorBundle": "assets_7e8937d5ac20aad1.bundle",
+  "summonedBy": [
+   "IceShield"
+  ],
+  "abilities": [
+   "NullAbility"
+  ]
+ },
+ {
+  "actorData": "ShadowClone",
+  "actorName": "Shadow Clone",
+  "id": 2083369535,
+  "actorBundle": "assets_dcbf201ebfa1b193.bundle",
+  "summonedBy": [
+   "ShadowAssault",
+   "SummonShadowClone"
+  ],
+  "abilities": [
+   "Shurikens",
+   "MultiShot",
+   "ShadowCascade"
+  ]
+ },
+ {
+  "actorData": "RogueBallista",
+  "actorName": "Ballista",
+  "id": 433532438,
+  "actorBundle": "assets_949efb5245fc4e4a.bundle",
+  "summonedBy": [
+   "SummonBallista"
+  ],
+  "abilities": [
+   "BallistaBolt",
+   "BasicEnemyMelee",
+   "FrenzyRoar"
+  ]
+ },
+ {
+  "actorData": "StormCrow",
+  "actorName": "Storm Crow",
+  "id": -122624660,
+  "actorBundle": "assets_0ed9502b46467379.bundle",
+  "summonedBy": [
+   "SummonStormCrow"
+  ],
+  "abilities": [
+   "StormCrowLightningBlast",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "RogueFalcon",
+  "actorName": "Falco",
+  "id": 1912701993,
+  "actorBundle": "assets_2754e47b889baa28.bundle",
+  "summonedBy": [
+   "Falconer 00 Falconry",
+   "Falconer 02 Aerial Assault"
+  ],
+  "abilities": [
+   "RogueFalcon Melee",
+   "RogueFalcon Diving Attack",
+   "BasicEnemyMelee",
+   "AcidFlask"
+  ]
+ },
+ {
+  "actorData": "Summoned Shaman Elemental",
+  "actorName": "",
+  "id": -547734569,
+  "actorBundle": "assets_8a56fc8d35342ec0.bundle",
+  "summonedBy": [
+   "PrimalistSummonElemental"
+  ],
+  "abilities": [
+   "PrimalistElemental 02 Geyser",
+   "PrimalistElemental 01 ElementalBolt",
+   "PrimalistSummonElemental"
+  ]
+ },
+ {
+  "actorData": "ClawTotem",
+  "actorName": "Claw Totem",
+  "id": 1780545022,
+  "actorBundle": "assets_0e758784115ad90c.bundle",
+  "summonedBy": [
+   "SummonClawTotem"
+  ],
+  "abilities": [
+   "Swipe",
+   "BasicPlayerAttack"
+  ]
+ },
+ {
+  "actorData": "Poisonous Vine",
+  "actorName": "Poisonous Vine",
+  "id": -1929825805,
+  "actorBundle": "assets_36288f9fe923c40a.bundle",
+  "summonedBy": [
+   "SummonVines",
+   "SummonVineAtTarget",
+   "SprigganSummonVines"
+  ],
+  "abilities": [
+   "SprigganVineMelee",
+   "SpiritThorns",
+   "ThornVolley"
+  ]
+ },
+ {
+  "actorData": "PrimalSerpent",
+  "actorName": "Primal Serpent",
+  "id": 1288161618,
+  "actorBundle": "assets_02f887f38c65cf4a.bundle",
+  "summonedBy": [
+   "SummonSerpent"
+  ],
+  "abilities": [
+   "SummonSerpentMelee 01",
+   "SerpentStrike"
+  ]
+ },
+ {
+  "actorData": "SummonedWeapon",
+  "actorName": "Forged Weapon",
+  "id": 1716794164,
+  "actorBundle": "assets_93cd4bc4ec4528c0.bundle",
+  "summonedBy": [
+   "SummonWeapon"
+  ],
+  "abilities": [
+   "ForgedWeapon 02 slice",
+   "ForgedWeapon 01 melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "Spirit Sabertooth",
+  "actorName": "Sabertooth Spirit",
+  "id": -566917984,
+  "actorBundle": "assets_ef811094ccf48152.bundle",
+  "summonedBy": [
+   "Summon Spirit Sabertooth"
+  ],
+  "abilities": [
+   "PrimalSabertooth 01 Melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "MirrorImage",
+  "actorName": "Mirror Image",
+  "id": 758075826,
+  "actorBundle": "assets_a8f0871c5c37665c.bundle",
+  "summonedBy": [
+   "SummonMirrorImage"
+  ],
+  "abilities": [
+   "IceBolt",
+   "LightningBlast",
+   "Fireball",
+   "Meteor"
+  ]
+ },
+ {
+  "actorData": "SummonedBoneMinion",
+  "actorName": "Bone Minion",
+  "id": 1098414492,
+  "actorBundle": "assets_d4b03dfa08a0c085.bundle",
+  "summonedBy": [
+   "SummonBoneMinion"
+  ],
+  "abilities": [
+   "BasicEnemyMelee",
+   "Transplant"
+  ]
+ },
+ {
+  "actorData": "SummonedRockElemental",
+  "actorName": "Coldstone Elemental",
+  "id": -712028046,
+  "actorBundle": "assets_ef24dc035142604d.bundle",
+  "summonedBy": [
+   "SummonRockElemental"
+  ],
+  "abilities": [
+   "Rock Elemental Melee"
+  ]
+ },
+ {
+  "actorData": "Tempest Totem",
+  "actorName": "Tempest Totem",
+  "id": -296959705,
+  "actorBundle": "assets_09ecb0e6be2832e7.bundle",
+  "summonedBy": [
+   "SummonTempestTotem"
+  ],
+  "abilities": [
+   "TempestStrike Lightning",
+   "Tempest Strike Frost Spear",
+   "Tempest Strike Whirlwind"
+  ]
+ },
+ {
+  "actorData": "Healing Totem",
+  "actorName": "Healing Totem",
+  "id": 2050893793,
+  "actorBundle": "assets_7563720bcdf186d4.bundle",
+  "summonedBy": [
+   "SummonSprigganHealingTotem",
+   "SummonHealingTotem"
+  ],
+  "abilities": [
+   "ButterflyHeal",
+   "ThornTotemAttack"
+  ]
+ },
+ {
+  "actorData": "ValeSpirit",
+  "actorName": "",
+  "id": 33890529,
+  "actorBundle": "assets_3ea90d4fc570efd6.bundle",
+  "summonedBy": [
+   "SummonValeSpirit"
+  ],
+  "abilities": [
+   "SpiritThorns",
+   "ValeBeam"
+  ]
+ },
+ {
+  "actorData": "BabyScorpion",
+  "actorName": "Baby Scorpion",
+  "id": 297012611,
+  "actorBundle": "assets_06b23ef0087100fa.bundle",
+  "summonedBy": [
+   "SummonBabyScorpion"
+  ],
+  "abilities": [
+   "ScorpionTailMelee",
+   "ScorpionMeleeComboStart"
+  ]
+ },
+ {
+  "actorData": "NecroticWispMinion",
+  "actorName": "Soul Wisp",
+  "id": -661428324,
+  "actorBundle": "assets_0a43a83d1b14c644.bundle",
+  "summonedBy": [
+   "SummonNecroticWisp"
+  ],
+  "abilities": [
+   "WispNecroticNova",
+   "WispNecroticBeam",
+   "BasicEnemyMelee",
+   "WispNecroticDeathNova"
+  ]
+ },
+ {
+  "actorData": "Bone Pillar",
+  "actorName": "Bone Pillar",
+  "id": -1269216036,
+  "actorBundle": "assets_7623ff0be11a6569.bundle",
+  "summonedBy": [
+   "SummonBonePrison"
+  ],
+  "abilities": []
+ },
+ {
+  "actorData": "SummonedSkeletonVanguard",
+  "actorName": "Skeleton Vanguard",
+  "id": 706859485,
+  "actorBundle": "assets_836508cfda8b38b8.bundle",
+  "summonedBy": [
+   "SummonSkeletonVanguard"
+  ],
+  "abilities": [
+   "SkeletonVanguard 01 Melee",
+   "BasicEnemyMelee"
+  ]
+ },
+ {
+  "actorData": "Warcry Totem",
+  "actorName": "Warcry Totem",
+  "id": 252480057,
+  "actorBundle": "assets_4f17ff0bf05275e9.bundle",
+  "summonedBy": [
+   "SummonWarcryTotem"
+  ],
+  "abilities": [
+   "Warcry"
+  ]
+ },
+ {
+  "actorData": "SummonedCorpseParasite",
+  "actorName": "Corpse Parasite",
+  "id": -2112698599,
+  "actorBundle": "assets_cd92cb3c4ad2cffd.bundle",
+  "summonedBy": [
+   "SummonCorpseParasite"
+  ],
+  "abilities": [
+   "BasicEnemyMelee",
+   "LightningBlast"
+  ]
+ },
+ {
+  "actorData": "SummonedHive",
+  "actorName": "Hive",
+  "id": -920828282,
+  "actorBundle": "assets_437455a68ec6756e.bundle",
+  "summonedBy": [
+   "SwarmbladeSummonHive"
+  ],
+  "abilities": [
+   "HiveLocustSpawn",
+   "NullAbility"
+  ]
+ },
+ {
+  "actorData": "SummonedLocust",
+  "actorName": "Locust",
+  "id": -341075858,
+  "actorBundle": "assets_71f6a6f84468bbc5.bundle",
+  "summonedBy": [
+   "SummonLocust"
+  ],
+  "abilities": [
+   "LocustAttack",
+   "BasicEnemyMelee",
+   "LightningBlast"
+  ]
+ },
+ {
+  "actorData": "Upheaval Totem",
+  "actorName": "Upheaval Totem",
+  "id": 1518457355,
+  "actorBundle": "assets_32a3977eb2459bf8.bundle",
+  "summonedBy": [
+   "SummonUpheavalTotem"
+  ],
+  "abilities": [
+   "Upheaval"
+  ]
+ },
+ {
+  "actorData": "RogueDecoy",
+  "actorName": "Decoy",
+  "id": 1762691148,
+  "actorBundle": "assets_c4d4ef3e516c8322.bundle",
+  "summonedBy": [
+   "Summon Decoy"
+  ],
+  "abilities": [
+   "NullAbility",
+   "Decoy Explosion"
+  ]
+ }
+]

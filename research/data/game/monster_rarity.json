@@ -1,0 +1,43 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "Monster Rarity Manager.asset (magic/rare) + MonsterRarityManager.setActorRarity code",
+ "schema": "see research/07a_assets_core_data.md §monster_rarity",
+ "formulas": {
+  "effectiveHealthModifier": "UnitHealth.effectiveHealthModifier += additionalEffectiveHealthModifier",
+  "healthPerLevel'": "increasedHealthPerLevel / (1 + 0.5*UnitHealth.effectiveHealthModifier)  if UnitHealth.healthSerialisation == 1 and effectiveHealthModifier > 0, else increasedHealthPerLevel",
+  "Health": "ChangeStatModifier(SP7 Health, increasedHealth + level*healthPerLevel', MORE)",
+  "Damage": "ChangeStatModifier(SP0 Damage, increasedDamage, MORE)",
+  "Experience": "xp *= 1 + increasedExperience + level*increasedExperiencePerLevel",
+  "ItemDrops": "drop chance *= (1 + increasedItemDrops) (capped so chance <= 1, remainder moves to quantity)",
+  "Size": "scale *= 1 + increasedSize",
+  "source": "MonsterRarityManager.setActorRarity @0x1827FE1B0 (ISIL: both calls use ModType 2 = MORE)"
+ },
+ "data": {
+  "magic": {
+   "increasedHealth": 1.15,
+   "increasedHealthPerLevel": 0,
+   "additionalEffectiveHealthModifier": 1,
+   "increasedDamage": 0.6,
+   "increasedExperience": 0.5,
+   "increasedExperiencePerLevel": 0,
+   "increasedItemDrops": 2.05,
+   "guaranteedRareItemDrop": 0,
+   "hasAPrefix": 0,
+   "hasASuffix": 1,
+   "increasedSize": 0.2
+  },
+  "rare": {
+   "increasedHealth": 1.6,
+   "increasedHealthPerLevel": 0.02,
+   "additionalEffectiveHealthModifier": 2.5,
+   "increasedDamage": 0.9,
+   "increasedExperience": 2,
+   "increasedExperiencePerLevel": 0.04,
+   "increasedItemDrops": 5.2,
+   "guaranteedRareItemDrop": 1,
+   "hasAPrefix": 1,
+   "hasASuffix": 1,
+   "increasedSize": 0.5
+  }
+ }
+}

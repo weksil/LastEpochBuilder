@@ -1,0 +1,1307 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "Resources/SetBonusesList.asset",
+ "schema": "see research/07a_assets_core_data.md §sets",
+ "data": [
+  {
+   "setID": 1,
+   "setName": "Isadora's",
+   "bonuses": [
+    {
+     "property": 69,
+     "propertyName": "ManaEfficiency",
+     "specialTag": 0,
+     "tags": 288,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Necrotic",
+      "Spell"
+     ],
+     "rounding": "Hundredth",
+     "value": 0.3,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 1,
+     "propertyName": "AilmentChance",
+     "specialTag": 39,
+     "tags": 288,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Necrotic",
+      "Spell"
+     ],
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 43,
+     "propertyName": "IncreasedAilmentEffect",
+     "specialTag": 39,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [],
+     "rounding": "Hundredth",
+     "value": 0.3,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "+30% Mana Efficiency with Necrotic Spells",
+     "altText": null,
+     "setRequirement": 3
+    },
+    {
+     "description": "+100% Chance to apply Damned on hit with Necrotic Spells",
+     "altText": "Damned deals necrotic damage over time and reduces health regen by 20%. An enemy can have multiple stacks of Damned at once.",
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 5,
+     "name": "Isadora's Revenge"
+    },
+    {
+     "uniqueID": 16,
+     "name": "Isadora's Tomb Binding"
+    },
+    {
+     "uniqueID": 26,
+     "name": "Isadora's Gravechill"
+    }
+   ]
+  },
+  {
+   "setID": 2,
+   "setName": "Invoker's",
+   "bonuses": [
+    {
+     "property": 3,
+     "propertyName": "CastSpeed",
+     "specialTag": 0,
+     "tags": 128,
+     "extraTag": 0,
+     "modType": "INCREASED",
+     "tagNames": [
+      "Elemental"
+     ],
+     "rounding": "Hundredth",
+     "value": 0.15,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 264,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Fire",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 258,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Lightning",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 260,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Cold",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "+2 to Fire Spells\n+2 to Lightning Spells\n+2 to Cold Spells",
+     "altText": null,
+     "setRequirement": 3
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 57,
+     "name": "The Invoker's Frozen Heart"
+    },
+    {
+     "uniqueID": 63,
+     "name": "The Invoker's Scorching Grasp"
+    },
+    {
+     "uniqueID": 64,
+     "name": "The Invoker's Static Touch"
+    }
+   ]
+  },
+  {
+   "setID": 3,
+   "setName": "Apiarist's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 6,
+     "tags": 353,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 4.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 634,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Your bees cannot be damaged for 4 seconds after being summoned",
+     "altText": null,
+     "setRequirement": 2
+    },
+    {
+     "description": "Summon the Queen Bee",
+     "altText": "The Queen Bee is a powerful minion and grants Frenzy and Haste to other bees",
+     "setRequirement": 3
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 77,
+     "name": "Apiarist's Smoker"
+    },
+    {
+     "uniqueID": 78,
+     "name": "Apiarist's Suit"
+    },
+    {
+     "uniqueID": 79,
+     "name": "Apiarist's Comb"
+    }
+   ]
+  },
+  {
+   "setID": 4,
+   "setName": "Sunforged",
+   "bonuses": [
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 1,
+     "tags": 218,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Lightning",
+      "Fire",
+      "Void",
+      "Poison",
+      "Elemental"
+     ],
+     "rounding": "Integer",
+     "value": 3.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 0,
+     "tags": 220,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 3.0,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 1,
+     "tags": 354,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Lightning",
+      "Necrotic",
+      "Poison",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 3.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "+3 to Forge Strike\n+3 to Smelter's Wrath",
+     "altText": null,
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 85,
+     "name": "Sunforged Hammer"
+    },
+    {
+     "uniqueID": 86,
+     "name": "Sunforged Cuirass"
+    },
+    {
+     "uniqueID": 87,
+     "name": "Sunforged Greathelm"
+    }
+   ]
+  },
+  {
+   "setID": 5,
+   "setName": "Forgotten Knight",
+   "bonuses": [
+    {
+     "property": 115,
+     "propertyName": "DamagePerStackOfAilment",
+     "specialTag": 9,
+     "tags": 16,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [
+      "Void"
+     ],
+     "rounding": "Hundredth",
+     "value": 0.03,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 43,
+     "propertyName": "IncreasedAilmentEffect",
+     "specialTag": 9,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [],
+     "rounding": "Hundredth",
+     "value": 0.5,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 88,
+     "name": "Blade of the Forgotten Knight"
+    },
+    {
+     "uniqueID": 89,
+     "name": "Defiance of the Forgotten Knight"
+    },
+    {
+     "uniqueID": 90,
+     "name": "Locket of the Forgotten Knight"
+    }
+   ]
+  },
+  {
+   "setID": 6,
+   "setName": "Last Bear's",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 515,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 19,
+     "propertyName": "Strength",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [],
+     "rounding": "Integer",
+     "value": 30.0,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 94,
+     "name": "The Last Bear's Fury"
+    },
+    {
+     "uniqueID": 95,
+     "name": "The Last Bear's Scorn"
+    },
+    {
+     "uniqueID": 96,
+     "name": "The Last Bear's Lament"
+    }
+   ]
+  },
+  {
+   "setID": 7,
+   "setName": "Halvar's",
+   "bonuses": [
+    {
+     "property": 0,
+     "propertyName": "Damage",
+     "specialTag": 0,
+     "tags": 260,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Cold",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 20.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 0,
+     "propertyName": "Damage",
+     "specialTag": 0,
+     "tags": 257,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Physical",
+      "Spell"
+     ],
+     "rounding": "Integer",
+     "value": 20.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 68,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 1,
+     "tags": 209,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Physical",
+      "Void",
+      "Poison",
+      "Elemental"
+     ],
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 97,
+     "name": "Halvar's Pledge"
+    },
+    {
+     "uniqueID": 98,
+     "name": "Halvar's Stand"
+    },
+    {
+     "uniqueID": 99,
+     "name": "Last Gift of the Mountain"
+    }
+   ]
+  },
+  {
+   "setID": 8,
+   "setName": "Pebbles'",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 3,
+     "tags": 157,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.05,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 2,
+     "tags": 120,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 42.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Your Summon Skeletons' spells and attacks deal +42 fire, cold or lightning damage. The element selected is your lowest elemental resistance.",
+     "altText": null,
+     "setRequirement": 3
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 100,
+     "name": "Pebbles' Femur"
+    },
+    {
+     "uniqueID": 101,
+     "name": "Pebbles' Collar"
+    },
+    {
+     "uniqueID": 102,
+     "name": "Pebbles' Bitemarked Sash"
+    }
+   ]
+  },
+  {
+   "setID": 9,
+   "setName": "Shattered Lance",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 196,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.04,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 109,
+     "name": "Shard of the Shattered Lance"
+    },
+    {
+     "uniqueID": 110,
+     "name": "Fragments of the Shattered Lance"
+    }
+   ]
+  },
+  {
+   "setID": 10,
+   "setName": "Boardman's",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 85,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 1,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 0,
+     "tags": 195,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 1,
+     "tags": 195,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Storm Totem can hit allies to grant 21 health",
+     "altText": "Health granted is not affected by minion healing effectiveness",
+     "setRequirement": 2
+    },
+    {
+     "description": "Storm Totem can hit allies to grant 21 ward",
+     "altText": null,
+     "setRequirement": 3
+    },
+    {
+     "description": "Limited to One Active Companion",
+     "altText": null,
+     "setRequirement": 1
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 127,
+     "name": "Boardman's Plank"
+    },
+    {
+     "uniqueID": 128,
+     "name": "Boardman's Fallacy"
+    },
+    {
+     "uniqueID": 129,
+     "name": "Boardman's Legacy"
+    }
+   ]
+  },
+  {
+   "setID": 11,
+   "setName": "Zerrick's",
+   "bonuses": [
+    {
+     "property": 47,
+     "propertyName": "IncreasedPotionDropRate",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [],
+     "rounding": "Hundredth",
+     "value": 0.72,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 48,
+     "propertyName": "PotionHealth",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [],
+     "rounding": "Hundredth",
+     "value": -1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 0,
+     "propertyName": "Damage",
+     "specialTag": 0,
+     "tags": 66080,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Necrotic",
+      "Melee",
+      "Potion"
+     ],
+     "rounding": "Integer",
+     "value": 54.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 0,
+     "propertyName": "Damage",
+     "specialTag": 0,
+     "tags": 66592,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Necrotic",
+      "Throwing",
+      "Potion"
+     ],
+     "rounding": "Integer",
+     "value": 54.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 92,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "specialTag": 0,
+     "tags": 64,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [
+      "Poison"
+     ],
+     "rounding": "Thousandth",
+     "value": -0.18,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "specialTag": 0,
+     "tags": 32,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [
+      "Necrotic"
+     ],
+     "rounding": "Thousandth",
+     "value": -0.18,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Potions no longer heal you, but instead grant +54 necrotic damage to melee and throwing attacks and mark you for death for 4 seconds.",
+     "altText": "Mark for Death is a curse that reduces all resistances by 25%.",
+     "setRequirement": 2
+    },
+    {
+     "description": "18% less Poison and Necrotic Damage Taken",
+     "altText": "Multiplicative with other modifiers",
+     "setRequirement": 3
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 138,
+     "name": "Zerrick's Guile"
+    },
+    {
+     "uniqueID": 139,
+     "name": "Zerrick's Greed"
+    },
+    {
+     "uniqueID": 140,
+     "name": "Zerrick's Ambition"
+    }
+   ]
+  },
+  {
+   "setID": 12,
+   "setName": "Gaspar's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 4,
+     "tags": 517,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.5,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 0,
+     "tags": 517,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 117,
+     "propertyName": "GlobalConditionalDamage",
+     "specialTag": 4,
+     "tags": 16,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [
+      "Void"
+     ],
+     "rounding": "Hundredth",
+     "value": 0.15,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 156,
+     "name": "Gaspar's Will"
+    },
+    {
+     "uniqueID": 157,
+     "name": "Gaspar's Acuity"
+    },
+    {
+     "uniqueID": 158,
+     "name": "Gaspar's Insight"
+    }
+   ]
+  },
+  {
+   "setID": 13,
+   "setName": "Sinathia's",
+   "bonuses": [
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 16777216,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Curse"
+     ],
+     "rounding": "Integer",
+     "value": 3.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 8192,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Minion"
+     ],
+     "rounding": "Integer",
+     "value": 3.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "+3 to Curse Skills\n+3 to Minion Skills",
+     "altText": null,
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 170,
+     "name": "Sinathia's Dying Breath"
+    },
+    {
+     "uniqueID": 171,
+     "name": "Sinathia's Resurrection"
+    }
+   ]
+  },
+  {
+   "setID": 14,
+   "setName": "Ruby Fang",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 195,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.01,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 662,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 173,
+     "name": "Ruby Fang Cleaver"
+    },
+    {
+     "uniqueID": 174,
+     "name": "Ruby Fang Aegis"
+    }
+   ]
+  },
+  {
+   "setID": 15,
+   "setName": "Vilatria's",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 146,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 185,
+     "name": "Vilatria's Storm Crown"
+    },
+    {
+     "uniqueID": 186,
+     "name": "Vilatria's Downfall"
+    }
+   ]
+  },
+  {
+   "setID": 16,
+   "setName": "Corsair's",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 149,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 6,
+     "propertyName": "DamageTaken",
+     "specialTag": 6,
+     "tags": 32,
+     "extraTag": 0,
+     "modType": "MORE",
+     "tagNames": [
+      "Necrotic"
+     ],
+     "rounding": "Thousandth",
+     "value": -0.35,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 193,
+     "name": "Corsair's Boarding Shield"
+    },
+    {
+     "uniqueID": 194,
+     "name": "Corsair's Blood Cowl"
+    }
+   ]
+  },
+  {
+   "setID": 17,
+   "setName": "Ferebor's",
+   "bonuses": [
+    {
+     "property": 88,
+     "propertyName": "LevelOfSkills",
+     "specialTag": 0,
+     "tags": 16384,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [
+      "Totem"
+     ],
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 227,
+     "name": "Ferebor's Chisel"
+    },
+    {
+     "uniqueID": 228,
+     "name": "Ferebor's Persistence"
+    }
+   ]
+  },
+  {
+   "setID": 18,
+   "setName": "Lich's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 0,
+     "tags": 370,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 4.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 260,
+     "name": "Lich's Envy"
+    },
+    {
+     "uniqueID": 261,
+     "name": "Lich's Scorn"
+    }
+   ]
+  },
+  {
+   "setID": 19,
+   "setName": "Doppelganger's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 7,
+     "tags": 469,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 8,
+     "tags": 469,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 2.0,
+     "setRequirement": 3,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Evade creates a Shadow at your original position",
+     "altText": null,
+     "setRequirement": 2
+    },
+    {
+     "description": "Traversal skills create 2 Shadows along their path",
+     "altText": null,
+     "setRequirement": 3
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 451,
+     "name": "Doppelganger's Mimicry"
+    },
+    {
+     "uniqueID": 452,
+     "name": "Doppelganger's Deception"
+    },
+    {
+     "uniqueID": 453,
+     "name": "Doppelganger's Facade"
+    }
+   ]
+  },
+  {
+   "setID": 20,
+   "setName": "Weaver",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 623,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.5,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Legendary affixes on equipped Weaver's Will weapons have 50% increased effect",
+     "altText": null,
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 454,
+     "name": "Abandoned Eyes of the Weaver"
+    },
+    {
+     "uniqueID": 455,
+     "name": "Abandoned Chitin of the Weaver"
+    }
+   ]
+  },
+  {
+   "setID": 21,
+   "setName": "Kuzon's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 1,
+     "tags": 489,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Integer",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Throwing a Burning Dagger grants a stack of Dancing Dragon for 4 seconds, which grants 2% increased dodge rating, 4% increased fire damage, and 4% increased area for fire area skills for 4 seconds. This effect can trigger up to 40 times per 4 seconds.",
+     "altText": null,
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 456,
+     "name": "Kuzon's Fury"
+    },
+    {
+     "uniqueID": 457,
+     "name": "Kuzon's Guise"
+    }
+   ]
+  },
+  {
+   "setID": 22,
+   "setName": "Jormun's",
+   "bonuses": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 632,
+     "extraTag": 0,
+     "modType": "MORE",
+     "rounding": "Hundredth",
+     "value": 0.2,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 5,
+     "propertyName": "CriticalMultiplier",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "tagNames": [],
+     "rounding": "Hundredth",
+     "value": 0.1,
+     "setRequirement": 3,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 464,
+     "name": "Jormun's Thirst"
+    },
+    {
+     "uniqueID": 465,
+     "name": "Jormun's Hunger"
+    },
+    {
+     "uniqueID": 466,
+     "name": "Jormun's Feast"
+    }
+   ]
+  },
+  {
+   "setID": 23,
+   "setName": "Keplahan's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 11,
+     "tags": 78,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 0.3,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    },
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 12,
+     "tags": 78,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 1
+    }
+   ],
+   "tooltipDescriptions": [
+    {
+     "description": "Volcanic Orbs now orbit you",
+     "altText": "Orbiting Volcanic Orbs cannot have their speed reduced by more than 50%",
+     "setRequirement": 2
+    }
+   ],
+   "items": [
+    {
+     "uniqueID": 467,
+     "name": "Keplahan's Pyrolith"
+    },
+    {
+     "uniqueID": 468,
+     "name": "Keplahan's Cryolith"
+    }
+   ]
+  },
+  {
+   "setID": 24,
+   "setName": "Caretaker's",
+   "bonuses": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 13,
+     "tags": 71,
+     "extraTag": 0,
+     "modType": "ADDED",
+     "rounding": "Hundredth",
+     "value": 1.0,
+     "setRequirement": 2,
+     "hideInTooltip": 0
+    }
+   ],
+   "tooltipDescriptions": [],
+   "items": [
+    {
+     "uniqueID": 481,
+     "name": "Caretaker's Wrath"
+    },
+    {
+     "uniqueID": 482,
+     "name": "Caretaker's Regrowth"
+    }
+   ]
+  }
+ ]
+}

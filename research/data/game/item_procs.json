@@ -1,0 +1,1389 @@
+{
+ "gameVersion": "1.5.0",
+ "abilityPropertyProcs": [
+  {
+   "unique": "Vipertail",
+   "uniqueID": 15,
+   "ability": "SerpentStrike",
+   "abilityID": 61,
+   "propertyIndex": 0,
+   "tooltip": "Chance to Summon a Primal Serpent on kill with Serpent Strike",
+   "field": "serpentStrikeSnakeOnKillChance",
+   "value": {
+    "min": 0.07,
+    "max": 0.07
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Sunforged Hammer",
+   "uniqueID": 85,
+   "ability": "SummonWeapon",
+   "abilityID": 220,
+   "propertyIndex": 4,
+   "tooltip": "Ignite Chance per Forged Weapon",
+   "field": "igniteChancePerSummonedWeapon",
+   "value": {
+    "min": 0.3,
+    "max": 0.6
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Boardman Plank",
+   "uniqueID": 127,
+   "ability": "TempestStrike",
+   "abilityID": 270,
+   "propertyIndex": 1,
+   "tooltip": "Chance to summon a Storm Totem on hit with Tempest Strike",
+   "field": "chanceToSummonStormTotemOnTempestHit",
+   "value": {
+    "min": 0.21,
+    "max": 0.21
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Eulogy of Blood",
+   "uniqueID": 151,
+   "ability": "RipBlood",
+   "abilityID": 137,
+   "propertyIndex": 1,
+   "tooltip": "Chance to Cast Rip Blood at 5 nearby targets on Melee Hit (2 second cooldown)",
+   "field": "chanceToCastRipBloodAt5NearbyTargetsOnMeleeHit",
+   "value": {
+    "min": 0.3,
+    "max": 0.4
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Eye of Storms",
+   "uniqueID": 154,
+   "ability": "Maelstrom",
+   "abilityID": 318,
+   "propertyIndex": 0,
+   "tooltip": "chance to cast Maelstrom every 3 seconds",
+   "field": "chanceToCastMaelstromPerThreeSecond",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Gaspar Will",
+   "uniqueID": 156,
+   "ability": "GasparSetSwipe",
+   "abilityID": 517,
+   "propertyIndex": 1,
+   "tooltip": "Chance to cast Decimate when you directly use a Fire Spell (3 second cooldown)",
+   "field": "gasparSetSwipeChanceOnFireSpellUsed",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Gaspar Acuity",
+   "uniqueID": 157,
+   "ability": "GasparSetSwipe",
+   "abilityID": 517,
+   "propertyIndex": 3,
+   "tooltip": "Chance to cast Decimate when you directly use a Lightning Spell (3 second cooldown)",
+   "field": "gasparSetSwipeChanceOnLightningSpellUsed",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Gaspar Insight",
+   "uniqueID": 158,
+   "ability": "GasparSetSwipe",
+   "abilityID": 517,
+   "propertyIndex": 2,
+   "tooltip": "Chance to cast Decimate when you directly use a Cold Spell (3 second cooldown)",
+   "field": "gasparSetSwipeChanceOnColdSpellUsed",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Bhuldar Wrath",
+   "uniqueID": 162,
+   "ability": "EarthquakeSlam",
+   "abilityID": 339,
+   "propertyIndex": 0,
+   "tooltip": "chance to use Earthquake after using a non-channelled movement ability(up to 2 times per 5 seconds)",
+   "field": "earthquakeOnMovementEndChance",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Herkir Vessel",
+   "uniqueID": 163,
+   "ability": "FireAura",
+   "abilityID": 162,
+   "propertyIndex": 4,
+   "tooltip": "Chance to cast Fire Aura on Potion Use",
+   "field": "chanceToCastFireAuraOnPotionUse",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Unique Skeleton Shield",
+   "uniqueID": 171,
+   "ability": "SummonSkeleton",
+   "abilityID": 120,
+   "propertyIndex": 5,
+   "tooltip": "chance when one of your Skeletons dies to resummon a new one after 3 seconds",
+   "field": "chanceToResummonSkeletonsAfter3Seconds",
+   "value": {
+    "min": 0.32,
+    "max": 0.46
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Herald of the Scurry",
+   "uniqueID": 172,
+   "ability": "SummonWolf",
+   "abilityID": 8,
+   "propertyIndex": 0,
+   "tooltip": "Chance to Inflict Bleed on Hit for Squirrels",
+   "field": "chanceToBleedOnHitForSquirrels",
+   "value": {
+    "min": 0.05,
+    "max": 0.75
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Herald of the Scurry",
+   "uniqueID": 172,
+   "ability": "SummonWolf",
+   "abilityID": 8,
+   "propertyIndex": 1,
+   "tooltip": "Chance to Shred Physical Resistance on Hit for Squirrels",
+   "field": "chanceToShredPhysOnHitForSquirrels",
+   "value": {
+    "min": 0.05,
+    "max": 0.75
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Lethal Concentration",
+   "uniqueID": 184,
+   "ability": "Harvest",
+   "abilityID": 185,
+   "propertyIndex": 2,
+   "tooltip": "chance to cast Jade Dust on Hit with Harvest",
+   "field": "jadeDustOnHitChance",
+   "value": {
+    "min": 0.25,
+    "max": 0.25
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Sanguine Hoard",
+   "uniqueID": 189,
+   "ability": "HailOfArrows",
+   "abilityID": 479,
+   "propertyIndex": 4,
+   "tooltip": "Chance to Inflict Bleed on Hit gained as Bleed Chance per second with Hail of Arrows",
+   "field": "chanceToBleedOnHitGainedAsBleedChancePerSecondForHailOfArrow",
+   "value": {
+    "min": 1.0,
+    "max": 1.25
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Aurelis",
+   "uniqueID": 225,
+   "ability": "Multistrike",
+   "abilityID": 533,
+   "propertyIndex": 2,
+   "tooltip": "chance to cast Smite after you use Multistrike and hit a boss or rare enemy",
+   "field": "smiteChanceOnRareOrBossHitWithMultistrike",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Chronicle of the Damned",
+   "uniqueID": 247,
+   "ability": "HungeringSouls",
+   "abilityID": 153,
+   "propertyIndex": 5,
+   "tooltip": "chance to inflict Damned on hit with Hungering Souls per active Wandering Spirit",
+   "field": "hungeringSoulsDamnedChancePerActiveWanderingSpirit",
+   "value": {
+    "min": 0.11,
+    "max": 0.16
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Pyre of Affliction",
+   "uniqueID": 259,
+   "ability": "Transplant",
+   "abilityID": 253,
+   "propertyIndex": 3,
+   "tooltip": "Chance to Convert every stack of Ignite on you to Damned when you directly cast Transplant",
+   "field": "chanceToConvertIgniteStacksOnSelfToDamnedWithh160pIncreasedDurationOnTransplantUse",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Penumbra",
+   "uniqueID": 262,
+   "ability": "Lethal Mirage",
+   "abilityID": 468,
+   "propertyIndex": 6,
+   "tooltip": "chance to apply a Shadow Dagger on hit with Lethal Mirage",
+   "field": "lethalMirageShadowDaggerChance",
+   "value": {
+    "min": 0.5,
+    "max": 0.5
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Bloodkeepers Nest",
+   "uniqueID": 268,
+   "ability": "SummonBee",
+   "abilityID": 353,
+   "propertyIndex": 3,
+   "tooltip": "Chance to apply Frailty on hit for Bees",
+   "field": null,
+   "value": {
+    "min": 0.32,
+    "max": 0.56
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Scales of Lemniscate",
+   "uniqueID": 269,
+   "ability": "InfernalShade",
+   "abilityID": 370,
+   "propertyIndex": 4,
+   "tooltip": "Chance to Apply Frailty and Slow to nearby enemies every second for Infernal Shade",
+   "field": "infernalShadeFrailtyAndSlowEverySecond",
+   "value": {
+    "min": 2.0,
+    "max": 2.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Lament of the Lost Refuge",
+   "uniqueID": 273,
+   "ability": "VolcanicOrb",
+   "abilityID": 78,
+   "propertyIndex": 7,
+   "tooltip": "chance to gain Corrupted Heraldry when you cast Volcanic Orb",
+   "field": "corruptedHeraldryChanceOnVolcanicOrbCast",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Lament of the Lost Refuge",
+   "uniqueID": 273,
+   "ability": "VolcanicOrb",
+   "abilityID": 78,
+   "propertyIndex": 8,
+   "tooltip": "chance to gain Corrupted Heraldry when hit by Shrapnel from Volcanic Orb",
+   "field": "corruptedHeraldryChanceOnVolcanicOrbShrapnelHit",
+   "value": {
+    "min": 0.24,
+    "max": 0.36
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Liaths Machinations",
+   "uniqueID": 276,
+   "ability": "Fireball",
+   "abilityID": 1,
+   "propertyIndex": 3,
+   "tooltip": "Chance to apply a Spark Charge on Hit with Fireball",
+   "field": "fireballSparkChargeChance",
+   "value": {
+    "min": 0.2,
+    "max": 0.28
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Shadow Beacon",
+   "uniqueID": 279,
+   "ability": "ErasingStrike",
+   "abilityID": 114,
+   "propertyIndex": 0,
+   "tooltip": "Chance to transport Devouring Orbs around the target location when you use Erasing Strike",
+   "field": "chanceToTransportDevouringOrbsWhenUsingErasingStrike",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "The Ghost Maker",
+   "uniqueID": 284,
+   "ability": "SummonWraith",
+   "abilityID": 146,
+   "propertyIndex": 3,
+   "tooltip": "Chance to Cast Summon Wraith on Kill",
+   "field": "wraithOnKillChance",
+   "value": {
+    "min": 0.11,
+    "max": 0.16
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "The Ghost Maker",
+   "uniqueID": 284,
+   "ability": "SummonWraith",
+   "abilityID": 146,
+   "propertyIndex": 4,
+   "tooltip": "Chance to Cast Summon Wraith when a Wraith kills an enemy",
+   "field": "wraithOnWraithKillChance",
+   "value": {
+    "min": 0.11,
+    "max": 0.16
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "The Ghost Maker",
+   "uniqueID": 284,
+   "ability": "InfernalShade",
+   "abilityID": 370,
+   "propertyIndex": 6,
+   "tooltip": "Chance to Cast Infernal Shade on Kill",
+   "field": "infernalShadeOnKillChance",
+   "value": {
+    "min": 0.22,
+    "max": 0.36
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "The Ghost Maker",
+   "uniqueID": 284,
+   "ability": "SummonWraith",
+   "abilityID": 146,
+   "propertyIndex": 5,
+   "tooltip": "Chance to Cast Infernal Shade when a Wraith kills an enemy",
+   "field": "infernalShadeOnWraithKillChance",
+   "value": {
+    "min": 0.22,
+    "max": 0.36
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Bos Anarchy",
+   "uniqueID": 289,
+   "ability": "Shurikens",
+   "abilityID": 263,
+   "propertyIndex": 4,
+   "tooltip": "chance for Shurikens to Ricochet 3 additional times",
+   "field": "chanceFor3ExtraRicochetsWithShurikens",
+   "value": {
+    "min": 0.3,
+    "max": 0.48
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Cycle of Putrescence",
+   "uniqueID": 303,
+   "ability": "SummonVolatileZombie",
+   "abilityID": 408,
+   "propertyIndex": 3,
+   "tooltip": "chance for Volatile Zombies to resurrect after 1 second (divided by the number of zombies)",
+   "field": "volatileZombieResurrectChanceDividedByNumberOfZombies",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Static Shell",
+   "uniqueID": 304,
+   "ability": "Static",
+   "abilityID": 294,
+   "propertyIndex": 1,
+   "tooltip": "chance to gain 15 Static Charges when Hit",
+   "field": "chanceToGain15StaticChargesWhenHit",
+   "value": {
+    "min": 0.21,
+    "max": 0.45
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Static Shell",
+   "uniqueID": 304,
+   "ability": "Static",
+   "abilityID": 294,
+   "propertyIndex": 2,
+   "tooltip": "chance to cast Static when Hit",
+   "field": "chanceToCastStaticWhenHit",
+   "value": {
+    "min": 0.07,
+    "max": 0.15
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Transcribers Graver",
+   "uniqueID": 311,
+   "ability": "Runemaster 02 Glyph of Dominion",
+   "abilityID": 694,
+   "propertyIndex": 2,
+   "tooltip": "chance to cast Fire Aura each second while standing on your Glyph of Dominion",
+   "field": "fireAuraChancePerSecondInGlyphOfDominion",
+   "value": {
+    "min": 0.8,
+    "max": 1.2
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Dragoraths Claw",
+   "uniqueID": 315,
+   "ability": "Frost Claw",
+   "abilityID": 708,
+   "propertyIndex": 0,
+   "tooltip": "chance to cast Lightning Blast on Crit with Frost Claw (up to 3 casts per second)",
+   "field": "chanceToCastLightningBlastOnCritWithFrostClaw",
+   "value": {
+    "min": 0.37,
+    "max": 0.47
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Wheel of Torment",
+   "uniqueID": 323,
+   "ability": "Warlock 03 SoulFeast",
+   "abilityID": 261,
+   "propertyIndex": 3,
+   "tooltip": "chance to cast Chthonic Fissure when you hit a boss or rare enemy with Soul Feast and don't have an active Fissure",
+   "field": "chthonicFissureChanceOnSoulFeastHitVsBossesAndRaresIfNoActiveFissure",
+   "value": {
+    "min": 0.15,
+    "max": 0.21
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Unvars Rise",
+   "uniqueID": 324,
+   "ability": "Runemaster 04 Runic Invocation",
+   "abilityID": 689,
+   "propertyIndex": 24,
+   "tooltip": "chance per Intelligence for 11% more Elemental Damage with One Rune Invocations",
+   "field": "chancePerIntelligenceFor11pMoreEleDamageWithOneRuneInvocations",
+   "value": {
+    "min": 0.01,
+    "max": 0.01
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Unvars Hegemony",
+   "uniqueID": 325,
+   "ability": "Runemaster 04 Runic Invocation",
+   "abilityID": 689,
+   "propertyIndex": 25,
+   "tooltip": "chance per Intelligence for +22% Elemental Penetration with Two Rune Invocations",
+   "field": "chancePerIntelligenceFor22ElePenWithTwoRuneInvocations",
+   "value": {
+    "min": 0.02,
+    "max": 0.02
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Unvars Exile",
+   "uniqueID": 326,
+   "ability": "Runemaster 04 Runic Invocation",
+   "abilityID": 689,
+   "propertyIndex": 26,
+   "tooltip": "chance per Intelligence for 33% increased Elemental Damage with Three Rune Invocations",
+   "field": "chancePerIntelligenceFor33pIncreasedEleDamageWithThreeRuneInvocations",
+   "value": {
+    "min": 0.03,
+    "max": 0.03
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Spine of Malatros",
+   "uniqueID": 330,
+   "ability": "Warlock 04 Chthonic Fissure",
+   "abilityID": 722,
+   "propertyIndex": 0,
+   "tooltip": "Chance for Chthonic Fissures to cast Flame Whip instead of releasing Spirits",
+   "field": "chthonicFissureFlameWhipChance",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Palarus Sacred Light",
+   "uniqueID": 346,
+   "ability": "Smite",
+   "abilityID": 216,
+   "propertyIndex": 6,
+   "tooltip": "chance to cast Smite at two additional targets when you cast it directly",
+   "field": "smiteChanceFor2ExtraTargetsWithDirectCasts",
+   "value": {
+    "min": 0.32,
+    "max": 0.46
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Plague Dragons Tongue",
+   "uniqueID": 352,
+   "ability": "SerpentStrike",
+   "abilityID": 61,
+   "propertyIndex": 1,
+   "tooltip": "Chance to Summon a Locust on hit with Serpent Strike (max 3 per 2 seconds)",
+   "field": "serpentStrikeLocustOnHitChance",
+   "value": {
+    "min": 0.27,
+    "max": 0.45
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Phase Point",
+   "uniqueID": 361,
+   "ability": "DarkQuiver",
+   "abilityID": 405,
+   "propertyIndex": 2,
+   "tooltip": "Chance to gain a Black Arrow on Dodge",
+   "field": "blackArrowChanceOnDodge",
+   "value": {
+    "min": 0.33,
+    "max": 0.48
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Phalanx",
+   "uniqueID": 371,
+   "ability": "Riposte",
+   "abilityID": 108,
+   "propertyIndex": 1,
+   "tooltip": "Chance to use Javelin when you Riposte",
+   "field": "chanceForJavelineOnRiposte",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Gordian Prism",
+   "uniqueID": 377,
+   "ability": "Runemaster 04 Runic Invocation",
+   "abilityID": 689,
+   "propertyIndex": 27,
+   "tooltip": "Ignite, Shock, or Chill chance per Rune with Grand Nova Prism",
+   "field": "grandNovaPrismAilmentChanceFromRunes",
+   "value": {
+    "min": 0.5,
+    "max": 0.65
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Doppelgangers Facade",
+   "uniqueID": 453,
+   "ability": "CreateShadow",
+   "abilityID": 469,
+   "propertyIndex": 6,
+   "tooltip": "Chance to gain a stack of Dusk Shroud when you consume a Shadow",
+   "field": "duskShroudChanceOnShadowConsumption",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Kuzons Fury",
+   "uniqueID": 456,
+   "ability": "Burning Dagger",
+   "abilityID": 489,
+   "propertyIndex": 2,
+   "tooltip": "chance to throw a Burning Dagger when you use a melee fire attack and hit at least one enemy, doubled for Dancing Strikes (up to 4 times per second)",
+   "field": "burningDaggerChanceOnMeleeFire",
+   "value": {
+    "min": 0.5,
+    "max": 0.7
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Ash Wake",
+   "uniqueID": 461,
+   "ability": "AuraOfDecay",
+   "abilityID": 256,
+   "propertyIndex": 4,
+   "tooltip": "Chance for Volatile Zombies in Aura of Decay to Resurrect",
+   "field": "zombieRezChanceInAuraOfDecay",
+   "value": {
+    "min": 0.2,
+    "max": 0.25
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Keplahans Pyrolith",
+   "uniqueID": 467,
+   "ability": "VolcanicOrb",
+   "abilityID": 78,
+   "propertyIndex": 9,
+   "tooltip": "Chance to cast fire Volcanic Orb when you directly use a fire melee attack or fire traversal skill (3 second cooldown)",
+   "field": "directFireMeleeAttackOrTraversalTriggersFireVolcanicOrbChance",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Keplahans Cryolith",
+   "uniqueID": 468,
+   "ability": "VolcanicOrb",
+   "abilityID": 78,
+   "propertyIndex": 10,
+   "tooltip": "Chance to cast cold Volcanic Orb when you directly use a cold melee attack or cold traversal skill (3 second cooldown)",
+   "field": "directColdMeleeAttackOrTraversalTriggersColdVolcanicOrbChance",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Unbroken Legion",
+   "uniqueID": 471,
+   "ability": "SummonSkeleton",
+   "abilityID": 120,
+   "propertyIndex": 5,
+   "tooltip": "chance when one of your Skeletons dies to resummon a new one after 3 seconds",
+   "field": "chanceToResummonSkeletonsAfter3Seconds",
+   "value": {
+    "min": 0.2,
+    "max": 0.4
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  },
+  {
+   "unique": "Caretakers Wrath",
+   "uniqueID": 481,
+   "ability": "EntanglingRoots",
+   "abilityID": 71,
+   "propertyIndex": 11,
+   "tooltip": "chance for Entangling Roots to cast Upheaval while above half mana, consuming mana equal to 100% of Upheaval's mana cost",
+   "field": "chanceForEntanglingRootsToCastUpheavalWhileAboveHalfMana",
+   "value": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "note": "ability-scoped chance/trigger: the skill mutator (readers) performs the cast; target AbilityID of the triggered skill is named in the tooltip"
+  }
+ ],
+ "source": "CharacterMutator PlayerProperty handlers (ISIL/C) + UniqueItemComponent classes; see research/07i_unique_formulas.md",
+ "schema": "unique, uniqueID, source, ppIndex?, propertyName, abilityID, abilityEnum, abilityName, chance ('pp' = the mod roll value, or constant), chanceValue {min,max} of the mod roll, icdSeconds, procTimeTracker ('N per T s'), trigger, confidence",
+ "data": [
+  {
+   "unique": "Eterras Path",
+   "uniqueID": 21,
+   "source": "PlayerProperty",
+   "ppIndex": 186,
+   "propertyName": "Chance each second to cast Summon Vines if you are Moving",
+   "abilityID": 227,
+   "abilityEnum": "sprigganSummonVine",
+   "abilityName": "Summon Vines",
+   "chance": null,
+   "chanceValue": {
+    "min": 0.2,
+    "max": 0.28
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnUpdateTick",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Apiarists Smoker",
+   "uniqueID": 77,
+   "source": "PlayerProperty",
+   "ppIndex": 4,
+   "propertyName": "Bees Per 10 Seconds",
+   "abilityID": 353,
+   "abilityEnum": "summonBee",
+   "abilityName": "Summon Bee",
+   "chance": null,
+   "chanceValue": {
+    "min": 2.0,
+    "max": 3.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "CharacterMutator.OnUpdateTick",
+   "confidence": "D"
+  },
+  {
+   "unique": "Apiarists Suit",
+   "uniqueID": 78,
+   "source": "PlayerProperty",
+   "ppIndex": 4,
+   "propertyName": "Bees Per 10 Seconds",
+   "abilityID": 353,
+   "abilityEnum": "summonBee",
+   "abilityName": "Summon Bee",
+   "chance": null,
+   "chanceValue": {
+    "min": 2.0,
+    "max": 3.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "CharacterMutator.OnUpdateTick",
+   "confidence": "D"
+  },
+  {
+   "unique": "Apiarists Comb",
+   "uniqueID": 79,
+   "source": "PlayerProperty",
+   "ppIndex": 4,
+   "propertyName": "Bees Per 10 Seconds",
+   "abilityID": 353,
+   "abilityEnum": "summonBee",
+   "abilityName": "Summon Bee",
+   "chance": null,
+   "chanceValue": {
+    "min": 4.0,
+    "max": 8.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "CharacterMutator.OnUpdateTick",
+   "confidence": "D"
+  },
+  {
+   "unique": "Ucenui Sphere",
+   "uniqueID": 81,
+   "source": "PlayerProperty",
+   "ppIndex": 28,
+   "propertyName": "Chance to Cast Water Orb when you hit a Boss or Rare Enemy (3 second cooldown)",
+   "abilityID": 92,
+   "abilityEnum": "waterOrb",
+   "abilityName": "Water Orb",
+   "chance": "value",
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": 3.0,
+   "procTimeTracker": null,
+   "trigger": "OnHit",
+   "confidence": "D"
+  },
+  {
+   "unique": "Arek Bones",
+   "uniqueID": 82,
+   "source": "PlayerProperty",
+   "ppIndex": 30,
+   "propertyName": "Chance to summon Arek's Flesh when a hit leaves you below half health",
+   "abilityID": 367,
+   "abilityEnum": "summonAreksFlesh",
+   "abilityName": "Summon Arek's Flesh",
+   "chance": null,
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": 20.0,
+   "procTimeTracker": null,
+   "trigger": "HitDamageTaken",
+   "confidence": "D"
+  },
+  {
+   "unique": "Sunforged Hammer",
+   "uniqueID": 85,
+   "source": "PlayerProperty",
+   "ppIndex": 514,
+   "propertyName": "Melee Fire Damage per Forged Weapon",
+   "abilityID": 220,
+   "abilityEnum": "summonWeapon",
+   "abilityName": "Summon Forged Weapon",
+   "chance": null,
+   "chanceValue": {
+    "min": 15.0,
+    "max": 30.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "ApplyConditionalTemporaryStats",
+   "confidence": "D"
+  },
+  {
+   "unique": "Sunforged Cuirass",
+   "uniqueID": 86,
+   "source": "PlayerProperty",
+   "ppIndex": 37,
+   "propertyName": "Chance to forge a weapon when hit",
+   "abilityID": 220,
+   "abilityEnum": "summonWeapon",
+   "abilityName": "Summon Forged Weapon",
+   "chance": "value",
+   "chanceValue": {
+    "min": 0.1,
+    "max": 0.2
+   },
+   "icdSeconds": 2.0,
+   "procTimeTracker": null,
+   "trigger": "HitDamageTaken",
+   "confidence": "D"
+  },
+  {
+   "unique": "Locket of the Forgotten Knight",
+   "uniqueID": 90,
+   "source": "PlayerProperty",
+   "ppIndex": 40,
+   "propertyName": "Chance to create a Void Rift when you hit an enemy (2 second cooldown)",
+   "abilityID": 87,
+   "abilityEnum": "voidRift",
+   "abilityName": "Void Rift",
+   "chance": null,
+   "chanceValue": {
+    "min": 0.15,
+    "max": 0.2
+   },
+   "icdSeconds": 3.0,
+   "procTimeTracker": null,
+   "trigger": "OnHit",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Fiery Dragon Shoes",
+   "uniqueID": 91,
+   "source": "PlayerProperty",
+   "ppIndex": 42,
+   "propertyName": "Chance to cast Fire Trail when you are crit",
+   "abilityID": 378,
+   "abilityEnum": "fireTrail",
+   "abilityName": "Fire Trail",
+   "chance": "value",
+   "chanceValue": {
+    "min": 0.25,
+    "max": 0.35
+   },
+   "icdSeconds": 5.0,
+   "procTimeTracker": null,
+   "trigger": "HitDamageTaken (hit is a crit",
+   "confidence": "D"
+  },
+  {
+   "unique": "Melvern Writ",
+   "uniqueID": 108,
+   "source": "PlayerProperty",
+   "ppIndex": 75,
+   "propertyName": "Crossbow Mercenaries",
+   "abilityID": 418,
+   "abilityEnum": "summonMercenary",
+   "abilityName": "Recruit Mercenary",
+   "chance": null,
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnUpdateTick",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Dark Shroud of Cinders",
+   "uniqueID": 117,
+   "source": "PlayerProperty",
+   "ppIndex": 32,
+   "propertyName": "Chance to cast Fire Aura when Hit (up to 3 times per second)",
+   "abilityID": 162,
+   "abilityEnum": "fireAura",
+   "abilityName": "Fire Aura",
+   "chance": "value",
+   "chanceValue": {
+    "min": 0.17,
+    "max": 0.25
+   },
+   "icdSeconds": null,
+   "procTimeTracker": "3 per 1s",
+   "trigger": "HitDamageTaken",
+   "confidence": "D"
+  },
+  {
+   "unique": "Trident of the Last Abyss",
+   "uniqueID": 120,
+   "source": "PlayerProperty",
+   "ppIndex": 81,
+   "propertyName": "Chance to cast Abyssal Echoes on Melee Kill or Melee Hit Boss or Rare Enemy (3 second cooldown)",
+   "abilityID": 118,
+   "abilityEnum": "abyssalEchoes",
+   "abilityName": "Abyssal Echoes",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": 3.0,
+   "procTimeTracker": null,
+   "trigger": "OnKill (melee kill) and OnHit (melee hit on boss/rare)",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Alluvion",
+   "uniqueID": 122,
+   "source": "PlayerProperty",
+   "ppIndex": 76,
+   "propertyName": "Chance to cast Tidal Wave when you use a Melee Attack (1 second cooldown)",
+   "abilityID": 426,
+   "abilityEnum": "alluvionWave",
+   "abilityName": "Alluvion Wave",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": 1.0,
+   "procTimeTracker": null,
+   "trigger": "OnAbilityObjectCreated (melee attack)",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Dragonflame Edict",
+   "uniqueID": 124,
+   "source": "PlayerProperty",
+   "ppIndex": 83,
+   "propertyName": "Chance for the nearest minion to the target location to cast Dragonflame Nova when you use a minion skill (up to 3 times per second)",
+   "abilityID": 427,
+   "abilityEnum": "dragonfireNova",
+   "abilityName": "Dragonflame Nova",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.6,
+    "max": 0.6
+   },
+   "icdSeconds": null,
+   "procTimeTracker": "3 per 1s",
+   "trigger": "OnAbilityUse (minion skill used)",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Anchor of Oblivion",
+   "uniqueID": 152,
+   "source": "PlayerProperty",
+   "ppIndex": 133,
+   "propertyName": "When a hit leaves you below your endurance threshold you are slowed and release a Wave of Void (2 second cooldown)",
+   "abilityID": 516,
+   "abilityEnum": "anchorOfOblivionWave",
+   "abilityName": "Oblivion Wave",
+   "chance": null,
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "HitDamageTaken",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Reign of Winter",
+   "uniqueID": 159,
+   "source": "PlayerProperty",
+   "ppIndex": 134,
+   "propertyName": "Chance to cast Icicle on Bow Hit",
+   "abilityID": 518,
+   "abilityEnum": "heorotUniqueBowIcicle",
+   "abilityName": "Icicle",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.23,
+    "max": 0.28
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnHit (bow hit)",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Aurora Time Glass",
+   "uniqueID": 176,
+   "source": "PlayerProperty",
+   "ppIndex": 138,
+   "propertyName": "Seconds of Haste Duration and Full Recovery when damage leaves you below 30% health (20 second cooldown)",
+   "abilityID": 530,
+   "abilityEnum": "auroraAmuletSpell",
+   "abilityName": "Aurora",
+   "chance": null,
+   "chanceValue": {
+    "min": 3.0,
+    "max": 6.0
+   },
+   "icdSeconds": 20.0,
+   "procTimeTracker": null,
+   "trigger": "damageTaken",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Battlemage Endeavour",
+   "uniqueID": 201,
+   "source": "PlayerProperty",
+   "ppIndex": 155,
+   "propertyName": "Chance to cast Lightning Blast with 2 additional chains when you use a Melee Attack and hit at least one enemy",
+   "abilityID": 39,
+   "abilityEnum": "lightningBlast",
+   "abilityName": "Lightning Blast",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.45,
+    "max": 0.75
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnFirstMeleeHit",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Stormcarved Testament",
+   "uniqueID": 214,
+   "source": "PlayerProperty",
+   "ppIndex": 166,
+   "propertyName": "Chance to summon a Storm Totem on hit (8 second cooldown)",
+   "abilityID": 195,
+   "abilityEnum": "summonStormTotem",
+   "abilityName": "Summon Storm Totem",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.12,
+    "max": 0.12
+   },
+   "icdSeconds": 8.0,
+   "procTimeTracker": null,
+   "trigger": "OnHit",
+   "confidence": "D?"
+  },
+  {
+   "unique": "The Judicator",
+   "uniqueID": 224,
+   "source": "PlayerProperty",
+   "ppIndex": 174,
+   "propertyName": "chance to cast Smite at a nearby enemy on Kill",
+   "abilityID": 216,
+   "abilityEnum": "smite",
+   "abilityName": "Smite",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.2,
+    "max": 0.26
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnKill",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Hazelroot",
+   "uniqueID": 234,
+   "source": "PlayerProperty",
+   "ppIndex": 184,
+   "propertyName": "Chance to Cast Thorn Shield on yourself when you directly use a Physical Skill",
+   "abilityID": 24,
+   "abilityEnum": "thornShield",
+   "abilityName": "Thorn Shield",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.22,
+    "max": 0.36
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnAbilityUse (direct Physical skill)",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Dragonsong",
+   "uniqueID": 243,
+   "source": "PlayerProperty",
+   "ppIndex": 203,
+   "propertyName": "Chance to Cast Dragon Fire on Crit",
+   "abilityID": 602,
+   "abilityEnum": "dragonSongExplosion",
+   "abilityName": "Dragonfire",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.24,
+    "max": 0.34
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnCrit",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Lament of the Lost Refuge",
+   "uniqueID": 273,
+   "source": "PlayerProperty",
+   "ppIndex": 211,
+   "propertyName": "Remaining Volcanic Orb Cooldown Recovered when you use a Melee Attack and hit at least one Enemy",
+   "abilityID": 78,
+   "abilityEnum": "volcanicOrb",
+   "abilityName": "Volcanic Orb",
+   "chance": null,
+   "chanceValue": {
+    "min": 0.18,
+    "max": 0.3
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "OnFirstMeleeHit",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Pillagers Gold",
+   "uniqueID": 291,
+   "source": "PlayerProperty",
+   "ppIndex": 264,
+   "propertyName": "chance to throw a Burning Dagger on hit (up to 2 times per second)",
+   "abilityID": 489,
+   "abilityEnum": "burningDagger",
+   "abilityName": "Burning Dagger",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.35,
+    "max": 0.5
+   },
+   "icdSeconds": null,
+   "procTimeTracker": "2 per 1s",
+   "trigger": "OnHit",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Pillagers Gold",
+   "uniqueID": 291,
+   "source": "PlayerProperty",
+   "ppIndex": 265,
+   "propertyName": "Chance to throw a Burning Dagger when you drink a Potion",
+   "abilityID": 489,
+   "abilityEnum": "burningDagger",
+   "abilityName": "Burning Dagger",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 1.0,
+    "max": 1.0
+   },
+   "icdSeconds": null,
+   "procTimeTracker": null,
+   "trigger": "onPotionUse",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Palarus Sacred Light",
+   "uniqueID": 346,
+   "source": "PlayerProperty",
+   "ppIndex": 448,
+   "propertyName": "chance to cast Smite on Melee hit (up to 3 times per second)",
+   "abilityID": 216,
+   "abilityEnum": "smite",
+   "abilityName": "Smite",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.32,
+    "max": 0.46
+   },
+   "icdSeconds": null,
+   "procTimeTracker": "3 per 1s",
+   "trigger": "OnHit (melee)",
+   "confidence": "D?"
+  },
+  {
+   "unique": "Orians Descent",
+   "uniqueID": 404,
+   "source": "PlayerProperty",
+   "ppIndex": 508,
+   "propertyName": "Chance to cast Smite on hit (max 6 per 10 seconds, this cooldown resets when you use a potion)",
+   "abilityID": 216,
+   "abilityEnum": "smite",
+   "abilityName": "Smite",
+   "chance": "pp",
+   "chanceValue": {
+    "min": 0.3,
+    "max": 0.45
+   },
+   "icdSeconds": null,
+   "procTimeTracker": "6 per 10s",
+   "trigger": "OnHit",
+   "confidence": "D(const)"
+  },
+  {
+   "unique": "Keepers Gloves",
+   "uniqueID": 22,
+   "source": "Component:Keepers_Gloves",
+   "abilityID": 63,
+   "abilityEnum": "swarmOfBees",
+   "abilityName": "Swarm of Bees",
+   "chance": 0.1,
+   "icdSeconds": 8.0,
+   "trigger": "melee hit",
+   "confidence": "D"
+  },
+  {
+   "unique": "Frozen Ire",
+   "uniqueID": 32,
+   "source": "Component:Frozen_Ire",
+   "abilityID": 315,
+   "abilityEnum": "tundraNova",
+   "abilityName": "Tundra Nova",
+   "chance": 0.15,
+   "icdSeconds": null,
+   "trigger": "hit (chance 0.15; vs undead second roll 0.176471 => 0.30 total)",
+   "confidence": "D"
+  },
+  {
+   "unique": "Bone Harvester",
+   "uniqueID": 40,
+   "source": "Component:Bone_Harvester",
+   "abilityID": 122,
+   "abilityEnum": "summonSkeletonHarvester",
+   "abilityName": "Summon Skeleton Harvester",
+   "chance": 0.2,
+   "icdSeconds": null,
+   "trigger": "kill",
+   "confidence": "D"
+  },
+  {
+   "unique": "Torch Of The Pontifex",
+   "uniqueID": 42,
+   "source": "Component:Torch_Of_The_Pontifex",
+   "abilityID": 121,
+   "abilityEnum": "pontifexCremate",
+   "abilityName": "Cremate",
+   "chance": 1.0,
+   "icdSeconds": null,
+   "trigger": "kill",
+   "confidence": "D"
+  },
+  {
+   "unique": "Volcanus",
+   "uniqueID": 48,
+   "source": "Component:Volcanus",
+   "abilityID": 117,
+   "abilityEnum": "flameShards",
+   "abilityName": "Magma Shards",
+   "chance": 0.3,
+   "icdSeconds": null,
+   "trigger": "melee hit",
+   "confidence": "D"
+  },
+  {
+   "unique": "Soul Bastion",
+   "uniqueID": 52,
+   "source": "Component:Soul_Bastion",
+   "abilityID": 233,
+   "abilityEnum": "soulEruption",
+   "abilityName": "Soul Eruption",
+   "chance": 1.0,
+   "icdSeconds": null,
+   "trigger": "5 charges gained on kill (10 s lifetime) -> cast and reset",
+   "confidence": "D"
+  },
+  {
+   "unique": "Rahyehs Light",
+   "uniqueID": 53,
+   "source": "Component:Rahyehs_Light",
+   "abilityID": 14,
+   "abilityEnum": null,
+   "abilityName": null,
+   "chance": 1.0,
+   "icdSeconds": null,
+   "trigger": "Flame Ward with <1 s left and ward > 80: refresh, -80 ward",
+   "confidence": "D"
+  },
+  {
+   "unique": "Strong Mind",
+   "uniqueID": 54,
+   "source": "Component:Strong_Mind",
+   "abilityID": 67,
+   "abilityEnum": "lightningExplosion",
+   "abilityName": "Lightning Explosion",
+   "chance": 1.0,
+   "icdSeconds": null,
+   "trigger": "Stunned.enter (when you are stunned)",
+   "confidence": "D"
+  },
+  {
+   "unique": "Arboreal Circuit",
+   "uniqueID": 65,
+   "source": "Component:Arboreal_Circuit",
+   "abilityID": 62,
+   "abilityEnum": "summonIllusoryTree",
+   "abilityName": "Summon Illusory Tree",
+   "chance": 0.1,
+   "icdSeconds": 15.0,
+   "trigger": "when hit",
+   "confidence": "D"
+  },
+  {
+   "unique": "Ignivar Head",
+   "uniqueID": 74,
+   "source": "Component:Ignivar_Head",
+   "abilityID": 162,
+   "abilityEnum": "fireAura",
+   "abilityName": "Fire Aura",
+   "chance": 1.0,
+   "icdSeconds": 1.0,
+   "trigger": "channelling, every 1 s (free cast)",
+   "confidence": "D"
+  }
+ ]
+}

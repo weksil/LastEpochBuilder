@@ -1,0 +1,15 @@
+# Heavy/reproducible extraction workspace and tooling (never published)
+/dump/
+/tools/
+
+# Godot generated
+/client/.godot/
+*.translation
+
+# Temp / scripts / logs
+*.log
+*.tmp
+__pycache__/
+venv/
+.claude/
+/research/*_agent_brief.md

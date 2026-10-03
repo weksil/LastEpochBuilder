@@ -1,0 +1,111 @@
+0 rInt=1 rMore=0 Damage
+1 rInt=0 rMore=0 Ailment Chance
+2 rInt=0 rMore=0 Attack Speed
+3 rInt=0 rMore=0 Cast Speed
+4 rInt=0 rMore=0 Critical Strike Chance
+5 rInt=0 rMore=0 Critical Strike Multiplier
+6 rInt=1 rMore=3 Damage Taken
+7 rInt=1 rMore=0 Health
+8 rInt=1 rMore=0 Mana
+9 rInt=0 rMore=0 Movement Speed
+10 rInt=1 rMore=0 Armor
+11 rInt=1 rMore=0 Dodge Rating
+12 rInt=1 rMore=0 Stun Avoidance
+13 rInt=0 rMore=0 Fire Resistance
+14 rInt=0 rMore=0 Cold Resistance
+15 rInt=0 rMore=0 Lightning Resistance
+16 rInt=0 rMore=0 Ward Retention
+17 rInt=1 rMore=0 Health Regen
+18 rInt=1 rMore=0 Mana Regen
+19 rInt=1 rMore=0 Strength
+20 rInt=1 rMore=0 Vitality
+21 rInt=1 rMore=0 Intelligence
+22 rInt=1 rMore=0 Dexterity
+23 rInt=1 rMore=0 Attunement
+24 rInt=0 rMore=0 Damage Dealt to Mana Before Health
+25 rInt=1 rMore=0 Channel Cost
+26 rInt=0 rMore=0 Void Resistance
+27 rInt=0 rMore=0 Necrotic Resistance
+28 rInt=0 rMore=0 Poison Resistance
+29 rInt=0 rMore=0 Block Chance
+30 rInt=0 rMore=0 All Resistances
+38 rInt=1 rMore=0 Health Gain
+39 rInt=1 rMore=0 Ward Gain
+40 rInt=1 rMore=0 Mana Gain
+41 rInt=1 rMore=0 Adaptive Spell Damage
+42 rInt=0 rMore=0 Increased Ailment Duration
+43 rInt=0 rMore=0 Increased Ailment Effect
+44 rInt=0 rMore=0 Increased Healing Effectiveness
+45 rInt=0 rMore=0 Increased Stun Chance
+46 rInt=1 rMore=0 All Attributes
+47 rInt=0 rMore=0 Increased Chance To Find Potions
+48 rInt=1 rMore=0 Potion Slots
+51 rInt=0 rMore=0 Damage Leeched as Health
+52 rInt=0 rMore=0 Elemental Resistance
+53 rInt=1 rMore=0 Block Effectiveness
+55 rInt=0 rMore=0 Increased Stun Immunity Duration
+56 rInt=0 rMore=0 Stun Immunity
+58 rInt=1 rMore=0 Dark Protection (deprecated)
+59 rInt=0 rMore=0 Penetration
+62 rInt=0 rMore=0 Chance to receive a Glancing Blow when hit
+66 rInt=1 rMore=0 Mana Cost
+67 rInt=0 rMore=0 Freeze Rate Multiplier
+69 rInt=0 rMore=0 Mana Efficiency
+70 rInt=0 rMore=0 Increased Cooldown Recovery Speed
+64 rInt=0 rMore=0 Physical Resistance
+60 rInt=0 rMore=0 Current Health Drained per Second
+65 rInt=0 rMore=0 Cull on Hit
+34 rInt=0 rMore=0 Damage Taken as Lightning
+31 rInt=0 rMore=0 Damage Taken as Physical
+32 rInt=0 rMore=0 Damage Taken as Fire
+33 rInt=0 rMore=0 Damage Taken as Cold
+36 rInt=0 rMore=0 Damage Taken as Void
+37 rInt=0 rMore=0 Damage Taken as Poison
+35 rInt=0 rMore=0 Damage Taken as Necrotic
+61 rInt=1 rMore=0 Maximum Companions
+50 rInt=0 rMore=0 Chance to gain Haste for 1 second on Hit
+73 rInt=0 rMore=0 Chance to Chill Attackers
+74 rInt=0 rMore=0 Chance to Slow Attackers
+85 rInt=1 rMore=0 Damage Reflected to Attackers
+86 rInt=0 rMore=0 Damage Reflected
+87 rInt=0 rMore=0 Chance to Shock Attackers
+89 rInt=0 rMore=0 Critical Strike Avoidance
+90 rInt=0 rMore=0 Potion Health Converted to Ward
+91 rInt=1 rMore=0 Ward Gained on Potion Use
+93 rInt=0 rMore=0 Overkill Damage Leeched as Health
+92 rInt=1 rMore=0 Ward per Second
+94 rInt=0 rMore=0 Damage Dealt to Mana Before Health or Ward
+95 rInt=0 rMore=0 Duration of Stuns Received
+97 rInt=0 rMore=0 Chance to Gain 30 Ward when Hit
+99 rInt=0 rMore=0 Mana Spent Gained as Ward
+100 rInt=0 rMore=0 Ailment Conversion
+102 rInt=0 rMore=0 Increased Leech Rate
+103 rInt=0 rMore=0 Freeze Rate per stack of Chill
+104 rInt=0 rMore=0 Increased Drop Rate
+105 rInt=0 rMore=0 Increased Experience
+106 rInt=0 rMore=0 Physical and Void Resistance
+107 rInt=0 rMore=0 Necrotic and Poison Resistance
+110 rInt=0 rMore=0 Damage Taken From Nearby Enemies
+111 rInt=0 rMore=0 Block Chance Against Distant Enemies
+112 rInt=0 rMore=0 Chance to Receive a Critical Strike
+75 rInt=0 rMore=0 Endurance
+76 rInt=1 rMore=0 Endurance Threshold
+88 rInt=1 rMore=0 Level of Skills
+113 rInt=0 rMore=0 Damage Taken While Moving
+96 rInt=0 rMore=0 Maximum Health gained as Endurance Threshold
+114 rInt=0 rMore=0 reduced Bonus Damage Taken from Critical Strikes
+115 rInt=0 rMore=0 More Damage Per Stack
+116 rInt=0 rMore=0 increased Area for Area Skills
+117 rInt=0 rMore=0 Global Conditional Damage
+118 rInt=0 rMore=0 Armor Mitigation also applies to Damage over Time
+119 rInt=1 rMore=0 Ward Decay Threshold
+121 rInt=0 rMore=0 Parry Chance
+122 rInt=0 rMore=0 Lens
+123 rInt=0 rMore=0 Tracker Property
+124 rInt=0 rMore=0 Unimportance Modifier
+128 rInt=0 rMore=0 Immunity
+129 rInt=0 rMore=0 Chance to Cast When Hit
+127 rInt=0 rMore=0 Chance to Cast
+131 rInt=0 rMore=0 Global Conditional Penetration
+132 rInt=0 rMore=0 Global Conditional Critical Strike Chance
+133 rInt=0 rMore=0 Global Conditional Critical Strike Multiplier

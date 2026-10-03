@@ -1,0 +1,1228 @@
+GameGuide.UnlockingSkills_Title :: Unlocking Skills
+GameGuide.UnlockingSkills_Paragraph_0 :: Skills can be unlocked upon reaching certain character levels, after investing a certain number of passive points into a class, or after selecting a Mastery Class.
+GameGuide.UnlockingSkills_Paragraph_1 :: Opening the Skills Window (bound to the S key by default) allows you to see which skills your character can unlock, and how to do so. You can also click on any skill to view its <link="skill specialization">Specialization Tree</link>.
+GameGuide.UnlockingSkills_Paragraph_2 :: Clicking one of the 5 skill slots on your Action Bar at the bottom of the screen allows you to change which skill is equipped there.
+GameGuide.UnlockingSkills_SearchTerm_0 :: skills
+GameGuide.SkillSpecialization_Title :: Skill Specialization
+GameGuide.SkillSpecialization_Paragraph_0 :: Skill Specialization Slots are unlocked as your character levels up, to a maximum of 5 (to match how many skills can be equipped on the Action Bar).
+GameGuide.SkillSpecialization_Paragraph_1 :: Upon unlocking a Skill Specialization Slot, you can choose to Specialize in a skill that your character currently knows. Doing so allows you to level up that skill and invest points into its Specialization Tree. Skills have a natural maximum level of 20.
+GameGuide.SkillSpecialization_Paragraph_2 :: If you would like to specialize in a different skill, you can press the Respec button at the top right of the Skills Window while viewing the tree for a specialized skill.
+GameGuide.SkillSpecialization_Paragraph_3 :: Newly specialized skills will be automatically set to your <#FFE6A5>Minimum Skill Level</color>, and may receive a bonus to XP so they can catch up to your other skills.
+GameGuide.SkillSpecialization_Paragraph_4 :: You can see your current Minimum Skill Level on the Respec button inside a skill''s tree. Skills currently affected by a XP bonus will state so above their XP bar on the left side of their tree.
+GameGuide.SkillSpecialization_SearchTerm_0 :: specialization
+GameGuide.SkillSpecialization_SearchTerm_1 :: skills
+GameGuide.SkillSpecialization_Link_0 :: specialization
+GameGuide.SkillSpecialization_Link_1 :: specialization tree
+GameGuide.+SkillLevelAffixes_Title :: + Skill Level Affixes
+GameGuide.+SkillLevelAffixes_Paragraph_0 :: Body Armor, Helmets, Relics, Uniques and Sets can all have affixes which grant additional levels to certain skills. These affixes can exceed the normal 20 level limit of skills.
+GameGuide.+SkillLevelAffixes_Paragraph_1 :: Any skill levels currently granted by items will be shown in blue above a skill''s XP bar inside its skill tree.
+GameGuide.+SkillLevelAffixes_Paragraph_2 :: Unequipping an item which grants levels to your skills will remove points from them, unless you have a number of unspent points greater than or equal to the levels lost. <br><br>Nodes which have lost points in this way will be highlighted in red when you next view that skill''s tree.
+GameGuide.+SkillLevelAffixes_SearchTerm_0 :: skills
+GameGuide.Implicits_Title :: Implicits
+GameGuide.Implicits_Paragraph_0 :: All equipment has stats that are inherent to it, which are called implicits. For example, all Worn Boots have an increased movement speed implicit.
+GameGuide.Implicits_Paragraph_2 :: Each item subtype of an item always has the same implicits, but the values of implicits are randomized within a range.
+GameGuide.Implicits_Paragraph_3 :: All modifiers from implicits apply globally. For example, the “Increased Physical Damage” from a weapon’s implicit has the same effect as “Increased Physical Damage” from an <link="affixes">affix</link> on a ring or from a passive node.
+GameGuide.Implicits_SearchTerm_0 :: implicit
+GameGuide.Implicits_SearchTerm_1 :: implicits
+GameGuide.Implicits_Link_0 :: implicit
+GameGuide.Implicits_Link_1 :: Implicits
+GameGuide.Affixes_Title :: Affixes
+GameGuide.Affixes_Paragraph_0 :: Affixes are the modifiers on equipment that exist in addition to <link="implicits">Implicits</link>. They can be present on the item when it is dropped, or they can be added and modified later through <link="Crafting Explanation">Crafting</link> using <link="shards">Shards</link>. The number of affixes on an item often determines its <link="rarity">Rarity</link>.
+GameGuide.Affixes_Paragraph_2 :: Affixes have 7 tiers, with tier 1 being the lowest and tier 7 being the highest. However, only tier 1 through 5 can be created through <link="Crafting Explanation">crafting</link>. Tier 6 and 7 affixes must be on the item when it drops.
+GameGuide.Affixes_Paragraph_3 :: The values of an affix at each tier fall within a range, but the lowest roll of a tier is always higher than the tier below it.<br><br>The value an affix has on an item can be re-rolled within its tier using a <link="rune of refinement">Rune of Refinement</link>.
+GameGuide.Affixes_Paragraph_4 :: Affixes are broken into two main categories: prefixes and suffixes. An item can have up to 2 prefixes and 2 suffixes.
+GameGuide.Affixes_Paragraph_5 :: All stats granted by affixes are global. This means the “Increased Physical Damage” affix on a ring will have the same effect as “Increased Physical Damage” on a weapon’s <link="implicit">implicit</link> or a passive node.
+GameGuide.Affixes_SearchTerm_0 :: affix
+GameGuide.Affixes_SearchTerm_1 :: affixes
+GameGuide.Affixes_SearchTerm_2 :: prefix
+GameGuide.Affixes_SearchTerm_3 :: prefixes
+GameGuide.Affixes_SearchTerm_4 :: suffix
+GameGuide.Affixes_SearchTerm_5 :: suffixes
+GameGuide.Affixes_SearchTerm_6 :: afix
+GameGuide.Affixes_SearchTerm_7 :: afixes
+GameGuide.Affixes_SearchTerm_8 :: sufix
+GameGuide.Affixes_SearchTerm_9 :: sufixes
+GameGuide.Affixes_Link_0 :: affix
+GameGuide.Affixes_Link_1 :: affixes
+GameGuide.Rarity_Title :: Rarity
+GameGuide.Rarity_Paragraph_0 :: There are 6 different rarities of equipment items in Last Epoch. Rarity is determined by what stats an item has, and can be changed by <link="Crafting Explanation">crafting</link>.
+GameGuide.Rarity_Paragraph_2 :: <#FFE6A5>Common (white):</color> The item does not have any <link="affixes">affixes</link>.
+GameGuide.Rarity_Paragraph_3 :: <#36A3E2>Magic (blue):</color> The item has either 1 or 2 affixes, which can be prefixes, suffixes, or both.
+GameGuide.Rarity_Paragraph_4 :: <#E3D157>Rare (yellow):</color> The item has either 3 or 4 affixes, up to 2 prefixes and 2 suffixes.
+GameGuide.Rarity_Paragraph_5 :: <#EB730A>Unique (orange):</color> The item has stats and effects that cannot be found on lower rarity items. Uniques cannot be crafted on.
+GameGuide.Rarity_Paragraph_6 :: <#71E87D>Set (green):</color> Set items are uniques that also grant bonuses for having other parts of the same set equipped. Sets will typically have 2 to 4 pieces.
+GameGuide.Rarity_Paragraph_7 :: <#C184FF>Exalted (purple):</color> Exalted items have one or more tier 6 or tier 7 affixes.<br><br>Tier 6 and 7 affixes cannot be created through crafting, but crafting otherwise works the same for Exalted items as it does for Magic and Rare items.
+GameGuide.Rarity_Paragraph_8 :: <#E80B58>Legendary (red):</color> Legendary items are created in the <link="eternity cache">Eternity Cache</link> and are a combination of a Unique item and an Exalted item.
+GameGuide.Rarity_SearchTerm_0 :: magic
+GameGuide.Rarity_SearchTerm_1 :: rare
+GameGuide.Rarity_SearchTerm_2 :: unique
+GameGuide.Rarity_SearchTerm_3 :: legendary
+GameGuide.Rarity_SearchTerm_4 :: set
+GameGuide.Rarity_SearchTerm_5 :: white
+GameGuide.Rarity_SearchTerm_6 :: blue
+GameGuide.Rarity_SearchTerm_7 :: yellow
+GameGuide.Rarity_SearchTerm_8 :: orange
+GameGuide.Rarity_SearchTerm_9 :: green
+GameGuide.Rarity_SearchTerm_10 :: purple
+GameGuide.Rarity_SearchTerm_11 :: exalted
+GameGuide.Rarity_Link_0 :: rarity
+GameGuide.Rarity_Link_1 :: rare
+GameGuide.Rarity_Link_2 :: exalted
+GameGuide.IncreasedItemRarity_Title :: Increased Item Rarity
+GameGuide.IncreasedItemRarity_Paragraph_0 :: Increased Item Rarity is an effect that increases the average number of <link="affixes">affixes</link> on items, resulting in more rare and exalted items. It also increases the chance of finding unique and set items.
+GameGuide.IncreasedItemRarity_Paragraph_1 :: Increased Item Rarity modifier is most commonly seen in the endgame system <link="monolith introduction">Monolith of Fate</link>. 
+GameGuide.IncreasedItemRarity_Paragraph_2 :: Similarly, there are effects like “Increased Amulet Drop Rate” which are typically granted by Blessings that you can obtain from the Monolith of Fate. This would cause more amulets (including uniques) to drop for you without affecting how many items of other types drop. 
+GameGuide.IncreasedItemRarity_Paragraph_3 :: Modifiers that increase the quality or quantity of found items like “Increased Item Rarity” or “Increased Amulet Drop Rate” do not compete with modifiers that grant character power.
+GameGuide.IncreasedItemRarity_SearchTerm_0 :: rarity
+GameGuide.IncreasedItemRarity_SearchTerm_1 :: mf
+GameGuide.IncreasedItemRarity_SearchTerm_2 :: magic find
+GameGuide.IncreasedItemRarity_SearchTerm_3 :: drop rate
+GameGuide.IncreasedItemRarity_SearchTerm_4 :: item rarity
+GameGuide.IncreasedItemRarity_SearchTerm_5 :: increased item rarity
+GameGuide.Uniques_Title :: Uniques
+GameGuide.Uniques_Paragraph_1 :: Uniques are a <link="rarity">rarity</link> of equipment items in Last Epoch.<br><br>Unique items can grant stats and special effects which do not appear as normal <link="affixes">affixes</link> on magic, rare or exalted items. <br>Uniques provide new synergies between existing mechanics, introduce entirely new mechanics, and more.
+GameGuide.Uniques_Paragraph_2 :: Uniques cannot be modified through <link="Crafting Explanation">crafting</link>. They can however have an extra property called Legendary Potential which can be used in the creation of <link="Legendary Items">Legendary Items</link>.
+GameGuide.Uniques_SearchTerm_1 :: uniques
+GameGuide.Uniques_Link_0 :: unique
+GameGuide.Sets_Title :: Sets
+GameGuide.Sets_Paragraph_1 :: Set items are very similar to <link="uniques">uniques</link> in terms of their design and what effects they offer. However, equipping multiple items from the same set grants additional bonuses, which are shown on their tooltips.<br><br>Sets will typically have between 2 and 4 pieces.
+GameGuide.Sets_Paragraph_2 :: Set items are not able to be modified through <link="Crafting Explanation">crafting</link>, however they can be shattered to Set Affixes in a <link="woven echoes">Woven Echo</link>. The Set Affixes created are dependant on the Set item which was shattered.
+GameGuide.Sets_Paragraph_4 :: These Set Affixes can then be crafted onto normal, magic, rare or exalted items of the same type from which that Set Affix came from, creating a Reforged Set item. This Reforged Set item counts as a Set item for the Set bonuses.
+GameGuide.Sets_SearchTerm_0 :: set item
+GameGuide.Sets_SearchTerm_1 :: set items
+GameGuide.Sets_SearchTerm_2 :: reforged set
+GameGuide.Sets_Link_0 :: set
+GameGuide.Sets_Link_1 :: sets
+GameGuide.Sets_Link_2 :: reforged set
+GameGuide.LegendaryItems_Title :: Legendary Items
+GameGuide.LegendaryItems_Paragraph_0 :: A Legendary item is a composite item made up of a unique and exalted item. Unique items must have atleast 1 Legendary Potential (up to 4), and the exalted item must have exactly 4 unsealed affixes. The exalted item can have a sealed affix, it just cannot be added to the Legendary item.
+GameGuide.LegendaryItems_Paragraph_2 :: When combined in the Eternity Cache, you are granted a Legendary item. The Eternity Cache is located within the Temporal Sanctum <link="Dungeons">dungeon</link>. Running higher tiers of the dungeon will allow you to create Legendaries out of higher level uniques.
+GameGuide.LegendaryItems_Paragraph_4 :: The Legendary item is the same as the unique item with affixes added to it from the exalted item. The number of affixes selected is equal to the legendary potential of the unique item used. When using the Eternity Cache at the end of Tier 2 or higher Temporal Sanctum, you can choose one affix to guarantee being moved from the exalted item. If the Unique item had more than 1 Legendary Potential, the rest of the affixes are chosen at random.
+GameGuide.LegendaryItems_Paragraph_6 :: The quantity of legendary potential that a unique item drops with is influenced mainly by the level of the zone which it drops in, but corruption also increases it slightly. Increased rarity mods, character level or any other modifiers have no effect.
+GameGuide.LegendaryItems_Paragraph_7 :: The amount of Legendary Potential that a unique item will generally drop with is relative to the item’s base power. High powered or very well scaling unique items are difficult to find with even one legendary potential, and low powered or leveling items are much more likely to have even more than one legendary potential. This is done so that most unique items have more similar overall power potential.
+GameGuide.LegendaryItems_Paragraph_8 :: <link="corrupted items">Corrupted items</link> cannot be used to create Legendary Items.
+GameGuide.LegendaryItems_SearchTerm_0 :: eternity
+GameGuide.LegendaryItems_SearchTerm_1 :: legendary
+GameGuide.LegendaryItems_SearchTerm_2 :: dungeon
+GameGuide.LegendaryItems_SearchTerm_3 :: cache
+GameGuide.LegendaryItems_Link_0 :: eternity cache
+GameGuide.LegendaryItems_Link_1 :: Legendary Items
+GameGuide.Idols_Title :: Idols
+GameGuide.Idols_Paragraph_0 :: Idols are a type of equipment that have many powerful and niche effects.
+GameGuide.Idols_Paragraph_2 :: Idols can be equipped in a special area on the right side of the inventory. You gain more space for equipping Idols by completing quests, up to 20 slots.
+GameGuide.Idols_Paragraph_4 :: Idols come in sizes ranging from 1 x 1 all the way to 2 x 2, 1 x 4, and 4 x 1. Larger sizes grant more of each stat, and many stats are restricted to specific sizes.
+GameGuide.Idols_Paragraph_5 :: Most Idols can only be equipped by a specific base class, and class specific Idols have their own sets of possible affixes.
+GameGuide.Idols_Paragraph_6 :: Idols always drop with 1 prefix and 1 suffix and cannot be altered through <link="Crafting Explanation">crafting</link>.
+GameGuide.Idols_Paragraph_7 :: The Idol Grid can be changed to different shapes by equipping an <link="idol altars">Idol Altar</link> above the idol grid.
+GameGuide.Idols_SearchTerm_0 :: idol
+GameGuide.Idols_SearchTerm_1 :: idols
+GameGuide.Idols_SearchTerm_2 :: charm
+GameGuide.Idols_SearchTerm_3 :: charms
+GameGuide.Idols_SearchTerm_4 :: idol altar
+GameGuide.Idols_Link_0 :: idol
+GameGuide.Idols_Link_1 :: idols
+GameGuide.AffixShards_Title :: Affix Shards
+GameGuide.AffixShards_Paragraph_0 :: Shards can be used to add new affixes to items or to increase the tier of an existing affix by one. An item can have two prefixes and two suffixes, and each affix can be crafted up to tier 5.
+GameGuide.AffixShards_Paragraph_2 :: When adding a shard to an item you have a chance to achieve a <#FFE6A5>Critical Success</color>, which upgrades the tier of a random affix on the item in addition to the normal upgrade shard provides. A Critical Success does not cost any crafting materials or Forging Potential, and cannot upgrade an affix above tier 5.
+GameGuide.AffixShards_Paragraph_3 :: Shards drop from enemies and chests like other items, but can also be created by using a <link="Runes and Glyphs">Rune of Shattering</link> or <link="Runes and Glyphs">Rune of Removal</link> on an item.<br><br>Some shards (and the affixes they represent) only drop in higher level zones, while others are simply less common.
+GameGuide.AffixShards_Paragraph_5 :: Shards that drop as items are placed in your Inventory when picked up, and can be moved to the Crafting Window (Forge) by pressing the Transfer Materials button. Shards gained from Shattering are automatically stored in the Material Storage.
+GameGuide.AffixShards_SearchTerm_0 :: craft
+GameGuide.AffixShards_SearchTerm_1 :: crafting
+GameGuide.AffixShards_SearchTerm_2 :: shard
+GameGuide.AffixShards_SearchTerm_3 :: affix
+GameGuide.AffixShards_SearchTerm_4 :: afix
+GameGuide.AffixShards_SearchTerm_5 :: prefix
+GameGuide.AffixShards_SearchTerm_6 :: suffix
+GameGuide.AffixShards_SearchTerm_7 :: sufix
+GameGuide.AffixShards_SearchTerm_8 :: tier
+GameGuide.AffixShards_Link_0 :: shard
+GameGuide.AffixShards_Link_1 :: shards
+GameGuide.WeaversWill_Title :: Weaver''s Will
+GameGuide.WeaversWill_Paragraph_0 :: Weaver’s Will is a special mechanic on certain unique items representing the amount of total Affix Tiers the Unique item will gain at maximum when turned to a <link="legendary items">Legendary item</link>. 
+GameGuide.WeaversWill_Paragraph_1 :: Instead of combining items in the <link="legendary items">Eternity Cache</link>, Weaver’s WIll uniques gain additional stats when slaying enemies and gaining experience while having it equipped.
+GameGuide.WeaversWill_Paragraph_2 :: When Weaver’s Will Unique gains a stat, it can either add a new tier 1 affix or upgrade an existing one, limited to tier 7. A Weaver’s WIll item with 28 Weaver’s WIll would eventually become a Legendary version of that unique with 4 tier 7 Affixes.
+GameGuide.WeaversWill_Paragraph_3 :: Weaver’s WIll Unique items found in higher level areas and higher <link="corruption and the shade">Corruption</link> will have an increased chance in having a higher Weaver’s Will.
+GameGuide.WeaversWill_SearchTerm_0 :: weaver
+GameGuide.WeaversWill_SearchTerm_1 :: weavers
+GameGuide.WeaversWill_SearchTerm_2 :: will
+GameGuide.WeaversWill_SearchTerm_3 :: legendary
+GameGuide.WeaversWill_SearchTerm_4 :: unique
+GameGuide.WeaversWill_Link_0 :: Weaver''s Will
+GameGuide.ExperimentalItems_Title :: Experimental Items
+GameGuide.ExperimentalItems_Paragraph_0 :: Experimental Items are items that at first glance appear to just be Magic, Rare or Exalted items. However, they have a special <link="affixes">affix</link> that only appears on items found from encountering and defeating <link="exiled mages">Exiled Mages</link>, and cannot be <link="Crafting Explanation">crafted</link> by conventional means. Experimental affixes only appear on Boots, Belts and Gloves.
+GameGuide.ExperimentalItems_Paragraph_2 :: In the <link="monolith introduction">Monolith of Fate</link> you might find a <link="woven echoes">Woven Echo</link>, which could unravel the mechanism for an unconventional crafting method.
+GameGuide.ExperimentalItems_SearchTerm_0 :: exiled
+GameGuide.ExperimentalItems_SearchTerm_1 :: mage
+GameGuide.ExperimentalItems_SearchTerm_2 :: experimental
+GameGuide.ExperimentalItems_SearchTerm_3 :: affix
+GameGuide.ExperimentalItems_SearchTerm_4 :: rune
+GameGuide.ExperimentalItems_SearchTerm_5 :: prison
+GameGuide.PrimordialItems_Title :: Primordial Items
+GameGuide.PrimordialItems_Paragraph_0 :: Primordial Items are a powerful type of equipment, with a restriction of only being able to wield one at a time.
+GameGuide.PrimordialItems_Paragraph_2 :: There are two types of Primordial items, Exalted and Unique. Primordial exalted affixes are tier 8, and are primarily created by using a <link="Runes and Glyphs">Rune of Evolution</link> on an item with at least one tier 7 affix on it. Primordial uniques are similar to other <link="uniques">Unique items</link> in that they can also be crafted to <link="Legendary Items">Legendary items</link>, but usually come with some more extraordinary effects. Most Primordial Unique items are created by Skarven Bloodhorn by giving him <link="rift beasts">Rift Beasts''</link> body parts.
+GameGuide.PrimordialItems_SearchTerm_0 :: primordial
+GameGuide.PrimordialItems_SearchTerm_1 :: exalted
+GameGuide.PrimordialItems_SearchTerm_2 :: unique
+GameGuide.PrimordialItems_SearchTerm_3 :: evolution
+GameGuide.PrimordialItems_SearchTerm_4 :: legendary
+GameGuide.PrimordialItems_SearchTerm_5 :: rift
+GameGuide.PrimordialItems_SearchTerm_6 :: beast
+GameGuide.PrimordialItems_SearchTerm_7 :: rift beast
+GameGuide.PrimordialItems_SearchTerm_8 :: skarven
+GameGuide.PrimordialItems_Link_0 :: primordial items
+GameGuide.CorruptedItems_Title :: Corrupted Items
+GameGuide.CorruptedItems_Paragraph_1 :: Items can be corrupted by using a <link="Runes and Glyphs">Rune of Corruption</link> on them in the <link="Crafting Explanation">Forge</link>. Doing so will corrupt the item, changing it unpredictably. Changes may include adding powerful new or existing modifiers, increasing or lowering its affix roll values, changing its rarity or subtype, or making it completely unusable. Sometimes corruption can even convert existing attributes to alternate corrupted attributes.
+GameGuide.CorruptedItems_Paragraph_3 :: It’s often best to fully craft an item before corrupting it, as corrupted items cannot be improved or crafted further. All <link="forging potential">Forging Potential</link>, <link="legendary items">Legendary Potential</link>, <link="weaver''s will">Weaver''s Will</link> and Touch is removed from the item. Corrupted items can be shattered as long as the item could be shattered if it was uncorrupted.
+GameGuide.CorruptedItems_SearchTerm_0 :: corrupted
+GameGuide.CorruptedItems_SearchTerm_1 :: rune of corruption
+GameGuide.CorruptedItems_SearchTerm_2 :: ruined
+GameGuide.CorruptedItems_Link_0 :: corrupted items
+GameGuide.IdolAltars_Title :: Idol Altars
+GameGuide.IdolAltars_Paragraph_1 :: Idol Altars are equippable items that have special <link="idols">idol</link> related modifiers, changing the shape of the Idol Grid. Idol Altars often include differently colored Refracted Slots that provide benefits to idols placed inside them. The effects depend on the modifiers of the Idol Altar.
+GameGuide.IdolAltars_Paragraph_3 :: Idol Altars can be found by completing <link="omen windows">Omen Windows</link>.
+GameGuide.IdolAltars_SearchTerm_0 :: corrupted
+GameGuide.IdolAltars_SearchTerm_1 :: rune of corruption
+GameGuide.IdolAltars_SearchTerm_2 :: idol altar
+GameGuide.IdolAltars_SearchTerm_3 :: altar
+GameGuide.IdolAltars_Link_0 :: idol altars
+GameGuide.CraftingExplanation_SearchTerm_1 :: Forge
+GameGuide.CraftingExplanation_Title :: Crafting Guide
+GameGuide.CraftingExplanation_Paragraph_0 :: All crafting is done in the Crafting Window (Forge), which is opened with the F key by default. Crafting using Forge can be done anywhere at any time.
+GameGuide.CraftingExplanation_Paragraph_2 :: After placing an item in the slot at the top of the window, you can either add a <link="shard">Shard</link> to the item by selecting one of the affix slots to fill and choosing an available affix or choose a <link="Runes and Glyphs">Rune</link> by clicking on the Rune icon. You can also choose to use a <link="Runes and Glyphs">Glyph</link> in the Support Item slot, if applicable.
+GameGuide.CraftingExplanation_Paragraph_4 :: If an item has any <link="forging potential">Forging Potential</link> remaining, you can use Shards and Runes on it. When an item runs out of Forging Potential, you can''t alter it further in the Forging Panel.
+GameGuide.CraftingExplanation_SearchTerm_0 :: craft
+GameGuide.CraftingExplanation_SearchTerm_2 :: shard
+GameGuide.CraftingExplanation_SearchTerm_3 :: affix
+GameGuide.CraftingExplanation_SearchTerm_4 :: afix
+GameGuide.CraftingExplanation_SearchTerm_5 :: prefix
+GameGuide.CraftingExplanation_SearchTerm_6 :: suffix
+GameGuide.CraftingExplanation_SearchTerm_7 :: sufix
+GameGuide.CraftingExplanation_SearchTerm_8 :: tier
+GameGuide.CraftingExplanation_SearchTerm_9 :: rune
+GameGuide.CraftingExplanation_SearchTerm_10 :: glyph
+GameGuide.CraftingExplanation_SearchTerm_11 :: forging
+GameGuide.CraftingExplanation_SearchTerm_12 :: potential
+GameGuide.CraftingExplanation_Link_0 :: Crafting Guide
+GameGuide.CraftingExplanation_Link_1 :: shard
+GameGuide.CraftingExplanation_Link_2 :: crafting
+GameGuide.RunesandGlyphs_Title :: Runes and Glyphs
+GameGuide.RunesandGlyphs_Paragraph_0 :: Runes are modifier items that can have various effects on the item they are applied to.<br>
+GameGuide.RunesandGlyphs_Paragraph_2 :: <#FFE6A5>Rune of Shattering:</color> Destroys an item, creating Shards from its affixes. The number of Shards created is random for each affix, equal to the tier of the affix at maximum and 1 at minimum.
+GameGuide.RunesandGlyphs_Paragraph_3 :: <#FFE6A5>Rune of Refinement:</color> Rerolls the values for each affix but does not change their tiers. Each affix is rolled individually, so some may have better values than others.
+GameGuide.RunesandGlyphs_Paragraph_4 :: <#FFE6A5>Rune of Removal:</color> Removes a random affix on an item, returning a number of shards equal to its tier.
+GameGuide.RunesandGlyphs_Paragraph_5 :: <#FFE6A5>Rune of Discovery:</color> Adds random tier 1 affixes to all empty affix slots on an item. Has an increased chance of rolling rarer affixes. Does not cost Forging Potential, but cannot be applied to items with zero Forging Potential.<br>
+GameGuide.RunesandGlyphs_Paragraph_6 :: <#FFE6A5>Rune of Shaping:</color> Rerolls all of the implicits on an item.
+GameGuide.RunesandGlyphs_Paragraph_7 :: <#FFE6A5>Rune of Ascendance:</color> Changes the item into a unique or set item of the same item type. Using this on a Silver Ring could turn it into any unique ring, including ones that are not Silver Rings. However, the Silver Ring cannot be turned into a Helmet. None of the other properties of the base item are retained. Rune of Ascendance cannot create unique or set items that are exclusive drops. There are many unique and set items that are only obtainable from bosses, for example.
+GameGuide.RunesandGlyphs_Paragraph_8 :: <#FFE6A5>Rune of Creation:</color> Duplicates the item, but reduces the Forging Potential of both the original and the copy to 0.
+GameGuide.RunesandGlyphs_Paragraph_9 :: <#FFE6A5>Rune of Havoc:</color> Shuffles the tiers of the non-sealed affixes on an exalted item with 4 non-sealed affixes. For example, an item with tier 2 strength, tier 7 dexterity, tier 3 health and tier 2 endurance might be changed to have tier 7 strength, tier 3 dexterity, tier 2 health, and tier 2 endurance.
+GameGuide.RunesandGlyphs_Paragraph_10 :: <#FFE6A5>Rune of Redemption:</color> Randomly changes the exalted affixes on an item into different affixes. Does not change the tiers of the affixes or the rolls within the tiers.
+GameGuide.RunesandGlyphs_Paragraph_11 :: <#FFE6A5>Rune of Weaving:</color> Uses a random amount of the remaining <link="weaver''s will">Weaver''s Will</link> or Weaver''s Touch on an item to add or improve affixes as if you had slain many enemies with the item equipped.
+GameGuide.RunesandGlyphs_Paragraph_12 :: <#FFE6A5>Rune of Evolution:</color> Evolves an exalted item into a <link="primordial items">Primordial</link> exalted item, upgrading a random tier 7 affix on the item into a tier 8 affix, massively increasing the affix’s power and moving it to its own second sealed affix slot. /  / <#FFE6A5>Rune of Corruption:</color> Rune of Corruption: <link="corrupted items">Corrupts</link> an item, changing it unpredictably and preventing you from being able to do any further crafting on it. The item may no longer be usable after it is corrupted. Removes all Forging Potential, Legendary Potential, Weaver’s Will, and Weaver’s Touch.
+GameGuide.RunesandGlyphs_Paragraph_13 :: Glyphs are support items that can be used alongside Runes or <link="shards">Shards</link> to affect the outcome of crafting.<br>
+GameGuide.RunesandGlyphs_Paragraph_15 :: <#FFE6A5>Glyph of Hope:</color> Modifies the outcome of a craft, granting it a 25% chance to have no Forging Potential cost.
+GameGuide.RunesandGlyphs_Paragraph_16 :: <#FFE6A5>Glyph of Chaos:</color> Modifies the outcome of a craft when upgrading an affix. Randomly changes the upgraded affix to a different one that can spawn on that item type. It cannot change a prefix into a suffix or vice versa. <br><br>For example, if you use a fire resistance shard to a raise the tier of a fire resistance suffix the tier would increase as normal and then it would change into a different affix such as cold resistance or increased health.
+GameGuide.RunesandGlyphs_Paragraph_17 :: <#FFE6A5>Glyph of Order:</color> Modifies the outcome of a craft when upgrading an affix. Prevents the roll of an affix within its range changing when it is upgraded.
+GameGuide.RunesandGlyphs_Paragraph_18 :: <#FFE6A5>Glyph of Despair:</color> Has a chance to seal an affix instead of upgrading it. The sealed affix is moved to its own slot, leaving its old slot open for you to add a new affix. The sealed affix cannot be modified further and an item can only have one sealed affix. The chance to seal is higher when crafting on affixes of lower tiers, and is also higher for exalted items and items with more affixes.<br>
+GameGuide.RunesandGlyphs_Paragraph_19 :: <#FFE6A5>Glyph of Envy:</color> Changes the item’s subtype to a different one with the same class requirement when adding or upgrading an affix.
+GameGuide.RunesandGlyphs_Paragraph_20 :: You can view how many Runes and Glyphs you have in the Crafting window or the Crafting Materials panel by clicking the button in your inventory.
+GameGuide.RunesandGlyphs_SearchTerm_0 :: craft
+GameGuide.RunesandGlyphs_SearchTerm_1 :: crafting
+GameGuide.RunesandGlyphs_SearchTerm_2 :: rune
+GameGuide.RunesandGlyphs_SearchTerm_3 :: shatter
+GameGuide.RunesandGlyphs_SearchTerm_4 :: shattering
+GameGuide.RunesandGlyphs_SearchTerm_5 :: cleanse
+GameGuide.RunesandGlyphs_SearchTerm_6 :: cleansing
+GameGuide.RunesandGlyphs_SearchTerm_7 :: refinement
+GameGuide.RunesandGlyphs_SearchTerm_8 :: refine
+GameGuide.RunesandGlyphs_SearchTerm_9 :: glyph
+GameGuide.RunesandGlyphs_SearchTerm_10 :: glyphs
+GameGuide.RunesandGlyphs_SearchTerm_11 :: stability
+GameGuide.RunesandGlyphs_SearchTerm_12 :: stable
+GameGuide.RunesandGlyphs_SearchTerm_13 :: guardian
+GameGuide.RunesandGlyphs_SearchTerm_14 :: seal
+GameGuide.RunesandGlyphs_SearchTerm_15 :: rune of havoc
+GameGuide.RunesandGlyphs_SearchTerm_16 :: rune of redemption
+GameGuide.RunesandGlyphs_SearchTerm_17 :: rune of weaving
+GameGuide.RunesandGlyphs_SearchTerm_18 :: rune of corruption
+GameGuide.RunesandGlyphs_Link_0 :: rune of shattering
+GameGuide.RunesandGlyphs_Link_1 :: rune of refinement
+GameGuide.ForgingPotential_Title :: Forging Potential
+GameGuide.ForgingPotential_Paragraph_0 :: Forging Potential is a property that all normal, magic, rare and exalted equipment items have, which is used at the forge to perform crafting actions. Once an item runs out of Forging Potential, it can no longer be crafted on but is still able to be used. Higher rarity items will generally drop with more Forging Potential.
+GameGuide.ForgingPotential_Paragraph_2 :: Each time you use a shard or rune in the forge, the Forging Potential of the item affected is reduced by a random amount inside a range. The amount of Forging Potential used can be modified through the use of <link="Runes and Glyphs">Glyphs</link>. As long as you have any amount of Forging Potential remaining, you are able to craft on the item in the forge.
+GameGuide.ForgingPotential_SearchTerm_0 :: fracture
+GameGuide.ForgingPotential_SearchTerm_1 :: fracturing
+GameGuide.ForgingPotential_SearchTerm_2 :: potential
+GameGuide.ForgingPotential_SearchTerm_3 :: forging
+GameGuide.ForgingPotential_SearchTerm_4 :: forge
+GameGuide.ForgingPotential_SearchTerm_5 :: instability
+GameGuide.ForgingPotential_Link_0 :: Forging Potential
+GameGuide.HitvsDamageoverTime_Title :: Hit vs Damage over Time
+GameGuide.HitvsDamageoverTime_Paragraph_0 :: Damage in Last Epoch can be dealt in two different ways: as a <#FFE6A5>hit</color>, or as <#FFE6A5>damage over time</color>.
+GameGuide.HitvsDamageoverTime_Paragraph_1 :: A <#FFE6A5>damage over time</color> effect deals damage to a target or area repeatedly over a duration.<br><br>The most common sources of damage over time are <link="ailments">ailments</link> such as ignite, bleed, and poison, which affect individual targets.<br><br>There are also damage over time effects that damage all targets within an area, such as Fire Aura, Tornado, Consecrated Ground, and many more.
+GameGuide.HitvsDamageoverTime_Paragraph_2 :: Any source of damage that is <#FFE6A5>not</color> damage over time is considered a <#FFE6A5>hit</color>. Most damaging skills include a hit, such as Swipe, Rive, Fireball, Elemental Nova, and Rip Blood.<br>
+GameGuide.HitvsDamageoverTime_Paragraph_3 :: Hits can be <link="dodge">dodged</link>, <link="block">blocked</link>, or turned into a <link="glancing blow">glancing blow</link>, and there are many other effects that trigger either when you hit something or when you are hit by an enemy.
+GameGuide.HitvsDamageoverTime_Paragraph_4 :: Damage over time cannot be mitigated by most defense mechanics, except for <link="Resistances">resistances</link>. Damage over time cannot <link="critical strikes">critically strike</link> and does not trigger on hit effects such as Health Gained On Hit.
+GameGuide.HitvsDamageoverTime_SearchTerm_0 :: damage over time
+GameGuide.HitvsDamageoverTime_SearchTerm_1 :: when hit
+GameGuide.HitvsDamageoverTime_SearchTerm_2 :: dot
+GameGuide.HitvsDamageoverTime_SearchTerm_3 :: on hit
+GameGuide.HitvsDamageoverTime_SearchTerm_4 :: hit
+GameGuide.HitvsDamageoverTime_Link_0 :: hit
+GameGuide.HitvsDamageoverTime_Link_1 :: damage over time
+GameGuide.HitvsDamageoverTime_Link_2 :: hits
+GameGuide.BaseDamage_Title :: Base Damage
+GameGuide.BaseDamage_Paragraph_0 :: All skills have a base amount of damage that they would deal without any stats, which is called base damage. Base damage can only be modified by a skill’s tree.
+GameGuide.BaseDamage_Paragraph_1 :: The default base damage for each skill is listed on its tooltip.
+GameGuide.BaseDamage_Paragraph_2 :: Melee skills typically have 2 base damage total because most of their damage comes from weapons.<br><br>Spells and throwing attacks can have much more base damage, but the exact amount varies a lot between skills.
+GameGuide.BaseDamage_Paragraph_3 :: When calculating damage dealt, stats like “+5 melee fire damage” are multiplied by the skill’s <link="Damage Effectiveness">added damage effectiveness</link>, then added to the base damage before stats like “30% <link="increased added more">increased</link> damage” and “10% <link="Increased Added More">more</link> damage” are applied.
+GameGuide.BaseDamage_Paragraph_4 :: Added damage without a damage type, such +5 Melee Damage, adds damage of a type that depends on the base damage type of the skill. For example +5 Melee Damage will add 5 Melee Physical Damage to a Physical Melee Attack but 5 Melee Fire Damage to a Fire Melee Attack.
+GameGuide.BaseDamage_SearchTerm_0 :: base damage
+GameGuide.BaseDamage_Link_0 :: base damage
+GameGuide.DamageConversion_Title :: Damage Conversion
+GameGuide.DamageConversion_Paragraph_0 :: The base damage type of specific skills can be converted. For example, a Physical skill could be converted to a Fire skill. Conversions are typically found in skill trees and items, and sometimes in passive trees.
+GameGuide.DamageConversion_Paragraph_1 :: Base damage conversion converts a skill’s <link="base damage">base damage</link> from one type to another, which does not affect damage from stats such as “+5 Melee Fire Damage”, but will change the damage type of added damage stats without a damage type tag such as "+5 Melee Damage".
+GameGuide.DamageConversion_Paragraph_2 :: Damage conversion doesn''t affect ailments such as ignite, or any other effects applied or triggered by the skill, unless stated otherwise.
+GameGuide.DamageConversion_SearchTerm_0 :: damage conversion
+GameGuide.DamageConversion_SearchTerm_1 :: conversion
+GameGuide.DamageEffectiveness_Title :: Damage Effectiveness
+GameGuide.DamageEffectiveness_Paragraph_0 :: All skills have an added damage effectiveness, which is a multiplier that is applied to all damage from stats like “+5 melee fire damage”.<br><br>Skills with large mana costs or cooldowns typically have greater than 100% damage effectiveness, while some skills that hit rapidly have less than 100%.
+GameGuide.DamageEffectiveness_Paragraph_1 :: For example, Elemental Nova has a damage effectiveness of 100%, while Meteor has a damage effectiveness of 900%.<br><br>If you had “+10 spell fire damage” from your passives, 10 fire damage would be added to Elemental Nova, while 90 fire damage would be added to Meteor. You can view the damage effectiveness of skills by holding ALT while hovering on them.
+GameGuide.DamageEffectiveness_Paragraph_2 :: Damage effectiveness does not affect <link="base damage">base damage</link>.
+GameGuide.DamageEffectiveness_SearchTerm_0 :: effectiveness
+GameGuide.DamageEffectiveness_SearchTerm_1 :: added damage
+GameGuide.DamageEffectiveness_SearchTerm_2 :: added
+GameGuide.DamageEffectiveness_SearchTerm_3 :: added damage effectiveness
+GameGuide.DamageEffectiveness_Link_0 :: added damage effectiveness
+GameGuide.DamageEffectiveness_Link_1 :: damage effectiveness
+GameGuide.Resistances_Title :: Resistances
+GameGuide.Resistances_Paragraph_0 :: Resistances apply whenever you take damage, reducing how much damage you take. Resistances are one of the few ways to mitigate <link="Hit vs Damage over Time">Damage over Time</link> effects.
+GameGuide.Resistances_Paragraph_2 :: If you have 10% physical resistance, you will take 10% less physical damage.<br><br>Resistances cap at 75%, so having a resistance value of greater than 75% will not directly reduce the damage you take.<br><br>Resistances can be reduced to negative numbers, with each 1% of negative resistance increasing damage taken of that type by 1%.
+GameGuide.Resistances_Paragraph_3 :: Having greater than 75% <link="terminology">uncapped resistance</link> protects against effects that reduce resistances such as Resistance Shreds, Shock or Marked for Death curse.<br><br>A stack of Shock reduces your lightning resistance by 2%, so if you had 75% lightning resistance it would be reduced to 73%. <br><br>If you had 77% lightning resistance, your final lightning resistance would still be 75%.
+GameGuide.Resistances_Paragraph_4 :: <link="penetration">Penetration</link> applies after your resistances are capped to 75%.
+GameGuide.Resistances_SearchTerm_0 :: armor
+GameGuide.Resistances_SearchTerm_1 :: armor
+GameGuide.Resistances_SearchTerm_2 :: protection
+GameGuide.Resistances_SearchTerm_3 :: protections
+GameGuide.Resistances_SearchTerm_4 :: resist
+GameGuide.Resistances_SearchTerm_5 :: resistance
+GameGuide.Resistances_SearchTerm_6 :: resistances
+GameGuide.Resistances_SearchTerm_7 :: res
+GameGuide.Resistances_Link_0 :: resistance
+GameGuide.Resistances_Link_1 :: resistances
+GameGuide.Armor_Title :: Armor
+GameGuide.Armor_Paragraph_0 :: Armor mitigates the damage you take from all <link="Hit vs Damage over Time">hits</link>, but has no effect against <link="Hit vs Damage over Time">Damage over Time</link>.
+GameGuide.Armor_Paragraph_1 :: The percentage of damage mitigated by armor depends on how much armor you have and the level of the area you are in.<br><br>The same amount of armor provides less mitigation at higher levels, and the percentage of damage mitigated cannot exceed 85%.
+GameGuide.Armor_Paragraph_2 :: This is according to the following formula, where <#FFE6A5>x</color> is the amount of armor you have and <#FFE6A5>a</color> is the area level.
+GameGuide.Armor_Paragraph_4 :: Armor is 70% as effective against non-physical damage.
+GameGuide.Armor_SearchTerm_0 :: armor
+GameGuide.Armor_SearchTerm_1 :: armor
+GameGuide.Armor_SearchTerm_2 :: protection
+GameGuide.Armor_SearchTerm_3 :: protections
+GameGuide.Armor_SearchTerm_4 :: resist
+GameGuide.Armor_SearchTerm_5 :: resistance
+GameGuide.Armor_SearchTerm_6 :: resistances
+GameGuide.Armor_SearchTerm_7 :: res
+GameGuide.Armor_Link_0 :: armor
+GameGuide.Armor_Link_1 :: armor
+GameGuide.Penetrations_Title :: Penetrations
+GameGuide.Penetrations_Paragraph_0 :: Penetration subtracts from <link="Resistances">resistances</link>, causing a source of damage to deal more damage.<br>
+GameGuide.Penetrations_Paragraph_1 :: Penetration applies after resistances are capped to 75%, and can reduce resistances to negative values.<br><br>For example, 30% lightning penetration against 20% lightning resistance will result in -10% lightning resistance.
+GameGuide.Penetrations_Paragraph_2 :: All enemies gain 1% of penetration per area level, up to a maximum of 75%.<br><br>Players with less than 75% of each resistance at area level 75 and beyond will take increased damage due to having negative resistance values.
+GameGuide.Penetrations_Paragraph_3 :: Enemies gain 1% penetration per area level, capped at 75% in areas level 75 and above. <link="terminology">Overcapping</link> resistances above 75% does not help mitigating this penetration. 
+GameGuide.Penetrations_SearchTerm_0 :: penetration
+GameGuide.Penetrations_SearchTerm_1 :: penetrate
+GameGuide.Penetrations_SearchTerm_2 :: pierce
+GameGuide.Penetrations_SearchTerm_3 :: piercing
+GameGuide.Penetrations_SearchTerm_4 :: resistance
+GameGuide.Penetrations_SearchTerm_5 :: res
+GameGuide.Penetrations_Link_0 :: penetration
+GameGuide.Penetrations_Link_1 :: penetrations
+GameGuide.Ward_Title :: Ward
+GameGuide.Ward_Paragraph_0 :: Ward is a shield above your health that is generated by certain effects and rapidly decays over time.
+GameGuide.Ward_Paragraph_1 :: Ward has no maximum value, but will always decay towards 0 unless you continue to generate more or have a stat called Ward Decay Threshold. 
+GameGuide.Ward_Paragraph_2 :: Ward does not decay below your Ward Decay Threshold. For example, having 500 Ward Decay Threshold means that decay will not lower your Ward below 500, and Ward Decay rate at 1000 Ward is halved.
+GameGuide.Ward_Paragraph_4 :: Ward Decays more quickly as you gain more of it, but this decay can be slowed with Ward Retention stat.
+GameGuide.Ward_Paragraph_5 :: Ward retention can be found on items and the passive tree, and the Intelligence <link="attributes">attribute</link> also grants Ward Retention.
+GameGuide.Ward_SearchTerm_0 :: ward
+GameGuide.Ward_SearchTerm_1 :: energy shield
+GameGuide.Ward_SearchTerm_2 :: shield
+GameGuide.Ward_Link_0 :: ward
+GameGuide.Ward_Link_1 :: ward retention
+GameGuide.Dodge_Title :: Dodge
+GameGuide.Dodge_Paragraph_0 :: Dodge is a defensive mechanic that grants you a chance to completely avoid taking hits.
+GameGuide.Dodge_Paragraph_1 :: Your Dodge Chance is calculated from Dodge Rating and is lower in higher level areas. Dodge chance cannot go above 85%.
+GameGuide.Dodge_Paragraph_3 :: Where “a” is the zone’s area level and “x” is Dodge Rating.
+GameGuide.Dodge_Paragraph_4 :: A good rule of thumb is that having dodge rating equal to 10 times the area level will give you about 50% Dodge Chance.<br><br>A zone''s area level can be viewed on the overlay map (tab by default).
+GameGuide.Dodge_Paragraph_5 :: Dodge cannot protect you from <link="Hit vs Damage over Time">Damage over Time</link> effects, but dodging does not count as being <link="Hit vs Damage over Time">hit</link>.
+GameGuide.Dodge_SearchTerm_0 :: dodge
+GameGuide.Dodge_SearchTerm_1 :: evasion
+GameGuide.Dodge_Link_0 :: dodge
+GameGuide.Dodge_Link_1 :: dodged
+GameGuide.Block_Title :: Block
+GameGuide.Block_Paragraph_0 :: Block is a defensive mechanic that grants a chance to reduce the damage taken from <link="Hit vs Damage over Time">hits.</link><br>
+GameGuide.Block_Paragraph_1 :: Whenever you take a hit, your Block Chance is rolled to determine if you block the hit. On a successful block, a percentage of the damage is mitigated.
+GameGuide.Block_Paragraph_2 :: This percentage depends on how much Block Effectiveness you have, and the level of the area you are in. The percentage cannot exceed 85%.
+GameGuide.Block_Paragraph_4 :: Where “a” is the zone’s area level and “x” is Block Effectiveness.
+GameGuide.Block_Paragraph_5 :: You can block all hit (including from spells), but not <link="Hit vs Damage over Time">damage over time</link> effects. Blocking a hit counts as being hit.
+GameGuide.Block_SearchTerm_0 :: blocked
+GameGuide.Block_SearchTerm_1 :: block
+GameGuide.Block_Link_0 :: block
+GameGuide.Block_Link_1 :: blocked
+GameGuide.Endurance_Title :: Endurance
+GameGuide.Endurance_Paragraph_0 :: Endurance is a defensive mechanic that allows you to take less damage while below a certain health value.
+GameGuide.Endurance_Paragraph_1 :: While your health is less than your Endurance Threshold, you will take less damage equal to your Endurance value. This reduction applies to health, but does not apply to ward.
+GameGuide.Endurance_Paragraph_2 :: Endurance has a cap of 60% less damage taken (multiplicative with other modifiers), while Endurance Threshold does not have a cap.
+GameGuide.Endurance_Paragraph_3 :: Endurance applies to any damage taken below your Endurance Threshold, even if the instance of damage applied while you were above it. For example, if you take a hit of 100 damage, but 50 of that damage was below your Endurance Threshold, the last 50 damage will have Endurance applied to it.
+GameGuide.Endurance_Paragraph_4 :: All characters start with 20% Endurance and have an Endurance Threshold equal to 20% of their maximum health.
+GameGuide.Endurance_Paragraph_5 :: Endurance mitigates both <link="Hit vs Damage over Time">hits</link> and <link="Hit vs Damage over Time">damage over time</link>.
+GameGuide.Endurance_SearchTerm_0 :: endurance
+GameGuide.Endurance_Link_0 :: endurance
+GameGuide.Endurance_Link_1 :: endurance threshold
+GameGuide.GlancingBlow_Title :: Glancing Blow
+GameGuide.GlancingBlow_Paragraph_0 :: The "chance to receive a Glancing Blow" stat grants you a chance to take a Glancing Blow when hit.<br><br>A Glancing Blow reduces the damage you take from a hit by 35%. Having a chance greater than 100% has no additional effect.
+GameGuide.GlancingBlow_Paragraph_1 :: Glancing Blow cannot protect you from <link="Hit vs Damage over Time">Damage over Time</link> effects and taking a Glancing Blow counts as being <link="Hit vs Damage over Time">hit</link>.
+GameGuide.GlancingBlow_SearchTerm_0 :: glancing blow
+GameGuide.GlancingBlow_SearchTerm_1 :: gb
+GameGuide.GlancingBlow_SearchTerm_2 :: glancing
+GameGuide.GlancingBlow_Link_0 :: glancing blow
+GameGuide.CriticalStrikes_Title :: Critical Strikes
+GameGuide.CriticalStrikes_Paragraph_0 :: All <link="Hit vs Damage over Time">hits</link> have a chance to critically strike, or “crit”, dealing much more damage than normal. <link="Hit vs Damage over Time">Damage over time</link> effects cannot crit.<br>
+GameGuide.CriticalStrikes_Paragraph_1 :: All hits have a base critical strike chance of 5%. This can be improved by items, passives, and skill tree nodes.
+GameGuide.CriticalStrikes_Paragraph_2 :: The difference between <#FFE6A5>added</color> critical strike chance and <#FFE6A5>increased</color> critical strike chance is very important.<br><br><#FFE6A5>+1% critical strike chance</color> will result in a final chance of 6% (assuming no other modifiers), while <#FFE6A5>1% increased critical strike chance</color> will result in a final chance of 5.05%. Both stats together will result in a final chance of 6.06%.
+GameGuide.CriticalStrikes_Paragraph_3 :: When a hit crits, the damage dealt is multiplied by a critical strike multiplier, which is multiplicative with other modifiers. The default critical strike multiplier is 200%.
+GameGuide.CriticalStrikes_Paragraph_4 :: The <#FFE6A5>critical strike avoidance</color> stat grants a chance to cause critical strikes to become normal hits instead. This chance is rolled after the attacker''s crit chance.<br><br>If an enemy has 30% critical strike chance and you have 50% critical strike avoidance, the enemy will effectively have a critical strike chance of 15%.
+GameGuide.CriticalStrikes_Paragraph_5 :: All enemy hits that can critically strike have a critical strike multiplier of 200%, but this can be reduced by <#FFE6A5>less bonus damage taken from critical strikes<#FFE6A5>. You cannot have more than 100% less bonus damage taken from critical strikes, which reduces the damage of a critical strike to that of a regular hit.
+GameGuide.CriticalStrikes_SearchTerm_0 :: crit
+GameGuide.CriticalStrikes_SearchTerm_1 :: critical
+GameGuide.CriticalStrikes_Link_0 :: critically strike
+GameGuide.IncreasedAddedAndMore_Title :: Increased, Added, and More
+GameGuide.IncreasedAddedAndMore_Paragraph_0 :: Stats and modifiers in Last Epoch can exist in 3 main categories: <#FFE6A5>added</color>, <#FFE6A5>increased</color>, and <#FFE6A5>more</color>. The category a modifier belongs to determines which step it will be used at in calculations. Not all stats will have modifiers for each category in practice.<br>
+GameGuide.IncreasedAddedAndMore_Paragraph_1 :: <#FFE6A5>(5 + 2 + 3) = 10<br></color><br><br>First, all <#FFE6A5>added</color> sources of the stat are totaled together.<br>
+GameGuide.IncreasedAddedAndMore_Paragraph_2 :: <#FFE6A5>(1 + 0.05 + 0.3 + 0.1) = 1.45<br></color><br><br>Second, all <#FFE6A5>increased</color> sources of the stat are totaled together. Increased values are percentages, so they are converted to decimal numbers and an additional 1 is added. <#FFE6A5>Reduced</color> sources are subtracted from this same total.<br>
+GameGuide.IncreasedAddedAndMore_Paragraph_3 :: <#FFE6A5>(10 x 1.45) = 14.5<br></color><br><br>Third, the total of the <#FFE6A5>added</color> sources is multiplied by the total of the <#FFE6A5>increased</color> sources.<br>
+GameGuide.IncreasedAddedAndMore_Paragraph_4 :: <#FFE6A5>14.5 x (1 + 0.05) x (1 + 0.3) x (1 + 0.1) = 21.77<br></color><br><br>Finally, the product of the <#FFE6A5>added</color> and <#FFE6A5>increased</color> sources is multiplied by each <#FFE6A5>more</color> source. <#FFE6A5>More</color> values are also percentages, so 1 is added each time. <#FFE6A5>Less</color> sources are also applied here as values subtracted from 1.<br>
+GameGuide.IncreasedAddedAndMore_Paragraph_5 :: Note that the <#FFE6A5>more</color> sources are not added together first, which would result in a different number. If the <#FFE6A5>more</color> values in this example were totaled first, the final result would be 21.03, not 21.77.
+GameGuide.IncreasedAddedAndMore_SearchTerm_0 :: increased
+GameGuide.IncreasedAddedAndMore_SearchTerm_1 :: more
+GameGuide.IncreasedAddedAndMore_SearchTerm_2 :: added
+GameGuide.IncreasedAddedAndMore_SearchTerm_3 :: add
+GameGuide.IncreasedAddedAndMore_SearchTerm_4 :: increase
+GameGuide.IncreasedAddedAndMore_SearchTerm_5 :: reduced
+GameGuide.IncreasedAddedAndMore_SearchTerm_6 :: reduce
+GameGuide.IncreasedAddedAndMore_SearchTerm_7 :: less
+GameGuide.IncreasedAddedAndMore_SearchTerm_8 :: subtract
+GameGuide.IncreasedAddedAndMore_Link_0 :: +5
+GameGuide.IncreasedAddedAndMore_Link_1 :: increased
+GameGuide.IncreasedAddedAndMore_Link_2 :: more
+GameGuide.HealthLeech_Title :: Health Leech
+GameGuide.HealthLeech_Paragraph_0 :: Health Leech is a mechanic that allows you to recover a percentage of the damage you deal as health.
+GameGuide.HealthLeech_Paragraph_1 :: Each time you deal damage (whether from a <link="Hit vs Damage over Time">hit</link> or <link="Hit vs Damage over Time">damage over time</link>), any applicable leech stats are calculated, then the amount of damage is multiplied by this value to get the amount of health you will gain.<br><br>For example, if you deal 100 physical damage with a melee attack and you have “5% of melee damage leeched as health” and “3% of physical damage leeched as health”, you will leech <#FFE6A5>100 x (0.05 + 0.03) = 8 health.</color>
+GameGuide.HealthLeech_Paragraph_2 :: The damage value used to calculate the health returned is the final damage dealt to the target, meaning defensive mechanics like resistances and block will reduce it.<br><br>If a target takes more damage than it has health remaining, the excess will not be used to calculate leech. For example, if an enemy has 25 health and you deal 100 damage to it, only 25 damage will be used for calculating leech.
+GameGuide.HealthLeech_Paragraph_3 :: Health returned by health leech is granted evenly over 3 seconds. Health from each instance of leech is granted independently, meaning they expire at different times. There is no limit to how much you can leech at once.
+GameGuide.HealthLeech_SearchTerm_0 :: leech
+GameGuide.HealthLeech_SearchTerm_1 :: health leech
+GameGuide.HealthLeech_Link_0 :: leech
+GameGuide.HealthLeech_Link_1 :: health leech
+GameGuide.Stun_Title :: Stun
+GameGuide.Stun_Paragraph_0 :: Stunned enemies and players cannot move or use skills. Stun has a base duration of 0.4 seconds.
+GameGuide.Stun_Paragraph_1 :: All <link="Hit vs Damage over Time">hits</link> have a chance to stun if they deal enough damage. Hits that deal more damage are more likely to stun, but enemies that have higher maximum health are harder to stun.<br><br>The Increased Stun Chance stat also makes hits more likely to stun, while the target’s Stun Avoidance stat makes it harder to stun. If the target is <link="shock">shocked</link>, it has an increased chance to be stunned.<br>
+GameGuide.Stun_Paragraph_2 :: The stun chance of any hit can be calculated using this formula:
+GameGuide.Stun_Paragraph_4 :: When calculating stun chance using the formula above, melee damage dealt by players is multiplied by 3, and other damage dealt by players is multiplied by 2.
+GameGuide.Stun_Paragraph_5 :: Bosses are harder to stun. In the calculation above, their maximum health is 50% higher. So if a boss has 10 000 health, for the stun calculation 15 000 is used instead.
+GameGuide.Stun_Paragraph_6 :: Due to the formula above, at 0% increased stun chance and 0 stun avoidance, non-player hits must deal more damage than 5% of a target''s maximum health to have a chance to stun them. Every 100 stun avoidance raises this threshold by 1%. This threshold is reduced by increased stun chance, and by the player bonuses described above.
+GameGuide.Stun_Paragraph_7 :: Players have inherent stun avoidance equal to 250 + 5 per character level, and can acquire more through items, passives and blessings.
+GameGuide.Stun_SearchTerm_0 :: stun
+GameGuide.Stun_SearchTerm_1 :: stun chance
+GameGuide.Stun_SearchTerm_2 :: stun avoidance
+GameGuide.Stun_Link_0 :: stun
+GameGuide.Stun_Link_1 :: stun chance
+GameGuide.Stun_Link_2 ::  /  / stunned
+GameGuide.Freeze_Title :: Freeze
+GameGuide.Freeze_Paragraph_0 :: Enemies and players that are frozen cannot move or use skills. Freeze has a base duration of 1.2 seconds.
+GameGuide.Freeze_Paragraph_1 :: To have a chance to freeze, a skill must have a <#FFE6A5>freeze rate</color>. Most Cold skills have a freeze rate, which is listed on their tooltips.
+GameGuide.Freeze_Paragraph_2 :: Your skills'' base freeze rate listed in their tooltips can be increased by the "freeze rate per stack of chill" stat, and that final number is then multiplied by the "freeze rate multiplier" stat (which is 100% by default). If the target is <link="frostbite">frostbitten</link>, it has an increased chance to be frozen. It is more difficult to freeze enemies that have more maximum health and current ward.
+GameGuide.Freeze_Paragraph_4 :: Bosses are harder to freeze. In the calculation above, their maximum health is 50% higher. So if a boss has 10 000 health, for the freeze calculation 15 000 is used instead.
+GameGuide.Freeze_Paragraph_5 :: A skill with 40 freeze rate and 500% freeze rate multiplier would have a 2.4% chance to freeze an enemy that has 10 000 maximum health and 0 current ward: /  /  / (40 x 6) / 10 000 = 0.024
+GameGuide.Freeze_Paragraph_6 :: If you then apply 3 stacks of chill to that enemy with 50% freeze rate per stack of chill for a total of 150%, your chance to freeze would be 6%: /  /  / (40 x 2.5 x 6) / 10 000 = 0.06
+GameGuide.Freeze_Paragraph_7 :: If the enemy also has 15 stacks of <link="frostbite">frostbite</link> that add another 300% chance to be frozen, the chance to freeze that enemy would be 24%: /  /  / ((40 x 2.5 x 6) / 10 000) x 4 = 0.24
+GameGuide.Freeze_Paragraph_8 :: If that enemy was a boss, the chance to freeze it would be 16%, as bosses are harder to <link="Stun">stun</link> and freeze due to their health being 50% higher in these calculations. /  /  / ((40 x 2.5 x 6) / (10 000 x 1.50)) x 4 = 0.16
+GameGuide.Freeze_SearchTerm_0 :: freeze
+GameGuide.Freeze_Link_0 :: freeze
+GameGuide.Minions_Title :: Minions
+GameGuide.Minions_Paragraph_0 :: Minions are allies of the player that are summoned by skills, items, passives, or other effects.
+GameGuide.Minions_Paragraph_1 :: Minions automatically attack enemies and will run towards the player if they’ve strayed too far behind.<br><br>You can also manually tell your minions to target the enemy under your cursor using Minion Attack Command (bound to A by default). If there’s no enemy at the location you target, your minions will move there before picking a new target to attack. You can also use this command to have your minions break things like crates. /  / Minions have two modes, Protect and Assassinate, which alter the distance they attack enemies or run back to the player. In Assassinate mode minions prioritize attacking targets close to them, especially bosses and rare enemies, and don''t return to the player unless they''re very far away. In Protect mode minions stay closer to the player and prioritize targets close to the player instead.
+GameGuide.Minions_Paragraph_2 :: Minions summoned by a skill will typically gain additional stats from skill tree nodes. Modifiers your character has (such as from passives and items) <#FFE6A5>will not</color> apply unless minions are specified.<br><br>For example, a passive node that grants <#FFE6A5>increased physical damage</color> will not apply to your minions, but <#FFE6A5>increased minion physical damage</color> will apply.
+GameGuide.Minions_Paragraph_3 :: A minion will prioritize using a skill that has just come off of cooldown if it has multiple to use, assuming there is a valid target in range.
+GameGuide.Minions_Paragraph_4 :: <link="companions">Companions</link> and <link="Totem">Totems</link> are two types of minions that have additional mechanics.
+GameGuide.Minions_Paragraph_5 :: Starting from level 26, all minions gain 0.6% more damage and 0.8% damage reduction per level. At level 100, your minions deal 45% more damage and have 60% damage reduction from this level scaling.
+GameGuide.Minions_SearchTerm_0 :: minion
+GameGuide.Minions_SearchTerm_1 :: ally
+GameGuide.Minions_SearchTerm_2 :: minions
+GameGuide.Minions_SearchTerm_3 :: protect
+GameGuide.Minions_SearchTerm_4 :: assassinate
+GameGuide.Minions_SearchTerm_5 :: stance
+GameGuide.Minions_SearchTerm_6 :: aggressive
+GameGuide.Minions_SearchTerm_7 :: mode
+GameGuide.Minions_Link_0 :: minion
+GameGuide.Minions_Link_1 :: minions
+GameGuide.Companions_Title :: Companions
+GameGuide.Companions_Paragraph_0 :: Companions are a type of <link="minions">minion</link> with special mechanics used primarily the Primalist class. By default, you can have 2 companions active at once.<br><br>All minion stats and effects apply to companions, but there are effects that only benefit companions.<br>
+GameGuide.Companions_Paragraph_1 :: After using a skill to summon a companion, the summon skill will be replaced by a companion ability, which is specific to the companion summoned. <br><br>If you can summon multiple of the same companion, you must summon the maximum number or reach your companion limit before the ability will change.
+GameGuide.Companions_Paragraph_2 :: When a companion’s health is reduced to zero, it enters a <#FFE6A5>Downed</color> state rather than dying. Being close to a downed companion will revive it, but if you wait too long the companion will die and must be summoned again.
+GameGuide.Companions_SearchTerm_0 :: companion
+GameGuide.Companions_SearchTerm_1 :: companions
+GameGuide.Companions_Link_0 :: companion
+GameGuide.Companions_Link_1 :: companions
+GameGuide.Totems_Title :: Totems
+GameGuide.Totems_Paragraph_0 :: Totems are a type of <link="minions">minion</link> that is used by the Primalist class.
+GameGuide.Totems_Paragraph_1 :: Totems cannot move and have a fixed duration in addition to health. All minion stats and effects apply to totems, but there are effects that only benefit totems.
+GameGuide.Totems_SearchTerm_0 :: totem
+GameGuide.Totems_SearchTerm_1 :: totems
+GameGuide.Totems_Link_0 :: totem
+GameGuide.Totems_Link_1 :: totems
+GameGuide.Potions_Title :: Potions
+GameGuide.Potions_Paragraph_0 :: Potions are a special type of item that drops from killing enemies or hitting bosses. Potions can be used on demand for a quick burst of healing. You can pick up a potion by walking near it while you have empty potion slots or you are not at full health. When you pick up a potion while you are at max potions but not full health, the potion will be automatically consumed and you are healed. You can increase your maximum potion carrying capacity by upgrading your belt.
+GameGuide.Potions_SearchTerm_0 :: potion
+GameGuide.Potions_SearchTerm_1 :: potions
+GameGuide.Potions_Link_0 :: potion
+GameGuide.Potions_Link_1 :: potions
+GameGuide.Attributes_Title :: Attributes
+GameGuide.Attributes_Paragraph_0 :: In Last Epoch, characters have an attribute or attributes that represent what they excel at. For example, Rogue’s core attribute is Dexterity, while it’s Intelligence for the Mage. Each of these core attributes has a small benefit per point:
+GameGuide.Attributes_Paragraph_1 :: Strength grants 4% Increased Armor per point and improves the skills that rely on raw strength.
+GameGuide.Attributes_Paragraph_2 :: Dexterity grants 4 Dodge Rating per point and improves the skills that rely on skillful handling of weapons.
+GameGuide.Attributes_Paragraph_3 :: Intelligence grants 2% Ward Retention per point and improves the skills that rely on carefully studied magic.
+GameGuide.Attributes_Paragraph_4 :: Attunement grants 2 Mana per point and improves the skills that rely on the innate magic inside you and your surroundings.
+GameGuide.Attributes_Paragraph_5 :: Vitality grants 6 Health and 1% Poison and Nerotic Resistance per point. 
+GameGuide.Attributes_Paragraph_6 :: As seen in the descriptions of the attributes above, they often improve skills with different expertises, and in most cases skills of a certain class by default benefit from the same stat. In some cases, more than one attribute can also scale a skill, like Primalist’s Gathering Storm that benefits from both Strength and Attunement. You can see what attribute scales a skill by hovering to the skill, and more detailed effect by holding ALT. 
+GameGuide.Attributes_Paragraph_8 :: There are also ways to modify skills, or your character to gain additional benefits from attributes by selecting skill points, passive points or wearing items with those types of effects.
+GameGuide.Attributes_SearchTerm_0 :: attribute
+GameGuide.Attributes_SearchTerm_1 :: attributes
+GameGuide.Attributes_SearchTerm_2 :: dex
+GameGuide.Attributes_SearchTerm_3 :: dexterity, 
+GameGuide.Attributes_SearchTerm_4 :: str
+GameGuide.Attributes_SearchTerm_5 :: strength
+GameGuide.Attributes_SearchTerm_6 :: int
+GameGuide.Attributes_SearchTerm_7 :: intelligence
+GameGuide.Attributes_SearchTerm_8 :: att
+GameGuide.Attributes_SearchTerm_9 :: attunement
+GameGuide.Attributes_SearchTerm_10 :: vit
+GameGuide.Attributes_SearchTerm_11 :: vitality
+GameGuide.Levels_Title :: Levels
+GameGuide.Levels_0 :: While slaying enemies and completing quests, you gain experience and after gaining a certain amount of experience, your character will Level Up. The maximum character level is 100, and different bonuses, skills and unlocks are gained at different levels.
+GameGuide.Levels_1 :: For each level up, character gains the following stats: / - 10 Health (total +990 at level 100). / - 0.5 Mana (total +50 at level 100). / - 5 Stun Avoidance (total +495 at level 100). / - 0.125 Health Regeneration (total +12 at level 100). / - 5 Health Gained on Potion use (total +495 at level 100). / - Health gained for minions (hold ALT on a Minion Skill to see specifics).
+GameGuide.Levels_2 :: Other leveling up benefits are: / - Passive Skill Point from 3 to 100 (total 98). / - Skill Specialization unlocks at levels 4, 8, 20, 35 and 50. / - Minimum Skill Levels increases at levels 8, 12, 17, 24, 32, 40, 50, 60 and 70. / - Certain Skills unlocked in your base Class. / - Ability to craft and equip items with a higher level requirement. / - 0.6 Minion Power from levels 26 to 100 (total 45% at level 100) which multiplicatively increases the damage your Minions deal, and lowers the damage they take.
+GameGuide.Levels_SearchTerm_0 :: lvl
+GameGuide.Levels_SearchTerm_1 :: lvl up
+GameGuide.Levels_SearchTerm_2 :: level
+GameGuide.Levels_SearchTerm_3 :: level up
+GameGuide.Levels_SearchTerm_4 :: leveling
+GameGuide.Levels_SearchTerm_5 :: levels
+GameGuide.Levels_SearchTerm_6 :: bonus
+GameGuide.Parry_Title :: Parry
+GameGuide.Parry_0 :: Parry is a defensive mechanic that grants a chance to negate all damage taken from <link="Hit vs Damage over Time">hits</link>. However unlike <link="dodge">Dodge</link>, Parrying does still counts as being hit and as a result of that ailments can still be applied to you when you parry a hit.
+GameGuide.Parry_1 :: Parrying has no effect against <link="Hit vs Damage over Time">Damage over Time</link> effects and is capped at 75%.
+GameGuide.Parry_SearchTerm_0 :: parry
+GameGuide.Parry_SearchTerm_1 :: parrying
+GameGuide.Evade_Title :: Evade
+GameGuide.Evade_Paragraph_1 :: Evade is a movement ability that rapidly moves your character forwards (bound to Space by default), and has two charges.
+GameGuide.Evade_Paragraph_2 :: You are not immune to damage and enemy abilities will still be able to hit you while using Evade. Traversal skills do not share cooldown with Evade.
+GameGuide.Evade_Paragraph_3 :: Evade has a cooldown of 4 seconds, and it gains 0.5% Increased Cooldown Recovery Speed per Character Level, lowering the cooldown to 2.7 seconds at Level 100 with no other sources of increased cooldown recovery speed. 
+GameGuide.Evade_SearchTerm_0 :: Evade
+GameGuide.Evade_SearchTerm_1 :: Dodge Roll
+GameGuide.Evade_SearchTerm_2 :: Roll
+GameGuide.Evade_SearchTerm_3 :: Evading
+GameGuide.Evade_Link_0 :: Evade
+GameGuide.Evade_Link_1 :: Dodge Roll
+GameGuide.Evade_Link_2 :: Roll
+GameGuide.HealthAndRegen_Title :: Health and Health Regeneration
+GameGuide.HealthAndRegen_Paragraph_0 :: Health is the final defensive layer in Last Epoch and If your health reaches 0, your character dies. Combine with other defensive mechanics such as <link="Resistances">resistances</link>, <link="Armor">armor</link>, <link="dodge">dodge</link>, <link="health leech">leech</link>, <link="ward">ward</link> and many others to make sure you health never reaches 0.
+GameGuide.HealthAndRegen_Paragraph_1 :: Health values can be increased through items, passives and by leveling up your character. Each character level grants +8 health. 
+GameGuide.HealthAndRegen_Paragraph_2 :: Your character will also have some passive health regeneration, and it can be increased by skills, items, passives and leveling up your character. Each character level grants +0.125 health regeneration.
+GameGuide.HealthAndRegen_SearchTerm_0 :: Health
+GameGuide.HealthAndRegen_SearchTerm_1 :: Regen
+GameGuide.HealthAndRegen_SearchTerm_2 :: Regeneration
+GameGuide.HealthAndRegen_SearchTerm_3 :: HP
+GameGuide.HealthAndRegen_SearchTerm_4 :: Life
+GameGuide.ManaAndRegen_Title :: Mana and Mana Regeneration
+GameGuide.ManaAndRegen_Paragraph_0 :: Mana is the main resource that is needed to use most skills. As long as your mana is above 0, you are able to use a skill even if the mana cost is higher than your remaining mana. 
+GameGuide.ManaAndRegen_Paragraph_1 :: Mana values can be increased through items, passives and by leveling up your character. Each character level grants 0.5 mana.
+GameGuide.ManaAndRegen_Paragraph_2 :: When using skills that cost more mana than the amount of mana you currently have, you will go to negative mana. You can still regen mana and use skills that do not have a mana cost while at negative mana, however skills that cost even 1 mana cannot be used while at negative mana. Some skills have benefits while being at negative mana.
+GameGuide.ManaAndRegen_Paragraph_3 :: Your character will also have 8 mana regeneration by default, which can be increased through skills, items and passives, but not by leveling your character up. 
+GameGuide.ManaAndRegen_SearchTerm_0 :: Mana
+GameGuide.ManaAndRegen_SearchTerm_1 :: Regen
+GameGuide.ManaAndRegen_SearchTerm_2 :: Regeneration
+GameGuide.ManaAndRegen_SearchTerm_3 :: MP
+GameGuide.ManaAndRegen_SearchTerm_4 :: Cost
+GameGuide.DamageTakenFromMana_Title :: Damage Taken From Mana Before Health
+GameGuide.DamageTakenFromMana_Paragraph_0 :: Damage Taken From Mana Before Health is a defensive mechanic primarily available for Mages, which is mostly obtained through items. Sorcerers, a mastery specialization for Mages, also have this stat available in their passive trees.
+GameGuide.DamageTakenFromMana_Paragraph_1 :: When a character has any % of Damage Taken From Mana Before Health, a portion of the damage will be dealt to their mana instead of health. However, if they are at 0 or negative mana, then all damage is applied to health instead. Damage Taken From Mana Before Health stat does not protect ward, similar to <link="endurance">endurance</link>.
+GameGuide.DamageTakenFromMana_Paragraph_2 :: Having more than 100% Damage Taken From Mana Before Health does not have any additional effect.
+GameGuide.DamageTakenFromMana_Paragraph_3 :: 1 Point of mana shields 5 points of health. For example, if a character has 90% of Damage Taken From Mana Before Health and takes 1000 damage after all other reductions to damage taken from other defensive stats, such as <link="Armor">armor</link> and <link="Resistances">resistances</link> have been applied: / -100 Damage is dealt to health, as 10% of 1000 is 100.
+GameGuide.DamageTakenFromMana_Paragraph_4 :: -180 Damage is dealt to mana, as 90% of 1000 is 900, which is then reduced by dividing by 5, which results in 180. This means that effectively your mana has 80% damage reduction. 
+GameGuide.DamageTakenFromMana_SearchTerm_0 :: damage
+GameGuide.DamageTakenFromMana_SearchTerm_1 :: taken
+GameGuide.DamageTakenFromMana_SearchTerm_2 :: from
+GameGuide.DamageTakenFromMana_SearchTerm_3 :: mana
+GameGuide.DamageTakenFromMana_SearchTerm_4 :: before
+GameGuide.DamageTakenFromMana_SearchTerm_5 :: health
+GameGuide.DamageTakenFromMana_SearchTerm_6 :: mbh
+GameGuide.DamageTakenFromMana_SearchTerm_7 :: dtfmbh
+GameGuide.BossWard_Title :: Boss Ward
+GameGuide.BossWard_Paragraph_0 :: Certain enemies have small notches at the bottom section of their health bar, indicating that they are benefitting from the Boss Ward system.
+GameGuide.BossWard_Paragraph_2 :: When enough damage is dealt to these enemies and their health bar reaches a notch, it is consumed and the enemy is granted ward based on their maximum health. When a notch is consumed that grants the boss ward, they will also be stunned for a short duration.
+GameGuide.BossWard_Paragraph_3 :: Unlike the <link="ward">player ward</link> which decays faster the more ward you have, the rate at which the Boss Ward decays speeds up over time.
+GameGuide.BossWard_Paragraph_4 :: While only Bosses are able to benefit from the Boss Ward mechanic, not all Boss enemies have it. 
+GameGuide.BossWard_SearchTerm_0 :: Boss
+GameGuide.BossWard_SearchTerm_1 :: Ward
+GameGuide.BossWard_SearchTerm_2 :: Notch
+GameGuide.BossWard_SearchTerm_3 :: Notches
+GameGuide.BossWard_SearchTerm_4 :: Decay
+GameGuide.MonolithIntroduction_Title :: Monolith Introduction
+GameGuide.MonolithIntroduction_Paragraph_1 :: The Monolith of Fate is the main endgame system in Last Epoch. Characters can access the Monolith of Fate from the End of Time, though it is designed to be started after the campaign.
+GameGuide.MonolithIntroduction_Paragraph_2 :: The Monolith of Fate consists of multiple <link="Timelines">Timelines</link>. All Timelines have a fixed area level and their own set of layouts, enemies and quests to encounter.
+GameGuide.MonolithIntroduction_Paragraph_4 :: Knowledge of Orobyss tracks your progress through the Epoch Mastery quest, where you prove to Elder Gaspar that you are ready to venture deeper in to the Monolith of Fate. The progress can be obtained by completing the final chapters of the campaign or by conquering unlocked Timelines in the Monolith of Fate.
+GameGuide.MonolithIntroduction_Paragraph_6 :: When you first start a Timeline there are multiple paths from the center island, with an <link="echoes">Echo</link> on each. After you complete an Echo, the Echoes behind are also revealed. You can do any Echo you''ve unlocked at any time.
+GameGuide.MonolithIntroduction_Paragraph_7 :: Completing Echoes grants Timeline Stability. After you reach a certain threshold, you can select a <link="quest echo">Quest Echo</link> from the top left side of the screen. After completing all Quest Echoes in a Timeline, your run is completed and you can choose a <link="Blessings">Blessing</link> that grants different bonuses, such as character power or specific item drop rate benefits.
+GameGuide.MonolithIntroduction_SearchTerm_0 :: monolith
+GameGuide.MonolithIntroduction_SearchTerm_1 :: mof
+GameGuide.MonolithIntroduction_SearchTerm_2 :: minilith
+GameGuide.MonolithIntroduction_SearchTerm_3 :: endgame
+GameGuide.MonolithIntroduction_SearchTerm_4 :: map
+GameGuide.MonolithIntroduction_SearchTerm_5 :: rift
+GameGuide.MonolithIntroduction_Link_0 :: monolith
+GameGuide.MonolithIntroduction_Link_1 :: monolith of fate
+GameGuide.Timelines_Title :: Timelines
+GameGuide.Timelines_Paragraph_0 :: A Timeline represents an alternate reality that never was, or never will be.
+GameGuide.Timelines_Paragraph_1 :: All <link="echoes">Echoes</link> you encounter in a Timeline have the same area level, and each Timeline has a unique pool of layouts, enemies and quests.
+GameGuide.Timelines_Paragraph_2 :: Completing all <link="quest echoes">Quest Echoes</link> for a Timeline unlocks the next timeline and grants you the opportunity to choose a <link="Blessings">Blessing</link>. Additionally, conquering the most difficult Timelines will unlock the <link="empowered timelines">Empowered Timelines</link>.
+GameGuide.Timelines_SearchTerm_0 :: timeline
+GameGuide.Timelines_SearchTerm_1 :: monolith
+GameGuide.Timelines_Link_0 :: timeline
+GameGuide.Timelines_Link_1 :: timelines
+GameGuide.Echoes_Title :: Echoes
+GameGuide.Echoes_Paragraph_0 :: Each zone you encounter in a <link="Timelines">Timeline</link> is called an Echo.
+GameGuide.Echoes_Paragraph_2 :: An Echo has a layout based on its name, and a randomly chosen modifier that it will add to enemies. The enemy modifier also affects the rarity of items you will find and how much experience you will earn.
+GameGuide.Echoes_Paragraph_3 :: As you conquer more Echoes in a row, the modifiers you select will start to persist for multiple Echoes. This means you will have multiple modifiers active at the same time.<br><br>Conquering each Echo grants Timeline Stability, which is required for unlocking <link="quest echo">Quest Echo</link>.
+GameGuide.Echoes_Paragraph_4 :: Echoes have a guaranteed reward for completing them. However, if you die before completing an Echo you won''t be able to collect it.
+GameGuide.Echoes_SearchTerm_0 :: echo
+GameGuide.Echoes_SearchTerm_1 :: echoes
+GameGuide.Echoes_SearchTerm_2 :: timeline
+GameGuide.Echoes_SearchTerm_3 :: monolith
+GameGuide.Echoes_Link_0 :: echo
+GameGuide.Echoes_Link_1 :: echoes
+GameGuide.CorruptionandtheShade_Title :: Corruption and the Shade
+GameGuide.CorruptionandtheShade_Paragraph_0 :: As you progress further from the center of a Timeline, you will start to find echoes with the Shade of Orobyss within.
+GameGuide.CorruptionandtheShade_Paragraph_1 :: Defeating the Shade adds Corruption to the timeline, increasing its difficulty and rewards and certain items dropped by the Shade require a minimum amount of Corruption. It also brings the echo web for the timeline back to a fresh state, allowing you to start again with a higher potential for rewards.
+GameGuide.CorruptionandtheShade_Paragraph_2 :: Defeating the Shade does not reset your Timeline Stability or the active modifiers you have.
+GameGuide.CorruptionandtheShade_Paragraph_4 :: Corruption increases item rarity, experience gained, monster health, monster damage and how much Timeline Stability echoes give.
+GameGuide.CorruptionandtheShade_Paragraph_5 :: Corruption also increases area level in standard timelines, and increases the rarity of guaranteed echo rewards in Empowered timelines. Corruption also, very slightly, increases the odds of unique items having <link="legendary items">Legendary Potential</link> or <link="weaver''s will">Weaver''s Will</link>.
+GameGuide.CorruptionandtheShade_Paragraph_6 :: Standard timelines start at 0 corruption and have a maximum of 50. Empowered timelines start at 100 corruption and have no maximum.
+GameGuide.CorruptionandtheShade_Paragraph_7 :: Defeating Shade in a Timeline that has much lower corruption compared the Timeline with the highest corruption, making it much faster to progress corruption when moving between Timelines. The amount of Bonus Corruption defeating a Shade will be shown on the Echo before entering it. /  / Defeating Shade with <link="gaze of orobyss">Gaze of Orobyss</link> grants additional Corruption.
+GameGuide.CorruptionandtheShade_Paragraph_9 :: If the Corruption on a timeline has been increased, it can be lowered by completing Sanctuary of Eterra Echo connected to the entry point.
+GameGuide.CorruptionandtheShade_SearchTerm_0 :: corruption
+GameGuide.CorruptionandtheShade_SearchTerm_1 :: shade
+GameGuide.CorruptionandtheShade_SearchTerm_2 :: orobyss
+GameGuide.CorruptionandtheShade_SearchTerm_3 :: sanctuary
+GameGuide.CorruptionandtheShade_SearchTerm_4 :: eterra
+GameGuide.CorruptionandtheShade_SearchTerm_5 :: sanctuary of eterra
+GameGuide.GazeOfOrobyss_Title :: Gaze of Orobyss
+GameGuide.GazeOfOrobyss_Paragraph_1 :: Gaze of Orobyss is a mechanic that increases the amount of Corruption gained from slaying <link="Corruption and the Shade">Shade of Orobyss</link>, and will become available in Empowered <link="Empowered Timelines">Empowered Timelines.</link>
+GameGuide.GazeOfOrobyss_Paragraph_2 :: Gaze of Orobyss is gained by slaying Timeline Bosses, and each stack grants additional 12 Corruption when Shade of Orobyss is slain. You will consume up to 4 Gazes of Orobyss per Shade of Orobyss fight, and remaining Gaze will be saved for subsequent fights.
+GameGuide.GazeOfOrobyss_Paragraph_3 :: Dying to Shade of Orobyss while having Gaze of Orobyss will reduce your number of Gaze by 1. 
+GameGuide.GazeOfOrobyss_Paragraph_4 :: While playing in a party, each party member that was granted an option to choose a Blessing on Timeline completion will also be granted 1 Gaze of Orobyss.
+GameGuide.GazeOfOrobyss_SearchTerm_0 :: gaze
+GameGuide.GazeOfOrobyss_SearchTerm_1 :: orobyss
+GameGuide.GazeOfOrobyss_SearchTerm_2 :: monolith
+GameGuide.GazeOfOrobyss_SearchTerm_3 :: corruption
+GameGuide.GazeOfOrobyss_SearchTerm_4 :: shade
+GameGuide.QuestEchoes_Title :: Quest Echoes
+GameGuide.QuestEchoes_Paragraph_0 :: After conquering a certain amount of Timeline Stability in a <link="Timelines">Timeline</link>, you will have the chance to encounter a Quest Echo, which represents a pivotal moment in the story of a Timeline.
+GameGuide.QuestEchoes_Paragraph_2 :: The final Quest Echo in a Timeline is a boss fight, and by defeating it the adjacent Timelines will become unlocked.
+GameGuide.QuestEchoes_Paragraph_3 :: Quest Echoes appear in the same order each time, and all Quest Echoes for the current Timeline need to be completed to unlock the next Timeline. In <link="empowered timelines">Empowered Timelines</link>, Quest Echoes are optional and are not required for challenging the boss of the Timeline.
+GameGuide.QuestEchoes_Paragraph_4 :: Dying in a Quest Echo will reduce your Timeline Stability, but cannot undo your progression through the Quest Echoes.
+GameGuide.QuestEchoes_SearchTerm_0 :: quest
+GameGuide.QuestEchoes_SearchTerm_1 :: echo
+GameGuide.QuestEchoes_SearchTerm_2 :: echoes
+GameGuide.QuestEchoes_SearchTerm_3 :: monolith
+GameGuide.QuestEchoes_Link_0 :: Quest Echoes
+GameGuide.QuestEchoes_Link_1 :: quest echo
+GameGuide.Blessings_Title :: Blessings
+GameGuide.Blessings_Paragraph_1 :: Blessings are permanent increases to your character''s stats or chance to find particular types of items.<br><br>Blessings apply throughout the entire game, not just in the Monolith of Fate.
+GameGuide.Blessings_Paragraph_2 :: When you conquer a <link="Timelines">Timeline</link> you will be presented with 3 Blessings to choose from. If you conquer the same timeline again, you can choose to either keep your current Blessing, or replace it with a new one.
+GameGuide.Blessings_Paragraph_3 :: Each <link="Timelines">Timeline</link> has its own set of possible Blessings. Some Timelines have Blessings that increase your character''s stats, while others have Blessings that increase your chance to find particular types of items.<br><br>You can view every blessing you have discovered and currently have active from the blessings tab in the inventory window. You can also hover on a Timeline in the world map and see your current Blessing from that timeline.
+GameGuide.Blessings_Paragraph_4 :: Blessings granted by Empowered Timelines have higher values than the versions granted by normal Timelines. Completing an Empowered Timeline has 4 Blessing options by default, and 5th Blessing option is unlocked at 200 <link="corruption and the shade">Corruption</link>.
+GameGuide.Blessings_SearchTerm_0 :: blessing
+GameGuide.Blessings_SearchTerm_1 :: monolith
+GameGuide.Blessings_Link_0 :: blessing
+GameGuide.Blessings_Link_1 :: Blessings
+GameGuide.EchoModifiers_Title :: Echo Modifiers
+GameGuide.EchoModifiers_Paragraph_0 :: Modifiers in the Monolith of Fate are special effects that make Echoes more difficult in various different ways and more rewarding by providing <link="increased item rarity">Increased Item Rarity</link> and experience gained, similar to Corruption. The difference with modifiers is that they last from 1 to 3 Echoes total instead of globally to all Echoes, have varies different effects and aren''t usually simply just more monster damage and health. Stacking several modifiers will further increase the difficult and rewards.
+GameGuide.EchoModifiers_Paragraph_1 :: More challenging modifiers provide higher benefits. /  / Experience bonuses from Monolith of Fate modifiers and corruption does not apply to characters below level 50.
+GameGuide.EchoModifiers_SearchTerm_0 :: modifiers
+GameGuide.EchoModifiers_SearchTerm_1 :: monolith
+GameGuide.EchoModifiers_SearchTerm_2 :: modifier
+GameGuide.EchoModifiers_SearchTerm_3 :: mod
+GameGuide.EchoModifiers_SearchTerm_4 :: mods
+GameGuide.EmpoweredTimelines_Title :: Empowered Timelines
+GameGuide.EmpoweredTimelines_Paragraph_0 :: Empowered Timelines are harder versions of normal Timelines that start with 100 <link="corruption and the shade">Corruption</link>, and have no maximum Corruption. This means that Empowered Timelines can be scaled in difficulty until your character can no longer handle the difficulty and is unable to progress further.
+GameGuide.EmpoweredTimelines_Paragraph_2 :: Increasing Corruption increases the damage dealt and health of all enemies, and grants increased experience gained and increased item rarity. 
+GameGuide.EmpoweredTimelines_Paragraph_3 :: Each Timeline has an Exclusive Echo Reward type that makes it easier to target farm those specific item types, and in Empowered Monoliths these are much more likely to spawn as rewards.
+GameGuide.EmpoweredTimelines_Paragraph_4 :: Defeating the boss of an Empowered Timeline will grant 1 stack of <link="gaze of orobyss">Gaze of Orobyss.</link>
+GameGuide.EmpoweredTimelines_SearchTerm_0 :: Empowered
+GameGuide.EmpoweredTimelines_SearchTerm_1 :: timeline
+GameGuide.EmpoweredTimelines_SearchTerm_2 :: timelines
+GameGuide.EmpoweredTimelines_SearchTerm_3 :: monolith
+GameGuide.Harbingers_Title :: Harbingers
+GameGuide.Harbingers_Paragraph_0 :: Harbingers are powerful servants of Orobyss, who you will encounter once you have progressed deep in to the <link="Monolith Introduction">Monolith of Fate</link>. Your battle against them is tracked with the <link="Forgotten Knights">Forgotten Knights</link> Faction.
+GameGuide.Harbingers_Paragraph_1 :: Should you succeed in hunting them down, you’ll eventually be able to challenge their leader.
+GameGuide.Harbingers_SearchTerm_0 :: Harbingers
+GameGuide.Harbingers_SearchTerm_1 :: Aberroth
+GameGuide.Harbingers_SearchTerm_2 :: Forgotten
+GameGuide.Harbingers_SearchTerm_3 :: Knight
+GameGuide.WovenEchoes_Title :: Woven Echoes
+GameGuide.WovenEchoes_Paragraph_1 :: Woven Echoes are unfinished glimpses into the new world created by The Weaver. Woven Echoes can be woven in to your <link="timelines">Timeline''s</link> Echo Web through the <link="terminology">Altar to The Weaver</link>, which can be found inside <link="terminology">Cemeteries of the Erased</link>. Once woven in to your Echo Web, they can then be entered the same as any other Echo.
+GameGuide.WovenEchoes_Paragraph_3 :: Woven Echoes are most often found inside Tombs and Cemeteries of the Erased, but many can also be bought from Masque inside the Haven of Silk by spending <link="terminology">Memory Amber</link>. 
+GameGuide.WovenEchoes_Paragraph_4 :: There are dozens of unique Woven Echoes and they are stored in their own inventory tab.
+GameGuide.WovenEchoes_Paragraph_6 :: Woven Echoes provide a range of new encounters with powerful rewards, such as the ability to attempt increasing the <link="legendary items">Legendary Potential</link> on Unique items which already have at least 1 Legendary Potential.
+GameGuide.WovenEchoes_SearchTerm_0 :: woven echo
+GameGuide.WovenEchoes_SearchTerm_1 :: woven echoes
+GameGuide.WovenEchoes_Link_0 :: woven echoes
+GameGuide.WovenEchoes_Link_1 :: woven echo
+GameGuide.WeaverTree_Title :: Weaver Tree
+GameGuide.WeaverTree_Paragraph_1 :: The Weaver Tree is a passive tree you can use to influence the <link="echoes">Echoes</link> inside the <link="monolith introduction">Monolith of Fate</link>.  Collect points to use in the Weaver Tree by increasing your Rank within the <link="the woven">Woven Faction</link> and by completing <link="woven echoes">Woven Echoes</link>. 
+GameGuide.WeaverTree_Paragraph_2 :: Among the ability to influence what type and frequency of content you can encounter, the Weaver Tree also provides many other useful perks. Examples include: the option to target farm items in new ways, allowing Woven Echoes to spawn naturally as new types of Echoes, disabling some types of Echoes from spawning entirely (such as Arena Echoes), and increasing the potency of rewards and difficulty of encounters.
+GameGuide.WeaverTree_SearchTerm_0 :: weaver tree
+GameGuide.WeaverTree_SearchTerm_1 :: monolith of fate
+GameGuide.WeaverTree_SearchTerm_2 :: woven
+GameGuide.WeaverTree_Link_0 :: weaver tree
+GameGuide.EchoChains_Title :: Echo Chains
+GameGuide.EchoChains_Paragraph_0 :: Sometimes <link="echoes">Echoes</link> spawn linked to each other, creating an Echo Chain. When these Echo Chains occur, each echo contains mechanics and rewards similar to all other echoes in the chain. These linked echoes have a purple effect around them, a chain icon and an additional information in their tooltips.
+GameGuide.EchoChains_Paragraph_2 :: For example, each echo in a chain could include an <link="omen windows">Omen Window</link>, leading up to a final echo where you must complete a Greater Omen Window, a more difficult and special version of the Omen Window. As a reward for completing this Greater Omen Window you have the opportunity to spend Timeglass Fragments for various different options, such as creating a new special echo chain.
+GameGuide.EchoChains_SearchTerm_0 :: echo
+GameGuide.EchoChains_SearchTerm_1 :: echo chains
+GameGuide.EchoChains_SearchTerm_2 :: chains
+GameGuide.EchoChains_SearchTerm_3 :: timeglass fragment
+GameGuide.EchoChains_Link_0 :: echo chains
+GameGuide.TheNexus_Title :: The Nexus
+GameGuide.TheNexus_Paragraph_0 :: Nexus is a central hub to access different activities and systems. It can be accessed by opening any <link="timelines">Timeline</link> and pressing the Nexus button located at the bottom left section of the Echo Web screen.
+GameGuide.TheNexus_Paragraph_2 :: Through Nexus you''ll find access to <link="dungeons">Dungeons</link>, <link="item factions">Item Factions</link>, <link="endgame factions">Endgame Factions</link> and other encounters such as the <link="rage of morditas">Rage of Morditas</link>.
+GameGuide.TheNexus_SearchTerm_0 :: nexus
+GameGuide.TheNexus_SearchTerm_1 :: hub
+GameGuide.TheNexus_SearchTerm_2 :: monolith
+GameGuide.TheNexus_Link_0 :: Nexus
+GameGuide.AilmentMechanics_Title :: Ailment Mechanics
+GameGuide.AilmentMechanics_Paragraph_0 :: An ailment is an effect on a target that lasts for a duration. Most ailments deal damage, apply stat debuffs, or both, and most can be applied to the same target multiple times (or "stack").
+GameGuide.AilmentMechanics_Paragraph_1 :: Ailments can either be applied by a <link="Hit vs Damage over Time">hit</link>, or by area effects that attempt to apply ailments at a fixed interval.
+GameGuide.AilmentMechanics_Paragraph_2 :: Most ailment applications are chance based. However, having an ailment chance greater than 100% allows you to apply multiple stacks at once if that ailment can stack. <br><br>For example, if you have 235% ignite chance with Fireball, each Fireball hit will apply 2 stacks of ignite, with a 35% chance to apply a 3rd stack of ignite.<br>
+GameGuide.AilmentMechanics_Paragraph_3 :: Each damaging ailment, such as Bleed or Ignite, has a fixed base damage, but is affected by damage modifiers from the skill tree and attribute scaling of the skill that applies it.
+GameGuide.AilmentMechanics_Paragraph_4 :: Even when an ailment is applied by a melee skill or a hit, that does not make it count as melee damage or hit damage and does not cause it to be affected by stats like increased melee damage.
+GameGuide.AilmentMechanics_Paragraph_5 :: If a target has the maximum number of stacks for a given ailment, attempting to apply another stack of that ailment will replace the oldest stack.
+GameGuide.AilmentMechanics_Paragraph_6 :: The most common ailments are described in other pages within this section. If an ailment isn''t described here, the tooltip (or alt tooltip) of the node or item that grants it should explain the ailment''s functionality.
+GameGuide.AilmentMechanics_SearchTerm_0 :: ailment
+GameGuide.AilmentMechanics_SearchTerm_1 :: status
+GameGuide.AilmentMechanics_SearchTerm_2 :: status effect
+GameGuide.AilmentMechanics_SearchTerm_3 :: status effects
+GameGuide.AilmentMechanics_SearchTerm_4 :: debuff
+GameGuide.AilmentMechanics_Link_0 :: ailment
+GameGuide.AilmentMechanics_Link_1 :: ailments
+GameGuide.AilmentDurationandEffectiveness_Title :: Ailment Duration and Effectiveness
+GameGuide.AilmentDurationandEffectiveness_Paragraph_0 ::  / The duration of an ailment can be lengthened by "increased ailment duration" effects. 100% increased bleed duration will make a stack of bleed last 6 seconds, rather than the default 3 seconds. "Reduced ailment duration" effects are also possible.<br><br><br>Changing the duration of an ailment that deals damage affects the total amount of damage it will deal, but does not affect damage per second (DPS). This results in its increasing the total damage the ailment deals over its duration.<br><br><br>For example if a stack of Bleed dealt 120 damage over its default 3 second duration, then a 50% increased duration modifier would result in it dealing 180 damage over 4.5 seconds.
+GameGuide.AilmentDurationandEffectiveness_Paragraph_1 :: Increased ailment effectiveness effects apply to all stat modifiers an ailment grants.<br><br><br>For example, 50% increased armor shred effectiveness would cause stacks of armor shred to reduce armor by 150, instead of the default 100.
+GameGuide.AilmentDurationandEffectiveness_SearchTerm_0 :: ailment
+GameGuide.AilmentDurationandEffectiveness_SearchTerm_1 :: status
+GameGuide.AilmentDurationandEffectiveness_SearchTerm_2 :: status effect
+GameGuide.AilmentDurationandEffectiveness_SearchTerm_3 :: status effects
+GameGuide.AilmentDurationandEffectiveness_SearchTerm_4 :: debuff
+GameGuide.ResistanceShred_Title :: Resistance Shred
+GameGuide.ResistanceShred_Paragraph_0 :: Each damage type (Physical, Cold, Fire, Lightning, Necrotic, Poison and Void) has a respective Resistance Shred ailment, such as Fire Resistance Shred.<br><br>Resistance Shred ailments reduce the target''s resistance for that particular damage type. They subtract 5% resistance against most enemies, but only 2% against players and bosses. They last 4 seconds by default and stack up to 10 times.<br><br>Like penetration, resistance shred can bring effective resistance below 0%, further increasing damage taken. Most enemies have 0% resistance, so 10 stacks of Fire Resistance Shred will result in them having -50% Fire Resistance and consequently taking 50% more fire damage.
+GameGuide.ResistanceShred_SearchTerm_0 :: shred
+GameGuide.ResistanceShred_SearchTerm_1 :: resistance shred	
+GameGuide.ResistanceShred_Link_0 :: resistance shred	
+GameGuide.ArmorShred_Title :: Armor Shred
+GameGuide.ArmorShred_Paragraph_1 :: Armor Shred reduces <link="Armor">armor</link> on the target, increasing how much damage it takes from hits. By default it subtracts 100 armor and lasts for 4 seconds.
+GameGuide.ArmorShred_SearchTerm_0 :: armor shred
+GameGuide.ArmorShred_SearchTerm_1 :: armor shred
+GameGuide.ArmorShred_Link_0 :: armor shred
+GameGuide.Bleed_Title :: Bleed
+GameGuide.Bleed_Paragraph_1 :: Bleed deals physical damage over time. It can stack an unlimited number of times. By default each stack deals 53 damage over a 3 second duration.
+GameGuide.Bleed_SearchTerm_0 :: bleed
+GameGuide.Bleed_Link_0 :: bleed
+GameGuide.Blind_Title :: Blind
+GameGuide.Blind_Paragraph_1 :: Enemies that are blinded are unable to deal <link="critical strikes">critical strikes</link>.
+GameGuide.Blind_SearchTerm_0 :: blind
+GameGuide.Blind_Link_0 :: blind
+GameGuide.Chill_Title :: Chill
+GameGuide.Chill_Paragraph_1 :: Each stack of Chill reduces attack speed, cast speed and movement speed by 12%. This effect is multiplicative with other modifiers and each stack is multiplicative with the other stacks of Chill.<br><br>Chill can stack up to 3 times and lasts 4 seconds by default.<br><br>Chill has 50% less effect against bosses and players (multiplicative with other modifiers), so each stack reduces attack speed, cast speed and movement speed by 6% instead.
+GameGuide.Chill_SearchTerm_0 :: chill
+GameGuide.Chill_Link_0 :: chill
+GameGuide.Damned_Title :: Damned
+GameGuide.Damned_Paragraph_1 :: Damned deals necrotic damage over time and also reduces health regeneration. It can stack an unlimited number of times.<br><br>By default each stack deals 35 damage over a 2.5 second duration and applies a 20% reduced health regeneration modifier.
+GameGuide.Electrify_Title :: Electrify
+GameGuide.Electrify_Paragraph_1 :: Electrify deals lightning damage over time. It can stack an unlimited number of times. By default each stack deals 44 damage over a 2.5 second duration.
+GameGuide.Electrify_SearchTerm_0 :: electrify
+GameGuide.Electrify_Link_0 :: electrify
+GameGuide.Frailty_Title :: Frailty
+GameGuide.Frailty_Paragraph_1 :: Frailty makes the affected target deal 6% less damage (multiplicative with other modifiers) and lasts for 4 seconds.<br><br>Frailty can stack 3 times.
+GameGuide.Frailty_SearchTerm_0 :: frailty
+GameGuide.Frailty_Link_0 :: frailty
+GameGuide.Frostbite_Title :: Frostbite
+GameGuide.Frostbite_Paragraph_1 :: Frostbite deals cold damage over time and also increases the chance to be frozen. It can stack an unlimited number of times, but only the first 15 stacks on a target increase its chance to be frozen.
+GameGuide.Frostbite_Paragraph_2 :: By default each stack deals 50 damage over 3 seconds and increases the chance to be frozen by 20% (to a maximum of 300% with 15 stacks).
+GameGuide.Frostbite_Paragraph_3 :: The increase in chance to be frozen is multiplicative with a hit’s chance to freeze.  For example if a hit had 10% chance to freeze by default and the target had 4 stacks of Frostbite the hit would have a 14% chance to freeze instead.
+GameGuide.Frostbite_SearchTerm_0 :: frostbite
+GameGuide.Frostbite_Link_0 :: frostbite
+GameGuide.Ignite_Title :: Ignite
+GameGuide.Ignite_Paragraph_1 :: Ignite deals fire damage over time. It can stack an unlimited number of times. By default each stack deals 40 damage over a 2.5 second duration.
+GameGuide.Ignite_SearchTerm_0 :: ignite
+GameGuide.Ignite_SearchTerm_1 :: burn
+GameGuide.Ignite_Link_0 :: ignite
+GameGuide.Plague_Title :: Plague
+GameGuide.Plague_Paragraph_1 :: Plague deals poison damage over time and spreads between enemies. By default it deals 150 damage over 4 seconds. Plague does not stack.
+GameGuide.Plague_Paragraph_2 :: Plague will attempt to spread to a target within 6m every 0.6 seconds. Plague will also attempt to spread if the entity dies before Plague expires.
+GameGuide.Plague_SearchTerm_0 :: plague
+GameGuide.Plague_Link_0 :: plague
+GameGuide.Poison_Title :: Poison
+GameGuide.Poison_Paragraph_1 :: Poison deals poison damage over time and also reduces poison <link="Resistances">resistance</link>. It can stack an unlimited number of times, but only the first 30 stacks on a target reduce poison resistance.<br><br>By default each stack deals 28 damage over a 3 second duration and subtracts 5% from the target''s poison resistance (up to a maximum of 150% at 30 stacks).<br><br>Against bosses and players poison only subtracts 2% from poison resistance rather than 5% (up to a maximum of 60% at 30 stacks).
+GameGuide.Poison_SearchTerm_0 :: poison
+GameGuide.Poison_Link_0 :: poison
+GameGuide.Shock_Title :: Shock
+GameGuide.Shock_Paragraph_1 :: Shock reduces lightning <link="Resistances">resistance</link> by 5% and increases the chance that the target will be <link="Stun">stunned</link> by 20%. Shock can stack up to 10 times and lasts 4 seconds by default.<br><br>Shock is 60% less effective against bosses and players, resulting in it only reducing lightning resistance by 2%, and only increasing chance to be stunned by 8%.
+GameGuide.Shock_Paragraph_2 :: Increased chance to be stunned from shock is multiplicative with your chance to stun an enemy. If you have a 5% chance to stun a Boss before applying any shocks to it, with 10 stacks of shock (80% increased chance to be stunned) your chance to stun the boss would be 9%.
+GameGuide.Shock_SearchTerm_0 :: shock
+GameGuide.Shock_Link_0 :: shock
+GameGuide.Slow_Title :: Slow
+GameGuide.Slow_Paragraph_1 :: Each stack of Slow reduces movement speed by 20%. This effect is multiplicative with other modifiers and each stack is multiplicative with the other stacks of Slow.<br><br>Slow can stack up to 3 times and lasts 4 seconds by default.<br><br>Slow has 50% less effect against bosses and players (multiplicative with other modifiers), so each stack reduces movement speed by 10% instead.
+GameGuide.Slow_SearchTerm_0 :: slow
+GameGuide.Slow_Link_0 :: slow
+GameGuide.TimeRot_Title :: Time Rot
+GameGuide.TimeRot_Paragraph_1 :: Time Rot deals void damage over time, while also making stuns last longer. By default each stack deals 60 void damage over a 3 second duration and increases stun duration by 5%.<br><br>Time Rot can stack up to 12 times
+GameGuide.TimeRot_SearchTerm_0 :: time rot
+GameGuide.TimeRot_SearchTerm_1 :: timerot
+GameGuide.Curse_Title :: Curse
+GameGuide.Curse_Paragraph_0 :: Curses are special Ailments with their own scaling tag, do not usually stack with themselves, and have different effects. Some of them do damage which can be increased, while others might just be a debuff on the target, and some having both properties. Some curses are also specific skills with their own <link="skill specialization">specializable skill trees</link>, such as Bone Curse and Spirit Plague.
+GameGuide.Curse_Paragraph_2 :: Spirit Plague is a specializable curse skill for Acolyte. It curses an enemy with an effect that deals 90 necrotic damage over time and spreads to another nearby enemy if it dies. Does not stack and lasts 3 seconds.
+GameGuide.Curse_Paragraph_4 :: Bone Curse is a specializable curse skill for Acolyte. It curses enemies with a debuff that causes them to take physical damage when they are hit. Damage dealt by Bone Curse is trippled if you inflicted the hit. Does not stack and lasts 8 seconds.
+GameGuide.Curse_Paragraph_6 :: Marked for Death is a curse that reduces all resistances by 25 and lasts 8 seconds. Does not stack.
+GameGuide.Curse_Paragraph_8 :: Decrepify is a curse that causes enemies to take 15% more damage over time (multiplicative with other modifiers), deals physical damage over time based on your flat missing health and lasts 10 seconds. Does not stack.
+GameGuide.Curse_Paragraph_10 :: Torment is a curse that deals 120 necrotic damage over time, reduces movement speed by 18% (multiplicative with other modifiers) and lasts 3 seconds. Does not stack.
+GameGuide.Curse_Paragraph_12 :: Acid Skin is a curse that deals 50 poison damage over time, adds a +25% chance to be critically hit and lasts 5 seconds. Does not stack.
+GameGuide.Curse_Paragraph_14 :: Penance is a curse which deals 20 fire damage to a target when hit and lasts 15 seconds. Penance also gains 5% more damage per 1% of Damage Reflected. Flat reflect does not increase the damage of Penance. Does not stack.
+GameGuide.Curse_Paragraph_16 :: Anguish is a curse that reduces the damage over time dealt by enemies by 15% (multiplicative with other modifiers). When you kill any enemy, enemies cursed by Anguish take 40 necrotic damage. Does not stack. 
+GameGuide.Curse_Paragraph_18 :: Withering causes affected targets to take 10% increased Curse Damage Taken, and lasts 3 seconds. Can stack up to 10 times and has 60% less effect against players and bosses.
+GameGuide.Curse_Paragraph_20 :: Exposed Flesh is a curse which reduces cold resistance by 15%, reduces armor by 15 per point of inflicter’s dexterity, and increases chance to be frozen by 30%.
+GameGuide.Curse_SearchTerm_0 :: curse
+GameGuide.Curse_SearchTerm_1 :: curses
+GameGuide.Curse_SearchTerm_2 :: anguish
+GameGuide.Curse_SearchTerm_3 :: penance
+GameGuide.Curse_SearchTerm_4 :: torment
+GameGuide.Curse_SearchTerm_5 :: decrepify
+GameGuide.Curse_SearchTerm_6 :: marked for death
+GameGuide.Curse_SearchTerm_7 :: death
+GameGuide.Curse_SearchTerm_8 :: bone
+GameGuide.Curse_SearchTerm_9 :: spirit
+GameGuide.Curse_SearchTerm_10 :: plague
+GameGuide.ItemFactions_Title :: Item Factions
+GameGuide.ItemFactions_Paragraph_0 :: Item Factions provide you different ways to obtain items, and you get the option to align with one of them for the first time during Chapter 9 of the campaign.
+GameGuide.ItemFactions_Paragraph_1 :: These two Item Factions let you choose to either enable trading with other players, or to improve your ability to find more and better items. While you can only be aligned with one Item Faction at a time, it is not a permanent decision and you can choose to switch your alignment. More information can be found from Factions Window (bound to Y by default).
+GameGuide.ItemFactions_Paragraph_3 :: Aligning with the <link="merchant''s guild">Merchant''s Guild</link> enables trading with other players through the <link="merchant''s guild">Bazaar</link> and aligning with the <link="circle of fortune">Circle of Fortune</link> enhances item drops and allows you to seek powerful Prophecies from the <link="circle of fortune">Observatory</link> to help find more and better items. 
+GameGuide.ItemFactions_Paragraph_4 :: There are restrictions to equipping items depending which Factions’ services were used to obtain them. For example, many items found while aligned with Circle of Fortune will require the player to be aligned with Circle of Fortune to equip them. Similarly, when an item is traded within Merchant’s Guild, no player aligned with Circle of Fortune will be able to equip it. / 
+GameGuide.ItemFactions_Paragraph_5 :: While aligned with either Faction and slaying enemies or completing quests you gain a resource called <link="terminology">Favor</link>. You then expend Favor to use that Faction’s services and gain <link="terminology">Reputation</link>, which is your experience with a Faction. As your Reputation grows, you will gain <link="terminology">Ranks</link> within the Faction which unlocks better benefits and rewards within the Faction. Reputation is also gained from experience. The total Reputation gain is equal between the Factions if all Favor is spent, and roughly half of the Reputation comes from spending Favor while the other half comes from just gaining experience.
+GameGuide.ItemFactions_Paragraph_6 :: Faction progress is shared stash-wide, which means that any character that has access to a stash with a character that has any Faction progress, will also share that progress. Once a <link="Cycle">Season</link> ends, all Item Faction progress is moved to the <link="game mode">Legacy</link> environment, keeping the progress from the further progression.
+GameGuide.ItemFactions_Paragraph_7 :: After you have aligned with an Item Faction with one character, future characters sharing that stash are able to align with a Faction in the first town during Chapter 1, retaining the ranks you’ve gained with that Faction from previous character(s).
+GameGuide.ItemFaction_SearchTerm_0 :: Faction
+GameGuide.ItemFaction_SearchTerm_1 :: Factions
+GameGuide.ItemFaction_SearchTerm_2 :: Trading
+GameGuide.ItemFaction_SearchTerm_3 :: Circle Of Fortune
+GameGuide.ItemFaction_SearchTerm_4 :: CoF
+GameGuide.ItemFaction_SearchTerm_5 :: Observatory
+GameGuide.ItemFaction_SearchTerm_6 :: Merchant''s Guild
+GameGuide.ItemFaction_SearchTerm_7 :: MG
+GameGuide.ItemFaction_SearchTerm_8 :: Bazaar
+GameGuide.ItemFaction_SearchTerm_9 :: CircleOfFortune
+GameGuide.ItemFaction_SearchTerm_10 :: Merchants Guild
+GameGuide.ItemFaction_SearchTerm_11 :: MerchantsGuild
+GameGuide.ItemFaction_SearchTerm_12 :: Target Farm
+GameGuide.MerchantsGuild_Title :: Merchant''s Guild
+GameGuide.MerchantsGuild_Paragraph_0 :: Merchant’s Guild is an <link="item factions">Item Faction</link> that enables trading with other players who are also aligned with Merchant’s Guild within the same <link="Cycle">Season</link> and <link="game mode">Game Mode</link> (Normal or Hardcore). You’ll be able to align with them for the first time during Chapter 9 of the campaign. All trades require exchanging gold for items, no item-to-item trades are possible.
+GameGuide.MerchantsGuild_Paragraph_2 :: When aligned with the Merchant’s Guild for the first time, you’ll be able to sell and purchase all equippable items. Items acquired from the Bazaar or through select special functions will be marked untradable and are not eligible to be sold on the Bazaar.
+GameGuide.MerchantsGuild_Paragraph_3 :: All trades done at the Bazaar require Favor, a currency gained while slaying enemies and completing quests while aligned with Merchant’s Guild. Selling items requires much less Favor than purchasing them. / 
+GameGuide.MerchantsGuild_Paragraph_4 :: Ranks can be increased by gaining Reputation with the Faction, which is done by gaining and spending Favor by buying and selling items, or spending it at the Merchant Guild’s representative. Higher ranks within the Faction unlock the ability to purchase Bags of different useful materials. Open the Factions Window for more details (bound to Y by default).
+GameGuide.MerchantsGuild_Paragraph_5 :: The Bazaar is a town area near Maj’elka in Divine Era, visited in Chapter 9 during the campaign. Filled with stalls for different item types, players are able to search and filter precisely what they want to buy from other players. Trading through Bazaar is asynchronous, meaning you will not need to interact with other players to complete trades. Instead, buying an item will send it to your inventory if you have space for it.
+GameGuide.MerchantsGuild_Paragraph_7 :: While aligned with Merchant''s Guild, a Merchant''s Token can be found that allows you bybass the Favor cost when purchasing an item at the Bazaar.
+GameGuide.MerchantsGuild_Paragraph_8 :: Items can only be traded once, and any item traded once will become untradable and bound to Merchant’s Guild, making it impossible to equip as a member of the <link="circle of fortune">Circle of Fortune</link> even if you switch Factions.
+GameGuide.MerchantsGuild_SearchTerm_0 :: black market token
+GameGuide.MerchantsGuild_SearchTerm_1 :: merchant''s token
+GameGuide.MerchantsGuild_SearchTerm_2 :: token
+GameGuide.CircleOfFortune_Title :: Circle Of Fortune
+GameGuide.CircleOfFortune_Paragraph_0 :: Circle of Fortune is an Item Faction that grants powerful benefits towards finding more and better items. You’ll be able to align with the Circle of Fortune for the first time during Chapter 9. Unlike the <link="merchant''s guild">Merchant''s Guild</link>, items found while aligned with Circle of Fortune will always be untradable (they can still be <link="item gifting">gifted</link>) and if found from Prophecies or through Rank rewards, will also be bound to Circle of Fortune, making it impossible to equip them if aligned with the Merchant’s Guild. 
+GameGuide.CircleOfFortune_Paragraph_2 :: When aligning with the Circle of Fortune for the first time, you’ll start at rank 1. As you gain Reputation from gaining experience or spending Favor at the Faction''s representative, you''ll gain higher ranks which yields greater beneftits from the Faction. For more details on the benefits from ranks gained while aligned with Circle of Fortune, you can open the Factions panel (bound to Y by default).
+GameGuide.CircleOfFortune_Paragraph_4 :: The Observatory is a town area where players aligned with Circle of Fortune are able to seek out Prophecies from Telescopes for Favor. Prophecies cause certain items to drop when completing a specific event, like slaying the boss of a specific <link="dungeons">Dungeon</link>.  
+GameGuide.CircleOfFortune_Paragraph_5 :: Different Prophecies gain charges at a different rate, and the required Favor is shown on the Prophecy.
+GameGuide.CircleOfFortune_Paragraph_7 :: The Observatory also contains a Faction representative. You can spend Favor to purchase equippable items and to unlock Lenses to further improve your Prophecies. Lenses do not cost anything to unlock, but can require you to reach higher Ranks within the Faction to unlock. / Lenses allow you to customize your Prophecies. For example, a Lens of Tyranny allows you to consume your Favor to significantly speed up charging the selected Prophecy, while Lens of Charity makes all other Prophecies charge up faster.
+GameGuide.EndgameFactions_Title :: Endgame Factions
+GameGuide.EndgameFactions_Paragraph_0 :: Endgame Factions are different factions that track the progression of certain game systems. They can be found in the factions panel (bound to Y by default). 
+GameGuide.EndgameFactions_Paragraph_1 :: Unlike <link="Item Factions">Item Factions</link> where you can only be aligned with one of them per character at once, Endgame Factions are not mutually exclusive. You can belong to an endgame faction and an item faction at the same time, and you can belong to multiple endgame factions at the same time.
+GameGuide.EndgameFactions_Paragraph_2 :: Different Endgame Factions may provide different rewards and challenges from others, and their progression isn’t always as simple as just slaying enemies or gaining and spending a specific currency tied to them.
+GameGuide.EndgameFactions_Paragraph_3 :: <link="Forgotten Knights">Forgotten Knights</link> is an Endgame Faction that guides you through the progression of defeating the <link="Harbingers">Harbingers</link> that you will encounter in <link="Monolith Introduction">Monolith of Fate</link>.
+GameGuide.EndgameFactions_SearchTerm_0 :: faction
+GameGuide.EndgameFactions_SearchTerm_1 :: endgame
+GameGuide.EndgameFactions_SearchTerm_2 :: knights
+GameGuide.EndgameFactions_SearchTerm_3 :: knight
+GameGuide.EndgameFactions_SearchTerm_4 :: forgotten
+GameGuide.EndgameFactions_SearchTerm_5 :: harbinger
+GameGuide.EndgameFactions_Link_0 :: endgame factions
+GameGuide.EndgameFactions_Link_1 :: endgame faction
+GameGuide.ForgottenKnights_Title :: Forgotten Knights
+GameGuide.ForgottenKnights_Paragraph_1 :: Forgotten Knights is an <link="Endgame Factions">Endgame Faction</link> that tracks your battle against the powerful servants of Orobyss - <link="Harbingers">The Harbingers</link>. 
+GameGuide.ForgottenKnights_Paragraph_2 :: You will start encountering them once you have progressed deep into the <link="monolith introduction">Monolith of Fate</link>. If you succeed in hunting them all down, you will eventually be able to face their mysterious leader. 
+GameGuide.ForgottenKnights_Paragraph_4 :: As you complete the quests given by the Forgotten Knight and defeat stronger Harbingers, your rank within the faction raises. Each rank grants different benefits that include better rewards from <link="Nemesis">Nemeses</link> and bonuses that allow you to climb <link="corruption and the shade">Corruption</link> faster in the Monolith of Fate.
+GameGuide.ForgottenKnights_SearchTerm_0 :: Faction
+GameGuide.ForgottenKnights_SearchTerm_1 :: Endgame
+GameGuide.ForgottenKnights_SearchTerm_2 :: Forgotten
+GameGuide.ForgottenKnights_SearchTerm_3 :: Knights
+GameGuide.ForgottenKnights_SearchTerm_4 :: Harbingers
+GameGuide.ForgottenKnights_SearchTerm_5 :: Harbinger
+GameGuide.ForgottenKnights_Link_0 :: forgotten knights
+GameGuide.ForgottenKnights_Link_1 :: forgotten knight
+GameGuide.TheWoven_Title :: The Woven
+GameGuide.TheWoven_Paragraph_0 :: Members of The Woven faction are devoted to a mysterious being known as The Weaver. Not much of her is known, other than her goal to weave a new, perfect world.
+GameGuide.TheWoven_Paragraph_2 :: The Faction can be joined by talking to Masque inside the Haven of Silk after the completion of a <link="terminology">Cemetery of the Erased</link>.  You can further improve your rank by earning and spending <link="terminology">Memory Amber</link>, which is most commonly found inside <link="terminology">Tombs</link> and Cemeteries of the Erased, or by slaying the Weaver''s creations.
+GameGuide.TheWoven_Paragraph_4 :: Echoes containing a Tomb or a Cemetery will always have <link="terminology">Silken Cocoons</link>. These destructible objects are found inside and around the entrances to Tombs and Cemeteries. The cocoons can be smashed open to either release a Soul of the Erased, which will empower a nearby enemy, or instead release an enemy trapped inside. 
+GameGuide.TheWoven_Paragraph_6 :: Ranks within the Weaver Faction provide two things; Points to spend in the <link="weaver tree">Weaver Tree</link>, and the ability to purchase new <link="woven echoes">Woven Echoes</link> from Masque. Spending points in the Weaver Tree allows players to tailor their preferred rewards and content inside the <link="monolith introduction">Monolith of Fate</link>.
+GameGuide.TheWoven_SearchTerm_0 :: weaver
+GameGuide.TheWoven_SearchTerm_1 :: faction
+GameGuide.TheWoven_SearchTerm_2 :: memory amber
+GameGuide.TheWoven_SearchTerm_3 :: woven echo
+GameGuide.TheWoven_SearchTerm_4 :: cemetery of the erased
+GameGuide.TheWoven_SearchTerm_5 :: tombs of the erased
+GameGuide.TheWoven_SearchTerm_6 :: weaver tree
+GameGuide.TheWoven_Link_0 :: The Woven
+GameGuide.TheWoven_Link_1 :: The Weaver
+GameGuide.Terminology_Title :: Terminology
+GameGuide.Terminology_Paragraph_0 :: High Health: Anything is considered to be at high health if it has at least 65% of its maximum health remaining.
+GameGuide.Terminology_Paragraph_1 :: Low Health: Anything is considered to be at low health if it has at most 35% of its maximum health remaining.
+GameGuide.Terminology_Paragraph_2 :: Recently: Recently refers to a duration of 4 seconds.
+GameGuide.Terminology_Paragraph_3 :: Capped Resistance: The maximum resistance you can have. Resistance is capped at 75%. <link="penetrations">Penetration</link> applies against your capped resistance, so a hit that penetrates 10% of your Fire Resistance for example would deal the same damage to you if you had 75% Fire Resistance, or 200% Fire Resistance.
+GameGuide.Terminology_Paragraph_4 :: Uncapped Resistance: Uncapped resistance is the total amount of resistance you have against a specific damage type, ignoring the cap of 75%. Uncapped resistance can be useful in mitigating the effect of ailments that reduce your resistance, such as <link="shock">Shock</link>, <link="resistance shred">Resistance Shreds</link> or <link="curse">Marked for Death</link>, but does not help against Penetration past the cap of 75%.
+GameGuide.Terminology_Paragraph_5 :: Overcapped Resistance: Any resistance above the cap of 75% is considered overcapped resistance. Overcapped resistance is helpful in mitigating debuffs that lower you resistance, but does not mitigate penetrations.
+GameGuide.Terminology_Paragraph_6 :: Favor: Currency obtained from slaying enemies and completing quests that can be spent to gain Reputation with <link="item factions">Item Factions</link>.
+GameGuide.Terminology_Paragraph_7 :: Reputation: Your experience with an Item Faction. After gaining enough Reputation you’ll Rank up with your aligned Faction.
+GameGuide.Terminology_Paragraph_8 :: Rank: Your level with an Item Faction. Higher your Rank with an Item Faction, the better benefits and perks within the Faction. For example, when aligned with Merchant’s Guild higher rank allows you to purchase higher tier items.
+GameGuide.Terminology_Paragraph_9 :: Memory Amber: The currency used within the <link="the woven">Woven Faction</link>. It can be used to purchase <link="woven echoes">Woven Echoes</link> or to respec points inside the <link="weaver tree">Weaver Tree</link>.
+GameGuide.Terminology_Paragraph_10 :: Tombs of the Erased: Procedurally generated side zones found inside <link="echoes">Echoes</link>. Completing them usually grants a duplicate Echo reward, and is the primary source for collecting Memory Amber to use within the <link="the woven">Woven Faction</link>.
+GameGuide.Terminology_Paragraph_11 :: Cemeteries of the Erased: Procedurally generated side zones similar to Tombs that can be found in the <link="monolith introduction">Monolith of Fate</link>. Once a Cemetery is completed, you can interact with the Altar to the Weaver to place Woven Echoes on to your <link="timelines">Timeline''s</link> Echo Web.
+GameGuide.Terminology_Paragraph_12 :: The Altar to the Weaver: An object found at the end of Cemeteries of the Erased, which allows you to place Woven Echoes directly to your current Echo Web.
+GameGuide.Terminology_Paragraph_13 :: Silken Cocoons: Destructible objects found in Echoes containing a Tomb or Cemetery of the Erased. Once destroyed, they either release a Soul of the Erased to empower a nearby enemy or an enemy called The Incubated Silk. Both are a good source of obtaining Memory Amber.
+GameGuide.Terminology_SearchTerm_0 :: terminology
+GameGuide.Terminology_SearchTerm_1 :: high health
+GameGuide.Terminology_SearchTerm_2 :: low health
+GameGuide.Terminology_SearchTerm_3 :: recently
+GameGuide.Terminology_SearchTerm_4 :: capped
+GameGuide.Terminology_SearchTerm_5 :: uncapped
+GameGuide.Terminology_SearchTerm_6 :: favor
+GameGuide.Terminology_SearchTerm_7 :: reputation
+GameGuide.Terminology_SearchTerm_8 :: rank
+GameGuide.Terminology_SearchTerm_9 :: memory amber
+GameGuide.Terminology_SearchTerm_10 :: tombs of the erased
+GameGuide.Terminology_SearchTerm_11 :: cemetery of the erased
+GameGuide.Terminology_SearchTerm_12 :: altar to the weaver
+GameGuide.Terminology_SearchTerm_13 :: silken cocoons
+GameGuide.Terminology_Link_0 :: terminology
+GameGuide.Dungeons_Title :: Dungeons
+GameGuide.Dungeons_Paragraph_0 :: Dungeons are special challenges throughout the game with a special mechanic, a boss and unique rewards for each one. Entering a Dungeon requires a specific Key to that Dungeon, and there are 4 tiers for each Dungeon with increasing difficulty and rewards.
+GameGuide.Dungeons_Paragraph_1 :: Keys for each Dungeon start dropping at a higher level than the Tier 1 level of the Dungeon, so you’re likely to come back to them later for their rewards, or use them on subsequent characters. Right clicking a Dungeon Key will show its location on the world map.
+GameGuide.Dungeons_Paragraph_4 :: Completing Dungeons also provide a skip through certain parts of the campaign, as the entrance point is earlier in the campaign while the exit from the Dungeon will be further ahead in a different point in the campaign. Completing a Dungeon for the first time can also grant two passive skill points and one idol slot upgrade.
+GameGuide.Dungeons_Paragraph_5 :: As previously mentioned, each Dungeon has a special mechanic, and in order to complete the Dungeon it is strongly recommended to interact with it. This is done by using the skill that is provided inside each Dungeon (used with D by default).
+GameGuide.Dungeons_Paragraph_7 :: Lightless Arbor is a Dungeon where you traverse through darkness with a burning light source that loses its power when you take damage. Enemies in the darkness also deal substantially higher damage and take less damage. You may slay certain enemies to refresh power of your light source. Should you complete the Dungeon, at the end of it awaits The Vaults of Uncertain Fate that you may spend all your hard earned gold away for great rewards.
+GameGuide.Dungeons_Paragraph_8 :: Soulfire Bastion is a Dungeon where you fight through undead hordes with two strong damage types, using a Soulfire Shield that switches protection between the two damage types. It is fueled by Souls that you obtain from slaying enemies. These same Souls are then also used to gamble with the Soulfire Gambler at the end of the Dungeon for powerful items.
+GameGuide.Dungeons_Paragraph_9 :: Temporal Sanctum is a Dungeon where you must travel between two different Eras to get through it, and at the end of it you’ll have the option to use The Eternity Cache to create a Legendary item by combining an Exalted and Unique item with Legenary Potential.
+GameGuide.Dungeons_Paragraph_11 :: Dungeon Key Charms are modifier items that can be used to modify your Dungeon experience. For example, you can add lots of <link="loot lizard">Loot Lizards</link> or open a shortcut portal directly to fight the boss. 
+GameGuide.Dungeons_Paragraph_12 :: Dungeon Keys can be used to purchase Dungeon Key Charms in Divine Era’s Maj’elka.
+GameGuide.Dungeons_SearchTerm_0 :: dungeon
+GameGuide.Dungeons_SearchTerm_1 :: dungeons
+GameGuide.Dungeons_SearchTerm_2 :: legendary
+GameGuide.Dungeons_SearchTerm_3 :: eternity cache
+GameGuide.Dungeons_SearchTerm_4 :: dungeon key charm
+GameGuide.Dungeons_Link_0 :: dungeons
+GameGuide.Dungeons_Link_1 :: dungeon
+GameGuide.RegionSelection_Title :: Region Selection
+GameGuide.RegionSelection_Paragraph_0 :: You can change your preferred server region at the login screen, but also in-game in the Gameplay section of the Settings window. / 
+GameGuide.RegionSelection_Paragraph_1 :: If you are the leader of a party, you can change what region all servers for your party will be in by going to the Party tab of the Social menu (hotkey H by default). You can use this to pick a region that is between you and your party members to avoid large differences in latency, for example.
+GameGuide.RegionSelection_Paragraph_2 :: When you change your region setting in-game, the region of your current server won''t change. The next time you request a new server it will be in your new preferred region. Monolith and Arena gameplay happens on a single server, so you will need to go to another type of zone first for the change to apply.
+GameGuide.RegionSelection_SearchTerm_0 :: region
+GameGuide.RegionSelection_SearchTerm_1 :: server
+GameGuide.RegionSelection_Link_0 :: region
+GameGuide.RegionSelection_Link_1 :: server region
+GameGuide.ItemGifting_Title :: Item Gifting
+GameGuide.ItemGifting_Paragraph_0 :: Equippable items found while playing together with other players in an area are able to be gifted to everyone who was present as the item was found with no time limit, and has no costs unlike <link="merchant''s guild">trading</link>. Gifting can be done from the interact-menu for other players. 
+GameGuide.ItemGifting_Paragraph_2 :: When you have received a gift, an icon in the bottom-right corner of the screen indicates it. Gifting Window can be opened by clicking that icon, or from your Inventory (bound to I by default) and clicking the Gifting -button.
+GameGuide.ItemGifting_Paragraph_4 :: Items can also be gifted with the use of <link="resonance">Resonance</link> in situations where a player was not present at the time of the item dropping. 
+GameGuide.ItemGifting_SearchTerm_0 :: gifting
+GameGuide.ItemGifting_SearchTerm_1 :: gift
+GameGuide.ItemGifting_SearchTerm_2 :: gifts
+GameGuide.ItemGifting_SearchTerm_3 :: item gifting
+GameGuide.ItemGifting_SearchTerm_4 :: resonance
+GameGuide.Resonance_Title :: Resonance
+GameGuide.Resonance_Paragraph_0 :: Resonances are special items that expand <link="item gifting">Item Gifting</link>, allowing you to gift specific items to players you play with frequently, even if the item didn’t drop while you were playing with them. Resonances are specific to an individual player. For example, a Golden Resonance that resonates with Moxjet200 (can be seen in the tooltip of the Resonance) allows you to gift an item to Moxjet200. 
+GameGuide.Resonance_Paragraph_1 :: There are two different types of Resonance that allow you to gift different varieties of items. Both types of Resonances are rare, but Golden Resonances are the more common of the two. They allow you to gift any normal, magic, rare, set, or unique item. Obsidian Resonance are much rarer, and allow you to gift exalted and <link="legendary items">Legendary items</link>.
+GameGuide.Resonance_Paragraph_3 :: Slaying enemies that grant experience have a chance to grant progress towards a specific Resonance to drop, and once a certain amount of progress is gained, the Resonance will drop. This progress is cumulative between different play sessions and characters within a <link="game mode">Game Mode</link>, so when they share a stash, and only resets for a specific Resonance type when it is found.
+GameGuide.Resonance_Paragraph_4 :: Gifting an item with Resonance that has any restriction does not remove or change that restriction. For example, an item that requires to be aligned with <link="circle of fortune">Circle of Fortune</link> to be equipped will still have that requirement after it was gifted.
+GameGuide.Resonance_Paragraph_5 :: Resonances are stored when you press the “Transfer Materials” button in your inventory, and can be found in your Gifting window. You can open your gifting window by pressing “Gifting” button in your inventory.
+GameGuide.Resonance_Paragraph_6 :: Frequently Asked Questions: /  / Can I gain experience at max level (100)? /  / - Yes. /  / Can I gain experience at high level while playing in a low level area? For example, level 99 in a level 3 area. /  / - Yes. You won’t get much experience, but slaying any enemy that grants experience can generate progress, and the amount doesn’t matter. /  / Can I generate progress towards a Resonance just by being in a party with someone? / - No. You need to be in the same area and within a relatively close proximity. The distance is similar to experience gain range. /  / Can I track the progress towards a specific Resonance somehow? /  / - No, the progress towards Resonance drops is hidden.
+GameGuide.Resonance_SearchTerm_0 :: gift
+GameGuide.Resonance_SearchTerm_1 :: gifting
+GameGuide.Resonance_SearchTerm_2 :: resonance
+GameGuide.Resonance_SearchTerm_3 :: resonances
+GameGuide.Resonance_SearchTerm_4 :: obsidian
+GameGuide.Resonance_SearchTerm_5 :: golden
+GameGuide.GameMode_Title :: Game Mode
+GameGuide.GameMode_Paragraph_0 :: When creating a new character, on top of deciding whether a character will be a <link="Cycle">Season</link> or <link="legacy">Legacy</link> character, there’s also other options: Game Mode and Challenges.
+GameGuide.GameMode_Paragraph_1 :: There are two Game Modes in Last Epoch, Normal and Hardcore. The differences of the two are that they do not share stashes between eachother, and if a Hardcore character dies, it will become a Normal character of the same challenge and Season.  
+GameGuide.GameMode_Paragraph_2 :: There’s also additional <link="challenges">Challenges</link> that can be chosen to further customize your experience.
+GameGuide.GameMode_SearchTerm_0 :: game mode
+GameGuide.GameMode_SearchTerm_1 :: mode
+GameGuide.GameMode_SearchTerm_2 :: hc
+GameGuide.GameMode_SearchTerm_3 :: hardcore
+GameGuide.GameMode_SearchTerm_4 :: sc
+GameGuide.GameMode_SearchTerm_5 :: softcore
+GameGuide.GameMode_SearchTerm_6 :: normal
+GameGuide.Challenges_Title :: Challenges
+GameGuide.Challenges_Paragraph_0 :: When creating a character, on top choosing a <link="game mode">Game Mode</link>, additional challenges can be chosen: Solo Account Found (SAF) or Solo Character Found (SCF). This is not a permanent decision and you can opt-out from challenges in options.
+GameGuide.Challenges_Paragraph_1 :: Solo Account Mode (SAF) characters are unable to party with nor obtain items found by other players. This also includes any items found with Solo Character Found characters even if they share the same game mode and Season. However, items found by other Solo Account Mode characters will share the stash and <link="item factions">Item Faction</link> progress in the same game mode and Season.
+GameGuide.Challenges_Paragraph_2 :: All characters created in Offline are by default Solo Account Found characters, unless opted-in for Solo Character Found. You can opt-out of Solo Account Found and turn the character to just Normal or Hardcore character with no extra challenges if it''s an Online character.
+GameGuide.Challenges_Paragraph_3 :: Solo Character Found (SCF) is an added challenge to Solo where only items found by that character can be used by it, and no stash or Item Faction progress is shared with any other characters, even by your other Solo Character Found characters. You can opt-out of Solo Character Found and turn the character to Solo Account Found to gain access to shared progress of other Solo Account Found characters.
+GameGuide.Challenges_SearchTerm_0 :: challenge
+GameGuide.Challenges_SearchTerm_1 :: challenges
+GameGuide.Challenges_SearchTerm_2 :: saf
+GameGuide.Challenges_SearchTerm_3 :: scf
+GameGuide.Challenges_SearchTerm_4 :: solo
+GameGuide.Challenges_SearchTerm_5 :: account
+GameGuide.Challenges_SearchTerm_6 :: found
+GameGuide.Legacy_Title :: Legacy
+GameGuide.Legacy_Paragraph_0 :: Legacy is the permanently existing environment in Last Epoch, where all your previous characters and progress from <link="Cycle">Season</link> will be transferred over to when those Season end. Legacy does not have competitive leaderboards that can be participated in. While a Season is active, some features from that Season may not be included or obtainable in Legacy. An example of that could be Season-restricted items. Currently, there are no Season-restricted items in Last Epoch.
+GameGuide.Legacy_SearchTerm_0 :: ladders
+GameGuide.Legacy_SearchTerm_1 :: legacy
+GameGuide.Legacy_SearchTerm_2 :: Season
+GameGuide.Legacy_SearchTerm_3 :: cycles
+GameGuide.Legacy_SearchTerm_4 :: environment
+GameGuide.Legacy_SearchTerm_5 :: season
+GameGuide.Legacy_SearchTerm_6 :: seasons
+GameGuide.Legacy_SearchTerm_7 :: ladder
+GameGuide.Cycle_Title :: Season
+GameGuide.Cycle_Paragraph_0 :: Seasons are periods of time with new content additions, changes to game balance and the reset of competitive leaderboards. It is also a fresh start where everyone making a character at the start of a new Season will start from scratch.
+GameGuide.Cycle_Paragraph_1 :: While Season is active, you can choose to create a character in the current Season, or in Legacy. All Seasonal characters will transfer to <link="legacy">Legacy</link> at the end of a Season and all progress will carry over and will not be deleted.
+GameGuide.Cycle_Paragraph_2 :: During a Season, some features may only be available in the Seasonal environment. An example of that could be Season-restricted items.
+GameGuide.Cycle_Paragraph_3 :: If dying with a character that is playing Hardcore <link="game mode">Game Mode</link> in a Season, that character will not become a Normal Legacy character, but instead Normal Season character. 
+GameGuide.Cycle_SearchTerm_0 :: legacy
+GameGuide.Cycle_SearchTerm_1 :: cycle
+GameGuide.Cycle_SearchTerm_2 :: season
+GameGuide.Cycle_SearchTerm_3 :: environment
+GameGuide.Cycle_SearchTerm_4 :: season
+GameGuide.Cycle_SearchTerm_5 :: seasons
+GameGuide.Cycle_SearchTerm_6 :: ladder
+GameGuide.Cycle_SearchTerm_7 :: ladders
+GameGuide.Arena_Title :: Arena
+GameGuide.Arena_Paragraph_0 :: Arena is one of the endgame activies in Last Epoch, and is located in Champion’s Gate. If you have an Arena Key or Arena Key of Memory, you can right click it and it’ll open the world map and show the location of Champion’s Gate.
+GameGuide.Arena_Paragraph_1 :: There’s two different modes in Arena: Arena Champions and Endless Arena.
+GameGuide.Arena_Paragraph_2 :: Arena Champions consists of 40 waves with additional rewards that can be chosen, and eventually culminates in fighting an Arena Champion. There are 4 different tiers of Arena Champions with better rewards at higher tiers.
+GameGuide.Arena_Paragraph_4 :: Endless Arena is a mode with unlimited waves that progressively become more and more difficult, and the best Arena runs will be visible in the Leaderboards (opened by pressing L by default). Leaderboards are only available in Online play in a <link="Cycle">Season</link>. Climb the waves in Endless Arena to show how good you and your builds are!
+GameGuide.Arena_Paragraph_5 :: Characters below level 50 will not be able to benefit from experience bonuses in Endless Arena.
+GameGuide.Arena_SearchTerm_0 :: endgame
+GameGuide.Arena_SearchTerm_1 :: waves
+GameGuide.Arena_SearchTerm_2 :: wave
+GameGuide.Arena_SearchTerm_3 :: arenas
+GameGuide.Arena_SearchTerm_4 :: arena
+GameGuide.Arena_SearchTerm_5 :: champion
+GameGuide.Arena_SearchTerm_6 :: champions
+GameGuide.Arena_SearchTerm_7 :: endless
+GameGuide.LootFilter_Title :: Loot Filter
+GameGuide.LootFilter_Paragraph_0 :: Loot Filter is a tool that helps in filtering out items you might not want to pick up, or to enhance the display of items you do want to pick up. Having a Loot Filter feature in the game helps in allowing the loot drops to be plentiful and customizable to your specific needs. You can open the Loot Filter User Interface by clicking SHIFT + F by default.
+GameGuide.LootFilter_Paragraph_1 :: A single Loot Filter can have up to 75 individual rules, and these rules can be freely moved around or disabled without needing to delete them. 
+GameGuide.LootFilter_Paragraph_3 :: The rules at the top of the the filter take priority over rules below them. For example, if the top rule in the filter would be “show Unique helmets”, and a rule below it that would be “hide all helmets”, you’d see all Unique helmets while rest of them would be hidden. 
+GameGuide.LootFilter_Paragraph_4 :: Loot Filters can be exported and imported directly in the User Interface without closing the game. Filters exist in a folder that can be opened from the UI, and placing another filter there will make it available to be used in-game, but a filter can also be imported directly from copying it if your clipboard has a valid Loot Filter saved on it.
+GameGuide.LootFilter_Paragraph_5 :: When a Loot Filter is enabled, it is possible to temporarily disable it by holding a keybind (X by default).
+GameGuide.LootFilter_SearchTerm_0 :: loot
+GameGuide.LootFilter_SearchTerm_1 :: item
+GameGuide.LootFilter_SearchTerm_2 :: items
+GameGuide.LootFilter_SearchTerm_3 :: filter
+GameGuide.LootFilter_SearchTerm_4 :: filters
+GameGuide.LootFilter_SearchTerm_5 :: filtering
+GameGuide.CommunityResources_Title :: Community Resources
+GameGuide.CommunityResources_Paragraph_0 :: We continue to be humbled by our growing Last Epoch community. If you are looking for even more information about Last Epoch, we would highly recommend checking out this growing list of resources, tools, and guides.
+GameGuide.CommunityResources_Paragraph_1 :: The below websites and resources are not owned or maintained by Eleventh Hour Games or Last Epoch. We value them and their effort to build a Last Epoch community, but their content and views expressed are their own.
+GameGuide.CommunityResources_Paragraph_2 :: Featured Community Resource
+GameGuide.CommunityResources_Paragraph_4 :: Maxroll - <link="https://maxroll.gg/last-epoch">https://maxroll.gg/last-epoch</link> /  / Build guides, Loot filters, Tier lists, Build Planner and News / 
+GameGuide.CommunityResources_Paragraph_5 :: Additional Community Resources /  / Last Epoch Tools - <link="https://www.lastepochtools.com/">https://www.lastepochtools.com/</link> /  / Build Planners, Build Guides, Loot Filters and Databases
+GameGuide.CommunityResources_Paragraph_7 :: Icy Veins - <link="https://www.icy-veins.com/last-epoch/">https://www.icy-veins.com/last-epoch/</link> /  / Leveling Guides, Build Guides, Endgame Guides and News
+GameGuide.CommunityResources_Paragraph_8 :: Arreatsummit - <link="https://arreatsummit.gg/le">https://arreatsummit.gg/le</link> / Build Guides, Build Planners, Endgame Guides and Databases /  / Tunklab - <link="https://lastepoch.tunklab.com/">https://lastepoch.tunklab.com/</link> / Item, Skill, Mechanic and Class Databases
+GameGuide.CommunityResources_SearchTerm_0 :: community
+GameGuide.CommunityResources_SearchTerm_1 :: resource
+GameGuide.CommunityResources_SearchTerm_2 :: resources
+GameGuide.CommunityResources_SearchTerm_3 :: maxroll
+GameGuide.CommunityResources_SearchTerm_4 :: icyveins
+GameGuide.CommunityResources_SearchTerm_5 :: icy
+GameGuide.CommunityResources_SearchTerm_6 :: letools
+GameGuide.CommunityResources_SearchTerm_7 :: lastepochtools
+GameGuide.CommunityResources_SearchTerm_8 :: tunklab
+GameGuide.CommunityResources_SearchTerm_9 :: arreatsummit
+GameGuide.CommunityResources_SearchTerm_10 :: tools
+GameGuide.ExiledMages_Title :: Exiled Mages
+GameGuide.ExiledMages_Paragraph_1 :: Exiled Mages are powerful mages imprisoned and banished through time by the leaders of an order of Runemasters for their crimes.
+GameGuide.ExiledMages_Paragraph_3 :: Free them from their Rune Prisons if you dare, as untold eons of imprisonment may have driven them mad. The knowledge of the Exiled Mages can be found in the form of powerful items they experimented with, though this knowledge shall remain if you do not accept the risk and free them.
+GameGuide.ExiledMages_Paragraph_4 :: Through <link="woven echoes">Woven Echoes</link>, you may be able to learn the secret to crafting your own <link="experimental items">Experimental Items</link>.
+GameGuide.ExiledMages_SearchTerm_0 :: Exiled
+GameGuide.ExiledMages_SearchTerm_1 :: Mage
+GameGuide.ExiledMages_SearchTerm_2 :: Mages
+GameGuide.ExiledMages_SearchTerm_3 :: Rune
+GameGuide.ExiledMages_SearchTerm_4 :: Prison
+GameGuide.ExiledMages_SearchTerm_5 :: Experimental
+GameGuide.ExiledMages_Link_0 :: exiled mage
+GameGuide.ExiledMages_Link_1 :: exiled mages
+GameGuide.Nemesis_Title :: Nemesis
+GameGuide.Nemesis_Paragraph_0 :: Nemeses are formed from the remaining equipment of powerful warriors slain by the <link="Harbingers">Harbingers</link>. Animated by the Harbingers'' lingering aura of despair, their animosity towards those that slew their former bearers extends to all travelers, not just those who serve Orobyss as Harbingers. They lie in wait for one to attempt to claim their items, and then coalesce into a formidable being of metal and wrath to exact vengeance.
+GameGuide.Nemesis_Paragraph_2 :: Free them from their torment and use the trapped magic to empower items as your reward. Some Nemeses in the endgame may even allow you to exchange their unique for one of the player''s unique items with no <link="Legendary Items">Legendary Potential</link> or <link="Weaver''s Will">Weaver''s Will</link>, allowing it to be transformed into a Legendary or to be enhanced with Legendary Potential.
+GameGuide.Nemesis_Paragraph_4 :: When interacting with the Nemesis, there are 3 options to choose from: /  / <#FFE6A5>Banish</color> will remove the Nemesis and avoid a fight, but any items that replaced a Nemesis Egg will be lost. Your next Nemesis encounter will be with a new Nemesis that will have a fresh set of rewards. /  / <#FFE6A5>Challenge</color> will start the fight with the Nemesis and if defeated, will grant its items as rewards. Your next Nemesis encounter will be with a new Nemesis that will have a new set of item rewards. /  / <#FFE6A5>Empower</color> will start the fight with the Nemesis and if defeated, it will escape through a rift. You will then encounter this same Nemesis later, and it and its items have been Empowered. This upgrades items in various ways, such as gaining affixes, increasing tiers of existing affixes, or adding <link="forging potential">Forging Potential</link>. You can choose to Empower the Nemesis and its items twice before you must either Challenge or Banish it.
+GameGuide.Nemesis_SearchTerm_0 :: Nemesis
+GameGuide.Nemesis_SearchTerm_1 :: Legendary
+GameGuide.Nemesis_SearchTerm_2 :: LP
+GameGuide.Nemesis_SearchTerm_3 :: Unique
+GameGuide.Nemesis_SearchTerm_4 :: Traveler
+GameGuide.Nemesis_SearchTerm_5 :: Harbinger
+GameGuide.Nemesis_SearchTerm_6 :: Harbingers
+GameGuide.Nemesis_SearchTerm_7 :: Weaver
+GameGuide.Nemesis_SearchTerm_8 :: Will
+GameGuide.Nemesis_SearchTerm_9 :: banish
+GameGuide.Nemesis_SearchTerm_10 :: empower
+GameGuide.Nemesis_SearchTerm_11 :: challenge
+GameGuide.WorldMap_Title :: World Map
+GameGuide.WorldMap_Paragraph_1 :: The Map of Eterra (bound to M by default) provides lots of useful information about the world. You can find important story locations, keep track of your campaign progression, use waypoints to travel between different areas and Eras, and see how time and the Void has shaped the world from what it once was.
+GameGuide.WorldMap_Paragraph_3 :: At the top of the World Map UI, you can see a timeline with four different periods of time, or Eras. Through your travels in Eterra you visit these different Eras many times, and by clicking at any of them you can see the what Eterra looks like in different Eras throughout its history.
+GameGuide.WorldMap_Paragraph_5 :: On the left side of the World Map, you have a quest log that consists of your current active main and side quests, completed quests and the ability to pin or unpin quests that are then shown on the right side of your UI while you are playing.
+GameGuide.WorldMap_Paragraph_6 :: Clicking on a quest will bring a more detailed quest information and changes the Era of your UI and show where and when that quest is located at.
+GameGuide.WorldMap_Paragraph_7 :: Main quests are displayed with golden color, while side quests are in silver.
+GameGuide.WorldMap_Paragraph_9 :: You can also hover on a specific area or Era that has quest icons to see the names of those quests, and by right-clicking on an area with a unlocked waypoint you can immediately travel there from anywhere.
+GameGuide.WorldMap_Paragraph_11 :: At the bottom left corner you can see how many of the maximum unlockable passive point and idol slot quest rewards you have obtained from completing quests. There are much more quests providing these rewards than the maximum, so you can choose to complete different quests while being able to get the maximum passive point and idol slot rewards.
+GameGuide.WorldMap_SearchTerm_0 :: World
+GameGuide.WorldMap_SearchTerm_1 :: Map
+GameGuide.WorldMap_SearchTerm_2 :: Quest
+GameGuide.WorldMap_SearchTerm_3 :: Era
+GameGuide.WorldMap_SearchTerm_4 :: Eras
+GameGuide.WorldMap_SearchTerm_5 :: Passives
+GameGuide.WorldMap_SearchTerm_6 :: Idols
+GameGuide.WorldMap_SearchTerm_7 :: Slots
+GameGuide.WorldMap_SearchTerm_8 :: Pin
+GameGuide.WorldMap_SearchTerm_9 :: Eterra
+GameGuide.Experience_Title :: Experience
+GameGuide.Experience_Paragraph_1 :: Experience is gained by completing quests, slaying enemies and from other rewards, such as <link="monolith introduction">Monolith</link> Echoes. As you gain experience, your character and skills will <link="levels">level up</link>, allowing you to customize and make your character stronger. The maximum character level in Last Epoch is 100. You can still gain experience at level 100, it just won’t increase character level anymore.
+GameGuide.Experience_Paragraph_3 :: A common way to increase the amount of experience gained is by increasing Corruption in Monolith of Fate, but there are other ways to increase experience such as Experience Shrines. Items in Last Epoch do not provide bonuses to experience gained. 
+GameGuide.Experience_Paragraph_5 :: Magic enemies provide 50% more experience gained when slain.
+GameGuide.Experience_Paragraph_7 :: Rare enemies provide 200% + additional 4% per level, which means that level 100 rare enemies provide 600% more experience when slain.
+GameGuide.Experience_Paragraph_9 :: Boss enemies do not have an experience gain multiplier, but have a much higher base experience reward when slain than other enemies.
+GameGuide.Experience_Paragraph_10 :: If a lower level player is in a much higher level area, they gain experience from slaying enemies as if the area was up to 10 levels higher than their character. For example, a level 20 character in a level 40 area would gain experience as if the area was level 30.
+GameGuide.Experience_Paragraph_11 :: When playing together with other players and there are big level differences, the previous 10 level difference can go down to a minimum of 2, based on the level difference between the characters. For example, if a level 10 character and a level 70 character were playing together in a level 40 area, the level 10 character would gain experience as if the area was level 12, and the level 70 will gain experience from level 40 area as normal. 
+GameGuide.Experience_Paragraph_12 :: Players that are 5 or more levels below the starting level of a chapter will gain less experience from completing quests relative to their character level. For example, completing quests in Chapter 9 will grant much less experience to a character that is level 5, than to a character that is level 50.
+GameGuide.Experience_Paragraph_13 :: Additional bonuses which increase the experience gained in <link="arena">Arena</link> and Monolith Echoes won’t apply to characters under level 50, but they will still gain the unmodified amount of experience from slain enemies. 
+GameGuide.Experience_Paragraph_14 :: The amount of <link="terminology">Favor</link> gained while aligned with an <link="item factions">Item Faction</link> is based on the experience you gain.
+GameGuide.Experience_SearchTerm_0 :: exp
+GameGuide.Experience_SearchTerm_1 :: xp
+GameGuide.Experience_SearchTerm_2 :: experience
+GameGuide.Experience_SearchTerm_4 :: level
+GameGuide.Experience_SearchTerm_5 :: level up
+GameGuide.Experience_SearchTerm_7 :: levels
+GameGuide.StashPriority_Title :: Stash Tab Priority
+GameGuide.StashPriority_Paragraph_0 :: Stash Priority lets you define rules for how certain items should be moved into your stash when quick storing (shift + right click or X / Square on controller). If any tab has a matching priority when quick storing an item, it will be placed in that tab, even if not currently viewed. Manually placing items directly in a slot in a tab bypasses Stash Priority.
+GameGuide.StashPriority_Paragraph_2 :: <#FFE6A5>Configuring Stash Priority</color> / You can set priority conditions on any tab when configuring it (right click the tab or use the configure tab button while viewing it) by checking the Stash Priority checkbox. To remove priority conditions, uncheck this and save the tab.
+GameGuide.StashPriority_Paragraph_3 :: Stash Priority supports the following conditions, similar to <link="loot filter">Loot Filters</link>: / Item Type / - Subtype (if only 1 item type is selected)
+GameGuide.StashPriority_Paragraph_4 :: <link="Rarity">Rarity</link> / - <link="legendary items">Legendary Potential</link> Min/Max (if only Unique is selected) / - <link="weaver''s will">Weaver''s Will</link> Min/Max (if only Unique is selected)
+GameGuide.StashPriority_Paragraph_5 :: Class Requirement / - For example, you can set a tab to only accept items if they can be equipped by a Priamlist or a Mage.
+GameGuide.StashPriority_Paragraph_6 :: Level Requirement / - For example, a tab could be set to only accept items if they have a minimum level requrement of 80 to equip, or a maximum level of 70 to equip. / 
+GameGuide.StashPriority_Paragraph_7 :: <link="item factions">Item Faction</link> Requirement / - For example, some items drop with a Circle of Fortune requirement, and all items traded between players in Merchant''s Guild will require to be part of the Merchant''s Guild to equip.
+GameGuide.StashPriority_Paragraph_8 :: All priority conditions on a tab must match for an item to be automatically placed there.
+GameGuide.StashPriority_Paragraph_9 :: For example, a tab with priority conditions of Rarity: Exalted and Item Type: Helmet will match exalted helmets, but not exalted boots or unique helmets.
+GameGuide.StashPriority_Paragraph_10 :: <#FFE6A5>How Priority Chooses Tabs To Send Items To </color> / You can set priority conditions on any tab when configuring it (right click the tab or use the configure tab button while viewing it) by checking the Stash Priority checkbox. To remove priority conditions, uncheck this and save the tab.
+GameGuide.StashPriority_Paragraph_11 :: When multiple stash tabs have a priority that matches an item, it will be placed in the first tab that matches and has space for the item. This respects your custom ordering and will pick the leftmost tab in the leftmost category that matches.
+GameGuide.StashPriority_Paragraph_12 :: If there is no stash tab with matching priority, or all tabs with matching priority do not have space to fit the item, it is instead placed in the currently viewed tab if possible.
+GameGuide.StashPriority_SearchTerm_0 :: stash
+GameGuide.StashPriority_SearchTerm_1 :: tab
+GameGuide.StashPriority_SearchTerm_2 :: tabs
+GameGuide.StashPriority_SearchTerm_3 :: priority
+GameGuide.StashPriority_SearchTerm_4 :: prio
+GameGuide.StashSearching_Title :: Stash Searching
+GameGuide.StashSearching_Paragraph_0 :: The stash supports searching for items based on the contents of their tooltip as well as macros, regex, and expressions to compose more specific searches.
+GameGuide.StashSearching_Paragraph_1 :: When searching in the Quick View sidebar, your tabs will be filtered to only show those that contain at least one matching item.
+GameGuide.StashSearching_Paragraph_2 :: <b>Usage Examples</b> / - T6+ or 1T6+ matches any exalted item (at least 1 affix is tier 6 or higher) / - 2T7 matches double T7 exalted items (at least 2 affixes are tier 7) / - 3T6+&T7 matches triple exalted items where at least 1 affix is T7 (e.g. T7/T7/T7 or T7/T6/T6 would both match) / - WW&PT20+ would match Weaver''s Will items that have 20 or more Weaver''s Will and legendary affix tiers / - LP3+|WW20+ to find high potential uniques / - prefixes1&T7 to find T7 exalts with an open prefix / - T7&boots to find boots with at least 1 T7 affix / - relic&/1[4-6] dexterity/&suffixes1- to find relics with T7 dexterity and at least 1 open suffix.
+GameGuide.StashSearching_Paragraph_3 :: <b>Regex</b> / - Wrap your search in / to search using case-insensitive regex / - e.g. /1[4-9] attunement/ to find items with 14-19 attunement
+GameGuide.StashSearching_Paragraph_4 :: <b>Macros</b> /  Macros are case-insensitive short hands that match supported properties of items with an optional quantifier e.g. / - LP0 (is unique with no legendary potential) / - T6+ (has tier 6 or higher affix) / - prefixes2 (has 2 prefixes) /  Most macros match a number on the item and are of the form: Macro[number][+/-] /  If a number is provided, the item must exactly match that number. /  If + or - is provided, the item must be greater/less than or equal to that number. For example: /  - WW matches any Weaver’s Will item and the macro matches the amount of Weaver’s Will on the item /  - WW0 matches any Weaver’s Will item with no Weaver’s Will left /  - WW15+ matches any Weaver’s Will item with at least 15 Weaver’s Will
+GameGuide.StashSearching_Paragraph_4_A :: Macros can be negated with ! to invert what they match / - !Corrupted matches items that are not corrupted / - !Trade matches items that are not tradable
+GameGuide.StashSearching_Paragraph_5 :: <b>Expressions</b> /  Macros and regex can be combined into expressions /  - Combining with | means either the left or right macro must match /  - Combining with & means both the left and right macro must match
+GameGuide.StashSearching_Paragraph_6 :: <b>Supported Macros</b> / Item Potential / - LP (is non-WW unique) / - WW (is WW unique or legendary) / - WT (is enchantable idol) / - FP (is forgeable equipment) / - PT (potential tier) matches items that could be used for unique rerolling in the Gauntlet of Strife.
+GameGuide.StashSearching_Paragraph_7 :: Item Types / - Set (grants set bonus) / - RealSet (is set item) / - ReforgedSet (is reforged set item) / - Experimental (is boots/gloves/belt) / - WeaverIdol (is a weaver idol) / - OmenIdol (is an omen idol)
+GameGuide.StashSearching_Paragraph_7_A :: Rarity / - Normal / - Magic / - Rare / - Exalted / - Unique / - Legendary / - Set
+GameGuide.StashSearching_Paragraph_8 :: Class Requirement / - Acolyte / - Mage / - Primalist / - Rogue / - Sentinel
+GameGuide.StashSearching_Paragraph_9 :: Equipment Requirements / - Lvl (required level) / - CoF (Circle of Fortune tagged) / - MG (Merchant''s Guild tagged) / - Trade (can be traded)
+GameGuide.StashSearching_Paragraph_10 :: Affix Tier / - T (at least 1 affix tier matches) / - Prepending "aff" or "affix" to a regex will match the tier of a specific affix that matches the regex / - e.g. aff/Hybrid Health/5+ or affix/of the Giant/7
+GameGuide.StashSearching_Paragraph_11 :: Affix Tier Count / - These work the same as affix tier macros, but instead of matching any affix, they match if at least a certain number of affixes are matching tiers / - Available affix tier counts are 1-5 (1T, 2T, 3T, 4T, 5T)
+GameGuide.StashSearching_Paragraph_12 :: Affix Type Counts / - Prefixes / - Suffixes / - Affixes / - Sealed / - Experimental / - Personal
+GameGuide.StashSearching_SearchTerm_0 :: stash
+GameGuide.StashSearching_SearchTerm_1 :: searching
+GameGuide.StashSearching_SearchTerm_2 :: macros
+GameGuide.StashSearching_SearchTerm_3 :: expressions
+GameGuide.StashSearching_SearchTerm_4 :: regex
+GameGuide.StashSearching_Link_0 :: stash searching
+GameGuide.Shrines_Title :: Shrines
+GameGuide.Shrines_Paragraph_0 :: Shrines are objects that a player can interact with to activate them. There is a wide variety of different effects and buffs that occur when they are activated. For example, they can spawn creatures to aid you in combat, drop items, buff the player or cast skills while the shrine is active.
+GameGuide.Shrines_SearchTerm_0 :: shrine
+GameGuide.Shrines_SearchTerm_1 :: shrines
+GameGuide.Shrines_SearchTerm_2 :: buff
+GameGuide.LootLizard_Title :: Loot Lizard
+GameGuide.LootLizard_Paragraph_0 :: Loot Lizards are peaceful creatures burdened by the weight of items they carry. You can help unburden them by attacking them. They will flee when attacked.
+GameGuide.LootLizard_Paragraph_1 :: There are several different types of Loot Lizards that carry different items, and they can be distinguished from each other by their color.
+GameGuide.LootLizard_Paragraph_3 :: When reduced to zero health, Loot Lizards will escape. If they have not been damaged for 20 seconds, they will also escape. This timer will reset whenever any damage is dealt to them. /  /  /  /  /  /  / 
+GameGuide.LootLizard_SearchTerm_0 :: loot
+GameGuide.LootLizard_SearchTerm_1 :: lizard
+GameGuide.LootLizard_SearchTerm_2 :: lizards
+GameGuide.LootLizard_SearchTerm_3 :: item
+GameGuide.LootLizard_SearchTerm_4 :: items
+GameGuide.LootLizard_SearchTerm_5 :: tail
+GameGuide.Champions_Title :: Champions
+GameGuide.Champions_Paragraph_1 :: Champions are a subset of Rare enemies, with proper names and more powerful abilities. They often have their own modifiers, which do not spawn on other enemies. They can be recognized by their names, minimap icon, and an orange highlight. 
+GameGuide.Champions_Paragraph_2 :: Once defeated, Champions always drop an item with a sealed Champion Affix based on the Champion''s modifiers. Champion Affixes only occur on items, they cannot be obtained as shards via <link="Runes and Glyphs">Rune of Shattering</link> or <link="Runes and Glyphs">Rune of Removal</link>.
+GameGuide.Champions_SearchTerm_0 :: rare
+GameGuide.Champions_SearchTerm_1 :: champions
+GameGuide.Champions_SearchTerm_2 :: enemy
+GameGuide.Champions_SearchTerm_3 :: champion affix
+GameGuide.Champions_Link_0 :: champions
+GameGuide.RiftBeasts_Title :: Rift Beasts
+GameGuide.RiftBeasts_Paragraph_1 :: Rift Beasts are ancient and powerful creatures that possess the ability to tear rifts between eras. This allows them to hunt down their prey with swift ambushes wherever and whenever they please.
+GameGuide.RiftBeasts_Paragraph_3 :: Sometimes Rift Beasts leave larger rifts behind that lead to their dens in the Ancient Era, where they lay their eggs and prepare for future hunts. After defeating a Rift Beast in its den, you can choose which of its offspring survives, effectively deciding how future Rift Beasts you encounter will have evolved.
+GameGuide.RiftBeasts_Paragraph_5 :: Different evolutions cause the Rift Beasts to gain different abilities and grow different body parts. Some of these body parts can be harvested and exchanged with Skarven Bloodhorn for powerful items such as <link="primordial items">Primordial Unique items</link> and <link="Runes and Glyphs">Runes of Evolutions</link>.
+GameGuide.OmenWindows_Title :: Omen Windows
+GameGuide.OmenWindows_Paragraph_1 :: Omens are reflections from the moment Orobyss fell into despair. They manifest as windows to these moments, and touching them will unleash waves of enemies reinforced by the Omen. 
+GameGuide.OmenWindows_Paragraph_3 :: Should you survive the onslaught of enemies, the previously shielded Omen becomes vulnerable and will attack you. Completing Omen Windows can yield different rewards such as <link="corrupted items">Runes of Corruption</link>, corrupted items, <link="idol altars">Idol Altars</link>, and Timeglass Fragments.
+GameGuide.OmenWindows_Paragraph_5 :: Timeglass Fragments are small pieces of the window and are accepted as currency to purchase items from the Oracle, located in the <link="monolith introduction">Monolith of Fate</link>. Fragments can also be used to create <link="echo chains">Echo Chains</link> as a reward when completing a more difficult Greater Omen Window at the end of an Omen Echo Chain in the Monolith of Fate.
+GameGuide.OmenWindows_SearchTerm_0 :: corrupted
+GameGuide.OmenWindows_SearchTerm_1 :: rune of corruption
+GameGuide.OmenWindows_SearchTerm_2 :: omen windows
+GameGuide.OmenWindows_SearchTerm_3 :: omens
+GameGuide.OmenWindows_SearchTerm_4 :: omen
+GameGuide.OmenWindows_SearchTerm_5 :: timeglass fragments
+GameGuide.OmenWindows_SearchTerm_6 :: fragments
+GameGuide.OmenWindows_Link_0 :: omen windows
+GameGuide.RageOfMorditas_Title :: Rage of Morditas
+GameGuide.RageOfMorditas_Paragraph_0 :: Morditas is free, filled with rage and ready to get his vengeance.
+GameGuide.RageOfMorditas_Paragraph_2 :: Interact with the Blood Crystal to begin the Rage of Morditas encounter, a timed hunt where you defeat monsters to provide souls to Morditas. As you slay enemies, Morditas gathers the souls of the fallen and grants you both Bloodrage charges, tokens that you can use to claim rewards at the end of the encounter, and powerful Bloodrage buffs to aid you further in the slaughter. / Your timer goes up as you slay enemies, with diminishing returns the more monsters you kill. As you progress the encounter the timer keeps ticking down, eventually reaching zero. When this occurs, Morditas appears near you to summon an arena where he proceeds to Bloodcraft the slain enemies back to life.
+GameGuide.RageOfMorditas_Paragraph_4 :: Successfully defeating the enemies in the arena awards you with some equippable items, and grants access to the Blood-filled Crystal. Inside this Crystal lies the rewards of the ritual you have just performed, yielding powerful rewards and three options to interact with those rewards - Claim an item, or perform Frozen or Bloody Rituals.  /  / Each of these three options requires spending a Bloodrage charge, which are obtained during the first phase of the encounter. /  / Should you run out of Bloodrage charges, you can complete another encounter and find the same set of rewards waiting for you, as the ritual rewards persist through areas and only provide new rewards when claiming a reward or performing rituals.
+GameGuide.RageOfMorditas_Paragraph_6 :: In the Ritual reward window you start with five different rewards. You can then select any of these five rewards to either claim it, or to perform a sacrificing ritual on it. Performing a ritual will empower the next set of rewards, yielding better rewards on average. / Claiming the reward consumes one Bloodrage charge and grants you the item. The Ritual rewards then start from the beginning, with another new five options. Any empowerment your ritual had is also removed.
+GameGuide.RageOfMorditas_Paragraph_8 :: Performing the Frozen Ritual sacrifices the marked item to reroll and empower the ritual for better rewards. Rewards after using the Frozen Ritual can only include items of the same item type, such as boots, and one of the rewards will be the same subtype as the sacrificed item if possible. Forgeable items are granted a new type of Ice <link="forging potential">Forging Potential</link> that has higher chance to preserve Forging Potential when crafting.
+GameGuide.RageOfMorditas_Paragraph_10 :: Performing the Bloody Ritual sacrifices the marked item to reroll and empower the ritual for better rewards. Rewards after using the Bloody Ritual cannot include the same item type, such as boots. Forgeable items are granted a new type of Blood Forging Potential that has higher chance to critically success when crafting.
+GameGuide.RageOfMorditas_Paragraph_12 :: If an exclusive Bloodrage <link="rarity">unique</link> item is one of the reward options, it won''t be rerolled to a new item, instead the rituals will have a significant impact on the item. Frozen Ritual rerolls its special affixes, and Bloody Ritual either adds <link="legendary items">Legendary Potential</link> to the item or <link="corrupted items">corrupts</link> it, if it''s not yet corrupted.
+GameGuide.RageOfMorditas_Paragraph_14 :: As you defeat more Bloodcrafted enemies, Morditas'' rage grows stronger, and unlocks additional Rage of Morditas encounters through the <link="The Nexus">Nexus</link>, leading all the way to the Circle of Frozen Blood, where you may challenge Morditas himself. / Each of these unique encounters can be scaled in difficulty and rewards through Anger that grows naturally as you complete encounters. You can also lower the Anger to make the encounters easier, but less rewarding.
+GameGuide.RageOfMorditas_SearchTerm_0 :: rage of morditas
+GameGuide.RageOfMorditas_SearchTerm_1 :: rage
+GameGuide.RageOfMorditas_SearchTerm_2 :: morditas
+GameGuide.RageOfMorditas_SearchTerm_3 :: blood
+GameGuide.RageOfMorditas_SearchTerm_4 :: ice
+GameGuide.RageOfMorditas_SearchTerm_5 :: encounter
+GameGuide.RageOfMorditas_SearchTerm_6 :: ritual
+GameGuide.RageOfMorditas_SearchTerm_7 :: bloodrage
+GameGuide.RageOfMorditas_Link_0 :: rageofmorditas

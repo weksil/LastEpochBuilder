@@ -1,0 +1,48 @@
+Ignite | id=1 | dur=2.5 | max=0 | dmg=[0,40,0,0,0,0,0] | tags=4096 | pen=1 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Bleed | id=2 | dur=3 | max=0 | dmg=[53,0,0,0,0,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Chill | id=3 | dur=4 | max=3 | dmg=[0,0,0,0,0,0,0] | tags=? | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:2,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.12]},{property:3,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.12]},{property:9,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.12]}] | boss=-.5 | pl=-.5 | eff=0 | curse=!1 | allAtEnd=!1
+Shock | id=5 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:109,specialTag:0,tags:0,addedValue:.2,increasedValue:0,moreValues:[]},{property:80,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+Slow | id=6 | dur=4 | max=3 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:9,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.2]}] | boss=-.5 | pl=-.5 | eff=0 | curse=!1 | allAtEnd=!1
+Poison | id=7 | dur=3 | max=0 | dmg=[0,0,0,0,0,0,28] | tags=4096 | pen=6 | scal=2 | maxBuffStacks=30 | buffs=[{property:83,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+ArmourShred | id=8 | dur=4 | max=0 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:77,specialTag:0,tags:0,addedValue:100,increasedValue:0,moreValues:[]}] | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+TimeRot | id=9 | dur=3 | max=12 | dmg=[0,0,0,0,0,60,0] | tags=4096 | pen=5 | scal=0 | maxBuffStacks=0 | buffs=[{property:71,specialTag:0,tags:0,addedValue:0,increasedValue:.05,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Laceration | id=11 | dur=3 | max=1 | dmg=[1,0,0,0,0,0,0] | tags=4608 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+AbyssalDecay | id=12 | dur=5 | max=1 | dmg=[0,0,0,0,0,100,0] | tags=4352 | pen=5 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Blind | id=14 | dur=4 | max=1 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=? | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+SerpentVenom | id=15 | dur=3 | max=1 | dmg=[0,0,0,0,0,0,400] | tags=4096 | pen=6 | scal=0 | maxBuffStacks=0 | buffs=[{property:4,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-1]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Frailty | id=16 | dur=4 | max=3 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:0,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.06]}] | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+MarkedForDeath | id=17 | dur=8 | max=1 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:30,specialTag:0,tags:0,addedValue:-.25,increasedValue:0,moreValues:[]}] | boss=0 | pl=0 | eff=0 | curse=!0 | allAtEnd=!1
+Plague | id=18 | dur=4 | max=1 | dmg=[0,0,0,0,0,0,150] | tags=4096 | pen=6 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Frostbite | id=23 | dur=3 | max=0 | dmg=[0,0,50,0,0,0,0] | tags=4096 | pen=2 | scal=2 | maxBuffStacks=15 | buffs=[{property:68,specialTag:0,tags:0,addedValue:.2,increasedValue:0,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+SpreadingFlames | id=24 | dur=4 | max=1 | dmg=[0,200,0,0,0,0,0] | tags=4096 | pen=1 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+PoisonResShred | id=28 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:83,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+NecroticResShred | id=29 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:82,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+VoidResShred | id=30 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=? | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+Haste | id=33 | dur=4 | max=1 | dmg=[0,0,0,0,0,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:9,specialTag:0,tags:0,addedValue:0,increasedValue:.3,moreValues:[]}] | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+Frenzy | id=34 | dur=1 | max=1 | dmg=[0,
+0,0,0,0,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=? | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+Damned | id=39 | dur=2.5 | max=0 | dmg=[0,0,0,0,35,0,0] | tags=4096 | pen=4 | scal=1 | maxBuffStacks=0 | buffs=[{property:17,specialTag:0,tags:0,addedValue:0,increasedValue:-.2,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+FireResShred | id=42 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:78,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+BoneCurse | id=58 | dur=8 | max=1 | dmg=[4,0,0,0,0,0,0] | tags=16777472 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+SpiritPlague | id=59 | dur=3 | max=1 | dmg=[0,0,0,0,90,0,0] | tags=16781568 | pen=4 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+Contempt | id=61 | dur=500 | max=5 | dmg=[0,0,0,0,0,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:30,specialTag:0,tags:0,addedValue:.1,increasedValue:0,moreValues:[]},{property:10,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[.1]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+PhysicalResShred | id=? | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:72,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+ColdResShred | id=74 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:79,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+LightningResShred | id=75 | dur=4 | max=10 | dmg=[0,
+0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:80,specialTag:0,tags:0,addedValue:.05,increasedValue:0,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+EfficaciousToxin | id=78 | dur=4 | max=1 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=6 | scal=0 | maxBuffStacks=0 | buffs=[{property:6,specialTag:0,tags:4096,addedValue:0,increasedValue:.12,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+CriticalVulnerability | id=85 | dur=4 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=4096 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:112,specialTag:0,tags:0,addedValue:.02,increasedValue:0,moreValues:[]},{property:89,specialTag:0,tags:0,addedValue:-.1,increasedValue:0,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Doom | id=90 | dur=4 | max=4 | dmg=[0,0,0,
+0,0,400,0] | tags=4096 | pen=5 | scal=1 | maxBuffStacks=0 | buffs=[{property:6,specialTag:0,tags:512,addedValue:0,increasedValue:.04,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Electrify | id=93 | dur=2.5 | max=0 | dmg=[0,0,0,44,0,0,0] | tags=4096 | pen=3 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1
+Decrepify | id=113 | dur=10 | max=1 | dmg=[200,0,0,0,0,0,0] | tags=16781568 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[{property:6,specialTag:0,tags:4096,addedValue:0,increasedValue:0,moreValues:[.15]}] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+Withering | id=115 | dur=3 | max=10 | dmg=[0,0,0,0,0,0,0] | tags=0 | pen=0 | scal=1 | maxBuffStacks=0 | buffs=[{property:6,specialTag:0,tags:16777216,addedValue:0,increasedValue:.1,moreValues:[]}] | boss=-.6 | pl=-.6 | eff=1 | curse=!1 | allAtEnd=!1
+Penance | id=117 | dur=15 | max=1 | dmg=[0,20,0,0,0,0,0] | tags=16777472 | pen=1 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=0 | curse=!0 | allAtEnd=!1
+Torment | id=118 | dur=3 | max=1 | dmg=[0,0,0,0,120,0,0] | tags=16781568 | pen=4 | scal=0 | maxBuffStacks=0 | buffs=[{property:9,specialTag:0,tags:0,addedValue:0,increasedValue:0,moreValues:[-.18]}] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+AcidSkin | id=120 | dur=5 | max=1 | dmg=[0,0,0,0,0,0,
+80] | tags=16781312 | pen=6 | scal=2 | maxBuffStacks=1 | buffs=[{property:112,specialTag:0,tags:0,addedValue:.2,increasedValue:0,moreValues:[]}] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+Witchfire | id=122 | dur=12 | max=1 | dmg=[0,600,0,0,600,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=0 | curse=!1 | allAtEnd=!1
+Anguish | id=121 | dur=10 | max=1 | dmg=[0,0,0,0,40,0,0] | tags=16777472 | pen=4 | scal=0 | maxBuffStacks=0 | buffs=[{property:0,specialTag:0,tags:4096,addedValue:0,increasedValue:0,moreValues:[-.15]}] | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+ExposedFlesh | id=137 | dur=8 | max=1 | dmg=[0,0,0,0,0,0,80] | tags=16781312 | pen=6 | scal=0 | maxBuffStacks=1 | buffs=? | boss=0 | pl=0 | eff=1 | curse=!0 | allAtEnd=!1
+Hemorrhage | id=142 | dur=3 | max=0 | dmg=[300,0,0,0,
+0,0,0] | tags=4096 | pen=0 | scal=0 | maxBuffStacks=0 | buffs=[] | boss=0 | pl=0 | eff=1 | curse=!1 | allAtEnd=!1

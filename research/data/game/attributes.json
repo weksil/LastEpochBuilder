@@ -1,0 +1,289 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "CoreAttribute assets referenced by Global Player Properties",
+ "schema": "see research/07a_assets_core_data.md §attributes",
+ "formula": "attr = RoundHalfEven(Σadded SP(attr) + Σadded SP46 AllAttributes); each perPoint stat x attr (added/increased linear; more -> one more value (mult-1)*attr). Corrupted attribute (SP98 PlayerProperty tags=corruptedFlag.tags present) replaces perPoint by corruptedPerPoint.",
+ "data": [
+  {
+   "attribute": 0,
+   "name": "Strength",
+   "statProperty": 19,
+   "perPoint": [
+    {
+     "property": 10,
+     "propertyName": "Armour",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": 0.04,
+     "more": [],
+     "tagNames": [],
+     "modType": "INCREASED"
+    }
+   ],
+   "corruptedPerPoint": [
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 636,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": 0.0,
+     "more": [
+      0.0002
+     ],
+     "modType": "MORE",
+     "playerPropertyName": "Damage for Melee Attacks per 1 Mana Cost (up to 20)"
+    },
+    {
+     "property": 51,
+     "propertyName": "HealthLeech",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": -0.005,
+     "more": [],
+     "tagNames": [],
+     "modType": "INCREASED"
+    }
+   ],
+   "corruptedFlag": {
+    "property": 98,
+    "tags": 650,
+    "playerPropertyName": "Strength Converted to Brutality"
+   }
+  },
+  {
+   "attribute": 1,
+   "name": "Vitality",
+   "statProperty": 20,
+   "perPoint": [
+    {
+     "property": 7,
+     "propertyName": "Health",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 6.0,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    },
+    {
+     "property": 27,
+     "propertyName": "NecroticResistance",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.01,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    },
+    {
+     "property": 28,
+     "propertyName": "PoisonResistance",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.01,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    }
+   ],
+   "corruptedPerPoint": [
+    {
+     "property": 120,
+     "propertyName": "EffectOfAilmentOnYou",
+     "specialTag": 34,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": 0.03,
+     "more": [],
+     "tagNames": [],
+     "modType": "INCREASED"
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 638,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": 0.0,
+     "more": [
+      0.001
+     ],
+     "modType": "MORE",
+     "playerPropertyName": "Damage Taken while you don't have Frenzy"
+    }
+   ],
+   "corruptedFlag": {
+    "property": 98,
+    "tags": 654,
+    "playerPropertyName": "Vitality Converted to Rampancy"
+   }
+  },
+  {
+   "attribute": 2,
+   "name": "Intelligence",
+   "statProperty": 21,
+   "perPoint": [
+    {
+     "property": 16,
+     "propertyName": "WardRetention",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.02,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    }
+   ],
+   "corruptedPerPoint": [
+    {
+     "property": 5,
+     "propertyName": "CriticalMultiplier",
+     "specialTag": 0,
+     "tags": 256,
+     "extraTag": 0,
+     "added": 0.01,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [
+      "Spell"
+     ],
+     "modType": "ADDED"
+    },
+    {
+     "property": 114,
+     "propertyName": "ReducedBonusDamageTakenFromCrits",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": -0.01,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    }
+   ],
+   "corruptedFlag": {
+    "property": 98,
+    "tags": 651,
+    "playerPropertyName": "Intelligence Converted to Madness"
+   }
+  },
+  {
+   "attribute": 3,
+   "name": "Dexterity",
+   "statProperty": 22,
+   "perPoint": [
+    {
+     "property": 11,
+     "propertyName": "DodgeRating",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 4.0,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    }
+   ],
+   "corruptedPerPoint": [
+    {
+     "property": 58,
+     "propertyName": "AbilityProperty",
+     "specialTag": 9,
+     "tags": 782,
+     "extraTag": 0,
+     "added": 0.003,
+     "increased": 0.0,
+     "more": [],
+     "modType": "ADDED",
+     "abilityIDName": "acolyteEvade",
+     "abilityPropertyName": "Increased Cooldown Recovery Speed for Movement Skills"
+    },
+    {
+     "property": 10,
+     "propertyName": "Armour",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": -0.01,
+     "more": [],
+     "tagNames": [],
+     "modType": "INCREASED"
+    }
+   ],
+   "corruptedFlag": {
+    "property": 98,
+    "tags": 652,
+    "playerPropertyName": "Dexterity Converted to Guile"
+   }
+  },
+  {
+   "attribute": 4,
+   "name": "Attunement",
+   "statProperty": 23,
+   "perPoint": [
+    {
+     "property": 8,
+     "propertyName": "Mana",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 2.0,
+     "increased": 0.0,
+     "more": [],
+     "tagNames": [],
+     "modType": "ADDED"
+    }
+   ],
+   "corruptedPerPoint": [
+    {
+     "property": 18,
+     "propertyName": "ManaRegen",
+     "specialTag": 0,
+     "tags": 0,
+     "extraTag": 0,
+     "added": 0.0,
+     "increased": 0.02,
+     "more": [],
+     "tagNames": [],
+     "modType": "INCREASED"
+    },
+    {
+     "property": 98,
+     "propertyName": "PlayerProperty",
+     "specialTag": 0,
+     "tags": 637,
+     "extraTag": 0,
+     "added": 0.002,
+     "increased": 0.0,
+     "more": [],
+     "modType": "ADDED",
+     "playerPropertyName": "Current Health lost when you directly use a Skill"
+    }
+   ],
+   "corruptedFlag": {
+    "property": 98,
+    "tags": 653,
+    "playerPropertyName": "Attunement Converted to Apathy"
+   }
+  }
+ ]
+}

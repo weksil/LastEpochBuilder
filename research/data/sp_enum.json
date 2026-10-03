@@ -1,0 +1,672 @@
+[
+ {
+  "id": 0,
+  "name": "Damage",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 1,
+  "name": "AilmentChance",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 2,
+  "name": "AttackSpeed",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 3,
+  "name": "CastSpeed",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 4,
+  "name": "CriticalChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 5,
+  "name": "CriticalMultiplier",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 6,
+  "name": "DamageTaken",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 7,
+  "name": "Health",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 8,
+  "name": "Mana",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 9,
+  "name": "Movespeed",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 10,
+  "name": "Armour",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 11,
+  "name": "DodgeRating",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 12,
+  "name": "StunAvoidance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 13,
+  "name": "FireResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 14,
+  "name": "ColdResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 15,
+  "name": "LightningResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 16,
+  "name": "WardRetention",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 17,
+  "name": "HealthRegen",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 18,
+  "name": "ManaRegen",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 19,
+  "name": "Strength",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 20,
+  "name": "Vitality",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 21,
+  "name": "Intelligence",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 22,
+  "name": "Dexterity",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 23,
+  "name": "Attunement",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 24,
+  "name": "ManaBeforeHealthPercent",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 25,
+  "name": "ChannelCost",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 26,
+  "name": "VoidResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 27,
+  "name": "NecroticResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 28,
+  "name": "PoisonResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 29,
+  "name": "BlockChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 30,
+  "name": "AllResistances",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 31,
+  "name": "DamageTakenAsPhysical",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 32,
+  "name": "DamageTakenAsFire",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 33,
+  "name": "DamageTakenAsCold",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 34,
+  "name": "DamageTakenAsLightning",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 35,
+  "name": "DamageTakenAsNecrotic",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 36,
+  "name": "DamageTakenAsVoid",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 37,
+  "name": "DamageTakenAsPoison",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 38,
+  "name": "HealthGain",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 39,
+  "name": "WardGain",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 40,
+  "name": "ManaGain",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 41,
+  "name": "AdaptiveSpellDamage",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 42,
+  "name": "IncreasedAilmentDuration",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 43,
+  "name": "IncreasedAilmentEffect",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 44,
+  "name": "IncreasedHealing",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 45,
+  "name": "IncreasedStunChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 46,
+  "name": "AllAttributes",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 47,
+  "name": "IncreasedPotionDropRate",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 48,
+  "name": "PotionHealth",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 49,
+  "name": "PotionSlots",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 50,
+  "name": "HasteOnHitChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 51,
+  "name": "HealthLeech",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 52,
+  "name": "ElementalResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 53,
+  "name": "BlockEffectiveness",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 54,
+  "name": "None",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 55,
+  "name": "IncreasedStunImmunityDuration",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 56,
+  "name": "StunImmunity",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 57,
+  "name": "ManaDrain",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 58,
+  "name": "AbilityProperty",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 59,
+  "name": "Penetration",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 60,
+  "name": "CurrentHealthDrain",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 61,
+  "name": "MaximumCompanions",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 62,
+  "name": "GlancingBlowChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 63,
+  "name": "CullPercentFromPassives",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 64,
+  "name": "PhysicalResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 65,
+  "name": "CullPercentFromWeapon",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 66,
+  "name": "ManaCost",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 67,
+  "name": "FreezeRateMultiplier",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 68,
+  "name": "IncreasedChanceToBeFrozen",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 69,
+  "name": "ManaEfficiency",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 70,
+  "name": "IncreasedCooldownRecoverySpeed",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 71,
+  "name": "ReceivedStunDuration",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 72,
+  "name": "NegativePhysicalResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 73,
+  "name": "ChillRetaliationChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 74,
+  "name": "SlowRetaliationChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 75,
+  "name": "Endurance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 76,
+  "name": "EnduranceThreshold",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 77,
+  "name": "NegativeArmour",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 78,
+  "name": "NegativeFireResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 79,
+  "name": "NegativeColdResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 80,
+  "name": "NegativeLightningResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 81,
+  "name": "NegativeVoidResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 82,
+  "name": "NegativeNecroticResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 83,
+  "name": "NegativePoisonResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 84,
+  "name": "NegativeElementalResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 85,
+  "name": "Thorns",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 86,
+  "name": "PercentReflect",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 87,
+  "name": "ShockRetaliationChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 88,
+  "name": "LevelOfSkills",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 89,
+  "name": "CritAvoidance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 90,
+  "name": "PotionHealthConvertedToWard",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 91,
+  "name": "WardOnPotionUse",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 92,
+  "name": "WardRegen",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 93,
+  "name": "OverkillLeech",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 94,
+  "name": "ManaBeforeWardPercent",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 95,
+  "name": "IncreasedStunDuration",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 96,
+  "name": "MaximumHealthGainedAsEnduranceThreshold",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 97,
+  "name": "ChanceToGain30WardWhenHit",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 98,
+  "name": "PlayerProperty",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 99,
+  "name": "ManaSpentGainedAsWard",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 100,
+  "name": "AilmentConversion",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 101,
+  "name": "PerceivedUnimportanceModifier",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 102,
+  "name": "IncreasedLeechRate",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 103,
+  "name": "MoreFreezeRatePerStackOfChill",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 104,
+  "name": "IncreasedDropRate",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 105,
+  "name": "IncreasedExperience",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 106,
+  "name": "PhysicalAndVoidResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 107,
+  "name": "NecroticAndPoisonResistance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 108,
+  "name": "DamageTakenBuff",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 109,
+  "name": "IncreasedChanceToBeStunned",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 110,
+  "name": "DamageTakenFromNearbyEnemies",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 111,
+  "name": "BlockChanceAgainstDistantEnemies",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 112,
+  "name": "ChanceToBeCrit",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 113,
+  "name": "DamageTakenWhileMoving",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 114,
+  "name": "ReducedBonusDamageTakenFromCrits",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 115,
+  "name": "DamagePerStackOfAilment",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 116,
+  "name": "IncreasedAreaForAreaSkills",
+  "nodeStatApplication": "OnCastPreMutation"
+ },
+ {
+  "id": 117,
+  "name": "GlobalConditionalDamage",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 118,
+  "name": "ArmourMitigationAppliesToDamageOverTime",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 119,
+  "name": "WardDecayThreshold",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 120,
+  "name": "EffectOfAilmentOnYou",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 121,
+  "name": "ParryChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 122,
+  "name": "CircleOfFortuneLensEffect",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 123,
+  "name": "TrackerProperty",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 124,
+  "name": "UnimportanceModifier",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 125,
+  "name": "FreezeImmunity",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 126,
+  "name": "ChanceToCastForAbility",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 127,
+  "name": "ChanceToCastForTags",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 128,
+  "name": "AilmentImmunity",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 129,
+  "name": "AbilityRetaliationChance",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 130,
+  "name": "IdolAltarProperty",
+  "nodeStatApplication": "OnCast"
+ },
+ {
+  "id": 131,
+  "name": "GlobalConditionalPenetration",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 132,
+  "name": "GlobalConditionalCritChance",
+  "nodeStatApplication": "Global"
+ },
+ {
+  "id": 133,
+  "name": "GlobalConditionalCritMulti",
+  "nodeStatApplication": "Global"
+ }
+]

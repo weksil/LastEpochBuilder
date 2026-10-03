@@ -1,0 +1,639 @@
+{
+ "source": "CharacterMutator..ctor ISIL (linear tracking)",
+ "init": {
+  "0x160": {
+   "field": "voidEssenceManaGainCooldown",
+   "value": 4.0
+  },
+  "0x16c": {
+   "field": "voidEssenceRefundThreshold",
+   "value": 40.0
+  },
+  "0x178": {
+   "field": "voidEssenceRefundCooldown",
+   "value": 10.0
+  },
+  "0x184": {
+   "field": "hasteOnNegativeManaCooldown",
+   "value": 10.0
+  },
+  "0x19c": {
+   "field": "maxInfusionStacks",
+   "value": 11
+  },
+  "0x1a0": {
+   "field": "coldInfusionIndex",
+   "value": 20.0
+  },
+  "0x1a4": {
+   "field": "fireInfusionIndex",
+   "value": 20.0
+  },
+  "0x1a8": {
+   "field": "lightningInfusionIndex",
+   "value": 20.0
+  },
+  "0x1bc": {
+   "field": "infusionCooldown",
+   "value": 20.0
+  },
+  "0x1c0": {
+   "field": "infusionStackCooldown",
+   "value": 1.0
+  },
+  "0x1c4": {
+   "field": "overloadDuration",
+   "value": 10.0
+  },
+  "0x204": {
+   "field": "flatDamagePerWard",
+   "value": 0.10000000149011612
+  },
+  "0x29c": {
+   "field": "timeJumpCooldown",
+   "value": 10.0
+  },
+  "0x2bc": {
+   "field": "lightningOnCastCooldown",
+   "value": 1.0
+  },
+  "0x2d4": {
+   "field": "healthOnHitCooldown",
+   "value": 3.0
+  },
+  "0x300": {
+   "field": "aoeIgniteOnHitCooldown",
+   "value": 5.0
+  },
+  "0x30c": {
+   "field": "aoeChillOnHitCooldown",
+   "value": 5.0
+  },
+  "0x330": {
+   "field": "revenantCooldown",
+   "value": 10.0
+  },
+  "0x36c": {
+   "field": "maelstromWhenHitCooldown",
+   "value": 3.0
+  },
+  "0x390": {
+   "field": "holySymbolCooldown",
+   "value": 3.0
+  },
+  "0x434": {
+   "field": null,
+   "value": 1066192077
+  },
+  "0x460": {
+   "field": "tremorCooldown",
+   "value": 4.0
+  },
+  "0x470": {
+   "field": "healingTotemCooldown",
+   "value": 5.0
+  },
+  "0x48c": {
+   "field": "baseHealingNovaOnHitCooldown",
+   "value": 15.0
+  },
+  "0x4a0": {
+   "field": "thicketBladesWhenHitCooldown",
+   "value": 3.0
+  },
+  "0x4ac": {
+   "field": "vineOnKillCooldown",
+   "value": 2.0
+  },
+  "0x4d4": {
+   "field": "noRageDecayCooldown",
+   "value": 4.0
+  },
+  "0x4ec": {
+   "field": "eterrasBlessingOnSpellOrMovementSkillCooldown",
+   "value": 12.0
+  },
+  "0x5e8": {
+   "field": "axeThrowCooldown",
+   "value": 1.0
+  },
+  "0x5f8": {
+   "field": "retributionCooldown",
+   "value": 0.20000000298023224
+  },
+  "0x61c": {
+   "field": "enemiesToFreezeBelowHalfHealthCooldown",
+   "value": 10.0
+  },
+  "0x62c": {
+   "field": "wardOnElementalSpellHitCooldown",
+   "value": 10.0
+  },
+  "0x644": {
+   "field": "wardOnElementalSkillUseCooldown",
+   "value": 7.0
+  },
+  "0x668": {
+   "field": "leechDropoffThreshold",
+   "value": 1.0
+  },
+  "0x858": {
+   "field": "maxGatheringFuryDuration",
+   "value": 3.0
+  },
+  "0x85c": {
+   "field": "maxGatheringFuryStacks",
+   "value": 10
+  },
+  "0x874": {
+   "field": "repeatBowAbilityCooldown",
+   "value": 1.0
+  },
+  "0x87c": {
+   "field": "repeatBowAbilityDelay",
+   "value": 0.30000001192092896
+  },
+  "0xa20": {
+   "field": "wardGainAtHealthThresholdBaseCooldown",
+   "value": 12.0
+  },
+  "0xa24": {
+   "field": "wardGainAtHealthThresholdBaseCooldownLich",
+   "value": 6.0
+  },
+  "0xb8c": {
+   "field": "wardGainedWhenDamagedToLowHealthCooldown",
+   "value": 5.0
+  },
+  "0xc94": {
+   "field": "chanceToForgeWeaponWhenHitCooldown",
+   "value": 2.0
+  },
+  "0xca4": {
+   "field": "chanceToCastVoidRiftOnHitCooldown",
+   "value": 3.0
+  },
+  "0xcc8": {
+   "field": "maxArmorOnBlockStacks",
+   "value": 5
+  },
+  "0xd1c": {
+   "field": "areksFleshCooldown",
+   "value": 20.0
+  },
+  "0xd2c": {
+   "field": "fireTrailCooldown",
+   "value": 5.0
+  },
+  "0xd70": {
+   "field": "avalancheSnowballOnSpellCritCooldown",
+   "value": 1.0
+  },
+  "0xd88": {
+   "field": "alluvionWaveOnMeleeAttackCooldown",
+   "value": 1.0
+  },
+  "0xd94": {
+   "field": "chillSelfEveryThreeSecondsCooldown",
+   "value": 3.0
+  },
+  "0xda0": {
+   "field": "apocalypseSelfEveryThreeSecondsWhileAtHighHealthCooldown",
+   "value": 3.0
+  },
+  "0xdac": {
+   "field": "chanceToCastAbyssalEchoesOnMeleeKillOrRareBossHitCooldown",
+   "value": 3.0
+  },
+  "0xdb8": {
+   "field": "consumeWardForStackOfDemisePer13WardEvery3SecondsCooldown",
+   "value": 3.0
+  },
+  "0xe18": {
+   "field": "eternalPotionDrinkingIndex",
+   "value": 1.0
+  },
+  "0xe94": {
+   "field": "wardOnStopMovingCooldownIndex",
+   "value": 2.0
+  },
+  "0xea4": {
+   "field": "currentManaGainedAsWardOnStopMovingCooldownIndex",
+   "value": 2.0
+  },
+  "0xf08": {
+   "field": "chanceToCastSacrificeOnLowestHealthMinionOnMinionDeathIndex",
+   "value": 1.0
+  },
+  "0x1050": {
+   "field": "silverShroudDropBelow70pHealthCooldown",
+   "value": 15.0
+  },
+  "0x11f4": {
+   "field": "hackarsPhoenixReviveCooldown",
+   "value": 6.0
+  },
+  "0x13c0": {
+   "field": "remainingFrozenVengeanceProcCooldown",
+   "value": 1.0
+  },
+  "0x13f4": {
+   "field": "wardGainedOnHasteCooldown",
+   "value": 1.0
+  },
+  "0x146c": {
+   "field": "remainingCooldownForAfter3ZeroCostSkillsEffect",
+   "value": 3.0
+  },
+  "0x1590": {
+   "field": "remainingDelayForCastingBeesAfterPotionUse",
+   "value": 0.5
+  },
+  "0x15dc": {
+   "field": "falconMeleeDamageAndCooldownRecoveryOnCritCooldown",
+   "value": 1.0
+  },
+  "0x1720": {
+   "field": "bleedStacksRequiredForOverload",
+   "value": 25
+  },
+  "0x1730": {
+   "field": "poisonStacksRequiredForOverload",
+   "value": 25
+  },
+  "0x1744": {
+   "field": "damnedStacksRequiredForOverload",
+   "value": 20
+  },
+  "0x1784": {
+   "field": "igniteStacksRequiredForOverload",
+   "value": 25
+  },
+  "0x1910": {
+   "field": "lowLifeBuffDuration",
+   "value": 5.0
+  },
+  "0x1a38": {
+   "field": "minVoidwinterBoltInterval",
+   "value": 0.20000000298023224
+  },
+  "0x1a58": {
+   "field": "maxManaFromManaSpentUpdateInterval",
+   "value": 0.20000000298023224
+  },
+  "0x1a8c": {
+   "field": "minSmiteFromMeleeHitInterval",
+   "value": 0.15000000596046448
+  },
+  "0x1c3c": {
+   "field": "minRangeForBringingTotemsWithYouOnTraversalSkillUse",
+   "value": 4.0
+  },
+  "0x1c7c": {
+   "field": "increasedDamageAndAoeCastMaxCount",
+   "value": 3
+  },
+  "0x1c8c": {
+   "field": "romBloodyExplosionOnKillDelay",
+   "value": 0.10000000149011612
+  },
+  "0x1cb0": {
+   "field": "recastAbilityDelay",
+   "value": 1.0
+  },
+  "0x1cc8": {
+   "field": "romBloodIceExplosionCountdownMax",
+   "value": 5
+  },
+  "0x1cec": {
+   "field": "petrifyChancePerSecondTimer",
+   "value": 1.0
+  },
+  "0x1f1c": {
+   "field": "tRexCheckIndex",
+   "value": 5.0
+  },
+  "0x1fc0": {
+   "field": "queenBeeCheckIndex",
+   "value": 5.0
+  },
+  "0x2080": {
+   "field": null,
+   "value": 1066192077
+  }
+ },
+ "procTimeTrackers": {
+  "0x270": {
+   "field": "markNearbyEnemyForDeathOnMinionDeathPTT",
+   "limit": 2,
+   "interval": 3.0
+  },
+  "0x2b0": {
+   "field": "chanceToCastLightningOnMeleeHitPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0x480": {
+   "field": "fireTornadoOnHitPTT",
+   "limit": 2,
+   "interval": 3.0
+  },
+  "0x6a0": {
+   "field": "critMultiGainedAsWardOnCritPTT",
+   "limit": 3,
+   "interval": 2.0
+  },
+  "0xae8": {
+   "field": "chanceOnHitToSummonThormTotemPTT",
+   "limit": 1,
+   "interval": 1.0
+  },
+  "0xb08": {
+   "field": "aftershockOnMeleePTT",
+   "limit": 10,
+   "interval": 2.0
+  },
+  "0xb18": {
+   "field": "chanceToCastAvalancheSnowBallAtNearbyOnSpellCastPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xb28": {
+   "field": "chanceToCastAvalancheSnowBallAtNearbyOnMeleeAttackPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xbc8": {
+   "field": "fireAuraOnKillPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xbd8": {
+   "field": "fireAuraWhenHitPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xbe8": {
+   "field": "fireAuraOnCritPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xc00": {
+   "field": "fireAuraChanceOnFirstMeleeHitPtt",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xc68": {
+   "field": "divineBoltMeleePTT",
+   "limit": 2,
+   "interval": 1.0
+  },
+  "0xd00": {
+   "field": "spiritBatteryPTT",
+   "limit": 3,
+   "interval": 2.0
+  },
+  "0xdc8": {
+   "field": "dragonfireNovaPTT",
+   "limit": 3,
+   "interval": 1.0
+  },
+  "0xe88": {
+   "field": "stormSpritePTT",
+   "limit": 2,
+   "interval": 6.0
+  },
+  "0xec0": {
+   "field": "wardGainedOn30PercentOfCritsPTT",
+   "limit": 4,
+   "interval": 1.0
+  },
+  "0xf00": {
+   "field": "sacrificeLowestHealthMinionOnMinionDeathPTT",
+   "limit": 2,
+   "interval": 1.0
+  },
+  "0x10d8": {
+   "field": "reensIrePTT",
+   "limit": 30,
+   "interval": 5.0
+  },
+  "0x1130": {
+   "field": "smiteOnHitPotionResettablePTT",
+   "limit": 6,
+   "interval": 10.0
+  },
+  "0x1300": {
+   "field": "chanceToGain75WardWhenYouHitAShockedEnemyPTT",
+   "limit": 3,
+   "interval": 2.0
+  },
+  "0x13a8": {
+   "field": "chanceToThrowBurningDaggerOnHitPTT",
+   "limit": 2,
+   "interval": 1.0
+  },
+  "0x1810": {
+   "field": "elementalEssenceGainPTT",
+   "limit": 9,
+   "interval": 3.0
+  },
+  "0x1850": {
+   "field": "shieldThrowOnBlockPTT",
+   "limit": 2,
+   "interval": 1.0
+  },
+  "0x19f8": {
+   "field": "mortalCleavePTT",
+   "limit": 1,
+   "interval": 0.5
+  },
+  "0x1a00": {
+   "field": "voidEssenceOnHitPTT",
+   "limit": 1,
+   "interval": 4.0
+  },
+  "0x1a08": {
+   "field": "echoManaGainPTT",
+   "limit": 1,
+   "interval": 8.0
+  },
+  "0x1a30": {
+   "field": "voidwinterBoltPTT",
+   "limit": 8,
+   "interval": 2.0
+  },
+  "0x1c00": {
+   "field": "acidFlaskChanceOnBowHitPTT",
+   "limit": 1,
+   "interval": 3.0
+  },
+  "0x1c58": {
+   "field": "romLargeIceNovaChanceOnHittingBossOrRarePTT",
+   "limit": 1,
+   "interval": 10.0
+  },
+  "0x1c68": {
+   "field": "romIcyShockwaveAfterTraversalSkillPTT",
+   "limit": 1,
+   "interval": 0.25
+  },
+  "0x1c98": {
+   "field": "romBloodIceShardPTT",
+   "limit": 3,
+   "interval": 2.0
+  },
+  "0x1ca8": {
+   "field": "recastAbilityPTT",
+   "limit": 1,
+   "interval": 1.0
+  },
+  "0x1cb8": {
+   "field": "romBloodPotionPTT",
+   "limit": 2,
+   "interval": 4.0
+  },
+  "0x1cd0": {
+   "field": "romMinionFireAuraPTT",
+   "limit": 1,
+   "interval": 3.0
+  },
+  "0x1ce0": {
+   "field": "romLizardSpawnPTT",
+   "limit": 1,
+   "interval": 3.0
+  },
+  "0x1d70": {
+   "field": "attackWithVengeanceAfterUsingAMovementSkillPTT",
+   "limit": 2,
+   "interval": 12.0
+  },
+  "0x1d98": {
+   "field": "primordialBloodSplatterOnKillPTT",
+   "limit": 5,
+   "interval": 2.0
+  },
+  "0x1da8": {
+   "field": "flameWardAfterEndingAMovementSkillNearABossOrRarePTT",
+   "limit": 2,
+   "interval": 16.0
+  },
+  "0x1f00": {
+   "field": "butchersCrownPTT",
+   "limit": 4,
+   "interval": 2.0
+  },
+  "0x1fa0": {
+   "field": "secondsOfFrenzyToSelfAndMinionWhenEnemyLeavesAtLowHealthPTT",
+   "limit": 1,
+   "interval": 0.5
+  }
+ },
+ "stats": {
+  "0x4e0": {
+   "field": "noRageDecayStat",
+   "SP": "ManaDrain",
+   "args": {
+    "rdx": 57,
+    "r8": 524288,
+    "xmm2": null,
+    "xmm3": 0,
+    "r9": null
+   },
+   "stack": {
+    "stack:0x40": 0,
+    "stack:0x38": 0,
+    "stack:0x30": 0,
+    "stack:0x28": -1.0,
+    "stack:0x20": 0
+   }
+  },
+  "0x738": {
+   "field": "aspectOfTheBoarStats",
+   "SP": "IncreasedAilmentDuration",
+   "args": {
+    "rdx": 42,
+    "r8": 0,
+    "xmm2": null,
+    "xmm3": null,
+    "r9": 2
+   },
+   "stack": {
+    "stack:0x28": 0,
+    "stack:0x20": 0.30000001192092896
+   }
+  },
+  "0x760": {
+   "field": "aspectOfTheSharkStats",
+   "SP": "AttackSpeed",
+   "args": {
+    "rdx": 2,
+    "r8": 512,
+    "xmm2": null,
+    "xmm3": 0,
+    "r9": null
+   },
+   "stack": {
+    "stack:0x40": 0,
+    "stack:0x38": 0,
+    "stack:0x30": 0,
+    "stack:0x28": 0,
+    "stack:0x20": 0.10000000149011612
+   }
+  },
+  "0x790": {
+   "field": "aspectOfTheViperStats",
+   "SP": "AilmentChance",
+   "args": {
+    "rdx": 1,
+    "r8": 0,
+    "xmm2": null,
+    "xmm3": 1.0,
+    "r9": null
+   },
+   "stack": {
+    "stack:0x40": 0,
+    "stack:0x38": 0,
+    "stack:0x30": 7,
+    "stack:0x28": 0,
+    "stack:0x20": 0
+   }
+  },
+  "0x7b0": {
+   "field": "aspectOfTheLynxStats",
+   "SP": "IncreasedStunChance",
+   "args": {
+    "rdx": 45,
+    "r8": 0,
+    "xmm2": null,
+    "xmm3": 1.0,
+    "r9": null
+   },
+   "stack": {
+    "stack:0x40": 0,
+    "stack:0x38": 0,
+    "stack:0x30": 0,
+    "stack:0x28": 0,
+    "stack:0x20": 0
+   }
+  },
+  "0x828": {
+   "field": "falconMarkStats",
+   "SP": "ReducedBonusDamageTakenFromCrits",
+   "args": {
+    "rdx": 114,
+    "r8": 0,
+    "xmm2": null,
+    "xmm3": 0.5,
+    "r9": null
+   },
+   "stack": {
+    "stack:0x40": 0,
+    "stack:0x38": 0,
+    "stack:0x30": 0,
+    "stack:0x28": 0,
+    "stack:0x20": 0
+   }
+  }
+ }
+}
