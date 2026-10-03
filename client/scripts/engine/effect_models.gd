@@ -28,6 +28,14 @@ static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 		if w >= float(model["below"]["value"]):
 			return "%s < %s (сейчас %s)" % [source_name(str(model["below"]["per"]), ctx, model), LE.fmt_num(float(model["below"]["value"])), LE.fmt_num(w)]
 	for cond: String in model.get("when", []):
+		if cond.begins_with("input:") and model.has("input") and str(model["input"].get("key", "")) == cond.get_slice(":", 1):
+			# the model's own input: unset means its declared default (the UI shows the default, not "off")
+			var slot: int = ctx.get("slot", -1)
+			var build: Node = ctx["build"]
+			var inputs: Dictionary = build.skills[slot].get("inputs", {}) if slot >= 0 and slot < build.skills.size() else {}
+			if not bool(inputs.get(cond.get_slice(":", 1), model["input"].get("default", false))):
+				return condition_name(cond, ctx)
+			continue
 		if not holds(cond, ctx):
 			return condition_name(cond, ctx)
 	return ""

@@ -1,0 +1,23 @@
+{
+"_comment": "Fixed base buffs of skills that live in mutator code (not in the skill tree). Only values written in research files; schema in docs/ENGINE.md §9.7. Keys starting with _ are ignored. Searched without a numeric result (nothing to model, values are not in research/): Warcry, Rebuke, Aspects, Sigils of Hope defaultStats (07h/MZ: «static defaultStats», values unknown), Arcane Ascendance, Enchant Weapon (only activeStatsMultiplier 3.0 in abilities.json, meaning not described), Flame Ward, Ice Ward — their tree buffs already go through field_models.json (scope global).",
+"Holy Aura": {
+"ability_id": "holyAura",
+"confidence": "D",
+"source": "research/07l_holy_aura.md, research/data/game/holy_aura_model.json, ability_property_fields_c.json",
+"note": "Аура на кастера и союзников; M = 1 + бонус эффекта (AbilityProperty holyAura #0, у Paladin — «Covenant of Light»); усиленный каст ×2",
+"active_input": {"default": false, "key": "holy_aura_active_cast", "label": "Holy Aura: усиленный каст (окно усиления)"},
+"active_multiplier": 2.0,
+"effect_index": 0,
+"stats": [
+{"stat": "ElementalResistance", "mod": "added", "tags": "", "value": 0.15, "label": "базовое сопротивление ауры"},
+{"stat": "Damage", "mod": "increased", "tags": "", "value": 0.3, "label": "базовый урон ауры"}
+],
+"tree_lists": {"passive": "AuraMutator.statsToApply", "active": "HolyAuraMutator.statsToApply"},
+"ability_properties": [
+{"index": 1, "stat": "ManaRegen", "mod": "increased", "label": "реген маны (holyAuraIncManaRegen)", "active_k": true},
+{"index": 6, "stat": "HealthRegen", "mod": "added", "label": "реген здоровья в активе (holyAuraHealthRegenInActiveMode)", "active_only": true, "active_k": false},
+{"index": 9, "stat": "Movespeed", "mod": "increased", "label": "скорость движения (holyAuraIncreasedMovespeed)", "active_k": true},
+{"index": 10, "stat": "StunAvoidance", "mod": "increased", "label": "избежание оглушения (holyAuraIncreasedStunAvoidance)", "active_k": true}
+]
+}
+}

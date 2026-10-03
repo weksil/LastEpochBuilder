@@ -55,6 +55,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	var extra_enemy_sections: Array = []
 	var comp_results: Array[Dictionary] = []
 	var ail_notes: Array[String] = []
+	var sustain_hits: Array[Dictionary] = []
 	if components.is_empty():
 		notes.push_front("У умения нет урона удара в основном компоненте (урон задаётся кодом или под-умениями) — показаны скорость, мана и айлменты.")
 		if not head_ctx["conversion_rows"].is_empty():
@@ -84,6 +85,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 		var comp_tooltip: Array = _tooltip(ds, comp_speed)
 		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
+		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed})
 		var ail: Dictionary = AilmentCalc.compute(build, ctx, events, ail_notes)
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
@@ -134,6 +136,9 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	sections.append({"title": "DPS как в подсказке игры", "rows": tooltip_rows})
 	sections.append({"title": "Против врага", "rows": enemy_rows})
 	sections.append_array(extra_enemy_sections)
+	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
+	if not sustain_rows.is_empty():
+		sections.append({"title": "Восполнение", "rows": sustain_rows})
 	result["sections"] = sections
 	result["notes"] = notes
 	result["inputs"] = _inputs_result(build, slot, inputs)
@@ -640,7 +645,7 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			rows[0]["text"] = LE.fmt_num(cap)
 			rows[0]["breakdown"] += "\nОграничено перезарядкой: min(%s, 1 / %s с) = %s" % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
 			uses = cap
-	return {"uses": uses, "rows": rows}
+	return {"uses": uses, "rows": rows, "mana": mana}
 
 
 ## Cooldown of the skill (docs/ENGINE.md §9.6). Returns {has, cd, charges, text}.
@@ -728,6 +733,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var armour: float = Enemy.armour(e)
 	var rows: Array = []
 	var total: float = 0.0
+	var by_type: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 	var cond_mods: Array[StatMod] = []
 	for mod: StatMod in ctx["mods"]:
@@ -767,6 +773,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		var hit_i: float = d * cond * res_mult * dt * (1.0 - dr) * arm
 		b.append("Итог: %s × %s × %s × %s × %s × %s = %s" % [LE.fmt_num(d), LE.fmt_num(cond), LE.fmt_num(res_mult), LE.fmt_num(dt), LE.fmt_num(1.0 - dr), LE.fmt_num(arm), LE.fmt_num(hit_i)])
 		total += hit_i
+		by_type[i] = hit_i
 		rows.append({"label": LE.DT_NAME_RU[i], "text": LE.fmt_num(hit_i), "breakdown": "\n".join(b)})
 
 	# crit against the target (06b §2.2)
@@ -783,6 +790,8 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	rows.append({"label": "Средний удар по врагу", "text": LE.fmt_num(avg), "breakdown":
 		"%s × %s = %s" % [LE.fmt_num(total), LE.fmt_num(e_crit), LE.fmt_num(avg)]})
 	speed["enemy_dps"] = dps
+	speed["enemy_types"] = by_type
+	speed["enemy_crit"] = e_crit
 	rows.append({"label": "DPS удара по врагу", "text": LE.fmt_num(dps), "breakdown":
 		"%s × %s применений/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]})
 	return rows
@@ -822,3 +831,98 @@ static func _cdp_name(cdp: int) -> String:
 		46: "ослеплён", 47: "обморожен",
 	}
 	return str(NAMES.get(cdp, "условие %d" % cdp))
+
+
+# --- 8.8 sustain: leech, gain on hit, ward from mana (docs/ENGINE.md §8.7, research/06c §3, §5) ----
+
+const SP_HEALTH_GAIN: int = 38
+const SP_WARD_GAIN: int = 39
+const SP_MANA_GAIN: int = 40
+const SP_HEALTH_LEECH: int = 51
+const SP_MANA_SPENT_AS_WARD: int = 99
+const SP_INCREASED_LEECH_RATE: int = 102
+## Leech scale: the stat HealthLeech weighs 0.1 (tooltip % = stat x 10, 06c §5.2, scale D?).
+const LEECH_SCALE: float = 0.1
+## Default leech payout time of one instance, s (LeechTracker.defaultLeechDuration, 06c §5.1).
+const LEECH_DURATION: float = 3.0
+
+
+## Rows of the «Восполнение» section: leech/s, health/mana/ward per hit, ward from mana spent. Empty when nothing applies.
+## `hit_sources`: [{name, ctx, speed}] with the speed dictionary already filled by `_vs_enemy`.
+static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], uses: float, mana: float) -> Array:
+	var rows: Array = []
+	var leech_total: float = 0.0
+	var leech_lines: PackedStringArray = []
+	var gain_total: Dictionary = {SP_HEALTH_GAIN: 0.0, SP_WARD_GAIN: 0.0, SP_MANA_GAIN: 0.0}
+	var gain_lines: Dictionary = {SP_HEALTH_GAIN: PackedStringArray(), SP_WARD_GAIN: PackedStringArray(), SP_MANA_GAIN: PackedStringArray()}
+	for hs: Dictionary in hit_sources:
+		var ctx: Dictionary = hs["ctx"]
+		var sp: Dictionary = hs["speed"]
+		if not sp.has("enemy_types"):
+			continue
+		var prefix: String = "" if str(hs["name"]) == "" else "%s: " % hs["name"]
+		var events: float = float(sp["uses"])
+		var e_crit: float = float(sp["enemy_crit"])
+		var store: StatStore = ctx["store"]
+		var ability_index: int = _ability_index(ctx)
+		var base_leech: float = float(ctx["base"].get("additionalLeech", 0.0))
+		for i in range(7):
+			var hit_i: float = float(sp["enemy_types"][i])
+			if hit_i <= 0.0:
+				continue
+			var q: StatQuery = store.query(SP_HEALTH_LEECH, int(ctx["src"]) | LE.DT_TAG[i], 0, ability_index)
+			var frac: float = (q.added + base_leech / LEECH_SCALE) * (1.0 + q.increased) * q.more * LEECH_SCALE
+			if frac <= 0.0:
+				continue
+			var per_s: float = hit_i * e_crit * events * frac
+			leech_total += per_s
+			leech_lines.append("%s%s: %s × крит %s × %s ударов/с × вампиризм %s = %s/с" % [
+				prefix, LE.DT_NAME_RU[i], LE.fmt_num(hit_i), LE.fmt_num(e_crit), LE.fmt_num(events), LE.fmt_pct(frac), LE.fmt_num(per_s)])
+			leech_lines.append("    вампиризм = (Σ SP51 %s + доп. урон умения %s) × (1 + %s) × %s × %s" % [
+				LE.fmt_num(q.added), LE.fmt_num(base_leech / LEECH_SCALE), LE.fmt_pct(q.increased), LE.fmt_num(q.more), LE.fmt_num(LEECH_SCALE)])
+			for mod: StatMod in q.mods:
+				leech_lines.append("      " + mod.describe())
+		if bool(ctx["hit"]):
+			for prop: int in gain_total:
+				var qg: StatQuery = store.query(prop, int(ctx["src"]), 0, ability_index)
+				if qg.added == 0.0:
+					continue
+				gain_total[prop] += qg.added * events
+				gain_lines[prop].append("%s%s за удар × %s ударов/с = %s/с" % [prefix, LE.fmt_num(qg.added), LE.fmt_num(events), LE.fmt_num(qg.added * events)])
+				for mod: StatMod in qg.mods:
+					gain_lines[prop].append("    " + mod.describe())
+	if leech_total > 0.0:
+		var rate_q: StatQuery = head_ctx["store"].query(SP_INCREASED_LEECH_RATE, int(head_ctx["tags"]))
+		var duration: float = LEECH_DURATION / (1.0 + rate_q.added)
+		leech_lines.append("Каждый удар выплачивается равномерно за %s / (1 + скорость выплаты %s) = %s с (SP 102); капа нет." % [
+			LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_num(duration)])
+		leech_lines.append("Лечение идёт, пока здоровье не полное, и ограничено остатком здоровья цели (06c §5.1–5.2): в расчёте не учтено (D?).")
+		leech_lines.append("Масштаб значения стата (×0.1 от значения мода) — D?, сверить с подсказкой игры.")
+		rows.append({"label": "Вампиризм здоровья в секунду", "text": LE.fmt_num(leech_total), "breakdown": "
+".join(leech_lines)})
+		rows.append({"label": "Скорость выплаты вампиризма", "text": "%s с" % LE.fmt_num(duration), "breakdown":
+			"%s / (1 + %s) — Σ IncreasedLeechRate (SP 102) = %s. На среднее лечение в секунду не влияет, только на скорость выплаты." % [
+				LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_pct(rate_q.added)]})
+	var gain_labels: Dictionary = {SP_HEALTH_GAIN: "Здоровье за удар в секунду", SP_WARD_GAIN: "Ward за удар в секунду", SP_MANA_GAIN: "Мана за удар в секунду"}
+	for prop: int in gain_total:
+		if float(gain_total[prop]) != 0.0:
+			var lines: PackedStringArray = gain_lines[prop]
+			lines.append("Статы SP %d с тегами умения; усиления восполнения (increased health gained и т.п.) не учтены (D?)." % prop)
+			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "
+".join(lines)})
+	var ward_q: StatQuery = head_ctx["store"].query(SP_MANA_SPENT_AS_WARD, int(head_ctx["tags"]), 0, _ability_index(head_ctx))
+	if ward_q.added != 0.0 and mana > 0.0:
+		var per_s_ward: float = mana * uses * ward_q.added
+		var b: PackedStringArray = ["Стоимость маны %s × применений/с %s × доля SP 99 %s = %s/с" % [
+			LE.fmt_num(mana), LE.fmt_num(uses), LE.fmt_pct(ward_q.added), LE.fmt_num(per_s_ward)]]
+		for mod: StatMod in ward_q.mods:
+			b.append("  " + mod.describe())
+		b.append("Масштаб значения SP 99 (доля потраченной маны) — D?.")
+		rows.append({"label": "Ward от потраченной маны в секунду", "text": LE.fmt_num(per_s_ward), "breakdown": "
+".join(b)})
+	return rows
+
+
+static func _ability_index(ctx: Dictionary) -> int:
+	var ab: Dictionary = ctx["ab"]
+	return int(ab.get("abilityIDEnum", {}).get("value", 0)) if ab.get("abilityIDEnum") is Dictionary else 0

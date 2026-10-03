@@ -4,6 +4,7 @@ class_name BuildMods
 
 const STAT_KINDS: Array[String] = ["added", "increased", "more", "quotient"]
 const ATTRIBUTE_NAMES_RU: Array[String] = ["Сила", "Живучесть", "Интеллект", "Ловкость", "Настрой"]
+const BUFF_SKILLS: GDScript = preload("res://scripts/engine/buff_skills.gd")  # class_name BuffSkills
 const SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "ring2", "relic"]
 
 
@@ -24,11 +25,37 @@ static func global_store(build: Node) -> Dictionary:
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
+	_add_skill_buffs(build, store)
 	UniqueEffects.add_notes(build, notes)
 	return {"store": store, "notes": notes}
 
 
-## Skill-local store (parent = global store) plus mutator-field totals.
+## Buffs of the equipped skills on the character (docs/ENGINE.md §9.7): scope-global models of the skill tree and the
+## base buffs of buff_skill_models.json. Each slot is computed by skill_store (it never calls global_store); mods are
+## collected first and added together, so slot order does not matter. A skill counts once per ability and only while its
+## input `buff_active` (default on) is on.
+static func _add_skill_buffs(build: Node, store: StatStore) -> void:
+	var collected: Array[StatMod] = []
+	var seen: Dictionary = {}
+	for slot: int in range(build.skills.size()):
+		var skill: Dictionary = build.skills[slot]
+		var ability: Dictionary = GameData.get_ability(str(skill.get("ability", "")))
+		if ability.is_empty() or seen.has(str(skill["ability"])):
+			continue
+		seen[str(skill["ability"])] = true
+		if not bool(skill.get("inputs", {}).get("buff_active", true)):
+			continue
+		var mods: Array = skill_store(build, slot, store)["global_mods"]
+		var prefix: String = "Умение «%s» (бафф): " % GameData.display_name(ability)
+		for mod: StatMod in mods:
+			mod.source = prefix + mod.source
+			collected.append(mod)
+	store.add_all(collected)
+
+
+## Skill-local store (parent = global store) plus mutator-field totals. Scope-global mods are returned in
+## result["global_mods"] (not in the skill store): global_store puts them on the character, and the skill sees them
+## through its parent.
 static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary:
 	var store := StatStore.new()
 	store.parent = global
@@ -39,6 +66,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		# §9: field models of the skill tree
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
 		"flags": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
+		"global_mods": [] as Array[StatMod], "ability_name": "",
 		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": ""},
 	}
 	if slot < 0 or slot >= build.skills.size():
@@ -48,6 +76,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 	if ability.is_empty():
 		return result
 
+	result["ability_name"] = str(ability.get("abilityName", ""))
 	var effects: Dictionary = GameData.skill_effects(str(ability.get("skillTree", "")))
 	var tree: Dictionary = skill.get("tree", {})
 	for node_id: Variant in tree:
@@ -57,9 +86,22 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 			continue
 		_add_skill_node(node, points, result)
 
+	_add_skill_passives(build, ability, result)
+	BUFF_SKILLS.apply(build, slot, ability, result)
 	_add_ability_scaling(build, ability, global, store)
 	UniqueEffects.apply_skill(build, ability, result)
+	_declare_buff_input(result)
 	return result
+
+
+## Input «buff active» for a skill that has global-scope mods (global_store reads it from Build.skills[slot].inputs).
+static func _declare_buff_input(result: Dictionary) -> void:
+	if result["global_mods"].is_empty() and not result.has("has_global"):
+		return
+	for inp: Dictionary in result["inputs"]:
+		if inp.get("key") == "buff_active":
+			return
+	result["inputs"].append({"key": "buff_active", "label": "Бафф умения активен", "default": true})
 
 
 # --- 5.1.5 blessings -------------------------------------------------------
@@ -136,6 +178,8 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String], p
 				else:
 					_passive_unmodelled(notes, title, effect)
 				continue
+			if not target.begins_with("CharacterMutator.") and BUFF_SKILLS.equipped_owner(build, target) != "":
+				continue  # effect on the mutator of an equipped skill: applied in skill_store (_add_skill_passives)
 			var model: Dictionary = _passive_model(target)
 			if model.is_empty():
 				if phase == "pre":
@@ -144,6 +188,37 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String], p
 			if EffectModels.phase(model) != phase:
 				continue
 			_apply_passive_model(model, effect, target, points, source, title, store, notes, ctx)
+
+
+## Passive effects aimed at the mutators of this ability (target "LungeMutator.field" ↔ ability, BUFF_SKILLS.owns_mutator):
+## through the same field models as skill tree nodes (docs/ENGINE.md §9.7).
+static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictionary) -> void:
+	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
+	var effects: Dictionary = GameData.passive_effects(str(tree.get("treeID", "")))
+	for node_id: Variant in build.passives:
+		var points: int = int(build.passives[node_id])
+		var node: Dictionary = effects.get(int(node_id), {})
+		if points <= 0 or node.is_empty():
+			continue
+		var title: String = GameData.display_name(node)
+		var source: String = "Пассивка «%s» ×%d" % [title, points]
+		for effect: Dictionary in node.get("effects", []):
+			var target: String = str(effect.get("target", ""))
+			if points < int(effect.get("minPoints", 0)) or target.begins_with("CharacterMutator."):
+				continue
+			var owned: String = BUFF_SKILLS.owned_target(ability, target)
+			if owned == "":
+				continue
+			if effect.get("op") == "add_stat":
+				if not _apply_list_effect(effect, owned, points, source, title, result):
+					result["notes"].append("Пассивка «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
+				continue
+			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
+			var rule: Dictionary = _conversion_rule(owned)
+			if not rule.is_empty():
+				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
+			elif not _apply_field_models(owned, v, source, title, result):
+				result["notes"].append("Пассивка «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
 
 
 ## First part of the target ("A & B") that has a field model.
@@ -422,6 +497,12 @@ static func _model_signature(m: Dictionary) -> String:
 		m.get("param", ""), m.get("ability", ""), str(m.get("when", []))]
 
 
+## A scope-global model was met (even if its condition is off): the skill gets the input «buff active».
+static func _note_global_scope(model: Dictionary, result: Dictionary) -> void:
+	if str(model.get("scope", "skill")) == "global":
+		result["has_global"] = true
+
+
 static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void:
 	if scope.begins_with("component:"):
 		var comp: String = scope.get_slice(":", 1)
@@ -430,6 +511,8 @@ static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void
 		result["component_mods"][comp].append(mod)
 	elif scope == "minion":
 		result["minion_mods"].append(mod)
+	elif scope == "global":
+		result["global_mods"].append(mod)
 	else:
 		result["store"].add(mod)
 
@@ -437,6 +520,7 @@ static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void
 ## Routes one model (§9.1) into the skill result.
 static func _apply_model(model: Dictionary, v: float, source: String, title: String, result: Dictionary) -> void:
 	var ctx: Dictionary = result["ctx"]
+	_note_global_scope(model, result)
 	for inp: Dictionary in EffectModels.inputs(model):
 		result["inputs"].append(inp)
 	var reason: String = EffectModels.blocked(model, ctx)
@@ -508,6 +592,8 @@ static func _num(raw: Variant, v: float) -> float:
 ## add_stat into a special list (statsInForm, statsPerStack …): the stat comes from the effect, the model (kind stat_list)
 ## gives scope, conditions and scaling. false if there is no model.
 static func _apply_list_effect(effect: Dictionary, target: String, points: int, source: String, title: String, result: Dictionary) -> bool:
+	if BUFF_SKILLS.owns_list(str(result.get("ability_name", "")), target):
+		return true  # base buff skill (Holy Aura): the list is applied by BUFF_SKILLS.apply with its own multipliers
 	for part: String in target.split(" & "):
 		var model: Dictionary = FieldModels.find(part.strip_edges())
 		if model.is_empty() or str(model.get("kind", "")) != "stat_list":
@@ -516,6 +602,7 @@ static func _apply_list_effect(effect: Dictionary, target: String, points: int, 
 		if mod == null:
 			return false
 		var ctx: Dictionary = result["ctx"]
+		_note_global_scope(model, result)
 		for inp: Dictionary in EffectModels.inputs(model):
 			result["inputs"].append(inp)
 		var reason: String = EffectModels.blocked(model, ctx)

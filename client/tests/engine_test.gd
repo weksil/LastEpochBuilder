@@ -11,6 +11,8 @@ func _ready() -> void:
 	_sample_build()
 	_idol_altar()
 	_passive_field_models()
+	_buff_skills()
+	_sustain()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -473,6 +475,112 @@ func _print_sections(r: Dictionary) -> void:
 			print("    %s: %s" % [row["label"], row["text"]])
 			for line: String in str(row["breakdown"]).split("\n"):
 				print("        " + line)
+
+
+## Sustain section (docs/ENGINE.md §8.7): a HealthLeech mod gives a nonzero leech row (research/06c §5.2).
+func _sustain() -> void:
+	Build.set_skill(0, "fi9")
+	Build.set_enemy("kind", "dummy")
+	var r: Dictionary = SkillCalc.compute(Build, 0)
+	_check("no leech without a leech mod", _section_value(r, "Восполнение", "Вампиризм здоровья в секунду"), -1.0)
+	# Gloves affix 1003: +0.01 added HealthLeech (untagged) and +10% increased
+	Build.set_item("gloves", {"base": 4, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 1003, "tier": 1, "roll": 255}]})
+	r = SkillCalc.compute(Build, 0)
+	_print_sections(r)
+	var leech: float = _section_value(r, "Восполнение", "Вампиризм здоровья в секунду")
+	_check("HealthLeech mod gives a leech row", 1.0 if leech > 0.0 else 0.0, 1.0)
+	Build.clear_item("gloves")
+
+
+## Sum of `added` / `increased` of the mods of property `prop` whose source contains `needle`.
+func _mods_sum(store: StatStore, prop: int, needle: String, increased: bool) -> float:
+	var total: float = 0.0
+	for mod: StatMod in store.all_mods():
+		if mod.property == prop and mod.source.contains(needle):
+			total += mod.increased if increased else mod.added
+	return total
+
+
+## Skill buffs on the character and passives on ability mutators (docs/ENGINE.md §9.7).
+func _buff_skills() -> void:
+	Build.set_class(2)  # Sentinel
+	Build.set_level(100)
+	# 1. scope-global field model of a skill tree (Flame Ward statsList: +50% fire damage per point) buffs every skill
+	Build.set_skill(0, "fw3d")
+	Build.set_skill(1, "fi9")
+	Build.skills[0]["tree"][2] = 2  # points are written directly: the tree rules are not under test
+	_check("Flame Ward node allocated", float(Build.get_skill_points(0, 2)), 2.0)
+	var g: Dictionary = BuildMods.global_store(Build)
+	var node_src: String = "Умение «Flame Ward» (бафф): Узел «Flame Ward Increased Fire Damage» ×2"
+	_check("tree global model reaches the global store", _mods_sum(g["store"], LE.DAMAGE, node_src, true), 1.0)
+	var fireball: Dictionary = BuildMods.skill_store(Build, 1, g["store"])
+	_check("another skill sees the Flame Ward buff", _mods_sum(fireball["store"], LE.DAMAGE, node_src, true), 1.0)
+	var own: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	var own_dup: float = 0.0
+	for mod: StatMod in own["store"].mods:
+		if mod.source.contains("Flame Ward Increased Fire Damage"):
+			own_dup += mod.increased
+	_check("the skill's own store has no second copy of its global mod", own_dup, 0.0)
+	_check("buff input declared", 1.0 if _has_input(own, "buff_active") else 0.0, 1.0)
+	Build.set_skill_input(0, "buff_active", false)
+	g = BuildMods.global_store(Build)
+	_check("buff_active off: no buff in the global store", _mods_sum(g["store"], LE.DAMAGE, node_src, true), 0.0)
+	Build.set_skill_input(0, "buff_active", true)
+
+	# 2. Holy Aura on the bar: base buff and tree list × M (Covenant of Light 5/5 → M = 1.2)
+	Build.set_skill(0, "ah443")
+	Build.skills[0]["tree"][12] = 5  # Shelter from the Storm: +5% elemental resistance and +3% endurance per point
+	Build.passives[119] = 5
+	g = BuildMods.global_store(Build)
+	var holy: String = "Умение «Holy Aura» (бафф)"
+	_check("Holy Aura passive: ElementalResistance (0.15 + 0.25) × 1.2", _mods_sum(g["store"], LE.ELEMENTAL_RES, holy, false), 0.48)
+	_check("Holy Aura passive: Damage increased 0.30 × 1.2", _mods_sum(g["store"], LE.DAMAGE, holy, true), 0.36)
+	_check("Holy Aura passive: Endurance 0.15 × 1.2", _mods_sum(g["store"], LE.ENDURANCE, holy, false), 0.18)
+	fireball = BuildMods.skill_store(Build, 1, g["store"])
+	_check("another skill sees the Holy Aura damage buff", _mods_sum(fireball["store"], LE.DAMAGE, holy, true), 0.36)
+	Build.set_skill_input(0, "holy_aura_active_cast", true)
+	g = BuildMods.global_store(Build)
+	_check("Holy Aura active: ElementalResistance (0.30 + 0.50) × 1.2", _mods_sum(g["store"], LE.ELEMENTAL_RES, holy, false), 0.96)
+	_check("Holy Aura active: Damage increased 0.60 × 1.2", _mods_sum(g["store"], LE.DAMAGE, holy, true), 0.72)
+	Build.passives.erase(119)
+	Build.set_skill_input(0, "holy_aura_active_cast", false)
+	g = BuildMods.global_store(Build)
+	_check("Holy Aura without Covenant: ElementalResistance 0.15 + 0.25", _mods_sum(g["store"], LE.ELEMENTAL_RES, holy, false), 0.40)
+	var holy_calc: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Holy Aura slot computes", 1.0 if holy_calc.has("sections") else 0.0, 1.0)
+
+	# 3. passive aimed at an ability mutator: Valiant Charge → Lunge cooldown recovery (+6% per point)
+	Build.set_skill(0, "lu25ng")
+	Build.passives[8] = 3
+	g = BuildMods.global_store(Build)
+	var lunge: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	_check("Valiant Charge ×3 → Lunge recovery speed +18%", float(lunge["cooldown"].get("recovery_increased", 0.0)), 0.18)
+	var notes_with_lunge: int = _count_notes(g["notes"], "Valiant Charge")
+	Build.set_skill(0, "fi9")
+	g = BuildMods.global_store(Build)
+	var not_lunge: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	_check("Valiant Charge does not touch Fireball", float(not_lunge["cooldown"].get("recovery_increased", 0.0)), 0.0)
+	_check("passive of an absent skill stays a note (one more note without Lunge)", float(_count_notes(g["notes"], "Valiant Charge") - notes_with_lunge), 1.0)
+	Build.passives.erase(8)
+	Build.set_skill(0, "")
+	Build.set_skill(1, "")
+	Build.set_class(1)
+	Build.set_level(100)
+
+
+func _count_notes(notes: Array, needle: String) -> int:
+	var n: int = 0
+	for note: Variant in notes:
+		if str(note).contains(needle):
+			n += 1
+	return n
+
+
+func _has_input(s: Dictionary, key: String) -> bool:
+	for inp: Dictionary in s["inputs"]:
+		if inp.get("key") == key:
+			return true
+	return false
 
 
 ## Idol altar (docs/ENGINE.md §5.4.1): altar grid, refracted slots, effect scaling and per-refracted-idol stats.

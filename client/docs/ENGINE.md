@@ -367,6 +367,17 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 остальных компонентов — разделы «<имя>: Против врага»), «Не учтено» (notes). Если урона нет ни у одного компонента —
 только скорость, мана и айлменты умения.
 
+**Восполнение** (после «Против врага», только непустые строки; `SkillCalc._sustain_rows`, research/06c §3, §5):
+- Вампиризм здоровья/с = Σ по компонентам и типам урона `Hit_i(по врагу) × E_crit × событий/с × доля`, где
+  `доля = (Σ added SP 51 + 10·baseDamage.additionalLeech) × (1+inc) × Πmore × 0.1` (SP 51 запрашивается с тегами
+  `src | тег типа`; 06c §5.2, масштаб ×0.1 — **D?**, подтверждён на узлах дерева: подсказка = стат×10). Выплата каждого
+  удара линейно за `3 / (1 + Σ added SP 102)` с (06c §5.1), на средний поток не влияет — отдельная строка. Капа нет;
+  прекращение на полном здоровье и кап остатком здоровья цели не учтены (**D?**). Айлменты не лечат в расчёте (**D?**).
+- Здоровье/Мана/Ward за удар = Σ added SP 38 / 40 / 39 (теги умения + health) × ударов/с (только hit-компоненты).
+  Бонусы к получаемому восполнению и «more ward generated» не учтены (**D?**); `wardGainModifier` не от SP 39 (06c §3.3).
+- Ward от маны/с = стоимость маны × применений/с × Σ added SP 99 (масштаб — **D?**).
+- Реген здоровья/маны/ward (SP 17/18/92) — характеристики персонажа, в умении не дублируются.
+
 ## 9. Модели эффектов и компоненты умения (полный учёт механик)
 
 ### 9.1 Модель эффекта — общий формат (`client/data/*_models.json`)
@@ -443,3 +454,34 @@ per_use (раз за применение), rate (событий/с, если н
   (1 + length_increased)`; восстановление `(1 + Σincreased CDR (SP 70) + recovery_increased) × (1 + recovery_more)`;
   итог `длина / восстановление`. Заряды `charges` (база 1) влияют только на серию; в установившемся режиме
   применений/с = min(частота по скорости каста, 1 / перезарядка).
+
+### 9.7 Баффы умений на персонажа и пассивки на мутаторы умений
+- **Scope `global`** (§9.1; `stat`, `stat_list`, баффы при применении, `statsInForm`, `statsWhileActive` …): `_add_scoped` кладёт
+  мод в `result["global_mods"]` результата `skill_store`, не в локальный store умения. `BuildMods.global_store` в конце (после
+  пост-фазы пассивок и уникальных) вызывает `skill_store(build, slot, store)` для каждого экипированного умения (сам
+  `skill_store` `global_store` не вызывает — рекурсии нет), собирает `global_mods` всех слотов и добавляет их одним пакетом
+  (порядок слотов не важен; мод читает хранилище на момент сбора, атрибуты от бафф-статов в Силу/Интеллект не пересчитываются).
+  Источник: «Умение «<имя>» (бафф): <исходный источник>». Одно умение считается один раз (дубли на панели игнорируются).
+  Бафф идёт только при входе умения `buff_active` (`Build.skills[slot].inputs`, по умолчанию включён; объявляется в
+  `result["inputs"]` как «Бафф умения активен», если у умения есть scope-global модель — даже с невыполненным условием).
+  Своё умение и все остальные видят бафф через родителя (`store.parent = global`), поэтому дубля в собственном store нет.
+  Вход самой модели с `default: true` (`when: input:<key>`) при незаданном значении считается включённым (`EffectModels.blocked`).
+- **Баффы из кода мутатора** — `engine/buff_skills.gd` (`class_name BuffSkills`, в `build_mods.gd` подключён через `preload`),
+  `client/data/buff_skill_models.json`: `{"<abilityName>": {stats: [{stat, mod, tags, value, label}], note, confidence, source,
+  ability_id, effect_index, active_input, active_multiplier, tree_lists: {passive, active}, ability_properties:
+  [{index, stat, mod, active_k, active_only}]}}`; ключи с `_` пропускаются. Только числа из research, придуманных нет.
+  Сейчас — Holy Aura (07l, `holy_aura_model.json`): `M = 1 + Σ AbilityPropertyStat(holyAura #0)` из пассивок (Covenant of
+  Light 0.04/очко); пассив: базовые ER +0.15 и Damage increased +0.30, `AuraMutator.statsToApply` дерева — `v·M`; усиленный
+  каст (вход `holy_aura_active_cast`, по умолчанию выкл.): базовые `2·v·M`, `HolyAuraMutator.statsToApply` дерева (там уже ×2)
+  `v·M` — заменяет пассив, а не складывается с ним; свойства #1 (ManaRegen increased), #9 (Movespeed), #10 (StunAvoidance)
+  `v·M` (актив ×2), #6 (HealthRegen added, только актив, без ×2). Списки `AuraMutator/HolyAuraMutator.statsToApply` тогда
+  не идут через `field_models.json` (`BuffSkills.owns_list`). Для Warcry, Rebuke, Aspects, Sigils of Hope (`defaultStats`
+  без значений в research), Arcane Ascendance, Enchant Weapon (`activeStatsMultiplier` 3.0 без описания), Flame Ward, Ice Ward
+  числа базовых баффов в research не записаны; их бафф дерева — через модели scope global выше.
+- **Пассивки, нацеленные на мутатор умения** (`LungeMutator.increasedCooldownRecoverySpeedFromPassiveTree`,
+  `TeleportMutator.increasedCastSpeedFromPassives`, `DivineBoltMutator.extraProjectiles`, `…statListFromPassiveTree` …):
+  `BuildMods._add_skill_passives` в `skill_store` берёт эффекты узлов пассивок (`points ≥ minPoints`) с целью не
+  `CharacterMutator.*`, оставляет части цели, принадлежащие умению (`BuffSkills.owns_mutator`: список `mutators` дерева умения в
+  `skill_node_effects.json`, класс мутатора умения, либо имя умения + «Mutator»), и применяет их теми же `_apply_field_models`
+  / `_apply_list_effect` / правилами конверсий, что и узлы дерева (источник «Пассивка «…» ×N»). В `global_store` такой
+  эффект больше не даёт заметку, если умение с этим мутатором на панели; иначе заметка «не учитывается» остаётся.
