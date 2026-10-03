@@ -1,23 +1,292 @@
 {
-"_comment": "Fixed base buffs of skills that live in mutator code (not in the skill tree). Only values written in research files; schema in docs/ENGINE.md §9.7. Keys starting with _ are ignored. Searched without a numeric result (nothing to model, values are not in research/): Warcry, Rebuke, Aspects, Sigils of Hope defaultStats (07h/MZ: «static defaultStats», values unknown), Arcane Ascendance, Enchant Weapon (only activeStatsMultiplier 3.0 in abilities.json, meaning not described), Flame Ward, Ice Ward — their tree buffs already go through field_models.json (scope global).",
+"_comment": "Fixed base buffs of skills that live in mutator code (not in the skill tree). Only values read from code/constants (Ghidra pseudo-C + ISIL + tools/readconst.py), schema in docs/ENGINE.md §9.7. Keys = AbilityInfo.abilityName; keys starting with _ are ignored. Entry `source` is documentation only. Checked WITHOUT a hard-coded numeric buff in code (nothing to model here): Warcry (Berserk 4.0 is a tree node), Rebuke (-80% damage taken is not in code), Arcane Ascendance, Flame Ward, Death Seal, Eterra's Blessing, Healing Hands, Ring of Shields, Manifest Armor, Smoke Bomb, Fury Leap, forms (Spriggan, Swarmblade, Werebear, Reaper), Focus, Dread Shade, Sacrifice, Transplant, Teleport (all numbers come from tree fields, AbilityProperty or prefab data). Their tree buffs go through field_models.json (scope global).",
 "Holy Aura": {
 "ability_id": "holyAura",
 "confidence": "D",
 "source": "research/07l_holy_aura.md, research/data/game/holy_aura_model.json, ability_property_fields_c.json",
 "note": "Аура на кастера и союзников; M = 1 + бонус эффекта (AbilityProperty holyAura #0, у Paladin — «Covenant of Light»); усиленный каст ×2",
-"active_input": {"default": false, "key": "holy_aura_active_cast", "label": "Holy Aura: усиленный каст (окно усиления)"},
+"active_input": {
+"default": false,
+"key": "holy_aura_active_cast",
+"label": "Holy Aura: усиленный каст (окно усиления)"
+},
 "active_multiplier": 2.0,
 "effect_index": 0,
 "stats": [
-{"stat": "ElementalResistance", "mod": "added", "tags": "", "value": 0.15, "label": "базовое сопротивление ауры"},
-{"stat": "Damage", "mod": "increased", "tags": "", "value": 0.3, "label": "базовый урон ауры"}
+{
+"stat": "ElementalResistance",
+"mod": "added",
+"tags": "",
+"value": 0.15,
+"label": "базовое сопротивление ауры"
+},
+{
+"stat": "Damage",
+"mod": "increased",
+"tags": "",
+"value": 0.3,
+"label": "базовый урон ауры"
+}
 ],
-"tree_lists": {"passive": "AuraMutator.statsToApply", "active": "HolyAuraMutator.statsToApply"},
+"tree_lists": {
+"passive": "AuraMutator.statsToApply",
+"active": "HolyAuraMutator.statsToApply"
+},
 "ability_properties": [
-{"index": 1, "stat": "ManaRegen", "mod": "increased", "label": "реген маны (holyAuraIncManaRegen)", "active_k": true},
-{"index": 6, "stat": "HealthRegen", "mod": "added", "label": "реген здоровья в активе (holyAuraHealthRegenInActiveMode)", "active_only": true, "active_k": false},
-{"index": 9, "stat": "Movespeed", "mod": "increased", "label": "скорость движения (holyAuraIncreasedMovespeed)", "active_k": true},
-{"index": 10, "stat": "StunAvoidance", "mod": "increased", "label": "избежание оглушения (holyAuraIncreasedStunAvoidance)", "active_k": true}
+{
+"index": 1,
+"stat": "ManaRegen",
+"mod": "increased",
+"label": "реген маны (holyAuraIncManaRegen)",
+"active_k": true
+},
+{
+"index": 6,
+"stat": "HealthRegen",
+"mod": "added",
+"label": "реген здоровья в активе (holyAuraHealthRegenInActiveMode)",
+"active_only": true,
+"active_k": false
+},
+{
+"index": 9,
+"stat": "Movespeed",
+"mod": "increased",
+"label": "скорость движения (holyAuraIncreasedMovespeed)",
+"active_k": true
+},
+{
+"index": 10,
+"stat": "StunAvoidance",
+"mod": "increased",
+"label": "избежание оглушения (holyAuraIncreasedStunAvoidance)",
+"active_k": true
+}
+],
+"mode_passive": "пассивная аура",
+"mode_active": "усиленный каст"
+},
+"Symbols of Hope": {
+"ability_id": "sigilsOfHope",
+"effect_index": 1,
+"confidence": "D",
+"source": "SigilsOfHopeMutator..cctor (static defaultStats), SigilsOfHopeMutator.Mutate/AddStatToAura, SigilsOfHopeActiveMutator.Mutate; research/data/game/ability_property_fields_c.json (sigilsOfHope #1, #2)",
+"note": "Каждый символ (до 3 + доп., +1 раз в 2 с) даёт кастеру и союзникам в радиусе стат × число символов × M (M = 1 + sigilsOfHopeIncreasedEffect, у Paladin «Covenant of Light»). Активация тратит все символы: на 3 с −5% получаемого урона за символ (+100 барьера за символ, барьер не моделируется), пассивные статы символов пропадают. Конверсия в молнию, «Self Only» и т.п. (узлы дерева) не учитываются; список дерева statsToGrant идёт через field_models.json без M.",
+"uptime": "символы постоянно (генерация 1 за 2 с, лимит 3); активация 3 с",
+"mode_passive": "символы стоят",
+"mode_active": "активация (символы потрачены, 3 с)",
+"active_input": {
+"default": false,
+"key": "sigils_active_use",
+"label": "Symbols of Hope: активация (3 с после траты символов)"
+},
+"stats": [
+{
+"stat": "HealthRegen",
+"mod": "increased",
+"tags": "",
+"value": 0.2,
+"label": "реген здоровья от символа",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator..cctor: Stat(SP 17 HealthRegen, increased = [0x184561C00] = 0.2)"
+},
+{
+"stat": "Damage",
+"mod": "added",
+"tags": "Fire|Melee",
+"value": 3.0,
+"label": "урон огнём от символа (ближний бой)",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator..cctor: Stat(SP 0 Damage, AT 0x208, added = [0x184561C3C] = 3.0)"
+},
+{
+"stat": "Damage",
+"mod": "added",
+"tags": "Fire|Spell",
+"value": 3.0,
+"label": "урон огнём от символа (заклинания)",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator..cctor: Stat(SP 0, AT 0x108, added 3.0)"
+},
+{
+"stat": "Damage",
+"mod": "added",
+"tags": "Fire|Throwing",
+"value": 3.0,
+"label": "урон огнём от символа (метание)",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator..cctor: Stat(SP 0, AT 0x408, added 3.0)"
+},
+{
+"stat": "Damage",
+"mod": "added",
+"tags": "Fire|Bow",
+"value": 3.0,
+"label": "урон огнём от символа (лук)",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator..cctor: Stat(SP 0, AT 0x808, added 3.0)"
+},
+{
+"stat": "DamageTaken",
+"mod": "more",
+"tags": "",
+"value": -0.05,
+"label": "меньше получаемого урона за потраченный символ",
+"active_only": true,
+"no_m": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeActiveMutator.Mutate: MoreStat(SP 6 DamageTaken, sigils × [0x18471CEF4] = -0.05 × (1 − AbilityProperty #9)); не применяется при canCastDivineFlare"
+}
+],
+"ability_properties": [
+{
+"index": 2,
+"stat": "HealthRegen",
+"mod": "added",
+"label": "реген здоровья от символа (sigilsOfHopeAddedHealthRegen)",
+"passive_only": true,
+"per_input": {
+"key": "sigils",
+"label": "Символов Надежды",
+"default": 3,
+"max": 10,
+"short": "символов"
+},
+"source": "SigilsOfHopeMutator.Mutate: AddedStat(SP 17, mgr+0x132c) через AddStatToAura (× символы × M)"
+}
+]
+},
+"Enchant Weapon": {
+"ability_id": "enchantWeapon",
+"confidence": "D",
+"source": "EnchantWeaponPassiveMutator..ctor and EnchantWeaponMutator..ctor (Stat 0x280 more), EnchantWeaponMutator.Mutate (BuffCreatorOnCreation, duration)",
+"note": "Пассив (всегда, пока умение на панели): 15% more урона (Elemental|Melee). Активация: 50% more тем же статом, заменяет пассив (одно имя баффа), длится (1 + inc) × (5 с + added) при откате 15 с. Поле activeStatsMultiplier = 3.0 в Mutate не читается. Списки дерева: пассивный и активный (там значения ×2).",
+"uptime": "пассив постоянно; актив 5 с из 15 с отката",
+"mode_passive": "пассив",
+"mode_active": "активация",
+"active_input": {
+"default": false,
+"key": "enchant_weapon_active_cast",
+"label": "Enchant Weapon: активация (5 с после каста)"
+},
+"stats": [
+{
+"stat": "Damage",
+"mod": "more",
+"tags": "Elemental|Melee",
+"value": 0.15,
+"active_value": 0.5,
+"label": "бонус чар на оружии",
+"source": "EnchantWeaponPassiveMutator..ctor: Stat(0, 0x280, more = [0x18471CD50] = 0.15); EnchantWeaponMutator..ctor: more = [0x184561C04] = 0.5; +0x148 duration 5.0 (0x40A00000)"
+}
+],
+"tree_lists": {
+"passive": "EnchantWeaponPassiveMutator.statsToApply",
+"active": "EnchantWeaponMutator.statsToApply"
+}
+},
+"Firebrand": {
+"ability_id": "firebrand",
+"confidence": "D",
+"source": "FirebrandMutator.ModifyFirebrandStacks (AddedStat 5.0 at [0x18456202C]), FirebrandMutator.ApplyStackToPlayer, max stacks (4 + addedMaxStacks)",
+"note": "Каждый стак Firebrand (4 с × (1 + inc), максимум 4 + доп.) даёт игроку +5 added урона огнём ближнего боя. Конверсия в молнию (узел) меняет тег на Melee|Lightning, не учитывается; урон заклинаниями по стаку и прочие статы стаков — в field_models.json.",
+"uptime": "4 с на стак, стаки обновляются ударами; вход — число стаков",
+"stats": [
+{
+"stat": "Damage",
+"mod": "added",
+"tags": "Melee|Fire",
+"value": 5.0,
+"label": "урон огнём ближнего боя за стак",
+"per_input": {
+"key": "firebrand_stacks",
+"label": "Стаков Firebrand",
+"default": 4,
+"max": 15,
+"short": "стаков"
+},
+"source": "FirebrandMutator.ModifyFirebrandStacks: Stats.AddedStat(SP 0, AT 0x208 (0x202 при lightningConversion), [0x18456202C] = 5.0)"
+}
+]
+},
+"Aura Of Decay": {
+"ability_id": "auraOfDecay",
+"confidence": "D",
+"source": "AuraOfDecayMutator.Mutate (MoreStat(SP 6, AT 0x1040, [0x18471CEA0]) into the BuffCreator stats; ISIL lines 11722-11741)",
+"note": "Пока аура включена (переключатель умения): −30% получаемого урона от яда (DamageTaken more, DoT|Poison). Конверсия ауры (узлы) меняет тег на DoT|Cold / DoT|Physical / DoT|Fire, не учитывается. Свойства умения #1 (Damage increased Poison), #14 (more DoT), #15 (more DoT taken) в данных пассивок отсутствуют.",
+"uptime": "пока аура включена",
+"stats": [
+{
+"stat": "DamageTaken",
+"mod": "more",
+"tags": "DoT|Poison",
+"value": -0.3,
+"label": "меньше урона от яда при ауре",
+"source": "AuraOfDecayMutator.Mutate: Stats.MoreStat(SP 6, AT 0x1040, [0x18471CEA0] = -0.3)"
+}
+]
+},
+"Dark Quiver": {
+"ability_id": "darkQuiver",
+"confidence": "D?",
+"source": "DarkQuiverMutator.applyStatsFromBlackArrow (Stat(0, 0, 0, increased = [0x184561C18] = 1.0))",
+"note": "Следующая атака луком после подбора чёрной стрелы: +100% increased урона (в коде тег пустой; тег Bow добавлен, потому что стрелы тратят только умения с луком). Это условный стат конкретной атаки, а не постоянный бафф: вход включает его на всю оценку.",
+"uptime": "одна атака на подобранную стрелу",
+"stats": [
+{
+"stat": "Damage",
+"mod": "increased",
+"tags": "Bow",
+"value": 1.0,
+"label": "урон следующей атаки луком (чёрная стрела)",
+"when_input": {
+"key": "black_arrow_ready",
+"label": "Dark Quiver: атака подобрала чёрную стрелу",
+"default": false
+},
+"source": "DarkQuiverMutator.applyStatsFromBlackArrow: Stats+Stat..ctor(SP 0, AT 0, added 0, increased 1.0)"
+}
 ]
 }
 }

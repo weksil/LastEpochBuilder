@@ -467,17 +467,39 @@ per_use (раз за применение), rate (событий/с, если н
   Своё умение и все остальные видят бафф через родителя (`store.parent = global`), поэтому дубля в собственном store нет.
   Вход самой модели с `default: true` (`when: input:<key>`) при незаданном значении считается включённым (`EffectModels.blocked`).
 - **Баффы из кода мутатора** — `engine/buff_skills.gd` (`class_name BuffSkills`, в `build_mods.gd` подключён через `preload`),
-  `client/data/buff_skill_models.json`: `{"<abilityName>": {stats: [{stat, mod, tags, value, label}], note, confidence, source,
-  ability_id, effect_index, active_input, active_multiplier, tree_lists: {passive, active}, ability_properties:
-  [{index, stat, mod, active_k, active_only}]}}`; ключи с `_` пропускаются. Только числа из research, придуманных нет.
-  Сейчас — Holy Aura (07l, `holy_aura_model.json`): `M = 1 + Σ AbilityPropertyStat(holyAura #0)` из пассивок (Covenant of
-  Light 0.04/очко); пассив: базовые ER +0.15 и Damage increased +0.30, `AuraMutator.statsToApply` дерева — `v·M`; усиленный
-  каст (вход `holy_aura_active_cast`, по умолчанию выкл.): базовые `2·v·M`, `HolyAuraMutator.statsToApply` дерева (там уже ×2)
-  `v·M` — заменяет пассив, а не складывается с ним; свойства #1 (ManaRegen increased), #9 (Movespeed), #10 (StunAvoidance)
-  `v·M` (актив ×2), #6 (HealthRegen added, только актив, без ×2). Списки `AuraMutator/HolyAuraMutator.statsToApply` тогда
-  не идут через `field_models.json` (`BuffSkills.owns_list`). Для Warcry, Rebuke, Aspects, Sigils of Hope (`defaultStats`
-  без значений в research), Arcane Ascendance, Enchant Weapon (`activeStatsMultiplier` 3.0 без описания), Flame Ward, Ice Ward
-  числа базовых баффов в research не записаны; их бафф дерева — через модели scope global выше.
+  `client/data/buff_skill_models.json`: `{"<abilityName>": {stats: [{stat, mod, tags, value, label, source, …}], note, uptime,
+  confidence, source, ability_id, effect_index, active_input, active_multiplier, mode_passive, mode_active, tree_lists:
+  {passive, active}, ability_properties: [{index, stat, mod, active_k, …}]}}`; ключ — `abilityName` умения; ключи с `_`
+  пропускаются. Только числа, прочитанные из кода (Ghidra, ISIL, `tools/readconst.py`), придуманных нет. Ключи записи (в
+  `stats` и `ability_properties`): `active_only` / `passive_only` (режим `active_input` модели), `active_value` (значение в
+  активном режиме вместо `value × active_multiplier`), `when_input` (запись только при включённом входе), `per_input`
+  (значение × вход, напр. число символов или стаков), `no_m` (без множителя `M = 1 + свойство effect_index`). Входы
+  объявляются в `result["inputs"]` один раз на ключ. Список дерева (`tree_lists`) заменяет полевые модели этих списков
+  (`BuffSkills.owns_list`): в пассивном режиме идёт список passive, в активном — active (там уже ×2).
+  Сейчас в модели:
+  - **Holy Aura** (07l, `holy_aura_model.json`): `M = 1 + Σ AbilityPropertyStat(holyAura #0)` из пассивок (Covenant of
+    Light 0.04/очко); пассив: ER +0.15 и Damage increased +0.30, `AuraMutator.statsToApply` — `v·M`; усиленный каст (вход
+    `holy_aura_active_cast`, по умолчанию выкл.): базовые `2·v·M`, `HolyAuraMutator.statsToApply` (там уже ×2) `v·M` —
+    заменяет пассив; свойства #1 (ManaRegen increased), #9 (Movespeed), #10 (StunAvoidance) `v·M` (актив ×2), #6 (HealthRegen
+    added, только актив, без ×2).
+  - **Symbols of Hope** (`SigilsOfHopeMutator..cctor`, `AddStatToAura`): на каждый символ (вход `sigils`, по умолчанию 3) ×
+    `M = 1 + AbilityProperty(sigilsOfHope #1)` (Covenant of Light): HealthRegen increased +0.2 и Damage added +3 (Fire × Melee /
+    Spell / Throwing / Bow); свойство #2 (HealthRegen added, Covenant of Protection ≥ 5 очков, +5). Вход `sigils_active_use`
+    (по умолчанию выкл., активация 3 с): символы потрачены, пассивные статы пропадают, DamageTaken more −0.05 за символ (без M;
+    +100 барьера за символ не моделируется).
+  - **Enchant Weapon** (`EnchantWeaponPassiveMutator..ctor`, `EnchantWeaponMutator..ctor`): пассив Damage more +0.15
+    (Elemental|Melee) всегда; вход `enchant_weapon_active_cast` (по умолчанию выкл., 5 с из отката 15 с): тот же стат more
+    +0.5 заменяет пассив (одно имя баффа). Списки дерева `EnchantWeaponPassiveMutator.statsToApply` / `EnchantWeaponMutator.statsToApply`
+    идут через `tree_lists` (раньше складывались оба: пассив + актив).
+  - **Firebrand** (`ModifyFirebrandStacks`): Damage added +5 (Melee|Fire) за стак, вход `firebrand_stacks` (по умолчанию 4;
+    стак 4 с, максимум 4 + доп.); конверсия в молнию (узел) не учитывается.
+  - **Aura Of Decay** (`AuraOfDecayMutator.Mutate`): пока аура включена DamageTaken more −0.3 с тегами DoT|Poison.
+  - **Dark Quiver** (`applyStatsFromBlackArrow`): Damage increased +1.0 (тег Bow) для следующей атаки луком; вход
+    `black_arrow_ready` (по умолчанию выкл.), условный стат одной атаки.
+  Проверено без числового баффа в коде (всё идёт из полей дерева, AbilityProperty или данных префабов): Warcry (Berserk 4.0 —
+  узел дерева), Rebuke, Arcane Ascendance, Flame Ward, Ice Ward (не умение панели), Death Seal, Eterra's Blessing, Healing Hands,
+  Ring of Shields, Manifest Armor, Smoke Bomb, Fury Leap, Focus, Dread Shade, Sacrifice, Transplant, Teleport, формы (Spriggan,
+  Swarmblade, Werebear, Reaper). Их бафф дерева — через модели scope global выше.
 - **Пассивки, нацеленные на мутатор умения** (`LungeMutator.increasedCooldownRecoverySpeedFromPassiveTree`,
   `TeleportMutator.increasedCastSpeedFromPassives`, `DivineBoltMutator.extraProjectiles`, `…statListFromPassiveTree` …):
   `BuildMods._add_skill_passives` в `skill_store` берёт эффекты узлов пассивок (`points ≥ minPoints`) с целью не

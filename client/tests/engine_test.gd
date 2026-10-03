@@ -12,6 +12,7 @@ func _ready() -> void:
 	_idol_altar()
 	_passive_field_models()
 	_buff_skills()
+	_buff_skill_base_models()
 	_sustain()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -566,6 +567,67 @@ func _buff_skills() -> void:
 	Build.set_skill(1, "")
 	Build.set_class(1)
 	Build.set_level(100)
+
+
+## Base buffs read from mutator code (docs/ENGINE.md §9.7, buff_skill_models.json): Symbols of Hope (per-symbol input, M from
+## passives, activation mode), Enchant Weapon (passive 0.15 more replaced by 0.5 more on activation), Firebrand stacks.
+func _buff_skill_base_models() -> void:
+	Build.set_class(2)  # Sentinel (Paladin passives: Covenant of Light #119 → M 1.2, Covenant of Protection #95 ≥5 → +5 regen per symbol)
+	Build.set_level(100)
+	Build.set_skill(0, "si4lgl")
+	Build.passives[119] = 5
+	Build.passives[95] = 5
+	var sigils: String = "Умение «Symbols of Hope» (бафф)"
+	var g: Dictionary = BuildMods.global_store(Build)
+	_check("Symbols of Hope ×3: HealthRegen increased 0.2 × 3 × 1.2", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, true), 0.72)
+	_check("Symbols of Hope ×3: HealthRegen added 5 × 3 × 1.2", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, false), 18.0)
+	_check("Symbols of Hope ×3: fire damage added (4 tags × 3 × 3 × 1.2)", _mods_sum(g["store"], LE.DAMAGE, sigils, false), 43.2)
+	_check("Symbols of Hope: no damage-taken stat outside the activation", _mods_more_sum(g["store"], LE.DAMAGE_TAKEN, sigils), 0.0)
+	Build.set_skill_input(0, "sigils", 2.0)
+	g = BuildMods.global_store(Build)
+	_check("Symbols of Hope ×2: HealthRegen increased 0.2 × 2 × 1.2", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, true), 0.48)
+	Build.set_skill_input(0, "sigils_active_use", true)
+	g = BuildMods.global_store(Build)
+	_check("Symbols of Hope activation: symbol stats are gone", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, true), 0.0)
+	_check("Symbols of Hope activation: damage taken more -0.05 × 2 symbols (no M)", _mods_more_sum(g["store"], LE.DAMAGE_TAKEN, sigils), -0.1)
+	var own: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	_check("Symbols of Hope declares the symbols input", 1.0 if _has_input(own, "sigils") else 0.0, 1.0)
+	Build.passives.erase(119)
+	Build.passives.erase(95)
+	Build.skills[0].erase("inputs")
+
+	Build.set_skill(0, "sb44eQ")
+	var enchant: String = "Умение «Enchant Weapon» (бафф)"
+	g = BuildMods.global_store(Build)
+	_check("Enchant Weapon passive: 0.15 more (Elemental|Melee)", _mods_more_sum(g["store"], LE.DAMAGE, enchant), 0.15)
+	Build.skills[0]["tree"][2] = 2  # node 2 Melee Shock Chance: +10% per point in the passive list, +20% in the active list
+	g = BuildMods.global_store(Build)
+	_check("Enchant Weapon passive list: shock chance 0.1 × 2", _mods_sum(g["store"], LE.AILMENT_CHANCE, enchant, false), 0.2)
+	Build.set_skill_input(0, "enchant_weapon_active_cast", true)
+	g = BuildMods.global_store(Build)
+	_check("Enchant Weapon active: 0.5 more replaces the passive 0.15", _mods_more_sum(g["store"], LE.DAMAGE, enchant), 0.5)
+	_check("Enchant Weapon active list replaces the passive one: shock chance 0.2 × 2", _mods_sum(g["store"], LE.AILMENT_CHANCE, enchant, false), 0.4)
+
+	Build.set_skill(0, "f1b4d")
+	var firebrand: String = "Умение «Firebrand» (бафф)"
+	g = BuildMods.global_store(Build)
+	_check("Firebrand default 4 stacks: +5 melee fire damage per stack", _mods_sum(g["store"], LE.DAMAGE, firebrand, false), 20.0)
+	Build.set_skill_input(0, "firebrand_stacks", 2.0)
+	g = BuildMods.global_store(Build)
+	_check("Firebrand 2 stacks: +10", _mods_sum(g["store"], LE.DAMAGE, firebrand, false), 10.0)
+	Build.set_skill(0, "")
+	Build.set_class(1)
+	Build.set_level(100)
+
+
+## Sum of the `more` values of the mods of property `prop` whose source contains `needle`.
+func _mods_more_sum(store: StatStore, prop: int, needle: String) -> float:
+	var total: float = 0.0
+	for mod: StatMod in store.all_mods():
+		if mod.property == prop and mod.source.contains(needle):
+			for value: float in mod.more:
+				total += value
+	return total
 
 
 func _count_notes(notes: Array, needle: String) -> int:

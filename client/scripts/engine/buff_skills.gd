@@ -44,6 +44,9 @@ static func input_value(build: Node, slot: int, key: String, default: Variant) -
 
 
 ## Adds the base buff of the skill to result["global_mods"] (they reach the character through BuildMods.global_store).
+## Model keys: see docs/ENGINE.md §9.7. Entry keys (stats[] and ability_properties[]): active_only / passive_only (mode of the
+## model's active_input), active_value (explicit value in the active mode instead of value × active_multiplier), when_input
+## (entry applies only while that input is on), per_input (value × input), no_m (not multiplied by M = 1 + effect_index property).
 static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionary) -> void:
 	var model: Dictionary = find(str(ability.get("abilityName", "")))
 	if model.is_empty():
@@ -51,18 +54,20 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 	var active_input: Dictionary = model.get("active_input", {})
 	var active: bool = false
 	if not active_input.is_empty():
-		result["inputs"].append(active_input)
+		_declare_input(result, active_input)
 		active = bool(input_value(build, slot, str(active_input["key"]), active_input.get("default", false)))
 	var k: float = float(model.get("active_multiplier", 1.0)) if active else 1.0
 	var x: float = ability_property(build, str(model.get("ability_id", "")), int(model.get("effect_index", -1)))
 	var m: float = 1.0 + x
-	var mode: String = "усиленный каст" if active else "пассивная аура"
+	var mode: String = str(model.get("mode_active", "активный режим")) if active else str(model.get("mode_passive", "постоянно"))
 	var suffix: String = " ×M %s" % LE.fmt_num(m) if x != 0.0 else ""
 	var out: Array = result["global_mods"]
 
 	for entry: Dictionary in model.get("stats", []):
-		var mod: StatMod = _make(entry, float(entry["value"]) * k * m,
-			"%s, %s%s" % [str(entry.get("label", "базовый бафф")), mode, suffix])
+		var base: float = float(entry["value"]) * k
+		if active and entry.has("active_value"):
+			base = float(entry["active_value"])
+		var mod: StatMod = _entry_mod(build, slot, entry, base, active, m, "%s, %s%s" % [str(entry.get("label", "базовый бафф")), mode, suffix], result)
 		if mod != null:
 			out.append(mod)
 
@@ -88,15 +93,44 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 				out.append(mod.scaled(m))
 
 	for entry: Dictionary in model.get("ability_properties", []):
-		if bool(entry.get("active_only", false)) and not active:
-			continue
 		var v: float = ability_property(build, str(model.get("ability_id", "")), int(entry["index"]))
 		if v == 0.0:
 			continue
 		var factor: float = k if bool(entry.get("active_k", false)) else 1.0
-		var mod: StatMod = _make(entry, v * factor * m, "%s, %s%s" % [str(entry.get("label", "")), mode, suffix])
+		var mod: StatMod = _entry_mod(build, slot, entry, v * factor, active, m, "%s, %s%s" % [str(entry.get("label", "")), mode, suffix], result)
 		if mod != null:
 			out.append(mod)
+
+
+## StatMod of one model entry for the current mode, null if the entry is off (wrong mode, input off, unknown stat).
+static func _entry_mod(build: Node, slot: int, entry: Dictionary, base: float, active: bool, m: float, source: String, result: Dictionary) -> StatMod:
+	if bool(entry.get("active_only", false)) and not active:
+		return null
+	if bool(entry.get("passive_only", false)) and active:
+		return null
+	var when_input: Dictionary = entry.get("when_input", {})
+	if not when_input.is_empty():
+		_declare_input(result, when_input)
+		if not bool(input_value(build, slot, str(when_input["key"]), when_input.get("default", false))):
+			return null
+	var value: float = base
+	var per_input: Dictionary = entry.get("per_input", {})
+	if not per_input.is_empty():
+		_declare_input(result, per_input)
+		var count: float = float(input_value(build, slot, str(per_input["key"]), per_input.get("default", 0)))
+		value *= count
+		source += " × %s %s" % [str(per_input.get("short", per_input["key"])), LE.fmt_num(count)]
+	if not bool(entry.get("no_m", false)):
+		value *= m
+	return _make(entry, value, source)
+
+
+## Declares an input of the model once per key (SkillCalc shows it in the skill's inputs).
+static func _declare_input(result: Dictionary, input: Dictionary) -> void:
+	for existing: Dictionary in result["inputs"]:
+		if existing.get("key") == input.get("key"):
+			return
+	result["inputs"].append(input)
 
 
 ## Sum of the AbilityPropertyStat values (stat kind "ability_property") of the passives for `ability_id` and property `index`.
