@@ -16,6 +16,8 @@ static func global_store(build: Node) -> Dictionary:
 	for slot: String in build.items:
 		if SLOTS.has(slot) or IdolGrid.is_idol_key(slot):
 			store.add_all(ItemMods.item_mods(slot, build.items[slot]))
+	_add_unique_notes(build, notes)
+	_add_set_bonuses(build, store, notes)
 	_add_attributes(store, notes)
 	return {"store": store, "notes": notes}
 
@@ -83,6 +85,61 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String]) -
 				store.add(mod)
 			else:
 				notes.append("Пассивка «%s»: %s — не учитывается" % [title, _effect_label(effect)])
+
+
+# --- 5.4.2 uniques and sets ------------------------------------------------------
+
+const LEGENDS_ENTWINED: int = 423  # "Counts as a part of every equipped item set"
+
+
+## Special effects of equipped uniques are listed with their code formula (not computed yet).
+static func _add_unique_notes(build: Node, notes: Array[String]) -> void:
+	for slot: String in build.items:
+		var item: Dictionary = build.items[slot]
+		if not item.has("unique"):
+			continue
+		var u: Dictionary = GameData.unique(int(item["unique"]))
+		for effect: Dictionary in GameData.unique_effects(int(item["unique"])):
+			var what: String = str(effect.get("name", effect.get("source", "")))
+			var formula: String = str(effect.get("formula", ""))
+			notes.append("Уникальный «%s»: %s — особый эффект, не считается%s" % [GameData.display_name(u), what,
+				"" if formula == "" else " (в коде: %s)" % formula])
+		for umod: Dictionary in u.get("mods", []):
+			if int(umod.get("property", 0)) == LE.LEVEL_OF_SKILLS:
+				notes.append("Уникальный «%s»: +%s к уровню умений — поднимите уровень умения в слоте вручную" % [
+					GameData.display_name(u), LE.fmt_num(float(umod.get("value", 0.0)))])
+
+
+## Set bonuses: count = distinct equipped uniqueIDs of the set + Legends Entwined (07d §2.3).
+static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]) -> void:
+	var members: Dictionary = {}  # setID -> {uniqueID: true}
+	var entwined: int = 0
+	for slot: String in build.items:
+		var item: Dictionary = build.items[slot]
+		if not item.has("unique"):
+			continue
+		var uid: int = int(item["unique"])
+		if uid == LEGENDS_ENTWINED:
+			entwined += 1
+		var u: Dictionary = GameData.unique(uid)
+		if u.get("isSetItem", false) and u.get("setID") != null:
+			if not members.has(int(u["setID"])):
+				members[int(u["setID"])] = {}
+			members[int(u["setID"])][uid] = true
+	for set_id: int in members:
+		var st: Dictionary = GameData.set_data(set_id)
+		var count: int = members[set_id].size() + entwined
+		var source: String = "Сет «%s» (%d предм.)" % [str(st.get("setName", set_id)), count]
+		for bonus: Dictionary in st.get("bonuses", []):
+			if int(bonus.get("setRequirement", 99)) > count:
+				continue
+			var prop_id: int = int(bonus.get("property", 0))
+			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
+				notes.append("%s: особый бонус (%s) — не считается" % [source, str(bonus.get("propertyName", prop_id))])
+				continue
+			store.add(StatMod.make(prop_id, str(bonus.get("modType", "ADDED")).to_lower(),
+				AffixMath.fixed_value(float(bonus.get("value", 0.0)), str(bonus.get("rounding", "Hundredth")), str(bonus.get("modType", "ADDED"))),
+				int(bonus.get("tags", 0)), source, int(bonus.get("specialTag", 0)), int(bonus.get("extraTag", 0))))
 
 
 # --- 5.3 attributes -----------------------------------------------------------

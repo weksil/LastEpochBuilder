@@ -49,3 +49,20 @@ static func roll_value(lo: float, hi: float, rounding: String, mod_type: String,
 	var v: float = float(min(int(floor(float(b - a + 1) * float(roll) / 255.0 + float(a))), b)) / s
 
 	return v
+
+
+## Value on the rounding grid without a roll (GetFixedValueAfterRounding).
+static func fixed_value(value: float, rounding: String, mod_type: String) -> float:
+	var s: float = float(SCALE.get("Hundredth" if mod_type == "INCREASED" else rounding, 1))
+	return float(LE.round_half_even(value * s)) / s
+
+
+## Unique item mod value (UniqueItemMod.getValue, 07d §2.1): rolls only if canRoll, maxValue > value and roll ≠ 0.
+static func unique_value(mod: Dictionary, roll: int) -> float:
+	var lo: float = float(mod.get("value", 0.0))
+	var hi: float = float(mod.get("maxValue", lo))
+	var rounding: String = str(mod.get("rounding", "Hundredth"))
+	var mod_type: String = str(mod.get("modType", "ADDED"))
+	if int(mod.get("canRoll", 0)) == 0 or hi <= lo or roll == 0:
+		return fixed_value(lo, rounding, mod_type)
+	return roll_value(lo, hi, rounding, mod_type, roll, 0.0)

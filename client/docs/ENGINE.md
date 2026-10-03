@@ -173,6 +173,14 @@ roll_value(lo, hi, rounding, mod_type, roll, m):
 (`!= 99`) и не заняты другими идолами. Моды идолов собираются как у предметов (`ItemMods`), с модификатором эффекта базы
 (Small −0.83, Grand −0.33 и т. д.). Награды за открытие слотов считаются полученными, алтарь не поддерживается.
 
+### 5.4.2 Уникальные предметы и сеты (07d §2.1–2.3)
+Предмет с `unique: uniqueID` и `unique_rolls[rollID]` (байт ролла, по умолчанию 255): импликиты базы + моды уникального.
+Значение мода — `AffixMath.unique_value`: роллится, только если `canRoll`, `maxValue > value` и ролл ≠ 0, иначе
+фиксированное значение на сетке округления. Моды SP 98 (PlayerProperty) и SP 58 (AbilityProperty) и компоненты —
+особые эффекты, пока не считаются: в notes с формулой из `unique_effects.json`. SP 88 (+уровень умений) — note.
+Сеты: `count` = число **разных** uniqueID сета в экипировке + число Legends Entwined (423); бонусы `sets.json` с
+`setRequirement ≤ count` добавляются фиксированными значениями, источник «Сет «…» (N предм.)».
+
 ### 5.5 Дерево скилла — `BuildMods.skill_store(build, slot, global) -> Dictionary`
 → `{store: StatStore (parent = global), notes, use_speed_inc: float, use_speed_more: float, mana_inc: float, mana_added: float}`.
 Для узла с `p > 0` из `skill_effects(treeID)`:

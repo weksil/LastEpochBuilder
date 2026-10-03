@@ -6,6 +6,7 @@ var classes: Array = []
 var hidden_base_mods: Array = []
 var attributes: Array = []
 var item_bases: Array = []
+var uniques: Array = []                  # uniques.json, without hideFromPlayers
 
 var _trees: Array = []
 var _tree_node_stats: Dictionary = {}
@@ -23,6 +24,9 @@ var _enums: Dictionary = {}              # enum name -> {value name -> id}
 var _damage_reduction_values: Array = []
 var _idol_grid: Array = []                # 5×5 unlockMatrix, 99 = blocked
 var _conversions: Dictionary = {}        # "Mutator.field" -> rule (skill_conversions.json)
+var _uniques_by_id: Dictionary = {}      # uniqueID -> unique (all, incl. hidden)
+var _unique_effects: Dictionary = {}     # uniqueID -> effects[] (unique_effects.json)
+var _sets: Dictionary = {}               # setID -> set (sets.json)
 
 
 func _ready() -> void:
@@ -100,6 +104,24 @@ func _ready() -> void:
 	if conv_json is Dictionary:
 		for rule: Dictionary in conv_json.get("data", []):
 			_conversions[str(rule["key"])] = rule
+
+	var uniques_json: Variant = _load_json(data_dir.path_join("uniques.json"))
+	if uniques_json is Dictionary:
+		for u: Dictionary in uniques_json.get("data", []):
+			_uniques_by_id[int(u["uniqueID"])] = u
+			if not u.get("hideFromPlayers", false):
+				uniques.append(u)
+		uniques.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return display_name(a) < display_name(b))
+
+	var effects_json: Variant = _load_json(data_dir.path_join("unique_effects.json"))
+	if effects_json is Dictionary:
+		for u: Dictionary in effects_json.get("data", []):
+			_unique_effects[int(u["uniqueID"])] = u.get("effects", [])
+
+	var sets_json: Variant = _load_json(data_dir.path_join("sets.json"))
+	if sets_json is Dictionary:
+		for st: Dictionary in sets_json.get("data", []):
+			_sets[int(st["setID"])] = st
 
 	var dr_json: Variant = _load_json(parent_dir.path_join("monster_level_damage_reduction.json"))
 	if dr_json is Dictionary:
@@ -254,6 +276,19 @@ func idol_grid() -> Array:
 ## Conversion / tag-change rule for a skill-tree mutator field ("Mutator.field"), {} if none.
 func conversion_rule(key: String) -> Dictionary:
 	return _conversions.get(key, {})
+
+
+func unique(id: int) -> Dictionary:
+	return _uniques_by_id.get(id, {})
+
+
+## Special effects of a unique (PlayerProperty / AbilityProperty / Component …) with formula text from the client code.
+func unique_effects(id: int) -> Array:
+	return _unique_effects.get(id, [])
+
+
+func set_data(set_id: int) -> Dictionary:
+	return _sets.get(set_id, {})
 
 
 func ailment(id: int) -> Dictionary:

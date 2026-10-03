@@ -72,6 +72,20 @@ func _ready() -> void:
 	print("weapon: %s" % weapon_button.text)
 	print("item: %s" % str(Build.items.get("weapon", {})))
 
+	# unique helmet through the editor
+	var helmet_button: Button = items_tab.get_node("%SlotList/Slot_helmet")
+	helmet_button.pressed.emit()
+	await _frames(1)
+	var unique_select: OptionButton = editor.get_node("%UniqueSelect")
+	for i in range(unique_select.item_count):
+		if unique_select.get_item_text(i) == "Snowblind":
+			unique_select.select(i)
+			unique_select.item_selected.emit(i)
+	await _frames(2)
+	print("unique helmet: %s / %s" % [helmet_button.text, str(Build.items.get("helmet", {}))])
+	print("unique rows: %d, text: %s" % [editor.get_node("%UniqueMods").get_child_count(), editor.get_node("%UniqueText").text.replace("
+", " | ")])
+
 	# idols tab: place an idol at the first open cell and give it an affix
 	tabs.current_tab = 3
 	await _frames(1)

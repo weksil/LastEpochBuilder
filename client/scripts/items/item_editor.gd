@@ -3,6 +3,7 @@ class_name ItemEditor extends PanelContainer
 ## Edits one equipment slot of Build.items (docs/UI.md «Предметы»). Controls live in item_editor.tscn.
 
 const EMPTY_ID: int = 99999
+const UNIQUE_EMPTY_ID: int = 99998
 const AFFIX_ROWS: Array[String] = ["Prefix1", "Prefix2", "Suffix1", "Suffix2"]
 const ONE_HANDED_TYPES: Array[String] = [
 	"ONE_HANDED_AXE", "ONE_HANDED_DAGGER", "ONE_HANDED_MACES", "ONE_HANDED_SCEPTRE", "ONE_HANDED_SWORD", "WAND", "ONE_HANDED_FIST"]
@@ -20,6 +21,7 @@ var _shown_item: Dictionary = {}
 
 
 func _ready() -> void:
+	%UniqueSelect.item_selected.connect(_on_unique_selected)
 	%BaseSelect.item_selected.connect(_on_base_selected)
 	%SubSelect.item_selected.connect(_on_sub_selected)
 	%ClearButton.pressed.connect(_on_clear)
@@ -53,8 +55,23 @@ func _fill() -> void:
 	_filling = true
 	var item: Dictionary = _item()
 	_shown_item = item.duplicate(true)
+	var unique_id: int = int(item.get("unique", UNIQUE_EMPTY_ID))
 	var base_id: int = int(item.get("base", EMPTY_ID))
 	var base: Dictionary = GameData.item_base(base_id) if item.has("base") else {}
+
+	# Fill unique select
+	%UniqueSelect.clear()
+	%UniqueSelect.add_item("— обычный предмет —", UNIQUE_EMPTY_ID)
+	var uniques: Array = GameData.uniques
+	var unique_items: Array = []
+	for u: Dictionary in uniques:
+		var u_base: Dictionary = GameData.item_base(int(u.get("baseType", -1)))
+		if _base_fits_slot(u_base):
+			unique_items.append(u)
+	unique_items.sort_custom(func(a, b): return str(GameData.display_name(a)) < str(GameData.display_name(b)))
+	for u: Dictionary in unique_items:
+		%UniqueSelect.add_item(GameData.display_name(u), int(u["uniqueID"]))
+	%UniqueSelect.select(maxi(0, %UniqueSelect.get_item_index(unique_id)))
 
 	%BaseSelect.clear()
 	%BaseSelect.add_item("— пусто —", EMPTY_ID)
@@ -70,16 +87,30 @@ func _fill() -> void:
 	if not base.is_empty():
 		%SubSelect.select(maxi(0, %SubSelect.get_item_index(int(item.get("sub", 0)))))
 
+	var has_unique: bool = unique_id != UNIQUE_EMPTY_ID
 	_fill_implicits(item)
+	if has_unique:
+		_fill_unique(item, unique_id)
 	_fill_affixes(item, base)
 
-	var has_item: bool = not base.is_empty()
+	var has_item: bool = not base.is_empty() or has_unique
 	var is_idol: bool = IdolGrid.is_idol_key(_slot)
 	%AffixesTitle.text = "Аффиксы (1 префикс, 1 суффикс)" if is_idol else "Аффиксы (2 префикса, 2 суффикса)"
+	if has_unique:
+		var unique: Dictionary = GameData.unique(unique_id)
+		if str(unique.get("legendaryType", "")) == "LegendaryPotential":
+			%AffixesTitle.text = "Легендарные аффиксы"
+
+	%BaseSelect.disabled = has_unique
+	%SubSelect.disabled = has_unique
 	%EmptyHint.visible = not has_item
-	for node_name: String in ["%SubRow", "%ImplicitsTitle", "%Implicits", "%AffixesTitle", "%Affixes", "%ClearButton"]:
+	for node_name: String in ["%SubRow", "%AffixesTitle", "%Affixes", "%ClearButton"]:
 		get_node(node_name).visible = has_item
 	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
+	%Implicits.visible = has_item
+	%UniqueTitle.visible = has_unique
+	%UniqueMods.visible = has_unique
+	%UniqueText.visible = has_unique
 	_filling = false
 	_update_values()
 
@@ -122,6 +153,56 @@ func _fill_implicits(item: Dictionary) -> void:
 		slider.value_changed.connect(_on_implicit_roll.bind(j))
 
 
+func _fill_unique(item: Dictionary, unique_id: int) -> void:
+	for child: Node in %UniqueMods.get_children():
+		%UniqueMods.remove_child(child)
+		child.queue_free()
+
+	var unique: Dictionary = GameData.unique(unique_id)
+	var mods: Array = unique.get("mods", [])
+	var unique_rolls: Array = item.get("unique_rolls", [])
+
+	for mod: Dictionary in mods:
+		if int(mod.get("hideInTooltip", 0)) != 0:
+			continue
+		var roll_id: int = int(mod.get("rollID", 0))
+		var row: Node = implicit_row_scene.instantiate()
+		%UniqueMods.add_child(row)
+		row.get_node("%NameLabel").text = _prop_title(mod)
+		var slider: HSlider = row.get_node("%RollSlider")
+		var can_roll: int = int(mod.get("canRoll", 0))
+		var max_val: float = float(mod.get("maxValue", 0.0))
+		var curr_val: float = float(mod.get("value", 0.0))
+		slider.visible = can_roll == 1 and max_val > curr_val
+		slider.set_value_no_signal(float(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255.0)
+		slider.value_changed.connect(_on_unique_roll.bind(roll_id))
+
+	# Set unique text (descriptions and set info)
+	var text_lines: PackedStringArray = []
+	var descriptions: Array = unique.get("tooltipDescriptions", [])
+	for desc_obj: Dictionary in descriptions:
+		text_lines.append(str(desc_obj.get("description", "")))
+
+	if int(unique.get("isSetItem", 0)) != 0:
+		text_lines.append("")
+		var set_id: int = int(unique.get("setID", -1))
+		var set_data: Dictionary = GameData.set_data(set_id)
+		var set_name: String = set_data.get("setName", "")
+		text_lines.append("Сет «%s»:" % set_name)
+		var set_descriptions: Array = set_data.get("tooltipDescriptions", [])
+		for i in range(set_descriptions.size()):
+			var desc_obj: Dictionary = set_descriptions[i]
+			var req_str: String = ""
+			if "setRequirement" in desc_obj:
+				req_str = " (%d)" % int(desc_obj["setRequirement"])
+			text_lines.append(req_str + " " + str(desc_obj.get("description", "")))
+
+	# tooltip templates "[min,max,rollID]" -> "min–max"
+	var template := RegEx.new()
+	template.compile("\\[(-?[0-9.]+),(-?[0-9.]+),[0-9]+\\]")
+	%UniqueText.text = template.sub("\n".join(text_lines), "$1–$2", true)
+
+
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	var stored: Array = item.get("affixes", [])
 	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
@@ -157,6 +238,55 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 
 # --- storing user edits ---------------------------------------------------------------
 
+func _on_unique_selected(index: int) -> void:
+	if _filling:
+		return
+	var unique_id: int = %UniqueSelect.get_item_id(index)
+	if unique_id == UNIQUE_EMPTY_ID:
+		var item: Dictionary = _item().duplicate(true)
+		item.erase("unique")
+		item.erase("unique_rolls")
+		_commit(item)
+	else:
+		var unique: Dictionary = GameData.unique(unique_id)
+		var base_type_id: int = int(unique.get("baseType", -1))
+		var sub_types: Array = unique.get("subTypes", [0])
+		var sub_type_id: int = int(sub_types[0]) if not sub_types.is_empty() else 0
+
+		# Create unique_rolls array with 255 for each mod's rollID
+		var unique_rolls: Array = []
+		var mods: Array = unique.get("mods", [])
+		var max_roll_id: int = -1
+		for mod: Dictionary in mods:
+			var roll_id: int = int(mod.get("rollID", 0))
+			max_roll_id = maxi(max_roll_id, roll_id)
+		for i in range(max_roll_id + 1):
+			unique_rolls.append(255)
+
+		var item: Dictionary = _item().duplicate(true)
+		var affixes: Array = item.get("affixes", [])
+		var new_item: Dictionary = _new_item(base_type_id, sub_type_id, [])
+		new_item.merge({
+			"unique": unique_id,
+			"unique_rolls": unique_rolls,
+			"affixes": affixes,
+		}, true)
+		_commit(new_item)
+	_fill()
+
+
+func _on_unique_roll(value: float, roll_id: int) -> void:
+	if _filling:
+		return
+	var item: Dictionary = _item().duplicate(true)
+	var unique_rolls: Array = item.get("unique_rolls", [])
+	while unique_rolls.size() <= roll_id:
+		unique_rolls.append(255)
+	unique_rolls[roll_id] = int(value)
+	item["unique_rolls"] = unique_rolls
+	_commit(item)
+
+
 func _on_base_selected(index: int) -> void:
 	if _filling:
 		return
@@ -170,7 +300,9 @@ func _on_base_selected(index: int) -> void:
 			if _sub_allowed(sub):
 				sub_id = int(sub["subTypeID"])
 				break
-		Build.set_item(_slot, _new_item(base_id, sub_id, []))
+		# Clear unique when manually changing base
+		var item: Dictionary = _new_item(base_id, sub_id, [])
+		Build.set_item(_slot, item)
 	_fill()
 
 
@@ -239,6 +371,28 @@ func _commit(item: Dictionary) -> void:
 
 func _update_values() -> void:
 	var item: Dictionary = _item()
+	var unique_id: int = int(item.get("unique", UNIQUE_EMPTY_ID))
+
+	# Update unique mod values
+	if unique_id != UNIQUE_EMPTY_ID:
+		var unique: Dictionary = GameData.unique(unique_id)
+		var mods: Array = unique.get("mods", [])
+		var unique_rolls: Array = item.get("unique_rolls", [])
+		var unique_mod_rows: Array = %UniqueMods.get_children()
+		var mod_row_index: int = 0
+		for mod: Dictionary in mods:
+			if int(mod.get("hideInTooltip", 0)) != 0:
+				continue
+			if mod_row_index >= unique_mod_rows.size():
+				break
+			var roll_id: int = int(mod.get("rollID", 0))
+			var roll: int = int(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255
+			var v: float = AffixMath.unique_value(mod, roll)
+			unique_mod_rows[mod_row_index].get_node("%ValueLabel").text = _format(mod, v)
+			unique_mod_rows[mod_row_index].get_node("%RollSlider").set_value_no_signal(float(roll))
+			mod_row_index += 1
+
+	# Implicits of the base apply to regular and unique items
 	var base: Dictionary = GameData.item_base(int(item.get("base", -1)))
 	var sub: Dictionary = GameData.item_sub(int(item.get("base", -1)), int(item.get("sub", -1)))
 	var rolls: Array = item.get("implicit_rolls", [])

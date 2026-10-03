@@ -88,3 +88,24 @@
   `GameData.display_name(GameData.item_base(base))`, у остальных клеток идола текст пустой. Клетки выбранного slot
   (или выбранная пустая клетка) → `&"IdolCellSelected"`. Свободная → `&"IdolCellOpen"`, текст пустой.
 - `tooltip_text` занятой клетки: имя подтипа и строки аффиксов (id → `GameData.affix(id).name`, тир).
+
+## Уникальные предметы в `ItemEditor` (`scripts/items/item_editor.gd`)
+Сцена уже содержит `%UniqueRow` > `%UniqueSelect` (над базой), `%UniqueTitle`, `%UniqueMods` (VBox для строк `implicit_row_scene`),
+`%UniqueText` (Label). Предмет в `Build.items[slot]` может иметь `unique: int` (uniqueID) и `unique_rolls: Array[int]`
+(индекс = `rollID` мода, по умолчанию 255). API: `GameData.uniques` (Array видимых уникальных: `uniqueID, displayName, name,
+baseType, subTypes[], mods[{propertyName, tagNames, modType, rounding, rollID, canRoll, value, maxValue, hideInTooltip}],
+tooltipDescriptions[{description}], isSetItem, setID, legendaryType}`), `GameData.unique(id)`, `GameData.set_data(setID)`
+(`{setName, items[{uniqueID, name}], tooltipDescriptions[{description, setRequirement}]}`), `AffixMath.unique_value(mod, roll)`.
+- `%UniqueSelect`: item 0 «— обычный предмет —» (id `EMPTY_ID`), затем уникальные, чья база проходит `_base_fits_slot(GameData.item_base(baseType))`
+  (для идолов — та же проверка места), текст = `GameData.display_name(u)`, id = uniqueID, сортировка по имени. Заполнять в `_fill()`.
+- Выбор уникального → `Build.set_item(slot, {unique, base: baseType, sub: subTypes[0], implicit_rolls: 255 на каждый импликит,
+  unique_rolls: [255 × (max rollID + 1)], affixes: текущие})`, затем `_fill()`. Выбор «обычный» → убрать ключи `unique`/`unique_rolls`.
+  Ручная смена базы на другую тоже убирает `unique`.
+- При уникальном: `%BaseSelect` и `%SubSelect` `disabled = true`; `%UniqueTitle`, `%UniqueMods`, `%UniqueText` видимы (иначе скрыты).
+  `%UniqueMods`: строка `implicit_row_scene` на каждый мод с `hideInTooltip == 0`: `%NameLabel` = `_prop_title(mod)`, `%RollSlider` виден,
+  если `canRoll == 1 and maxValue > value`, значение = `unique_rolls[rollID]`; изменение → записать в `unique_rolls[rollID]` и `_commit`;
+  `%ValueLabel` = `_format(mod, AffixMath.unique_value(mod, roll))` (обновлять в `_update_values`, все строки одного rollID синхронно).
+- `%UniqueText.text`: строки `tooltipDescriptions[].description`; если `isSetItem` — пустая строка, «Сет «setName»:» и строки
+  `set_data.tooltipDescriptions` вида «(N) description».
+- `%AffixesTitle` для уникального: «Легендарные аффиксы» (если `legendaryType == "LegendaryPotential"`), иначе как сейчас.
+- `scripts/items/items_tab.gd` и `scripts/idols/idols_tab.gd`: если у предмета есть `unique` — показывать имя уникального.

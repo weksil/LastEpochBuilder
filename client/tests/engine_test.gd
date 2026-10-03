@@ -68,6 +68,31 @@ func _sample_build() -> void:
 	_check("Mage L100 mana round(50+0.50506·100)", _row(g, "Мана"), 101)
 	_check("Mage intelligence", _row(g, "Интеллект"), 3)
 
+	# Unique: Snowblind (cold res 0.2–0.4, rollID 0) at roll 255 and roll 0
+	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
+	g = BuildMods.global_store(Build)
+	_check("Snowblind cold res roll 255", Enemy.resistance(g["store"], 2).added, 0.40)
+	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [0, 255, 255]})
+	g = BuildMods.global_store(Build)
+	_check("Snowblind cold res roll 0 (fixed value)", Enemy.resistance(g["store"], 2).added, 0.20)
+	_check("Snowblind special effects listed", 1.0 if str(g["notes"]).contains("Snowblind") else 0.0, 1.0)
+	Build.clear_item("helmet")
+	# Set: Isadora's — 2 distinct items enable the 2-piece Damned chance, not the 3-piece bonuses
+	var damned: int = GameData.enum_value("AilmentID", "Damned")
+	Build.set_item("helmet", {"unique": 5, "base": int(GameData.unique(5)["baseType"]), "sub": 0, "implicit_rolls": [], "unique_rolls": []})
+	Build.set_item("ring1", {"unique": 16, "base": int(GameData.unique(16)["baseType"]), "sub": 0, "implicit_rolls": [], "unique_rolls": []})
+	g = BuildMods.global_store(Build)
+	_check("Isadora 2/3: Damned chance", g["store"].query(LE.AILMENT_CHANCE, LE.NECROTIC | LE.SPELL, damned).added, 1.0)
+	_check("Isadora 2/3: no mana efficiency", g["store"].query(LE.MANA_EFFICIENCY, LE.NECROTIC | LE.SPELL).added, 0.0)
+	Build.set_item("ring2", {"unique": 16, "base": int(GameData.unique(16)["baseType"]), "sub": 0, "implicit_rolls": [], "unique_rolls": []})
+	g = BuildMods.global_store(Build)
+	_check("same set item twice still counts once", g["store"].query(LE.MANA_EFFICIENCY, LE.NECROTIC | LE.SPELL).added, 0.0)
+	Build.set_item("amulet", {"unique": 423, "base": int(GameData.unique(423)["baseType"]), "sub": 0, "implicit_rolls": [], "unique_rolls": []})
+	g = BuildMods.global_store(Build)
+	_check("Legends Entwined completes the 3-piece bonus", g["store"].query(LE.MANA_EFFICIENCY, LE.NECROTIC | LE.SPELL).added, 0.3)
+	for slot: String in ["helmet", "ring1", "ring2", "amulet"]:
+		Build.clear_item(slot)
+
 	# Fireball: Fire 25, ADE 1.25, +4% inc per Int (Int 3 → +12%)
 	Build.set_skill(0, "fi9")
 	Build.selected_skill = 0

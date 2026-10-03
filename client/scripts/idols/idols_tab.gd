@@ -67,9 +67,16 @@ func _update_grid() -> void:
 			# Show name only at anchor (top-left)
 			if cell_pos == anchor_pos:
 				var item: Dictionary = Build.items.get(slot, {})
-				var base_id: int = int(item.get("base", 0))
-				var base: Dictionary = GameData.item_base(base_id)
-				cell.text = GameData.display_name(base)
+				var item_name: String = ""
+				if "unique" in item:
+					var unique_id: int = int(item.get("unique", 0))
+					var unique_item: Dictionary = GameData.unique(unique_id)
+					item_name = GameData.display_name(unique_item)
+				else:
+					var base_id: int = int(item.get("base", 0))
+					var base: Dictionary = GameData.item_base(base_id)
+					item_name = GameData.display_name(base)
+				cell.text = item_name
 			else:
 				cell.text = ""
 
@@ -88,19 +95,25 @@ func _update_grid() -> void:
 
 func _set_idol_tooltip(cell: Node, slot: String) -> void:
 	var item: Dictionary = Build.items.get(slot, {})
-	var base_id: int = int(item.get("base", 0))
-	var sub_id: int = int(item.get("sub", 0))
-	var base: Dictionary = GameData.item_base(base_id)
-	var sub: Dictionary = {}
-
-	for s: Dictionary in base.get("subItems", []):
-		if int(s.get("subTypeID", -1)) == sub_id:
-			sub = s
-			break
-
 	var lines: PackedStringArray = []
-	if not sub.is_empty():
-		lines.append(GameData.display_name(sub))
+
+	if "unique" in item:
+		var unique_id: int = int(item.get("unique", 0))
+		var unique_item: Dictionary = GameData.unique(unique_id)
+		lines.append(GameData.display_name(unique_item))
+	else:
+		var base_id: int = int(item.get("base", 0))
+		var sub_id: int = int(item.get("sub", 0))
+		var base: Dictionary = GameData.item_base(base_id)
+		var sub: Dictionary = {}
+
+		for s: Dictionary in base.get("subItems", []):
+			if int(s.get("subTypeID", -1)) == sub_id:
+				sub = s
+				break
+
+		if not sub.is_empty():
+			lines.append(GameData.display_name(sub))
 
 	var affixes: Array = item.get("affixes", [])
 	for affix_data: Dictionary in affixes:

@@ -45,7 +45,11 @@ func _on_build_changed() -> void:
 				var item_text: String = "—"
 				if slot in Build.items:
 					var item_data: Dictionary = Build.items[slot]
-					if "base" in item_data:
+					if "unique" in item_data:
+						var unique_id: int = item_data["unique"]
+						var unique_item: Dictionary = GameData.unique(unique_id)
+						item_text = GameData.display_name(unique_item)
+					elif "base" in item_data:
 						var base_id: int = item_data["base"]
 						var sub_id: int = item_data.get("sub", 0)
 						var base_item: Dictionary = GameData.item_base(base_id)

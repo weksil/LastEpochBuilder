@@ -56,7 +56,7 @@ static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
 			continue
 
 		# Get roll value (0-255), default to 0 if not provided
-		var roll: int = implicit_rolls[j] if j < implicit_rolls.size() else 0
+		var roll: int = int(implicit_rolls[j]) if j < implicit_rolls.size() else 255
 
 		# Calculate rolled value
 		var value: float = implicit.get("value", 0.0)
@@ -92,6 +92,21 @@ static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]:
 
 		mod.source = "%s: %s (implicit)" % [slot_ru, implicit.get("propertyName", "Unknown")]
 		mods.append(mod)
+
+	# Unique / set item mods (special PlayerProperty 98 and AbilityProperty 58 mods are reported by BuildMods)
+	if item.has("unique"):
+		var u: Dictionary = GameData.unique(int(item["unique"]))
+		var unique_rolls: Array = item.get("unique_rolls", [])
+		for umod: Dictionary in u.get("mods", []):
+			var prop_id: int = int(umod.get("property", 0))
+			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
+				continue
+			var roll_id: int = int(umod.get("rollID", 0))
+			var uroll: int = int(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255
+			var uvalue: float = AffixMath.unique_value(umod, uroll)
+			var um := StatMod.make(prop_id, str(umod.get("modType", "ADDED")).to_lower(), uvalue, int(umod.get("tags", 0)),
+				"%s: %s" % [slot_ru, GameData.display_name(u)], int(umod.get("specialTag", 0)), int(umod.get("extraTag", 0)))
+			mods.append(um)
 
 	# Process affixes
 	var affixes_list: Array = item.get("affixes", [])

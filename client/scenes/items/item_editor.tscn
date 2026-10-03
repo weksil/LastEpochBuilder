@@ -29,6 +29,22 @@ layout_mode = 2
 focus_mode = 0
 text = "Убрать предмет"
 
+[node name="UniqueRow" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="UniqueLabel" type="Label" parent="VBox/UniqueRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Уникальный"
+
+[node name="UniqueSelect" type="OptionButton" parent="VBox/UniqueRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
 [node name="BaseRow" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
 
@@ -69,6 +85,23 @@ text = "Импликиты"
 [node name="Implicits" type="VBoxContainer" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="UniqueTitle" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Свойства уникального предмета"
+
+[node name="UniqueMods" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="UniqueText" type="Label" parent="VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_type_variation = &"BreakdownLabel"
+autowrap_mode = 3
 
 [node name="AffixesTitle" type="Label" parent="VBox"]
 unique_name_in_owner = true
