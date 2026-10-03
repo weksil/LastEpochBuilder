@@ -63,6 +63,10 @@ func _vectors() -> void:
 	_check("armour -500 L75", Enemy.armour_mitigation(-500, 75, false), -0.19396)
 	_check("tags Elemental vs Fire", 1.0 if LE.tags_match(LE.ELEMENTAL, LE.FIRE) else 0.0, 1.0)
 	_check("tags Elemental|Spell vs Fire|Melee", 1.0 if LE.tags_match(LE.ELEMENTAL | LE.SPELL, LE.FIRE | LE.MELEE) else 0.0, 0.0)
+	_check("block 1000 L50", CharacterCalc.block_mitigation(1000, 50), 0.45132)
+	_check("block 2000 L75", CharacterCalc.block_mitigation(2000, 75), 0.54069)
+	_check("block 500 L100", CharacterCalc.block_mitigation(500, 100), 0.26428)
+	_check("fmt_pct 9.8298%", 1.0 if LE.fmt_pct(0.098298) == "9.83%" else 0.0, 1.0)
 	_check("level DR boss 75", Enemy.level_dr({"kind": "boss", "level": 75}), 0.7625)
 	_check("level DR normal 50", Enemy.level_dr({"kind": "normal", "level": 50}), 0.54)
 

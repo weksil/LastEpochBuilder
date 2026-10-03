@@ -174,8 +174,18 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 		"group": "Защита",
 		"label": "Эффективность блока",
 		"value": block_eff_value,
-		"text": LE.fmt_pct(block_eff_value),
+		"text": LE.fmt_num(block_eff_value),
 		"breakdown": block_eff_query.breakdown()
+	})
+
+	# Block mitigation - share of hit damage removed by a block (character sheet, research/06c §2.3)
+	var block_mit: float = block_mitigation(block_eff_value, level)
+	rows.append({
+		"group": "Защита",
+		"label": "Снижение урона при блоке",
+		"value": block_mit,
+		"text": LE.fmt_pct(block_mit),
+		"breakdown": _explain_block_mitigation(block_eff_value, level)
 	})
 
 	# Parry (121) - Шанс парирования
@@ -300,6 +310,33 @@ static func _compute_dodge_chance(dodge_rating: float, level: int) -> float:
 	var term2: float = 0.25 * x / (0.05 * L * L + 80.0 + x)
 
 	return term1 + term2
+
+
+## Block mitigation (blockMitigation, research/06c §2.3): x = block effectiveness, L = level + 5, x <= 0 => 0
+## 0.6·(0.0006x² + 1.2x)/(0.0006x² + 1.2x + 60L) + 0.25·3x/(0.03L² + 40 + 3x)
+static func block_mitigation(block_effectiveness: float, level: int) -> float:
+	if block_effectiveness <= 0:
+		return 0.0
+	var L: float = float(level) + 5.0
+	var x: float = block_effectiveness
+	var q: float = 0.0006 * x * x + 1.2 * x
+	return 0.6 * q / (q + 60.0 * L) + 0.25 * 3.0 * x / (0.03 * L * L + 40.0 + 3.0 * x)
+
+
+static func _explain_block_mitigation(block_effectiveness: float, level: int) -> String:
+	if block_effectiveness <= 0:
+		return "Эффективность блока = 0, поэтому снижение = 0"
+	var L: float = float(level) + 5.0
+	var x: float = block_effectiveness
+	var q: float = 0.0006 * x * x + 1.2 * x
+	var term1: float = 0.6 * q / (q + 60.0 * L)
+	var term2: float = 0.25 * 3.0 * x / (0.03 * L * L + 40.0 + 3.0 * x)
+	return "L = %d + 5 = %.0f, x = %s
+Терм1 = 0.6·(0.0006x² + 1.2x)/(0.0006x² + 1.2x + 60L) = %s
+Терм2 = 0.25·3x/(0.03L² + 40 + 3x) = %s
+Итого = %s" % [
+		level, L, LE.fmt_num(x), LE.fmt_pct(term1), LE.fmt_pct(term2), LE.fmt_pct(term1 + term2)
+	]
 
 
 ## Explain dodge chance calculation

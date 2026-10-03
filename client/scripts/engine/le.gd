@@ -203,8 +203,13 @@ static func round_half_even(x: float) -> int:
 
 
 ## Format a float as percentage (0.125 -> "12.5%").
+## Percent with at most 2 decimals (the game sheet rounds percentages, research/06c CharacterSheet).
 static func fmt_pct(x: float) -> String:
-	return fmt_num(x * 100.0) + "%"
+	var formatted: String = "%.2f" % (x * 100.0)
+	formatted = formatted.rstrip("0").rstrip(".")
+	if formatted == "-0":
+		formatted = "0"
+	return formatted + "%"
 
 
 ## Format a float: up to 2 decimals for |x| >= 10, up to 4 below that; no trailing zeros.
