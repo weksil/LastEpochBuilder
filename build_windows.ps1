@@ -1,10 +1,10 @@
 # Builds the Windows x64 release of Last Epoch Builder.
-# Usage: .\build_windows.ps1 [-Godot <path to Godot 4.7 console exe>] [-Version 0.1.1]
+# Usage: .\build_windows.ps1 [-Godot <path to Godot 4.7 console exe>] [-Version 0.1.2]
 # Godot is taken from -Godot, else from the GODOT environment variable, else from "godot" on PATH.
 # Needs the Godot 4.7 export templates. Output: build/LastEpochBuilder-<version>-windows-x64.zip
 param(
     [string]$Godot = $env:GODOT,
-    [string]$Version = "0.1.1"
+    [string]$Version = "0.1.2"
 )
 $ErrorActionPreference = "Stop"
 if (-not $Godot) {
