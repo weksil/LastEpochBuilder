@@ -2,9 +2,13 @@ class_name SkillComponents
 
 ## Damage components of a skill: the primary hit, sub-abilities spawned by the prefab, damage computed in code,
 ## tree/unique components and triggers (docs/ENGINE.md §9.3).
-## component = {name, kind: primary|sub|trigger|minion|curse_hit, ab, base, per_use, rate, note}.
+## component = {name, kind: primary|sub|trigger|minion|curse_hit|dot, ab, base, per_use, rate, note}.
 ## `curse_hit` (Bone Curse): damage dealt to the cursed enemy whenever it is hit, not per cast. `rate` is the weighted
 ## hit rate (own hits × (1 + moreDamageWhenHitByCreator) + other hits), `hit_rate` the plain hits per second.
+## `dot` (Spirit Plague): a single maintained DoT instance (maxInstances 1) whose `base` damage is the TOTAL over the base
+## `duration`; `rate` = 1 / duration damage events per second, `duration_inc` the increased duration of the skill.
+## Several sources of the same sub-ability (prefab + tree node «explodes at end») are merged into one component with the
+## summed `per_use` (the game counts detonations = 1 + extras, research/07h TransplantMutator.explodesAtEnd).
 
 const SUB_REASONS: Array[String] = [
 	"prefab:CreateAbilityObjectOnDeath", "prefab:CreateAbilityObjectOnStart", "prefab:CastAfterDuration",
@@ -29,7 +33,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
 			continue
-		result.append(_component(str(sub.get("name", "")), "sub", sub, entry, 1.0, 0.0, str(sub.get("spawn_reason", "")).trim_prefix("prefab:")))
+		_add_sub(result, str(sub.get("name", "")), sub, entry, 1.0, str(sub.get("spawn_reason", "")).trim_prefix("prefab:"))
 
 	if primary.is_empty():
 		_add_code_damage(result, build, slot, s, ab_name, ab, out_notes)
@@ -42,7 +46,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		if entry.is_empty():
 			_skip_note(out_notes, "Узел «%s»: у под-умения «%s» нет урона — не учтено." % [extra.get("node", "?"), extra.get("ability", "?")])
 			continue
-		result.append(_component(str(sub.get("name", "")), "sub", sub, entry, float(extra.get("count", 1.0)), 0.0, "узел «%s»" % extra.get("node", "")))
+		_add_sub(result, str(sub.get("name", "")), sub, entry, float(extra.get("count", 1.0)), "узел «%s»" % extra.get("node", ""))
 
 	for trig: Variant in s.get("triggers", []):
 		if not trig is Dictionary:
@@ -71,6 +75,19 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 
 static func _component(comp_name: String, kind: String, ab: Dictionary, base: Dictionary, per_use: float, rate: float, note: String) -> Dictionary:
 	return {"name": comp_name, "kind": kind, "ab": ab, "base": base, "per_use": per_use, "rate": rate, "note": note}
+
+
+## Sub-ability component per cast. A second source of the same ability (prefab, tree node) adds to the existing component's
+## `per_use` instead of creating a duplicate one: the damage is dealt `per_use` times per cast, shown once.
+static func _add_sub(result: Array[Dictionary], comp_name: String, sub: Dictionary, entry: Dictionary, per_use: float, note: String) -> void:
+	for existing: Dictionary in result:
+		var same: bool = existing["kind"] == "sub" and float(existing["rate"]) <= 0.0 and str(existing["name"]) == comp_name
+		if same and str(existing["ab"].get("name", "")) == str(sub.get("name", "")):
+			existing["per_use"] = float(existing["per_use"]) + per_use
+			if note != "" and not str(existing["note"]).contains(note):
+				existing["note"] = note if str(existing["note"]) == "" else "%s; %s" % [existing["note"], note]
+			return
+	result.append(_component(comp_name, "sub", sub, entry, per_use, 0.0, note))
 
 
 static func _is_spawned(reason: String) -> bool:
@@ -131,7 +148,30 @@ static func _add_code_damage(result: Array[Dictionary], build: Node, slot: int, 
 		if creator_more is float or creator_more is int:
 			result.append(_curse_hit_component(build, slot, s, label, ab, base, 1.0 + float(creator_more), out_notes))
 			continue
+		var dur_v: Variant = comp.get("duration")
+		var max_v: Variant = comp.get("maxInstances")
+		if not is_hit and (dur_v is float or dur_v is int) and float(dur_v) > 0.0 and (max_v is float or max_v is int) and int(max_v) == 1:
+			result.append(_dot_component(s, label, ab, base, float(dur_v)))
+			continue
 		result.append(_component(label, "sub", ab, base, 1.0, 0.0, "урон кодом (abilities_code_damage.json)"))
+
+
+## Maintained DoT (one instance per target, maxInstances 1): `base` damage is the total over the base duration, the instance is
+## kept up by recasting, so there is one damage event per base duration (100% uptime assumed). An increased duration lengthens
+## the instance and raises its total by the same factor (damage over time scales with duration in LE), so the damage per second does
+## not change; `duration_inc` (param «duration» of the skill tree) is only shown (docs/ENGINE.md §9.3).
+static func _dot_component(s: Dictionary, label: String, ab: Dictionary, base: Dictionary, duration: float) -> Dictionary:
+	var inc: float = 0.0
+	var params: Variant = s.get("params", {})
+	if params is Dictionary:
+		for key: Variant in params:
+			var p: Dictionary = params[key]
+			if str(p.get("param", "")) == "duration":
+				inc += float(p.get("increased", 0.0))
+	var comp: Dictionary = _component(label, "dot", ab, base, 1.0, 1.0 / duration, "периодический урон одного экземпляра (abilities_code_damage.json)")
+	comp["duration"] = duration
+	comp["duration_inc"] = inc
+	return comp
 
 
 ## True if the skill deals hit damage by itself: a primary hit, a sub-ability spawned by the prefab or a code hit that is not

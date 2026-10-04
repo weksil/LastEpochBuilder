@@ -19,6 +19,7 @@ func _ready() -> void:
 	_sustain()
 	_curse_hits()
 	_high_health_vs_dummy()
+	_detonations_and_maintained_dot()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -824,3 +825,86 @@ func _hit_vs_enemy(r: Dictionary) -> float:
 			if LE.DT_NAME_RU.has(str(row["label"])):
 				total += float(row["text"])
 	return total
+
+
+## Transplant (a sub-ability component collected from the prefab and from the tree node «explodes at arrival» is one
+## component with 1 + extras detonations per cast) and Spirit Plague (a maintained DoT: total over 3 s, no crit, 1/3 events per
+## second) of the sample build against the training dummy, docs/ENGINE.md §9.3.
+func _detonations_and_maintained_dot() -> void:
+	print("--- Transplant detonations and Spirit Plague DoT (sample build vs dummy)")
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
+	for i in range(Build.skills.size()):
+		Build.skills[i]["inputs"]["enemy_cursed"] = false
+		Build.skills[i]["inputs"]["buff_active"] = false
+	Build.enemy["kind"] = "dummy"
+	const HEAD: String = "Урон за применение (до врага)"
+	var r: Dictionary = SkillCalc.compute(Build, 3)
+	_print_sections(r)
+	var uses: float = _section_value(r, "Скорость и мана", "Применений в секунду")
+	_check("Transplant: one damage component", _count_sections(r, HEAD), 1.0)
+	_check("Transplant: no duplicate DetonateBody sections", _count_prefixed_sections(r, "DetonateBody:"), 0.0)
+	_check("Transplant: no duplicate per-component DPS rows", _count_rows(r, "Против врага", "DPS по врагу: DetonateBody"), 0.0)
+	var avg: float = _section_value(r, "Против врага", "Средний удар по врагу")
+	var ail: float = _section_value(r, "Против врага", "DPS айлментов по врагу")
+	# the sample build has «Reign of Blood» (explodes at arrival): the prefab detonation + 1 extra per cast
+	_check("Transplant: 2 detonations per cast with the node", _section_value(r, HEAD, "Событий урона в секунду"), uses * 2.0, 0.005)
+	_check("Transplant: hit DPS = average hit × casts/s × 2", _section_value(r, "Против врага", "DPS удара по врагу"), avg * uses * 2.0, 0.05)
+	_check("Transplant: DPS = hit DPS + ailments once", _section_value(r, "Против врага", "DPS по врагу"), avg * uses * 2.0 + ail, 0.05)
+	# without the node there is one detonation per cast: the same average hit, half the hit DPS
+	var tree: Dictionary = Build.skills[3]["tree"]
+	var node_points: Variant = tree.get(17)
+	tree.erase(17)
+	var plain: Dictionary = SkillCalc.compute(Build, 3)
+	_check("Transplant without the node: one component", _count_sections(plain, HEAD), 1.0)
+	_check("Transplant without the node: same average hit", _section_value(plain, "Против врага", "Средний удар по врагу"), avg, 0.005)
+	_check("Transplant without the node: DPS = average hit × casts/s", _section_value(plain, "Против врага", "DPS удара по врагу"),
+		avg * _section_value(plain, "Скорость и мана", "Применений в секунду"), 0.05)
+	_check("Transplant without the node: no events row (1 per cast)", _count_rows(plain, HEAD, "Событий урона в секунду"), 0.0)
+	if node_points != null:
+		tree[17] = node_points
+
+	# Spirit Plague: one maintained instance, total over the base 3 s
+	var sp: Dictionary = SkillCalc.compute(Build, 2)
+	_print_sections(sp)
+	var instance: float = _section_value(sp, "Против врага", "Урон за всё действие по врагу (3 с)")
+	var per_second: float = _section_value(sp, "Против врага", "Урон в секунду по врагу")
+	_check("Spirit Plague: instance vs dummy > 0", 1.0 if instance > 0.0 else 0.0, 1.0)
+	_check("Spirit Plague: damage per second = instance / 3", per_second, instance / 3.0, 0.02)
+	_check("Spirit Plague: total DPS = per second + ailments", _section_value(sp, "Против врага", "DPS по врагу"),
+		per_second + _section_value(sp, "Против врага", "DPS айлментов по врагу"), 0.03)
+	_check("Spirit Plague: own section total over 3 s", _section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон за всё действие (3 с)"),
+		_section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон в секунду") * 3.0, 0.05)
+	_check("Spirit Plague: no crit section", _count_sections(sp, "Крит"), 0.0)
+	_check("Spirit Plague: no crit rows vs enemy", _count_rows(sp, "Против врага", "Удар с критом") + _count_rows(sp, "Против врага", "Удар без крита") +
+		_count_rows(sp, "Против врага", "Средний множитель крита"), 0.0)
+	_check("Spirit Plague: dummy mitigation = Necrotic penetration x1.18", instance / _section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон за всё действие (3 с)"), 1.18, 0.005)
+	# increased duration does not change the damage per second
+	var tree_sp: Dictionary = Build.skills[2]["tree"]
+	tree_sp[15] = 2
+	var longer: Dictionary = SkillCalc.compute(Build, 2)
+	_check("Spirit Plague: increased duration keeps the damage per second", _section_value(longer, "Против врага", "Урон в секунду по врагу"), per_second, 0.005)
+	tree_sp.erase(15)
+	# the tree's «more damage» node applies to the DoT total
+	tree_sp[22] = 5
+	var more: Dictionary = SkillCalc.compute(Build, 2)
+	_check("Spirit Plague: node More Damage ×5 → ×1.5", _section_value(more, "Против врага", "Урон за всё действие по врагу (3 с)") / instance, 1.5, 0.005)
+	tree_sp.erase(22)
+
+
+func _count_prefixed_sections(r: Dictionary, prefix: String) -> float:
+	var n: int = 0
+	for s: Dictionary in r["sections"]:
+		if str(s["title"]).begins_with(prefix):
+			n += 1
+	return float(n)
+
+
+func _count_rows(r: Dictionary, section: String, label: String) -> float:
+	var n: int = 0
+	for s: Dictionary in r["sections"]:
+		if s["title"] == section:
+			for row: Dictionary in s["rows"]:
+				if row["label"] == label:
+					n += 1
+	return float(n)

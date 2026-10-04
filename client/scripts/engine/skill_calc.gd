@@ -69,23 +69,43 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var comp_store: StatStore = _component_store(store, s, comp)
 		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, s["conversions"], notes, comp["base"])
 		var is_curse: bool = comp["kind"] == "curse_hit"
+		var is_dot: bool = comp["kind"] == "dot"
 		var events: float = float(comp["rate"])
 		if events <= 0.0 and not is_curse:
 			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else hits)
 		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": "событий урона" if is_curse else "применений"}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
-		if idx > 0 or is_curse or not is_equal_approx(events, uses):
+		var damage_title: String = "Урон за применение (до врага)"
+		if is_dot:
+			comp_speed["dot_duration"] = float(comp["duration"])
+			comp_speed["dot_duration_inc"] = float(comp.get("duration_inc", 0.0))
+			comp_speed["unit"] = "экземпляров эффекта"
+			damage_rows = _dot_damage_rows(comp, ds, uses)
+			damage_title = "Урон эффекта за всё действие (до врага)"
+		elif idx > 0 or is_curse or not is_equal_approx(events, uses):
 			damage_rows = [_events_row(comp, events, uses, hits)] + damage_rows
-		sections.append({"title": prefix + ("Урон за попадание по проклятой цели (до врага)" if is_curse else "Урон за применение (до врага)"), "rows": damage_rows})
+		if is_curse:
+			damage_title = "Урон за попадание по проклятой цели (до врага)"
+		sections.append({"title": prefix + damage_title, "rows": damage_rows})
 		if not ctx["conversion_rows"].is_empty():
 			sections.append({"title": prefix + "Конверсии и теги", "rows": ctx["conversion_rows"]})
-		sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
+		if is_dot:
+			# a DoT cannot crit: only the penetration rows remain
+			var pen_rows: Array = []
+			for crit_row: Dictionary in ds["crit_rows"]:
+				if str(crit_row["label"]).begins_with("Пробивание"):
+					pen_rows.append(crit_row)
+			if not pen_rows.is_empty():
+				sections.append({"title": prefix + "Пробивание", "rows": pen_rows})
+		else:
+			sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
 		if idx == 0:
 			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
 		# curse hits: damage (and leech) follow the weighted rate, per-hit gains and ailment chances the plain hit count
-		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else events
+		# a maintained DoT is applied by the casts: ailment chances roll per cast, not per damage event
+		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else (uses if is_dot else events)
 		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed, "gain_events": hit_events})
 		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse)
 		for section: Dictionary in ail["sections"]:
@@ -287,6 +307,37 @@ static func _events_row(comp: Dictionary, events: float, uses: float, hits: floa
 	if str(comp["note"]) != "":
 		b.append("Источник: %s" % comp["note"])
 	return {"label": "Событий урона в секунду", "text": LE.fmt_num(events), "breakdown": "\n".join(b)}
+
+
+## Rows of the damage section of a maintained DoT (kind `dot`): the total over the base duration and the damage per second.
+static func _dot_damage_rows(comp: Dictionary, ds: Dictionary, uses: float) -> Array:
+	var duration: float = float(comp["duration"])
+	var rows: Array = []
+	for row: Dictionary in ds["rows"]:
+		if row["label"] != "Всего за удар (без крита)":
+			rows.append(row)
+	rows.append({"label": "Урон за всё действие (%s с)" % LE.fmt_num(duration), "text": LE.fmt_num(ds["total"]), "breakdown":
+		"Сумма по типам урона: полный урон одного экземпляра за базовую длительность %s с (в данных игры базовый урон — это весь урон за действие, а не урон в секунду).\nКрита и разброса у периодического урона нет." % LE.fmt_num(duration)})
+	rows.append({"label": "Урон в секунду", "text": LE.fmt_num(float(ds["total"]) * float(comp["rate"])), "breakdown": _dot_rate_text(comp, float(ds["total"]), uses)})
+	return rows
+
+
+static func _dot_rate_text(comp: Dictionary, total: float, uses: float) -> String:
+	var duration: float = float(comp["duration"])
+	var b: PackedStringArray = []
+	b.append("Один экземпляр на цель (maxInstances 1), его поддерживают повторным применением (применений/с %s, 100%% времени действия): событий урона в секунду = 1 / %s с = %s." % [
+		LE.fmt_num(uses), LE.fmt_num(duration), LE.fmt_num(float(comp["rate"]))])
+	b.append("Урон в секунду = %s / %s с = %s." % [LE.fmt_num(total), LE.fmt_num(duration), LE.fmt_num(total * float(comp["rate"]))])
+	var inc: float = float(comp.get("duration_inc", 0.0))
+	if inc != 0.0:
+		b.append("Длительность +%s: эффект длится %s с и наносит ×%s урона (%s) — урон в секунду не меняется." % [
+			LE.fmt_pct(inc), LE.fmt_num(duration * (1.0 + inc)), LE.fmt_num(1.0 + inc), LE.fmt_num(total * (1.0 + inc))])
+	else:
+		b.append("Увеличенная длительность растягивает эффект и повышает его полный урон в той же пропорции, поэтому урон в секунду от неё не меняется.")
+	b.append("Если применять реже, чем раз в %s с, эффект простаивает и средний урон в секунду ниже (D?: распределение тиков по времени не моделируется)." % LE.fmt_num(duration))
+	if str(comp["note"]) != "":
+		b.append("Источник: %s" % comp["note"])
+	return "\n".join(b)
 
 
 # --- 8.1 context ------------------------------------------------------------------
@@ -735,6 +786,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var area_level: int = int(enemy.get("level", 100))
 	var dr: float = Enemy.level_dr(enemy)
 	var armour: float = Enemy.armour(e)
+	var armour_share: float = minf(1.0, ctx["store"].query(118).added)
 	var rows: Array = []
 	var total: float = 0.0
 	var by_type: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -773,12 +825,21 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 			arm = 1.0 - mit
 			b.append("Броня %s при уровне зоны %d: снижение %s%s → ×%s" % [
 				LE.fmt_num(armour), area_level, LE.fmt_pct(mit), "" if i == 0 else " (×0.7 для нефизического)", LE.fmt_num(arm)])
+		elif not hit and armour != 0.0 and armour_share > 0.0:
+			# DoT: armour only through «Armour Mitigation Applies to DoT» (SP 118), like the ailments (06d §3)
+			var mit_dot: float = Enemy.armour_mitigation(armour, area_level, i != 0) * armour_share
+			arm = 1.0 - mit_dot
+			b.append("Броня %s (только доля SP 118 %s) при уровне зоны %d: снижение %s → ×%s" % [
+				LE.fmt_num(armour), LE.fmt_pct(armour_share), area_level, LE.fmt_pct(mit_dot), LE.fmt_num(arm)])
 		b.append("Скрытое снижение урона по уровню: %s → ×%s" % [LE.fmt_pct(dr), LE.fmt_num(1.0 - dr)])
 		var hit_i: float = d * cond * res_mult * dt * (1.0 - dr) * arm
 		b.append("Итог: %s × %s × %s × %s × %s × %s = %s" % [LE.fmt_num(d), LE.fmt_num(cond), LE.fmt_num(res_mult), LE.fmt_num(dt), LE.fmt_num(1.0 - dr), LE.fmt_num(arm), LE.fmt_num(hit_i)])
 		total += hit_i
 		by_type[i] = hit_i
 		rows.append({"label": LE.DT_NAME_RU[i], "text": LE.fmt_num(hit_i), "breakdown": "\n".join(b)})
+
+	if speed.has("dot_duration"):
+		return _vs_enemy_dot(rows, total, by_type, speed)
 
 	# crit against the target (06b §2.2)
 	var cc: float = ds["cc"]
@@ -814,6 +875,28 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	speed["enemy_crit"] = e_crit
 	rows.append({"label": "DPS удара по врагу", "text": LE.fmt_num(dps), "breakdown":
 		"%s × %s %s/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), speed.get("unit", "применений"), LE.fmt_num(dps)]})
+	return rows
+
+
+## Tail of `_vs_enemy` for a maintained DoT: no crit and no variance, so only the total of the instance and the damage per second.
+static func _vs_enemy_dot(rows: Array, total: float, by_type: Array[float], speed: Dictionary) -> Array:
+	var duration: float = float(speed["dot_duration"])
+	var per_second: float = total * float(speed["uses"])
+	var type_parts: PackedStringArray = []
+	for i in range(7):
+		if by_type[i] > 0.0:
+			type_parts.append("%s %s" % [LE.DT_NAME_RU[i], LE.fmt_num(by_type[i])])
+	rows.append({"label": "Урон за всё действие по врагу (%s с)" % LE.fmt_num(duration), "text": LE.fmt_num(total), "breakdown":
+		"Сумма урона по типам против цели: %s = %s.\nКрита, разброса и блока у периодического урона нет; сопротивление и пробивание действуют, как на айлменты; броня — только при «Armour Mitigation Applies to DoT»." % [
+			" + ".join(type_parts) if not type_parts.is_empty() else "нет урона", LE.fmt_num(total)]})
+	var inc: float = float(speed.get("dot_duration_inc", 0.0))
+	var text: String = "%s / %s с = %s.\nЭкземпляр поддерживается повторным применением; событий урона в секунду = 1 / %s с = %s.\n" % [
+		LE.fmt_num(total), LE.fmt_num(duration), LE.fmt_num(per_second), LE.fmt_num(duration), LE.fmt_num(speed["uses"])]
+	text += "Увеличенная длительность (сейчас %s) растягивает эффект и повышает его полный урон в той же пропорции: урон в секунду не меняется." % LE.fmt_pct(inc)
+	rows.append({"label": "Урон в секунду по врагу", "text": LE.fmt_num(per_second), "breakdown": text})
+	speed["enemy_dps"] = per_second
+	speed["enemy_types"] = by_type
+	speed["enemy_crit"] = 1.0
 	return rows
 
 
