@@ -24,6 +24,7 @@ func _ready() -> void:
 	_apply(doc)
 	_bad_input()
 	_altar_idols()
+	_blessings()
 	_specialized_skills()
 	await _main_ui()
 	print("LETOOLS IMPORT TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
@@ -183,6 +184,16 @@ func _convert() -> Dictionary:
 	var inner: Dictionary = ImportScript.to_build(response["data"])
 	_check("inner data: class/level", [inner["class_id"], inner["level"]], [3, 58])
 	return doc
+
+
+## Blessings arrive as {timelineID: {id, ir}}; the fixture has four of them.
+func _blessings() -> void:
+	var file: FileAccess = FileAccess.open("res://tests/fixtures/letools_ApbrXYvx.json", FileAccess.READ)
+	var doc: Dictionary = ImportScript.to_build(JSON.parse_string(file.get_as_text()))
+	var got: Dictionary = {}
+	for timeline: Variant in doc["blessings"]:
+		got[int(timeline)] = [doc["blessings"][timeline]["id"], doc["blessings"][timeline]["roll"]]
+	_check("blessings (timeline -> id, roll)", got, {1: [2, 171], 3: [26, 38], 5: [82, 1], 7: [98, 166]})
 
 
 func _apply(doc: Dictionary) -> void:

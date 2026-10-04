@@ -407,13 +407,19 @@ static func _convert_item(raw: Dictionary, label: String, warnings: Array[String
 	return item
 
 
-## Blessings of the planner: list of null / {id, ir}. The mapping (base 34, sub = blessing id, roll = ir[0]) is UNVERIFIED:
-## the sample build had no blessings.
-static func _blessings(raw_list: Variant, warnings: Array[String]) -> Dictionary:
+## Blessings of the planner: {timelineID: {id, ir}} (an empty build sends []; a list of null / {id, ir} is also accepted).
+## Id: base 34, sub = blessing id; roll = ir[0].
+static func _blessings(raw_blessings: Variant, warnings: Array[String]) -> Dictionary:
 	var result: Dictionary = {}
-	if not raw_list is Array:
-		return result
-	for raw: Variant in raw_list:
+	var entries: Array = []  # [timeline id or -1, raw]
+	if raw_blessings is Dictionary:
+		for key: Variant in raw_blessings:
+			entries.append([int(str(key)), raw_blessings[key]])
+	elif raw_blessings is Array:
+		for raw: Variant in raw_blessings:
+			entries.append([-1, raw])
+	for entry: Array in entries:
+		var raw: Variant = entry[1]
 		if not raw is Dictionary:
 			continue
 		var dec: Dictionary = decode_id(str(raw.get("id", "")))
@@ -426,9 +432,12 @@ static func _blessings(raw_list: Variant, warnings: Array[String]) -> Dictionary
 		if blessing.is_empty() or timelines.is_empty():
 			warnings.append(LE.t("Blessing %d is unknown, skipped.") % blessing_id)
 			continue
+		var timeline_id: int = int(entry[0])
+		if timeline_id < 0:
+			timeline_id = int(timelines[0].get("timelineID", -1))
 		var rolls: Variant = raw.get("ir")
 		var roll: int = int(rolls[0]) if rolls is Array and not rolls.is_empty() else 255
-		result[int(timelines[0].get("timelineID", -1))] = {"id": blessing_id, "roll": roll}
+		result[timeline_id] = {"id": blessing_id, "roll": roll}
 	return result
 
 
