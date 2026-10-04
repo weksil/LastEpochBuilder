@@ -18,7 +18,7 @@ every value. Windows x64, no installation: unzip and run `LastEpochBuilder.exe`.
 - **Interface language**: English or Russian, selector in the top bar.
 
 Hit numbers are checked against the in-game training dummy; formulas come from the official in-game guide, the game client's code and
-data (see "Where the formulas and data come from" in the README).
+data (see "Where the formulas and data come from" in TECH_README.md).
 
 ## Known limitations
 
