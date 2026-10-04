@@ -14006,5 +14006,8 @@ msgstr "Отбросить несохранённые изменения и ве
 msgid "%s: %s (no change)"
 msgstr "%s: %s (без изменений)"
 
-msgid "No effect on the build stats"
-msgstr "Не влияет на характеристики билда"
+msgid "%s increased drop rate"
+msgstr "%s к шансу выпадения"
+
+msgid "%s increased drop rate of: %s"
+msgstr "%s к шансу выпадения: %s"

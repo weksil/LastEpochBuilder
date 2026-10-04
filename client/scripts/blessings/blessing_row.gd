@@ -34,17 +34,21 @@ func setup(timeline: Dictionary) -> void:
 	_on_build_changed()
 
 
-## Effect of a blessing: every implicit with its roll range (the drop rate one is not a stat).
+## Effect of a blessing: every implicit with its roll range. The drop rate one does not touch the stats, but is described too.
 func _tooltip(blessing: Dictionary) -> String:
 	var lines: Array[String] = [str(blessing.get("displayName", ""))]
 	for implicit: Dictionary in blessing.get("implicits", []):
-		if int(implicit.get("property", 0)) == 104:  # IncreasedDropRate
-			continue
 		var value: float = float(implicit.get("value", 0.0))
 		var max_value: float = float(implicit.get("maxValue", value))
-		lines.append("%s %s" % [ItemCompare.format_range(implicit, value, max_value), ItemCompare.prop_title(implicit)])
-	if lines.size() == 1:
-		lines.append(tr("No effect on the build stats"))
+		var range_text: String = ItemCompare.format_range(implicit, value, max_value)
+		if int(implicit.get("property", 0)) == 104:  # IncreasedDropRate
+			var drop_type: String = str(implicit.get("dropRateItemType", "")).replace("IDOL_", "").replace("_", " ").capitalize()
+			if drop_type == "":
+				lines.append(tr("%s increased drop rate") % range_text)
+			else:
+				lines.append(tr("%s increased drop rate of: %s") % [range_text, drop_type])
+		else:
+			lines.append("%s %s" % [range_text, ItemCompare.prop_title(implicit)])
 	return "
 ".join(lines)
 
