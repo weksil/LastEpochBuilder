@@ -79,7 +79,7 @@ func _sync_from_build() -> void:
 		%HealthSelect.select(health_index)
 
 	# Enemy kind
-	var kind: String = Build.enemy.get("kind", "boss") as String
+	var kind: String = Build.enemy.get("kind", "dummy") as String
 	var kind_index: int = ["dummy", "normal", "magic", "rare", "miniboss", "boss"].find(kind)
 	if kind_index >= 0:
 		%KindSelect.select(kind_index)

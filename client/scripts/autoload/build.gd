@@ -65,7 +65,7 @@ func _init_defaults() -> void:
 	# Initialize enemy with defaults
 	enemy = {
 		"level": 100,
-		"kind": "boss",
+		"kind": "dummy",  # training dummy: numbers match in-game dummy hits
 		"res": [0, 0, 0, 0, 0, 0, 0],
 		"armour": 0,
 		"ailments": {},

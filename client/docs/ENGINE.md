@@ -237,7 +237,7 @@ tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], not
 
 ### 6.1 Конфиг `Build.enemy`
 ```
-{level: 100, kind: "boss",            # "dummy" | "normal" | "magic" | "rare" | "miniboss" | "boss"
+{level: 100, kind: "dummy",           # default; "dummy" | "normal" | "magic" | "rare" | "miniboss" | "boss"
  res: [0,0,0,0,0,0,0],                # проценты по типам урона (порядок §1)
  armour: 0,
  ailments: {ailment_id: stacks},      # шреды, шок, холод, проклятия, игнайт и т. д.
