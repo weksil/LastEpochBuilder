@@ -1,7 +1,8 @@
 class_name ItemEditor extends PanelContainer
 
 ## Edits one equipment slot of Build.items or one unequipped item of Build.stash (docs/UI.md "Items").
-## Controls live in item_editor.tscn.
+## Edits change a draft of the item; %Pending under the item shows the stat changes Save would give. Controls live in
+## item_editor.tscn.
 
 ## The edited item is gone or moved: the parent should show the slot instead.
 signal slot_requested(slot: String)
@@ -16,17 +17,28 @@ const TYPE_SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", 
 const TIER_SPAN: int = 256
 ## %SubSelect entry id = baseTypeID * SUB_ID_STRIDE + subTypeID.
 const SUB_ID_STRIDE: int = 1000
+## The unsaved-changes diff is recomputed at most this often (20 times a second).
+const DIFF_INTERVAL_MSEC: int = 50
 
 @export var implicit_row_scene: PackedScene
 @export var set_line_scene: PackedScene
 @export var info_tooltip_scene: PackedScene
+@export var diff_line_scene: PackedScene
 
 ## The slot being edited; in stash mode the slot kind of the stashed item (it filters bases and uniques).
 var _slot: String = ""
 ## Index of the edited Build.stash entry, -1 when an equipment slot is edited.
 var _stash_index: int = -1
 var _filling: bool = false
-var _shown_item: Dictionary = {}
+## The item as shown and edited; Save stores it.
+var _draft: Dictionary = {}
+## The stored item when the draft was taken: a different stored item (changed elsewhere) replaces the draft.
+var _saved_item: Dictionary = {}
+## The stats the unsaved-changes diff compares against; cleared whenever the build changes.
+var _base_snapshot: Dictionary = {}
+## An unsaved-changes diff update is queued (end of the frame or %DiffTimer).
+var _diff_queued: bool = false
+var _last_diff_msec: int = -DIFF_INTERVAL_MSEC
 
 
 func _ready() -> void:
@@ -40,6 +52,9 @@ func _ready() -> void:
 	%StashCopyButton.pressed.connect(func() -> void: Build.stash_add(_item()))
 	%StashMoveButton.pressed.connect(_on_stash_move)
 	%EquipButton.pressed.connect(_on_equip)
+	%SaveButton.pressed.connect(_save)
+	%RevertButton.pressed.connect(_revert)
+	%DiffTimer.timeout.connect(_update_diff)
 	for row_name: String in AFFIX_ROWS:
 		var row: Node = %Affixes.get_node(row_name)
 		if row_name.begins_with("Prefix") or row_name.begins_with("Suffix"):
@@ -57,6 +72,7 @@ func edit_slot(slot: String, title: String) -> void:
 	_slot = slot
 	%NameEdit.release_focus()
 	%SlotTitle.text = title
+	_load()
 	_fill()
 
 
@@ -66,6 +82,7 @@ func edit_stash(index: int) -> void:
 	%NameEdit.release_focus()
 	_slot = ItemCompare.target_slot(Build.stash[index], "") if index >= 0 and index < Build.stash.size() else ""
 	%SlotTitle.text = tr("Unequipped item")
+	_load()
 	_fill()
 
 
@@ -76,14 +93,34 @@ func focus_type() -> void:
 		%TypeSelect.grab_focus()
 
 
+## True when the shown item differs from the stored one (Save would change the build).
+func is_dirty() -> bool:
+	return _draft != _saved_item
+
+
+## The item as shown and edited (the draft).
 func _item() -> Dictionary:
+	return _draft
+
+
+## The item as stored in the slot or the stash entry.
+func _stored() -> Dictionary:
 	if _stash_index >= 0:
 		return Build.stash[_stash_index] if _stash_index < Build.stash.size() else {}
 	return Build.items.get(_slot, {})
 
 
-## Stores an edited item in the slot or the stash entry.
+## Takes the stored item as the draft; unsaved edits are dropped.
+func _load() -> void:
+	_saved_item = _stored().duplicate(true)
+	_draft = _saved_item.duplicate(true)
+	_base_snapshot = {}
+
+
+## Stores an item in the slot or the stash entry; it becomes the draft too.
 func _put(item: Dictionary) -> void:
+	_saved_item = item.duplicate(true)
+	_draft = item.duplicate(true)
 	if _stash_index >= 0:
 		Build.stash_set(_stash_index, item)
 	else:
@@ -96,14 +133,21 @@ func _remove() -> void:
 		Build.stash_remove(_stash_index)
 		slot_requested.emit(_slot)
 	else:
+		_saved_item = {}
+		_draft = {}
 		Build.clear_item(_slot)
 
 
 func _on_build_changed() -> void:
+	_base_snapshot = {}
 	if _stash_index >= 0 and _stash_index >= Build.stash.size():
 		slot_requested.emit.call_deferred(_slot)
-	elif (_slot != "" or _stash_index >= 0) and not _filling and _item() != _shown_item:
+	elif (_slot != "" or _stash_index >= 0) and not _filling and _stored() != _saved_item:
+		# the item was changed elsewhere (the slot list, another tab, an import): it replaces the draft
+		_load()
 		_fill.call_deferred()
+	else:
+		_queue_diff()
 	if _slot != "":
 		_update_set_bonuses.call_deferred()
 
@@ -113,7 +157,6 @@ func _on_build_changed() -> void:
 func _fill() -> void:
 	_filling = true
 	var item: Dictionary = _item()
-	_shown_item = item.duplicate(true)
 	var unique_id: int = int(item.get("unique", UNIQUE_EMPTY_ID))
 	var base_id: int = int(item.get("base", EMPTY_ID))
 	var base: Dictionary = GameData.item_base(base_id) if item.has("base") else {}
@@ -150,10 +193,10 @@ func _fill() -> void:
 	var has_item: bool = not base.is_empty() or has_unique
 	var is_idol: bool = IdolGrid.is_idol_key(_slot)
 	%AffixesTitle.text = tr("Affixes (1 prefix, 1 suffix)") if is_idol else tr("Affixes (2 prefixes, 2 suffixes)")
-	if has_unique:
-		var unique: Dictionary = GameData.unique(unique_id)
-		if str(unique.get("legendaryType", "")) == "LegendaryPotential":
-			%AffixesTitle.text = tr("Legendary affixes")
+	var is_set: bool = has_unique and int(GameData.unique(unique_id).get("isSetItem", 0)) != 0
+	if has_unique and not is_set:
+		var weaver: bool = str(GameData.unique(unique_id).get("legendaryType", "")) == "WeaversWill"
+		%AffixesTitle.text = tr("Legendary affixes (Weaver's Will)") if weaver else tr("Legendary affixes (legendary potential)")
 
 	%SubSelect.disabled = has_unique
 	%EmptyHint.visible = not has_item
@@ -171,8 +214,8 @@ func _fill() -> void:
 	%StashMoveButton.visible = has_item and not in_stash and BuildMods.SLOTS.has(_slot)
 	for node_name: String in ["%AffixesTitle", "%Affixes", "%ClearButton"]:
 		get_node(node_name).visible = has_item
-	# a unique shows its mods; the affix block only when it carries affixes (a legendary)
-	if has_unique and (item.get("affixes", []) as Array).is_empty():
+	# a unique takes affixes as a legendary (legendary potential, Weaver's Will); a set item shows only its mods
+	if is_set and (item.get("affixes", []) as Array).is_empty():
 		%AffixesTitle.visible = false
 		%Affixes.visible = false
 	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
@@ -183,6 +226,7 @@ func _fill() -> void:
 	_filling = false
 	_update_values()
 	_update_set_bonuses()
+	_queue_diff()
 
 
 ## %SubSelect: every usable subtype of every base that fits the slot; id = baseTypeID * 1000 + subTypeID.
@@ -359,7 +403,7 @@ func _placed_affixes(item: Dictionary) -> Array:
 
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	var stored: Array = _placed_affixes(item)
-	var has_unique: bool = item.has("unique")
+	var is_set: bool = item.has("unique") and int(GameData.unique(int(item["unique"])).get("isSetItem", 0)) != 0
 	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
 	if not base.is_empty():
 		var class_name_str: String = str(GameData.get_class_data(Build.class_id).get("className", ""))
@@ -401,9 +445,10 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		slider.set_value_no_signal(float((tier - 1) * TIER_SPAN + clampi(int(entry.get("roll", 255)), 0, TIER_SPAN - 1)))
 		for path: String in ["Top/TierLabel", "Top/TierSpin", "Bottom"]:
 			row.get_node(path).visible = affix_id != EMPTY_ID
-		# idols have one prefix and one suffix; the sealed row only when the item has one; uniques show only their affixes
+		# idols have one prefix and one suffix; the sealed / corrupted rows only when the item has one; set items show
+		# only the affixes they carry
 		row.visible = not (IdolGrid.is_idol_key(_slot) and (r == 1 or r == 3))
-		if extra or has_unique:
+		if extra or is_set:
 			row.visible = row.visible and affix_id != EMPTY_ID
 
 
@@ -471,7 +516,7 @@ func _on_sub_selected(index: int) -> void:
 		var kept_affixes: Array = item.get("affixes", []) if int(item.get("base", -1)) == base_id else []
 		var new_item: Dictionary = ItemCompare.new_item(base_id, entry_id % SUB_ID_STRIDE, kept_affixes)
 		_keep_name(new_item, item)
-		_put(new_item)
+		_commit(new_item)
 	_fill()
 
 
@@ -509,13 +554,17 @@ func _on_clear() -> void:
 	_fill()
 
 
+## Moves the item as shown (unsaved edits included) to the stash.
 func _on_stash_move() -> void:
+	_save()
 	Build.unequip_to_stash(_slot)
+	_load()
 	_fill()
 
 
-## Stash mode: equips the item into its slot; the item that was there takes its place in the stash.
+## Stash mode: equips the item as shown into its slot; the item that was there takes its place in the stash.
 func _on_equip() -> void:
+	_save()
 	var slot: String = _slot
 	Build.equip_from_stash(_stash_index, slot)
 	slot_requested.emit(slot)
@@ -571,10 +620,99 @@ func _on_tier_spin(value: float, row: Node) -> void:
 	_store_affixes(false)
 
 
+## An edit of the shown item: it stays an unsaved draft; an item put into an empty slot is stored at once.
 func _commit(item: Dictionary) -> void:
-	_shown_item = item.duplicate(true)
-	_put(item)
+	if _saved_item.is_empty():
+		_put(item)
+	else:
+		_draft = item
 	_update_values()
+	_queue_diff()
+
+
+## Save: stores the draft in the slot or the stash entry.
+func _save() -> void:
+	if is_dirty():
+		_put(_draft.duplicate(true))
+	_queue_diff()
+
+
+## Discards the unsaved edits.
+func _revert() -> void:
+	_load()
+	_fill()
+
+
+# --- unsaved changes ---------------------------------------------------------------------
+
+## Shows or hides %Pending; its stat lines follow the edits at most every DIFF_INTERVAL_MSEC (a dragged slider fires
+## often); the queued update reads the latest draft, so the last edit is always shown.
+func _queue_diff() -> void:
+	%Pending.visible = is_dirty()
+	if not is_dirty() or _diff_queued:
+		return
+	_diff_queued = true
+	var wait_msec: int = _last_diff_msec + DIFF_INTERVAL_MSEC - Time.get_ticks_msec()
+	if wait_msec <= 0 or not is_inside_tree():
+		_update_diff.call_deferred()
+	else:
+		%DiffTimer.start(wait_msec / 1000.0)
+
+
+## The stat changes saving the draft would give: an equipment slot against the build, an unequipped item against
+## the stored version equipped in its slot.
+func _update_diff() -> void:
+	_diff_queued = false
+	_last_diff_msec = Time.get_ticks_msec()
+	for child: Node in %PendingLines.get_children():
+		%PendingLines.remove_child(child)
+		child.queue_free()
+	%Pending.visible = is_dirty()
+	if not is_dirty():
+		return
+	if _stash_index >= 0:
+		%PendingHeader.text = tr("Saving the changes will give you (with the item equipped in %s):") % ItemCompare.slot_title(_slot)
+	else:
+		%PendingHeader.text = tr("Saving the changes will give you:")
+	if _slot == "":
+		%PendingDps.visible = false
+		%PendingNone.visible = true
+		return
+	if _base_snapshot.is_empty():
+		_base_snapshot = ItemCompare.snapshot(Build) if _stash_index < 0 else ItemCompare.snapshot_with_item(Build, _slot, _saved_item)
+	var before: Dictionary = _base_snapshot.duplicate()
+	var after: Dictionary = ItemCompare.snapshot_with_item(Build, _slot, _draft)
+	_show_dps(before.get("dps", {}), after.get("dps", {}))
+	before.erase("dps")
+	after.erase("dps")
+	var lines: Array[Dictionary] = ItemCompare.diff(before, after)
+	for line: Dictionary in lines:
+		var label: Label = diff_line_scene.instantiate()
+		%PendingLines.add_child(label)
+		label.text = str(line.get("text", ""))
+		label.theme_type_variation = &"DeltaUp" if float(line.get("delta", 0.0)) > 0.0 else &"DeltaDown"
+	%PendingLines.visible = not lines.is_empty()
+	%PendingNone.visible = lines.is_empty() and not %PendingDps.visible
+
+
+## %PendingDps: DPS vs enemy of the skill selected in Calculations before and after saving, also when it stays the same
+## (snapshot entries "dps"; hidden when the skill has no DPS).
+func _show_dps(before: Dictionary, after: Dictionary) -> void:
+	var dps_label: Label = %PendingDps
+	var source: Dictionary = after if not after.is_empty() else before
+	dps_label.visible = not source.is_empty()
+	if source.is_empty():
+		return
+	var old_value: float = float(before.get("value", 0.0))
+	var new_value: float = float(after.get("value", 0.0))
+	var delta: float = new_value - old_value
+	var title: String = str(source.get("label", ""))
+	if absf(delta) < ItemCompare.EPSILON:
+		dps_label.text = tr("%s: %s (no change)") % [title, LE.fmt_num(new_value)]
+		dps_label.theme_type_variation = &"MutedLabel"
+	else:
+		dps_label.text = "%s: %s → %s (%s)" % [title, LE.fmt_num(old_value), LE.fmt_num(new_value), ItemCompare.format_delta(delta, false)]
+		dps_label.theme_type_variation = &"DeltaUp" if delta > 0.0 else &"DeltaDown"
 
 
 # --- value labels ----------------------------------------------------------------------

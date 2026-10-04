@@ -137,6 +137,8 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   Items are switched as in Path of Building: each slot is a dropdown of the character's items that fit it (equipped ones carry
   the symbolic icon of their slot, unequipped ones are grey); below a separator the unequipped items are listed and "+" adds a new one (type, then base, in the editor). Items can be
   renamed; an affix slider runs through all its tiers, ticks mark the tier borders; the unique, base and affix lists have a search field.
+  Edits stay unsaved until "Save": under the item the editor shows what saving would change (DPS, health, resistances…), "Discard
+  changes" drops them. Uniques take prefixes and suffixes too (legendary potential, Weaver's Will).
   Hovering any item shows what equipping it changes (DPS vs enemy of the selected skill and every numeric character stat). The editor
   shows the bonuses of a set item's set: active ones in green, inactive ones grey. Slot icons are the item type icons of the game's
   prophecy / monolith rewards (`client/assets/items/`, `tools/extract/extract_item_icons.py`).

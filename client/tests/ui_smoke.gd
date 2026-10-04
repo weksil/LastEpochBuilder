@@ -92,6 +92,22 @@ func _ready() -> void:
 		affix_select.select(1)
 		affix_select.item_selected.emit(1)
 	await _frames(2)
+	# the affix is an unsaved edit: the build keeps the old item, the diff block shows up, Save stores it
+	var pending_failed: bool = false
+	if not editor.is_dirty() or not editor.get_node("%Pending").visible or Build.items.get("weapon", {}) == editor._item():
+		pending_failed = true
+		print("FAIL: an affix edit did not stay an unsaved draft with the diff block shown")
+	editor._update_diff()
+	print("pending lines: %d" % editor.get_node("%PendingLines").get_child_count())
+	print("pending dps: %s" % editor.get_node("%PendingDps").text)
+	if editor.get_node("%PendingLines").get_child_count() == 0 and not editor.get_node("%PendingNone").visible 			and not editor.get_node("%PendingDps").visible:
+		pending_failed = true
+		print("FAIL: the unsaved-changes block shows neither DPS, stat lines nor \"No stat changes\"")
+	editor.get_node("%SaveButton").pressed.emit()
+	await _frames(2)
+	if editor.is_dirty() or editor.get_node("%Pending").visible or Build.items.get("weapon", {}) != editor._item():
+		pending_failed = true
+		print("FAIL: Save did not store the edited weapon")
 	print("weapon: %s" % weapon_row.get_node("%ItemButton").text)
 	print("item: %s" % str(Build.items.get("weapon", {})))
 	# hover tooltips of the search lists
@@ -135,6 +151,8 @@ func _ready() -> void:
 	if search_failed:
 		print("FAIL: the searchable unique select did not list every item or Snowblind")
 	await _frames(2)
+	editor.get_node("%SaveButton").pressed.emit()
+	await _frames(2)
 	print("unique helmet: %s / %s" % [helmet_row.get_node("%ItemButton").text, str(Build.items.get("helmet", {}))])
 	if int(Build.items.get("helmet", {}).get("unique", -1)) != snowblind_id:
 		search_failed = true
@@ -177,6 +195,7 @@ func _ready() -> void:
 	var name_edit: LineEdit = editor.get_node("%NameEdit")
 	name_edit.text = "My test helm"
 	name_edit.text_changed.emit("My test helm")
+	editor.get_node("%SaveButton").pressed.emit()
 	await _frames(2)
 	var stash_button: Button = items_tab.get_node("%StashRows").get_child(1)
 	print("named item: %s / button \"%s\"" % [str(Build.stash[1].get("name", "")), stash_button.text])
@@ -210,6 +229,7 @@ func _ready() -> void:
 		var tier_slider: HSlider = tier_prefix.get_node("Bottom/RollSlider")
 		tier_slider.value = 256 * 2 + 100
 		tier_slider.value_changed.emit(256.0 * 2 + 100)
+		editor.get_node("%SaveButton").pressed.emit()
 		await _frames(2)
 		var stored: Array = Build.stash[1].get("affixes", [])
 		print("tier slider affix: %s" % str(stored))
@@ -263,6 +283,7 @@ func _ready() -> void:
 	if idol_affix.item_count > 1:
 		idol_affix.select(1)
 		idol_affix.item_selected.emit(1)
+	idol_editor.get_node("%SaveButton").pressed.emit()
 	await _frames(2)
 	for item_slot: String in Build.items:
 		if IdolGrid.is_idol_key(item_slot):
@@ -327,7 +348,7 @@ func _ready() -> void:
 	if bool(Build.player_state["haste"]):
 		failed = true
 		print("FAIL: reset_player_conditions")
-	failed = failed or tree_switch_failed or failed_items or search_failed or hover_failed
+	failed = failed or tree_switch_failed or failed_items or search_failed or hover_failed or pending_failed
 	# interface language: the Russian catalogue (res://i18n/ru.po) is loaded and switching the locale works
 	var saved_locale: String = TranslationServer.get_locale()
 	TranslationServer.set_locale("ru")

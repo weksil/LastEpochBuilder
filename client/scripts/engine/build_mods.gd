@@ -846,13 +846,29 @@ static func eval_value(raw: Variant, points: int) -> float:
 	if not raw is Dictionary:
 		return 0.0
 	if raw.has("expr"):
-		var expr := Expression.new()
-		if expr.parse(str(raw["expr"]), ["p"]) == OK:
-			var out: Variant = expr.execute([float(points)])
-			if out is float or out is int:
-				return float(out)
+		var expr: Expression = _expression(str(raw["expr"]))
+		if expr == null:
+			return 0.0
+		var out: Variant = expr.execute([float(points)], null, false)
+		if expr.has_execute_failed():
+			# game code the client does not have (EpochExtensions.AreaToRadius, TheWeaver.…): counts as 0 from now on
+			_expressions[str(raw["expr"])] = null
+			return 0.0
+		if out is float or out is int:
+			return float(out)
 		return 0.0
 	return float(raw.get("per_point", 0.0)) * points + float(raw.get("flat", 0.0))
+
+
+## Parsed node effect expressions by text; null for the ones that do not parse or failed to run.
+static var _expressions: Dictionary = {}
+
+
+static func _expression(text: String) -> Expression:
+	if not _expressions.has(text):
+		var expr := Expression.new()
+		_expressions[text] = expr if expr.parse(text, ["p"]) == OK else null
+	return _expressions[text]
 
 
 static func _effect_label(effect: Dictionary) -> String:

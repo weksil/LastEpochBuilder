@@ -6956,8 +6956,11 @@ msgstr "Скорость выплаты вампиризма"
 msgid "Leech stops at health above"
 msgstr "Вампиризм прекращается при здоровье выше"
 
-msgid "Legendary affixes"
-msgstr "Легендарные аффиксы"
+msgid "Legendary affixes (legendary potential)"
+msgstr "Легендарные аффиксы (легендарный потенциал)"
+
+msgid "Legendary affixes (Weaver's Will)"
+msgstr "Легендарные аффиксы (воля Ткача)"
 
 msgid "Length: (%s + %s) × (1 + %s) = %s"
 msgstr "Длина: (%s + %s) × (1 + %s) = %s"
@@ -13981,3 +13984,24 @@ msgstr "Осквернённый префикс"
 
 msgid "Corrupted suffix"
 msgstr "Осквернённый суффикс"
+
+msgid "Saving the changes will give you:"
+msgstr "Сохранение изменений даст:"
+
+msgid "Saving the changes will give you (with the item equipped in %s):"
+msgstr "Сохранение изменений даст (если надеть в слот «%s»):"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Discard changes"
+msgstr "Отменить изменения"
+
+msgid "Store the edited item in the build."
+msgstr "Записать изменённый предмет в билд."
+
+msgid "Drop the unsaved edits and show the stored item again."
+msgstr "Отбросить несохранённые изменения и вернуть предмет как был."
+
+msgid "%s: %s (no change)"
+msgstr "%s: %s (без изменений)"

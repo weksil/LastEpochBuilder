@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/common/search_select.tscn" id="9_search"]
 [ext_resource type="Script" path="res://scripts/items/item_editor.gd" id="1_script"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/items/affix_row.tscn" id="3_affix"]
 [ext_resource type="PackedScene" path="res://scenes/items/set_bonus_line.tscn" id="4_set_line"]
 [ext_resource type="PackedScene" path="res://scenes/items/item_info_tooltip.tscn" id="8_info"]
+[ext_resource type="PackedScene" path="res://scenes/items/diff_line.tscn" id="10_diff_line"]
 [ext_resource type="Texture2D" path="res://assets/items/helmet.png" id="icon_helmet"]
 [ext_resource type="Texture2D" path="res://assets/items/armor.png" id="icon_armor"]
 [ext_resource type="Texture2D" path="res://assets/items/belt.png" id="icon_belt"]
@@ -23,6 +24,7 @@ script = ExtResource("1_script")
 implicit_row_scene = ExtResource("2_implicit")
 set_line_scene = ExtResource("4_set_line")
 info_tooltip_scene = ExtResource("8_info")
+diff_line_scene = ExtResource("10_diff_line")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -220,8 +222,63 @@ layout_mode = 2
 [node name="Corrupted" parent="VBox/Affixes" instance=ExtResource("3_affix")]
 layout_mode = 2
 
+[node name="Pending" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Separator" type="HSeparator" parent="VBox/Pending"]
+layout_mode = 2
+
+[node name="PendingHeader" type="Label" parent="VBox/Pending"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Saving the changes will give you:"
+
+[node name="PendingDps" type="Label" parent="VBox/Pending"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"DeltaUp"
+text = "Skill · DPS vs enemy: 0 → 0 (+0)"
+
+[node name="PendingLines" type="VBoxContainer" parent="VBox/Pending"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="PendingNone" type="Label" parent="VBox/Pending"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "No stat changes."
+
+[node name="PendingButtons" type="HBoxContainer" parent="VBox/Pending"]
+layout_mode = 2
+
+[node name="SaveButton" type="Button" parent="VBox/Pending/PendingButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Store the edited item in the build."
+text = "Save"
+
+[node name="RevertButton" type="Button" parent="VBox/Pending/PendingButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Drop the unsaved edits and show the stored item again."
+text = "Discard changes"
+
 [node name="EmptyHint" type="Label" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Pick an item"
+
+[node name="DiffTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
