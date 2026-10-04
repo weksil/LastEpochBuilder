@@ -6,16 +6,66 @@ signal remove_requested(node_id: int)
 
 @export var node_scene: PackedScene
 @export var link_scene: PackedScene
+@export var decor_scene: PackedScene
 @export var margin: float = 60.0
+## Zoom limits; a new tree opens fitted into the view (not larger than 1:1), Ctrl + wheel zooms.
+@export var min_zoom: float = 0.35
+@export var max_zoom: float = 1.5
+@export var zoom_step: float = 1.1
+
+var _canvas_size: Vector2 = Vector2.ZERO
+var _nodes_rect: Rect2 = Rect2()  # nodes with margin, canvas coordinates at zoom 1
+var _zoom: float = 1.0
+var _user_zoom: bool = false
 
 var _nodes: Dictionary[int, PassiveNode] = {}
 var _links: Array[Array] = []
 
 func _ready() -> void:
-	pass
+	resized.connect(func() -> void:
+		if not _user_zoom:
+			_fit())
+
+
+## Ctrl + wheel: zoom around the view; plain wheel scrolls as usual.
+func _gui_input(event: InputEvent) -> void:
+	var mb: InputEventMouseButton = event as InputEventMouseButton
+	if mb == null or not mb.pressed or not mb.ctrl_pressed:
+		return
+	if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
+		_user_zoom = true
+		_set_zoom(_zoom * zoom_step)
+		accept_event()
+	elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		_user_zoom = true
+		_set_zoom(_zoom / zoom_step)
+		accept_event()
+
+
+## Fits the nodes (not the whole background) into the view and centres them.
+func _fit() -> void:
+	if _nodes_rect.size.x <= 0.0 or _nodes_rect.size.y <= 0.0 or size.x <= 0.0 or size.y <= 0.0:
+		return
+	_set_zoom(minf(1.0, minf(size.x / _nodes_rect.size.x, size.y / _nodes_rect.size.y)))
+	_center_nodes()
+
+
+func _center_nodes() -> void:
+	await get_tree().process_frame  # scroll ranges follow the new canvas size one frame later
+	var c: Vector2 = _nodes_rect.get_center() * _zoom
+	scroll_horizontal = int(c.x - size.x / 2.0)
+	scroll_vertical = int(c.y - size.y / 2.0)
+
+
+func _set_zoom(z: float) -> void:
+	_zoom = clampf(z, min_zoom, max_zoom)
+	%Content.scale = Vector2(_zoom, _zoom)
+	%Canvas.custom_minimum_size = _canvas_size * _zoom
 
 func show_tree(nodes: Array, tree_id: String) -> void:
-	# Clear existing nodes and links
+	# Clear existing decorations, nodes and links
+	for child in %Decor.get_children():
+		child.queue_free()
 	for child in %Links.get_children():
 		child.queue_free()
 	for child in %Nodes.get_children():
@@ -25,6 +75,7 @@ func show_tree(nodes: Array, tree_id: String) -> void:
 	_links.clear()
 
 	if nodes.is_empty():
+		_canvas_size = Vector2.ZERO
 		%Canvas.custom_minimum_size = Vector2.ZERO
 		return
 
@@ -49,10 +100,39 @@ func show_tree(nodes: Array, tree_id: String) -> void:
 		max_x = max(max_x, pos.x)
 		max_y = max(max_y, pos.y)
 
+	var min_node: Vector2 = Vector2(min_x, min_y)
+	var max_node: Vector2 = Vector2(max_x, max_y)
+	# game background and ornaments of the panel (TreeArt, same space as node positions); the canvas grows to show them
+	var decor: Array = TreeArt.decor(tree_id, int(nodes[0].get("mastery", 0)))
+	for l: Dictionary in decor:
+		var half: Vector2 = TreeArt.size(l) / 2.0
+		var c: Vector2 = TreeArt.offset(l)
+		min_x = min(min_x, c.x - half.x + margin)
+		min_y = min(min_y, c.y - half.y + margin)
+		max_x = max(max_x, c.x + half.x - margin)
+		max_y = max(max_y, c.y + half.y - margin)
+
 	var offset: Vector2 = Vector2(margin - min_x, margin - min_y)
 	var canvas_size: Vector2 = Vector2(max_x - min_x + margin * 2, max_y - min_y + margin * 2)
-	%Canvas.custom_minimum_size = canvas_size
+	_canvas_size = canvas_size
+	_nodes_rect = Rect2(Vector2(min_node.x, min_node.y) + offset - Vector2(margin, margin),
+		Vector2(max_node.x - min_node.x, max_node.y - min_node.y) + Vector2(margin, margin) * 2.0)
+	_user_zoom = false
+	_set_zoom(1.0)
+	_fit()
 
+	for l: Dictionary in decor:
+		var tex: Texture2D = TreeArt.texture(l.get("sprite"))
+		if tex == null or not bool(l.get("active", true)):
+			continue
+		var decor_instance: TextureRect = decor_scene.instantiate() as TextureRect
+		%Decor.add_child(decor_instance)
+		decor_instance.texture = tex
+		decor_instance.self_modulate = TreeArt.color(l)
+		decor_instance.size = TreeArt.size(l)
+		decor_instance.position = TreeArt.offset(l) + offset - decor_instance.size / 2.0
+
+	var link_art: Dictionary = TreeArt.connection(tree_id)
 	var node_ids: Array[int] = []
 	for node in nodes:
 		node_ids.append(int(node["id"]))
@@ -65,7 +145,7 @@ func show_tree(nodes: Array, tree_id: String) -> void:
 
 		var node_instance: PassiveNode = node_scene.instantiate() as PassiveNode
 		%Nodes.add_child(node_instance)
-		node_instance.setup(node, stats)
+		node_instance.setup(node, stats, TreeArt.node_art(tree_id, node_id))
 		node_instance.position = node_pos - node_instance.custom_minimum_size / 2.0
 
 		# Bubble up signals
@@ -83,7 +163,7 @@ func show_tree(nodes: Array, tree_id: String) -> void:
 
 				var link_instance: PassiveLink = link_scene.instantiate() as PassiveLink
 				%Links.add_child(link_instance)
-				link_instance.points = PackedVector2Array([req_pos, node_pos])
+				link_instance.connect_points(req_pos, node_pos, link_art)
 
 				_links.append([link_instance, req_node_id, node_id])
 

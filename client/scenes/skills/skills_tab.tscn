@@ -60,7 +60,7 @@ text = ""
 [node name="Hint" type="Label" parent="TreePanel"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "ЛКМ — добавить очко, ПКМ — убрать. Очков в дереве не больше уровня умения. Баффы умений на персонажа — во вкладке «Расчёты»."
+text = "ЛКМ — добавить очко, ПКМ — убрать, Ctrl + колесо — масштаб. Очков в дереве не больше уровня умения. Баффы умений на персонажа — во вкладке «Расчёты»."
 autowrap_mode = 3
 
 [node name="TreeCanvas" parent="TreePanel" instance=ExtResource("3_canvas")]

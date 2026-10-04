@@ -21,15 +21,30 @@
 `SummaryActive`/`SummaryOff` — однострочные итоги групп; `FlatToggle` — плоская кнопка-раскрывашка; `DeltaUp`/`DeltaDown` — разница значения.
 
 ## Дерево — `scripts/trees/tree_canvas.gd` (`class_name TreeCanvas extends ScrollContainer`)
-Сцена `scenes/trees/tree_canvas.tscn`: `%Canvas` > `%Links`, `%Nodes`. `@export node_scene, link_scene, margin := 60.0`.
+Сцена `scenes/trees/tree_canvas.tscn`: `%Canvas` > `%Content` > `%Decor`, `%Links`, `%Nodes`. `@export node_scene, link_scene, decor_scene,
+margin := 60.0, min_zoom, max_zoom, zoom_step`.
 - `signal add_requested(node_id: int)`, `signal remove_requested(node_id: int)`.
-- `func show_tree(nodes: Array, tree_id: String)` — очистить `%Links`/`%Nodes` (queue_free детей), разложить узлы:
-  позиция `Vector2(p[0], -p[1])`, сдвиг так, чтобы минимум = margin; `%Canvas.custom_minimum_size = max + margin`;
-  инстанс `node_scene` (`PassiveNode`): `setup(node, GameData.get_node_stats(tree_id, id))`, позиция `pos − custom_minimum_size/2`,
-  сигналы узла → сигналы канвы. Связи: для `requirements` внутри набора — инстанс `link_scene` (`PassiveLink`), `points = [pos_req, pos_node]`.
-  Узлы с `maxPoints == 0` (корень) тоже показываются.
+- Визуал игры — `TreeArt` (`scripts/trees/tree_art.gd`): манифест `research/data/game/tree_art.json` и спрайты `res://assets/trees/`
+  (собираются `tools/extract/extract_tree_art.py`). Смещения и размеры — в единицах UI игры, ось y вверх (`TreeArt.offset` переворачивает).
+- `func show_tree(nodes: Array, tree_id: String)` — очистить `%Decor`/`%Links`/`%Nodes`, разложить узлы:
+  позиция `Vector2(p[0], -p[1])`; декор панели `TreeArt.decor(tree_id, mastery первого узла)` (фон, руны, орнаменты — инстансы
+  `decor_scene`, `TextureRect`) расширяет границы канвы; сдвиг так, чтобы минимум = margin.
+  Узел — инстанс `node_scene` (`PassiveNode`): `setup(node, GameData.get_node_stats(tree_id, id), TreeArt.node_art(tree_id, id))`,
+  позиция `pos − custom_minimum_size/2`, сигналы узла → сигналы канвы. Связи: для `requirements` внутри набора — инстанс `link_scene`
+  (`PassiveLink`), `connect_points(pos_req, pos_node, TreeArt.connection(tree_id))`. Узлы с `maxPoints == 0` (корень) тоже показываются.
+- Масштаб: `%Content.scale`, `%Canvas.custom_minimum_size = размер × масштаб`. Новое дерево вписывается в окно (не крупнее 1:1)
+  и перевписывается при изменении размера, пока пользователь не менял масштаб; Ctrl + колесо — масштаб в пределах `min_zoom…max_zoom`.
 - `func refresh(get_points: Callable, can_add: Callable)` — `set_state(get_points.call(id), can_add.call(id))` для узлов,
   `set_active(обе стороны > 0)` для связей.
+
+Узел `scenes/passives/passive_node.tscn` (`PassiveNode extends Button`): слои игры в `%Art` — `%IconMask` (`clip_children`, маска иконки)
+> `%Icon`, `%FadeAvailable`, `%FadeLocked` (затемнение иконки, цвета в сцене); `%Border`, `%BorderBright` (рамка взятого узла), `%Escape`
+(рамка корня), `%PointsPlate` (`NinePatchRect`, отступы `TreeArt.apply_nine_slice`), `%PointsFrame`, `%PointsLabel` (вариант `TreeNodePoints`).
+Скрипт берёт текстуру, размер, смещение и оттенок (`self_modulate` — цвет слоя из данных игры) каждого слоя из `TreeArt.layer(art, часть)`;
+кнопка получает вариант `TreeNodeArt` (без фона). Без арта (нет иконки) — прежний круг с вариантами `PassiveNode*` и подписью `%NameLabel`.
+Состояния с артом: взят — `%BorderBright`; можно взять — `%FadeAvailable`; недоступен — `%FadeLocked`.
+Связь `scenes/passives/passive_link.tscn` (`PassiveLink extends Node2D`): `%Art` повёрнут вдоль отрезка, `%Rail` (`NinePatchRect`, рельс игры) и
+`%Fill` (свечение, видно, когда обе стороны взяты); без арта — `%Plain` (`Line2D`, цвета в сцене).
 
 `scripts/passives/passive_tab.gd` переписать на `%TreeCanvas`: вкладки мастерств как сейчас; `show_tree(узлы мастерства, treeID)`;
 сигналы → `Build.add_point/remove_point`; `refresh(Build.get_points, Build.can_add)`; `%PointsLabel`.
@@ -40,8 +55,9 @@
 `GameData.class_skills(Build.class_id, Build.mastery)` с текстом `get_ability(id).abilityName`, metadata = id),
 `%LevelSpin` → `Build.set_skill_level`, `%SelectButton` (toggle) → `signal selected(slot_index)`, `%PointsLabel`
 «Очки дерева: spent / level». `func sync()` — обновить из `Build.skills[slot_index]`; `func set_selected(on)`.
-`scripts/skills/skills_tab.gd` (`extends HBoxContainer`): слоты — дети `%Slots`. На `selected(i)` → `Build.selected_skill = i`,
-остальные слоты `set_selected(false)`, показать дерево: `tree = GameData.get_skill_tree(get_ability(id).skillTree)`,
+`scripts/skills/skills_tab.gd` (`extends HBoxContainer`): слоты — дети `%Slots`. На `selected(i)` → `Build.selected_skill = i`
+(сеттер шлёт `Build.changed`, дерево перестраивается на нём; кнопки слотов синхронизируются с `Build.selected_skill` на каждый `changed`,
+повторный клик по показанному слоту оставляет его выбранным), остальные слоты `set_selected(false)`, показать дерево: `tree = GameData.get_skill_tree(get_ability(id).skillTree)`,
 `%TreeCanvas.show_tree(tree.nodes, tree.treeID)`, `%TreeTitle` = имя умения. Сигналы канвы →
 `Build.add_skill_point(sel, id)` / `remove_skill_point`. `refresh` с лямбдами `func(id): return Build.get_skill_points(sel, id)` и
 `Build.can_add_skill_point(sel, id)` (не `bind`: он добавляет аргумент в конец). `%TreePoints` «spent / level». Перестраивать дерево только при смене умения/класса.
@@ -93,13 +109,15 @@
 - `r = SkillCalc.compute(Build, Build.selected_skill)` один раз за кадр на `Build.changed` и при показе вкладки (невидимая вкладка ничего не считает).
 - **Полоса итогов** `scenes/calcs/calc_summary.tscn` (`class_name CalcSummary`, `show_result(result)`): имя умения, «Цель: …» и четыре плитки `CalcTile`
   (`show_value(text, sub, tooltip)`): «DPS по врагу» (главная), «Средний удар» (строка «Средний удар по врагу»), «Применений в секунду», «Шанс крита».
-  Значения берутся из строк результата по метке (`CalcSummary.find_row`, первая подходящая); нет строки — «—». Подсказка плитки — расшифровка строки.
+  Значения берутся из строк результата по метке внутри своего раздела (`CalcSummary.find_row(result, метка, раздел)`): DPS, средний удар и цель —
+  из раздела ровно «Против врага» (у каждого раздела «Айлмент: …» есть своя строка «DPS по врагу»), применения — из «Скорость и мана», крит — из «Крит»
+  (для применений и крита, если раздела нет, — первая строка с меткой); нет строки — «—». Подсказка плитки — расшифровка строки.
 - **Параметры**: `SkillInputRow` (`setup(slot, inp)`, `fits(inp)`, `update_input(slot, inp)`): число — `SpinBox`, флаг — `CheckBox` с текстом метки. Набор строк
   пересоздаётся только при смене слота или набора ключей/типов; иначе значения обновляются без сигналов (`max` — только если изменился).
 - **Секции** в фиксированном порядке (`CalcsTab.ordered_sections`): сначала основной компонент (урон → конверсии → пробивание/крит → скорость и мана → айлменты →
   параметры умения → против врага → восполнение), затем остальные компоненты (подумения, срабатывания) в том же порядке. Колонки заполняются подряд:
   первая половина строк — `%Left`, остальное — `%Right`. Секция — `section_scene` (`%Title`, `%Rows`), строка — `row_scene` (`CalcRow`: `setup(key, row, alt, expanded, key_row)`,
-  `update_row(row)`; «+»/«−» раскрывает `%DetailsPanel`/`%Details`, кнопка скрыта без расшифровки; строка «DPS по врагу» — `ValueLabelKey`).
+  `update_row(row)`; «+»/«−» раскрывает `%DetailsPanel`/`%Details`, кнопка скрыта без расшифровки; строка «DPS по врагу» разделов «… Против врага» — `ValueLabelKey`).
   Идентичность строки — «заголовок секции|метка» (повторы с `#n`). Если набор секций и строк тот же — строки обновляются на месте (изменившееся значение мигает);
   иначе дерево пересоздаётся, раскрытые строки восстанавливаются по ключу (`_expanded`), `scroll_vertical` сохраняется.
 - «Не учтено» из `r.notes` — сворачиваемый блок `CalcNotes` (`show_notes(notes)`, по умолчанию свёрнут, «▸ Не учтено (N)»), скрыт без заметок.
@@ -114,7 +132,7 @@
 Сначала строки «Класс/Мастерство/Уровень/Пассивных очков», затем по группам: `group_scene` (Label) и `row_scene` (`StatRow`: `NameLabel`, `DeltaLabel`, `ValueLabel`,
 `tooltip_text` = расшифровка). Пока набор строк тот же, строки обновляются на месте (`StatRow.update_row(text, tooltip, value)`): изменившаяся строка на ~1,5 с получает вариант
 `StatRowChanged`, а если у строки есть числовое `value` — рядом показывается разница («+12», «−3%», варианты `DeltaUp`/`DeltaDown`).
-`%SummaryCard` (виден, если в выбранном слоте умение и есть строка «DPS по врагу»): `%SkillName` «<умение> · DPS по врагу», `%SkillSummary` — число (`HeroValueMain`),
+`%SummaryCard` (виден, если в выбранном слоте умение и есть строка «DPS по врагу» раздела «Против врага»): `%SkillName` «<умение> · DPS по врагу», `%SkillSummary` — число (`HeroValueMain`),
 `%SkillTarget` — «цель: <Enemy.describe>», подсказка карточки — расшифровка строки.
 
 ## Идолы — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)

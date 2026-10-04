@@ -12,6 +12,7 @@ func _ready() -> void:
 	_removal_rules()
 	Build.passive_cap_override = -1
 	_caps()
+	_art()
 	print("TREES TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -96,6 +97,32 @@ func _caps() -> void:
 	Build.add_skill_point(0, 10)
 	_check("skill cap = level 1", not Build.add_skill_point(0, 10) and Build.skill_point_cap(0) == 1, str(Build.skill_point_cap(0)))
 	Build.set_skill_level(0, 20)
+
+
+## Game visuals (TreeArt, tools/extract/extract_tree_art.py): every node of the active skill trees and of the passive trees
+## has an icon texture, except the passive nodes whose name has no UI node in the game prefabs.
+const ART_EXCEPTIONS: Array[String] = ["ac-1:60", "ac-1:12", "mg-1:66", "mg-1:67", "rg-1:11"]
+
+
+func _art() -> void:
+	var missing: PackedStringArray = []
+	var checked: int = 0
+	for tree: Dictionary in GameData._trees:
+		var tree_id: String = str(tree["treeID"])
+		var active_skill: bool = tree.get("kind") == "skill" and GameData.get_ability(tree_id).get("skillTree") == tree_id
+		if not active_skill and tree.get("kind") != "passive":
+			continue
+		for node: Dictionary in tree.get("nodes", []):
+			var key: String = "%s:%d" % [tree_id, int(node["id"])]
+			if ART_EXCEPTIONS.has(key):
+				continue
+			checked += 1
+			var icon: Dictionary = TreeArt.layer(TreeArt.node_art(tree_id, int(node["id"])), "IconMask/Icon")
+			if TreeArt.texture(icon.get("sprite")) == null:
+				missing.append(key)
+	_check("tree art: %d nodes with icons" % checked, missing.is_empty(), ", ".join(missing.slice(0, 20)))
+	_check("tree art: connection rail", not TreeArt.connection("fi9").is_empty(), "fi9 has no rail")
+	_check("tree art: Fireball background", TreeArt.decor("fi9", 0).size() > 0, "no decor")
 
 
 func _check(label: String, ok: bool, detail: String) -> void:

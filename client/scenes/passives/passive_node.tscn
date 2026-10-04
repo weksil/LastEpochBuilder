@@ -12,6 +12,77 @@ theme_type_variation = &"PassiveNodeLocked"
 button_mask = 3
 script = ExtResource("1_script")
 
+[node name="Art" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="IconMask" type="TextureRect" parent="Art"]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Icon" type="TextureRect" parent="Art/IconMask"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="FadeAvailable" type="ColorRect" parent="Art/IconMask"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="FadeLocked" type="ColorRect" parent="Art/IconMask"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.02, 0.04, 0.74)
+
+[node name="Border" type="TextureRect" parent="Art"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="BorderBright" type="TextureRect" parent="Art"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Escape" type="TextureRect" parent="Art"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="PointsPlate" type="NinePatchRect" parent="Art"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="PointsFrame" type="TextureRect" parent="Art"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+
 [node name="PointsLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 1

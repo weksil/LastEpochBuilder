@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/trees/tree_canvas.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/passives/passive_node.tscn" id="2_node"]
 [ext_resource type="PackedScene" path="res://scenes/passives/passive_link.tscn" id="3_link"]
+[ext_resource type="PackedScene" path="res://scenes/trees/tree_decor.tscn" id="4_decor"]
 
 [node name="TreeCanvas" type="ScrollContainer"]
 size_flags_horizontal = 3
@@ -10,6 +11,7 @@ size_flags_vertical = 3
 script = ExtResource("1_script")
 node_scene = ExtResource("2_node")
 link_scene = ExtResource("3_link")
+decor_scene = ExtResource("4_decor")
 
 [node name="Canvas" type="Control" parent="."]
 unique_name_in_owner = true
@@ -17,12 +19,22 @@ custom_minimum_size = Vector2(800, 400)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="Links" type="Control" parent="Canvas"]
+[node name="Content" type="Control" parent="Canvas"]
 unique_name_in_owner = true
 anchors_preset = 0
 mouse_filter = 2
 
-[node name="Nodes" type="Control" parent="Canvas"]
+[node name="Decor" type="Control" parent="Canvas/Content"]
+unique_name_in_owner = true
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Links" type="Control" parent="Canvas/Content"]
+unique_name_in_owner = true
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Nodes" type="Control" parent="Canvas/Content"]
 unique_name_in_owner = true
 anchors_preset = 0
 mouse_filter = 2

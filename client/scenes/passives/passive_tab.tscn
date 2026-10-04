@@ -24,7 +24,7 @@ text = "Потрачено очков: 0"
 [node name="Hint" type="Label" parent="."]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "ЛКМ — добавить очко, ПКМ — убрать"
+text = "ЛКМ — добавить очко, ПКМ — убрать, Ctrl + колесо — масштаб"
 
 [node name="TreeCanvas" parent="." instance=ExtResource("2_canvas")]
 unique_name_in_owner = true
