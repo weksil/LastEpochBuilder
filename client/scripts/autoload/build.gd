@@ -338,7 +338,8 @@ func set_skill_level(slot: int, lvl: int) -> void:
 
 
 ## Bonus to the skill level from equipped items: LevelOfSkills (SP 88) mods whose tags fit the
-## ability tags and whose extra is 0 or the ability's AbilityID (research/06e §6).
+## ability tags and whose extra is 0 or the ability's AbilityID (research/06e §6); «+N to Level of <skill>» affixes carry
+## specialTag 1 and the AbilityID in tags.
 func skill_level_bonus(slot: int) -> int:
 	if slot < 0 or slot >= skills.size():
 		return 0
@@ -353,6 +354,11 @@ func skill_level_bonus(slot: int) -> int:
 		var store: StatStore = BuildMods.global_store(self)["store"]
 		for mod: StatMod in store.all_mods():
 			if mod.property != LE.LEVEL_OF_SKILLS:
+				continue
+			# "+N to Level of <skill>" affixes: specialTag 1 and the ability index stored in `tags` (all 138 such affixes)
+			if mod.special == 1:
+				if mod.tags == ability_index:
+					total += mod.added
 				continue
 			if mod.extra != 0 and mod.extra != ability_index:
 				continue

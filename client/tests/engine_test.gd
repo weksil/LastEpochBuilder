@@ -720,6 +720,9 @@ func _curse_hits() -> void:
 	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
 	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
 	_check("curse test: slot 0 is Bone Curse", 1.0 if str(Build.skills[0]["ability"]) == "bc53" else 0.0, 1.0)
+	# relic «Level of Harvest» T3: SP 88 with specialTag 1 and the ability index (185) in tags -> +1 level for Harvest only
+	_check("level of Harvest from the relic", Build.skill_level_bonus(4), 1.0)
+	_check("level of Harvest does not apply to Bone Curse", Build.skill_level_bonus(0), 0.0)
 
 	# defaults: estimate = sum of uses/s of the other skills that deal hit damage
 	Build.skills[0]["inputs"].erase("curse_own_hits")
