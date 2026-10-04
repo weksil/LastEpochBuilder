@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/stats/stat_group.tscn" id="3_group"]
 
 [node name="StatsPanel" type="PanelContainer"]
-custom_minimum_size = Vector2(300, 0)
+custom_minimum_size = Vector2(360, 0)
 script = ExtResource("1_script")
 row_scene = ExtResource("2_row")
 group_scene = ExtResource("3_group")
@@ -19,14 +19,37 @@ layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "Характеристики"
 
-[node name="Separator" type="HSeparator" parent="VBox"]
+[node name="SummaryCard" type="PanelContainer" parent="VBox"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
+theme_type_variation = &"TilePanelMain"
 
-[node name="SkillSummary" type="Label" parent="VBox"]
+[node name="SummaryBox" type="VBoxContainer" parent="VBox/SummaryCard"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SkillName" type="Label" parent="VBox/SummaryCard/SummaryBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HeroCaption"
+text = "Умение · DPS по врагу"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="SkillSummary" type="Label" parent="VBox/SummaryCard/SummaryBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeroValueMain"
 text = ""
-autowrap_mode = 3
+
+[node name="SkillTarget" type="Label" parent="VBox/SummaryCard/SummaryBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = ""
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="Scroll" type="ScrollContainer" parent="VBox"]
 layout_mode = 2
@@ -37,4 +60,4 @@ horizontal_scroll_mode = 0
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 2
+theme_override_constants/separation = 0

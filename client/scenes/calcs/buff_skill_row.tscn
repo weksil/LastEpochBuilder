@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/calcs/buff_skill_row.gd" id="1_script"]
+
+[node name="BuffSkillRow" type="PanelContainer"]
+theme_type_variation = &"RowIdle"
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Head" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ActiveCheck" type="CheckBox" parent="VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"CheckBoxPlain"
+text = "Слот 1 · Умение"
+
+[node name="PlainLabel" type="Label" parent="VBox/Head"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Слот 1 · Умение"
+clip_text = true
+
+[node name="StatusLabel" type="Label" parent="VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = ""
+horizontal_alignment = 2
+
+[node name="ModsToggle" type="Button" parent="VBox/Head"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"FlatToggle"
+toggle_mode = true
+text = "▸ моды"
+
+[node name="ModsPanel" type="PanelContainer" parent="VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"BreakdownPanel"
+
+[node name="ModsLabel" type="Label" parent="VBox/ModsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BreakdownLabel"
+autowrap_mode = 3

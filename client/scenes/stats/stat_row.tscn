@@ -1,17 +1,38 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
 
-[node name="StatRow" type="HBoxContainer"]
+[ext_resource type="Script" path="res://scripts/stats/stat_row.gd" id="1_script"]
+
+[node name="StatRow" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 22)
 mouse_filter = 0
-theme_override_constants/separation = 12
+theme_type_variation = &"StatRowPlain"
+script = ExtResource("1_script")
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="Line" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="Line"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 theme_type_variation = &"MutedLabel"
 text = "Стат"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="ValueLabel" type="Label" parent="."]
+[node name="DeltaLabel" type="Label" parent="Line"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
+theme_type_variation = &"DeltaUp"
+text = ""
+
+[node name="ValueLabel" type="Label" parent="Line"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 1
+theme_type_variation = &"ValueLabel"
 text = "0"
 horizontal_alignment = 2

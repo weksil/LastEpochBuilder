@@ -8,33 +8,90 @@ horizontal_scroll_mode = 0
 script = ExtResource("1_script")
 ailment_row_scene = ExtResource("2_row")
 
-[node name="Columns" type="HBoxContainer" parent="."]
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ShowAllCheck" type="CheckBox" parent="Root/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Показать все условия"
+tooltip_text = "Выключено: показаны только условия, от которых зависит ваш билд (и уже включённые)."
+
+[node name="Hint" type="Label" parent="Root/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Показаны только условия, у которых есть источник в билде: умения, предметы, пассивки. Включённые условия видны всегда."
+autowrap_mode = 3
+
+[node name="EmptyHint" type="Label" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = "Нет условий, от которых зависит билд: ни одно умение, предмет или пассивка не используют состояния игрока и айлменты противника. «Показать все условия» открывает полный список."
+autowrap_mode = 3
+
+[node name="Columns" type="HBoxContainer" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="Left" type="VBoxContainer" parent="Columns"]
-custom_minimum_size = Vector2(400, 0)
+[node name="Left" type="VBoxContainer" parent="Root/Columns"]
+layout_mode = 2
+custom_minimum_size = Vector2(460, 0)
+theme_override_constants/separation = 12
+
+[node name="PlayerCard" type="PanelContainer" parent="Root/Columns/Left"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Columns/Left/PlayerCard"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="PlayerTitle" type="Label" parent="Columns/Left"]
+[node name="Head" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox"]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
+
+[node name="PlayerTitle" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/Head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionTitle"
 text = "Игрок"
 
-[node name="PlayerGrid" type="GridContainer" parent="Columns/Left"]
+[node name="ResetPlayerButton" type="Button" parent="Root/Columns/Left/PlayerCard/VBox/Head"]
+unique_name_in_owner = true
 layout_mode = 2
-columns = 2
+focus_mode = 0
+text = "Сбросить"
+tooltip_text = "Выключить все условия игрока и обнулить числа"
 
-[node name="HealthLabel" type="Label" parent="Columns/Left/PlayerGrid"]
+[node name="PlayerSummary" type="Label" parent="Root/Columns/Left/PlayerCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = ""
+autowrap_mode = 3
+
+[node name="HealthRow" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HealthLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/HealthRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Здоровье"
 
-[node name="HealthSelect" type="OptionButton" parent="Columns/Left/PlayerGrid"]
+[node name="HealthSelect" type="OptionButton" parent="Root/Columns/Left/PlayerCard/VBox/HealthRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
@@ -49,115 +106,196 @@ popup/item_2/id = 2
 popup/item_3/text = "Низкое (<35%)"
 popup/item_3/id = 3
 
-[node name="HitRecentlyCheck" type="CheckBox" parent="Columns/Left"]
+[node name="PlayerFlags" type="GridContainer" parent="Root/Columns/Left/PlayerCard/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="HitRecentlyCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Был поражён недавно"
+autowrap_mode = 3
 metadata/player_flag = "hit_recently"
 
-[node name="CritRecentlyCheck" type="CheckBox" parent="Columns/Left"]
+[node name="CritRecentlyCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Критовал недавно"
+autowrap_mode = 3
 metadata/player_flag = "crit_recently"
 
-[node name="PlayerMovingCheck" type="CheckBox" parent="Columns/Left"]
+[node name="PlayerMovingCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Двигаюсь"
+autowrap_mode = 3
 metadata/player_flag = "moving"
 
-[node name="LeechingCheck" type="CheckBox" parent="Columns/Left"]
+[node name="LeechingCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Вампиризм активен"
+autowrap_mode = 3
 metadata/player_flag = "leeching"
 
-[node name="LowManaCheck" type="CheckBox" parent="Columns/Left"]
+[node name="LowManaCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Мана ниже 50%"
+autowrap_mode = 3
 metadata/player_flag = "low_mana"
 
-[node name="HasteCheck" type="CheckBox" parent="Columns/Left"]
+[node name="HasteCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Haste на мне"
+autowrap_mode = 3
 metadata/player_flag = "haste"
 
-[node name="FrenzyCheck" type="CheckBox" parent="Columns/Left"]
+[node name="FrenzyCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Frenzy на мне"
+autowrap_mode = 3
 metadata/player_flag = "frenzy"
 
-[node name="PlayerValues" type="GridContainer" parent="Columns/Left"]
+[node name="PlayerValues" type="VBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 2
+theme_override_constants/separation = 4
 
-[node name="WardLabel" type="Label" parent="Columns/Left/PlayerValues"]
+[node name="WardRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/WardRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WardLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/WardRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"MutedLabel"
 text = "Текущий ward"
 
-[node name="WardSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+[node name="WardSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/WardRow/HBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
 max_value = 100000.0
 step = 10.0
+update_on_text_changed = true
 metadata/player_value = "ward"
 
-[node name="CursesLabel" type="Label" parent="Columns/Left/PlayerValues"]
+[node name="CursesRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CursesRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CursesLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CursesRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"MutedLabel"
 text = "Проклятий на мне"
 
-[node name="CursesSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+[node name="CursesSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CursesRow/HBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
 max_value = 20.0
+update_on_text_changed = true
 metadata/player_value = "curses"
 
-[node name="IgniteStacksLabel" type="Label" parent="Columns/Left/PlayerValues"]
+[node name="IgniteStacksRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/IgniteStacksRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IgniteStacksLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/IgniteStacksRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"MutedLabel"
 text = "Стаков Ignite на мне"
 
-[node name="IgniteStacksSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+[node name="IgniteStacksSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/IgniteStacksRow/HBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
 max_value = 200.0
+update_on_text_changed = true
 metadata/player_value = "ignite_stacks"
 
-[node name="DamnedStacksLabel" type="Label" parent="Columns/Left/PlayerValues"]
+[node name="DamnedStacksRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/DamnedStacksRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DamnedStacksLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/DamnedStacksRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"MutedLabel"
 text = "Стаков Damned на мне"
 
-[node name="DamnedStacksSpin" type="SpinBox" parent="Columns/Left/PlayerValues"]
+[node name="DamnedStacksSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/DamnedStacksRow/HBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
 max_value = 200.0
+update_on_text_changed = true
 metadata/player_value = "damned_stacks"
 
-[node name="EnemyTitle" type="Label" parent="Columns/Left"]
+[node name="EnemyCard" type="PanelContainer" parent="Root/Columns/Left"]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
+theme_type_variation = &"SectionCard"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Columns/Left/EnemyCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnemyTitle" type="Label" parent="Root/Columns/Left/EnemyCard/VBox"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
 text = "Противник"
 
-[node name="EnemyGrid" type="GridContainer" parent="Columns/Left"]
+[node name="EnemySummary" type="Label" parent="Root/Columns/Left/EnemyCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = ""
+autowrap_mode = 3
+
+[node name="EnemyGrid" type="GridContainer" parent="Root/Columns/Left/EnemyCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
 columns = 2
 
-[node name="KindLabel" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="KindLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Тип"
 
-[node name="KindSelect" type="OptionButton" parent="Columns/Left/EnemyGrid"]
+[node name="KindSelect" type="OptionButton" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
@@ -176,169 +314,246 @@ popup/item_4/id = 4
 popup/item_5/text = "Босс"
 popup/item_5/id = 5
 
-[node name="LevelLabel" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="LevelLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Уровень (он же уровень зоны)"
+autowrap_mode = 3
 
-[node name="LevelSpin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="LevelSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
 max_value = 110.0
 value = 100.0
+update_on_text_changed = true
 
-[node name="ArmourLabel" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="ArmourLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Броня"
 
-[node name="ArmourSpin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="ArmourSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 100000.0
 step = 10.0
+update_on_text_changed = true
 
-[node name="Res0Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res0Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: физическое, %"
+autowrap_mode = 3
 
-[node name="Res0Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res0Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 0
 
-[node name="Res1Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res1Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: огонь, %"
+autowrap_mode = 3
 
-[node name="Res1Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res1Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 1
 
-[node name="Res2Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res2Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: холод, %"
+autowrap_mode = 3
 
-[node name="Res2Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res2Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 2
 
-[node name="Res3Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res3Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: молния, %"
+autowrap_mode = 3
 
-[node name="Res3Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res3Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 3
 
-[node name="Res4Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res4Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: некротика, %"
+autowrap_mode = 3
 
-[node name="Res4Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res4Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 4
 
-[node name="Res5Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res5Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: пустота, %"
+autowrap_mode = 3
 
-[node name="Res5Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res5Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 5
 
-[node name="Res6Label" type="Label" parent="Columns/Left/EnemyGrid"]
+[node name="Res6Label" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = "Сопротивление: яд, %"
+autowrap_mode = 3
 
-[node name="Res6Spin" type="SpinBox" parent="Columns/Left/EnemyGrid"]
+[node name="Res6Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 min_value = -500.0
 max_value = 100.0
+update_on_text_changed = true
 metadata/res_index = 6
 
-[node name="FlagsTitle" type="Label" parent="Columns/Left"]
+[node name="FlagsTitle" type="Label" parent="Root/Columns/Left/EnemyCard/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Состояние противника"
 
-[node name="MovingCheck" type="CheckBox" parent="Columns/Left"]
+[node name="EnemyFlags" type="GridContainer" parent="Root/Columns/Left/EnemyCard/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="MovingCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Двигается"
+autowrap_mode = 3
 metadata/flag = "moving"
 
-[node name="StunnedCheck" type="CheckBox" parent="Columns/Left"]
+[node name="StunnedCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Оглушён"
+autowrap_mode = 3
 metadata/flag = "stunned"
 
-[node name="FullHealthCheck" type="CheckBox" parent="Columns/Left"]
+[node name="FullHealthCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-button_pressed = true
 text = "Полное здоровье"
+autowrap_mode = 3
 tooltip_text = "Здоровье цели не ниже 99% (тогда оно и высокое)"
 metadata/flag = "full_health"
 
-[node name="HighHealthCheck" type="CheckBox" parent="Columns/Left"]
+[node name="HighHealthCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-button_pressed = true
 text = "Высокое здоровье (≥ 65%)"
+autowrap_mode = 3
 tooltip_text = "Условие «High Health»: здоровье цели не ниже 65%"
 metadata/flag = "high_health"
 
-[node name="LowHealthCheck" type="CheckBox" parent="Columns/Left"]
+[node name="LowHealthCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
 layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
 text = "Низкое здоровье"
+autowrap_mode = 3
 tooltip_text = "Условие «Low Health»: здоровье цели не выше 35%"
 metadata/flag = "low_health"
 
-[node name="FrozenCheck" type="CheckBox" parent="Columns/Left"]
-layout_mode = 2
-focus_mode = 0
-text = "Заморожен"
-metadata/flag = "frozen"
-
-[node name="Right" type="VBoxContainer" parent="Columns"]
+[node name="FrozenCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
 layout_mode = 2
 size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
+focus_mode = 0
+text = "Заморожен"
+autowrap_mode = 3
+metadata/flag = "frozen"
+
+[node name="Right" type="VBoxContainer" parent="Root/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="AilmentCard" type="PanelContainer" parent="Root/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Columns/Right/AilmentCard"]
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="AilmentsTitle" type="Label" parent="Columns/Right"]
+[node name="Head" type="HBoxContainer" parent="Root/Columns/Right/AilmentCard/VBox"]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
-text = "Айлменты, шреды и проклятия на противнике (стаки)"
 
-[node name="Filter" type="LineEdit" parent="Columns/Right"]
+[node name="AilmentsTitle" type="Label" parent="Root/Columns/Right/AilmentCard/VBox/Head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionTitle"
+text = "Айлменты, шреды и проклятия на противнике (стаки)"
+autowrap_mode = 3
+
+[node name="ResetAilmentsButton" type="Button" parent="Root/Columns/Right/AilmentCard/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Сбросить"
+tooltip_text = "Обнулить стаки всех айлментов, шредов и проклятий"
+
+[node name="AilmentSummary" type="Label" parent="Root/Columns/Right/AilmentCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = ""
+autowrap_mode = 3
+
+[node name="Filter" type="LineEdit" parent="Root/Columns/Right/AilmentCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Поиск по названию…"
 clear_button_enabled = true
 
-[node name="AilmentList" type="VBoxContainer" parent="Columns/Right"]
+[node name="AilmentList" type="VBoxContainer" parent="Root/Columns/Right/AilmentCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 3

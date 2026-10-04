@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/calcs/calc_notes.gd" id="1_script"]
+
+[node name="CalcNotes" type="PanelContainer"]
+theme_type_variation = &"SectionCard"
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ToggleButton" type="Button" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"FlatToggle"
+toggle_mode = true
+text = "▸ Не учтено"
+alignment = 0
+
+[node name="NotesLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3

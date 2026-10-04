@@ -7,6 +7,19 @@
 Подписка на `Build.changed` — в `_ready`. При заполнении контролов кодом оборачивать в
 `set_block_signals(true/false)`, чтобы не зациклить сигналы.
 
+**Мгновенные обновления.** Все `SpinBox` имеют `update_on_text_changed = true` (значение применяется при наборе, без Enter), поэтому
+значения из `Build` возвращаются в контролы только через `set_value_no_signal` / `set_pressed_no_signal` и только если они отличаются.
+Пересчёт на `Build.changed` откладывается (`call_deferred`, не чаще раза за кадр, скрытая вкладка не считается). Строки не пересоздаются, пока
+набор строк тот же: обновляются тексты на месте, у контрола с фокусом значение не трогается, раскрытые расшифровки и прокрутка сохраняются.
+Изменившиеся значения подсвечиваются на ~1,5 с сменой `theme_type_variation` (по таймеру `SceneTreeTimer`, стилей в коде нет).
+
+**Тема (`theme/main_theme.tres`).** Чекбоксы: иконки `theme/icons/check_*.svg` (включён — золотая плашка с галочкой, выключен — контурный
+квадрат), `CheckBox` в состоянии `pressed` — золотая рамка и подложка; варианты `CheckBoxNoSource` (включён без источника в билде, красный),
+`CheckBoxPlain` (без рамки, внутри карточек). Карточки: `SectionCard` / `SectionTitle`; плитки: `TilePanel`, `TilePanelMain`, `HeroCaption`,
+`HeroValue(Main)`; строки: `CalcRow`/`CalcRowAlt` (зебра), `StatRowPlain`/`StatRowChanged`, `RowIdle`/`RowActive`/`RowNoSource`; значения:
+`ValueLabel`, `ValueLabelKey`, `*Changed`; расшифровка — `BreakdownPanel` + `BreakdownLabel` (моноширинный `SystemFont`);
+`SummaryActive`/`SummaryOff` — однострочные итоги групп; `FlatToggle` — плоская кнопка-раскрывашка; `DeltaUp`/`DeltaDown` — разница значения.
+
 ## Дерево — `scripts/trees/tree_canvas.gd` (`class_name TreeCanvas extends ScrollContainer`)
 Сцена `scenes/trees/tree_canvas.tscn`: `%Canvas` > `%Links`, `%Nodes`. `@export node_scene, link_scene, margin := 60.0`.
 - `signal add_requested(node_id: int)`, `signal remove_requested(node_id: int)`.
@@ -52,36 +65,57 @@
 - `%EmptyHint` видим, когда базы нет; тогда `%SubRow`, импликиты и аффиксы скрыты. `%ClearButton` → `Build.clear_item(slot)`.
 
 ## Условия — `scripts/config/config_tab.gd` (`extends ScrollContainer`), `@export ailment_row_scene`
+Три карточки (`SectionCard`): «Игрок» и «Противник» слева, «Айлменты, шреды и проклятия на противнике (стаки)» справа; сверху `%ShowAllCheck` («Показать все условия»,
+по умолчанию выключен) и `%EmptyHint`. У каждой группы однострочный итог (`%PlayerSummary`, `%EnemySummary`, `%AilmentSummary`: «Активно: Haste, Двигаюсь» /
+«Ничего не включено», вариант `SummaryActive`/`SummaryOff`) и допись «· скрыто N без источника» / «· без источника: N». Кнопки `%ResetPlayerButton` →
+`Build.reset_player_conditions()` и `%ResetAilmentsButton` → `Build.clear_enemy_ailments()` (по одному `changed`).
+- **Фильтр как в Path of Building**: `ConfigRelevance.compute(Build)` (`scripts/engine/config_relevance.gd`, вычисляется только при видимой вкладке, не чаще раза за кадр) возвращает
+  `{player_flags, player_values, ailments, enemy}` — ключ присутствует, если у условия есть источник в билде, значение — текст источника (может быть несколько строк), он идёт в `tooltip_text`
+  (у айлментов — ещё и вторая строка строки). Без «Показать все условия» скрыты флаги игрока, числа игрока, флаги противника и айлменты без источника, **кроме** тех, чьё значение
+  отличается от значения по умолчанию (флаги противника `high_health` и `full_health` по умолчанию включены): такие остаются видимыми и помечаются «нет источника»
+  (`CheckBoxNoSource`, `RowNoSource`). Строка с фокусом ввода не скрывается. Тип, уровень, броня и сопротивления противника видны всегда. Если нечего показывать — `%EmptyHint`
+  «Нет условий, от которых зависит билд». Нет файла `config_relevance.gd` — всё считается имеющим источник.
 - `%HealthSelect` → `Build.set_player_state("health", ["full","high","normal","low"][i])`.
-- `%KindSelect` → `Build.set_enemy("kind", ["dummy","normal","magic","rare","miniboss","boss"][i])`;
-  `%LevelSpin` → "level"; `%ArmourSpin` → "armour".
-- SpinBox-ы с `metadata/res_index` (дети `EnemyGrid`) → `res[i]` (копия массива, затем `Build.set_enemy("res", arr)`).
-- CheckBox-ы с `metadata/flag` → копия `flags`, `Build.set_enemy("flags", d)` (в т. ч. `frozen` — «Заморожен»).
-- Состояние игрока (для особых эффектов уникальных, ENGINE §5.4.3): CheckBox-ы с `metadata/player_flag`
-  (`hit_recently, crit_recently, moving, leeching, low_mana, haste, frenzy`) → `Build.set_player_state(flag, pressed)`;
-  SpinBox-ы в `%PlayerValues` с `metadata/player_value` (`ward, curses, ignite_stacks, damned_stacks`) →
-  `Build.set_player_state(key, int(v))`. Синхронизация из `Build.player_state` в `_sync_from_build`.
-- `%AilmentList`: строка `ailment_row_scene` на каждый `GameData.enemy_ailments()`: `%NameLabel` = name,
-  `tooltip_text` = список `buffs` («propertyName: значение»), `maxInstances`, «против боссов ×(1+moreBuffEffectAgainstBosses)»;
-  `%StacksSpin.max_value` = maxInstances (или 200, если 0) → `Build.set_enemy_ailment(id, int(v))`.
-  `%Filter.text_changed` скрывает строки, чьё имя не содержит текста (без учёта регистра).
+- `%KindSelect` → `Build.set_enemy("kind", ["dummy","normal","magic","rare","miniboss","boss"][i])`; `%LevelSpin` → "level"; `%ArmourSpin` → "armour".
+- SpinBox-ы с `metadata/res_index` (дети `%EnemyGrid`) → `res[i]` (копия массива, затем `Build.set_enemy("res", arr)`).
+- CheckBox-ы `%EnemyFlags` с `metadata/flag` → копия `flags`, `Build.set_enemy("flags", d)` (в т. ч. `frozen`).
+- CheckBox-ы `%PlayerFlags` с `metadata/player_flag` (`hit_recently, crit_recently, moving, leeching, low_mana, haste, frenzy`) → `Build.set_player_state(flag, pressed)`;
+  SpinBox-ы в строках `%PlayerValues` (`PanelContainer` > `HBoxContainer` > `Label`, `SpinBox`) с `metadata/player_value` (`ward, curses, ignite_stacks, damned_stacks`) →
+  `Build.set_player_state(key, int(v))`. Строка с ненулевым значением — `RowActive`.
+- `%AilmentList`: по `AilmentRow` (`scenes/config/ailment_row.tscn`, `class_name AilmentRow`) на каждый `GameData.enemy_ailments()`: `%NameLabel` = `displayName` (иначе `name`),
+  `%KindLabel` («проклятие» / «шред»), `%ReasonLabel` = источник, `tooltip_text` = описание, `buffs`, `maxInstances`, «против боссов ×(1+moreBuffEffectAgainstBosses)»;
+  `%StacksSpin.max_value` = maxInstances (или 200) → `signal stacks_changed(id, stacks)` → `Build.set_enemy_ailment`. Строка со стаками — `RowActive`, без источника — `RowNoSource`.
+  Строки с источником идут первыми. `%Filter.text_changed` скрывает строки, чьё имя (оба названия и вид) не содержит текста (без учёта регистра).
 
-## Расчёты — `scripts/calcs/calcs_tab.gd` (`extends VBoxContainer`), `@export section_scene, row_scene`
-- `%SkillSelect`: 5 слотов «N. имя умения» (пустые — «N. —», disabled); выбор → `Build.selected_skill = i` и пересчёт.
-- На `Build.changed` (и при показе вкладки, `visibility_changed`): если вкладка невидима — ничего не делать (лениво);
-  иначе `r = SkillCalc.compute(Build, Build.selected_skill)`, очистить колонки `%Left` / `%Right` / `%Wide` (внутри `%Sections`), каждую секцию — инстанс `section_scene` — в более
-  короткую по числу строк из двух колонок
-  (`%Title`, `%Rows`), для строки — `row_scene`: `%NameLabel`, `%ValueLabel` = text, `%Details` = breakdown,
-  `%ExpandButton.toggled` → `%Details.visible`, кнопка скрыта, если breakdown пуст. Секция «Не учтено» из `r.notes`
-  (строки без значения) — на всю ширину в `%Wide`. `%NameLabel` переносит текст (autowrap), чтобы длинные строки не расширяли окно
-  (проверяет `tests/layout_test`). Если у слота нет умения — одна секция с подсказкой выбрать умение во вкладке «Скиллы».
+## Расчёты — `scripts/calcs/calcs_tab.gd` (`class_name CalcsTab extends VBoxContainer`), `@export section_scene, row_scene, input_row_scene`
+Сверху вниз: `%SkillSelect` (5 слотов «N. имя умения», пустые «N. —»; выбор → `Build.selected_skill`), `%Summary` (`CalcSummary`), прокручиваемый `%Scroll`
+с `ParamsPanel` («Параметры расчёта»: `%HitsSpin` и сетка `%Inputs` в 2 колонки), `%Buffs` (`BuffsPanel`), колонками `%Left` / `%Right` и `%Wide` (`%Notes`).
+- `r = SkillCalc.compute(Build, Build.selected_skill)` один раз за кадр на `Build.changed` и при показе вкладки (невидимая вкладка ничего не считает).
+- **Полоса итогов** `scenes/calcs/calc_summary.tscn` (`class_name CalcSummary`, `show_result(result)`): имя умения, «Цель: …» и четыре плитки `CalcTile`
+  (`show_value(text, sub, tooltip)`): «DPS по врагу» (главная), «Средний удар» (строка «Средний удар по врагу»), «Применений в секунду», «Шанс крита».
+  Значения берутся из строк результата по метке (`CalcSummary.find_row`, первая подходящая); нет строки — «—». Подсказка плитки — расшифровка строки.
+- **Параметры**: `SkillInputRow` (`setup(slot, inp)`, `fits(inp)`, `update_input(slot, inp)`): число — `SpinBox`, флаг — `CheckBox` с текстом метки. Набор строк
+  пересоздаётся только при смене слота или набора ключей/типов; иначе значения обновляются без сигналов (`max` — только если изменился).
+- **Секции** в фиксированном порядке (`CalcsTab.ordered_sections`): сначала основной компонент (урон → конверсии → пробивание/крит → скорость и мана → айлменты →
+  параметры умения → против врага → восполнение), затем остальные компоненты (подумения, срабатывания) в том же порядке. Колонки заполняются подряд:
+  первая половина строк — `%Left`, остальное — `%Right`. Секция — `section_scene` (`%Title`, `%Rows`), строка — `row_scene` (`CalcRow`: `setup(key, row, alt, expanded, key_row)`,
+  `update_row(row)`; «+»/«−» раскрывает `%DetailsPanel`/`%Details`, кнопка скрыта без расшифровки; строка «DPS по врагу» — `ValueLabelKey`).
+  Идентичность строки — «заголовок секции|метка» (повторы с `#n`). Если набор секций и строк тот же — строки обновляются на месте (изменившееся значение мигает);
+  иначе дерево пересоздаётся, раскрытые строки восстанавливаются по ключу (`_expanded`), `scroll_vertical` сохраняется.
+- «Не учтено» из `r.notes` — сворачиваемый блок `CalcNotes` (`show_notes(notes)`, по умолчанию свёрнут, «▸ Не учтено (N)»), скрыт без заметок.
+- Нет умения в слоте — одна секция с подсказкой выбрать умение во вкладке «Скиллы».
+- **Баффы умений на персонажа** — `scenes/calcs/buffs_panel.tscn` (`BuffsPanel.refresh()`, `@export row_scene` = `BuffSkillRow`): `BuildMods.skill_buffs(Build)` даёт по
+  каждому умению на панели (одно на умение) `{slot, ability_name, active, toggle, mods}`. Строка: `%ActiveCheck` («Слот N · умение», привязан к входу `buff_active` через
+  `Build.set_skill_input(slot, "buff_active", on)`), статус («действует · модов: N» / «выключен — не действует» / «нет баффов на персонажа» — тогда вместо галочки метка),
+  раскрывашка «моды (N)» со строками `BuildMods.describe_mod(mod)` («+60% inc Damage — источник»). Выключенное умение показывает моды, которые дало бы включённое.
 
 ## Панель характеристик — `scripts/stats/stats_panel.gd`
-`@export row_scene, group_scene`. На `Build.changed`: `g = BuildMods.global_store(Build)`,
-`rows = CharacterCalc.compute(g.store, Build)`. Сначала строки «Класс/Мастерство/Уровень» (как сейчас), затем по группам:
-`group_scene` (Label, text = group) и `row_scene` (`NameLabel`, `ValueLabel`, `tooltip_text` строки = breakdown).
-`%SkillSummary`: если выбранный слот с умением — `SkillCalc.compute` → «Умение: DPS по врагу (<цель>) X»
-(значение строки «DPS по врагу» секции «Против врага»; при отсутствии — пусто). Пересчёт откладывать `call_deferred`, не чаще раза за кадр.
+`@export row_scene, group_scene`. На `Build.changed` (не чаще раза за кадр): `g = BuildMods.global_store(Build)`, `rows = CharacterCalc.compute(g.store, Build)`.
+Сначала строки «Класс/Мастерство/Уровень/Пассивных очков», затем по группам: `group_scene` (Label) и `row_scene` (`StatRow`: `NameLabel`, `DeltaLabel`, `ValueLabel`,
+`tooltip_text` = расшифровка). Пока набор строк тот же, строки обновляются на месте (`StatRow.update_row(text, tooltip, value)`): изменившаяся строка на ~1,5 с получает вариант
+`StatRowChanged`, а если у строки есть числовое `value` — рядом показывается разница («+12», «−3%», варианты `DeltaUp`/`DeltaDown`).
+`%SummaryCard` (виден, если в выбранном слоте умение и есть строка «DPS по врагу»): `%SkillName` «<умение> · DPS по врагу», `%SkillSummary` — число (`HeroValueMain`),
+`%SkillTarget` — «цель: <Enemy.describe>», подсказка карточки — расшифровка строки.
 
 ## Идолы — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Сцена `scenes/idols/idols_tab.tscn`: `%Grid` содержит 25 готовых кнопок `IdolCell` с `metadata/row`, `metadata/col`;

@@ -19,6 +19,7 @@ const STORE_SOURCES: Array[String] = ["attr", "total_attr", "added", "value", "i
 
 ## "" if the model applies now, otherwise the unmet condition in Russian.
 static func blocked(model: Dictionary, ctx: Dictionary) -> String:
+	ConfigRelevance.note_model(model, ctx)
 	if model.has("at_least"):
 		var v: float = source(str(model["at_least"]["per"]), ctx, model)
 		if v < float(model["at_least"]["value"]):

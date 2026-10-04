@@ -548,6 +548,12 @@ func set_enemy(key: String, value: Variant) -> void:
 	changed.emit()
 
 
+## Removes every ailment / shred / curse stack from the enemy (one `changed`).
+func clear_enemy_ailments() -> void:
+	enemy["ailments"] = {}
+	changed.emit()
+
+
 func set_enemy_ailment(ailment_id: int, stacks: int) -> void:
 	var ailments: Dictionary = enemy.get("ailments", {}) as Dictionary
 	if stacks > 0:
@@ -565,4 +571,15 @@ func set_enemy_ailment(ailment_id: int, stacks: int) -> void:
 
 func set_player_state(key: String, value: Variant) -> void:
 	player_state[key] = value
+	changed.emit()
+
+
+## Switches off every player condition flag and zeroes the player numbers (health level stays); one `changed`.
+func reset_player_conditions() -> void:
+	for key: String in player_state:
+		var value: Variant = player_state[key]
+		if value is bool:
+			player_state[key] = false
+		elif key != "health":
+			player_state[key] = 0
 	changed.emit()

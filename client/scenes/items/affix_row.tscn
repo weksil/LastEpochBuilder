@@ -33,6 +33,7 @@ layout_mode = 2
 min_value = 1.0
 max_value = 8.0
 value = 5.0
+update_on_text_changed = true
 
 [node name="Bottom" type="HBoxContainer" parent="."]
 layout_mode = 2

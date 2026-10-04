@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/calcs/calc_summary.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_tile.tscn" id="2_tile"]
+
+[node name="CalcSummary" type="PanelContainer"]
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SkillTitle" type="Label" parent="VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Умение"
+
+[node name="TargetLabel" type="Label" parent="VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = ""
+horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Tiles" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DpsTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.6
+caption = "DPS по врагу"
+main_tile = true
+
+[node name="HitTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Средний удар"
+
+[node name="UsesTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Применений в секунду"
+
+[node name="CritTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Шанс крита"

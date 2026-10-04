@@ -47,6 +47,7 @@ layout_mode = 2
 min_value = 1.0
 max_value = 40.0
 value = 20.0
+update_on_text_changed = true
 
 [node name="PointsLabel" type="Label" parent="VBox"]
 unique_name_in_owner = true

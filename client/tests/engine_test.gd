@@ -538,6 +538,21 @@ func _buff_skills() -> void:
 	_check("buff_active off: no buff in the global store", _mods_sum(g["store"], LE.DAMAGE, node_src, true), 0.0)
 	Build.set_skill_input(0, "buff_active", true)
 
+	# read-only list of the skill buffs (UI «Баффы умений на персонажа») agrees with the global store
+	g = BuildMods.global_store(Build)
+	var listed: Array[Dictionary] = BuildMods.skill_buffs(Build)
+	var fw_entry: Dictionary = listed[0]
+	var fw_prefix: String = "Умение «Flame Ward» (бафф)"
+	_check("skill_buffs: first entry is slot 0", float(fw_entry["slot"]), 0.0)
+	_check("skill_buffs: Flame Ward is active and has a switch", 1.0 if (fw_entry["active"] and fw_entry["toggle"]) else 0.0, 1.0)
+	_check("skill_buffs: listed mods = buff mods of the global store", float(fw_entry["mods"].size()), _count_source_prefix(g["store"], fw_prefix))
+	Build.set_skill_input(0, "buff_active", false)
+	listed = BuildMods.skill_buffs(Build)
+	_check("skill_buffs: switched off skill is listed with its mods, inactive", 1.0 if (not listed[0]["active"] and not listed[0]["mods"].is_empty()) else 0.0, 1.0)
+	_check("skill_buffs(only_active): switched off skill has no mods", float(BuildMods.skill_buffs(Build, null, true)[0]["mods"].size()), 0.0)
+	_check("skill_buffs: describe_mod names the property", 1.0 if BuildMods.describe_mod(fw_entry["mods"][0]).contains("Damage") else 0.0, 1.0)
+	Build.set_skill_input(0, "buff_active", true)
+
 	# 2. Holy Aura on the bar: base buff and tree list × M (Covenant of Light 5/5 → M = 1.2)
 	Build.set_skill(0, "ah443")
 	Build.skills[0]["tree"][12] = 5  # Shelter from the Storm: +5% elemental resistance and +3% endurance per point
@@ -890,6 +905,14 @@ func _detonations_and_maintained_dot() -> void:
 	var more: Dictionary = SkillCalc.compute(Build, 2)
 	_check("Spirit Plague: node More Damage ×5 → ×1.5", _section_value(more, "Против врага", "Урон за всё действие по врагу (3 с)") / instance, 1.5, 0.005)
 	tree_sp.erase(22)
+
+
+func _count_source_prefix(store: StatStore, prefix: String) -> float:
+	var n: int = 0
+	for mod: StatMod in store.mods:
+		if mod.source.begins_with(prefix):
+			n += 1
+	return float(n)
 
 
 func _count_prefixed_sections(r: Dictionary, prefix: String) -> float:

@@ -3,26 +3,31 @@
 [ext_resource type="Script" path="res://scripts/calcs/skill_input_row.gd" id="1_script"]
 
 [node name="SkillInputRow" type="HBoxContainer"]
-layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 script = ExtResource("1_script")
 
 [node name="NameLabel" type="Label" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
 size_flags_horizontal = 3
 text = "Параметр"
 autowrap_mode = 3
 
 [node name="ValueSpin" type="SpinBox" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(100, 0)
-min_value = 0.0
+layout_mode = 2
 max_value = 1000.0
 step = 0.1
+update_on_text_changed = true
 
 [node name="FlagCheck" type="CheckBox" parent="."]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "Параметр"
+autowrap_mode = 3

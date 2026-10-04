@@ -10,6 +10,16 @@ const SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weap
 
 ## {store: StatStore, notes: Array[String]} — all character-wide mods.
 static func global_store(build: Node) -> Dictionary:
+	var g: Dictionary = _store_without_skill_buffs(build)
+	var store: StatStore = g["store"]
+	var notes: Array[String] = g["notes"]
+	_add_skill_buffs(build, store)
+	UniqueEffects.add_notes(build, notes)
+	return {"store": store, "notes": notes}
+
+
+## Everything of global_store except the buffs of the equipped skills (those are computed on top of this store).
+static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	var store := StatStore.new()
 	var notes: Array[String] = []
 	_add_class_base(build, store)
@@ -25,9 +35,10 @@ static func global_store(build: Node) -> Dictionary:
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
-	_add_skill_buffs(build, store)
-	UniqueEffects.add_notes(build, notes)
 	return {"store": store, "notes": notes}
+
+
+const BUFF_SOURCE_PREFIX: String = "Умение «%s» (бафф): "
 
 
 ## Buffs of the equipped skills on the character (docs/ENGINE.md §9.7): scope-global models of the skill tree and the
@@ -36,6 +47,21 @@ static func global_store(build: Node) -> Dictionary:
 ## input `buff_active` (default on) is on.
 static func _add_skill_buffs(build: Node, store: StatStore) -> void:
 	var collected: Array[StatMod] = []
+	for entry: Dictionary in skill_buffs(build, store, true):
+		collected.append_array(entry["mods"])
+	store.add_all(collected)
+
+
+## Read-only list of the equipped skills and their buffs on the character, one entry per distinct ability (the first slot
+## that holds it): {slot, ability_name, active, toggle, mods: Array[StatMod]}. `active` is the input `buff_active`
+## (default on), `toggle` tells that the skill declares that input (it has buffs to switch). A switched-off skill lists the mods it would give when on. `global` is the store the
+## skills are computed over (null = the character store without skill buffs); only_active = true skips computing the
+## mods of switched-off skills (their entries have empty mods). Mod sources carry the BUFF_SOURCE_PREFIX.
+static func skill_buffs(build: Node, global: StatStore = null, only_active: bool = false) -> Array[Dictionary]:
+	var parent: StatStore = global
+	if parent == null:
+		parent = _store_without_skill_buffs(build)["store"]
+	var result: Array[Dictionary] = []
 	var seen: Dictionary = {}
 	for slot: int in range(build.skills.size()):
 		var skill: Dictionary = build.skills[slot]
@@ -43,14 +69,72 @@ static func _add_skill_buffs(build: Node, store: StatStore) -> void:
 		if ability.is_empty() or seen.has(str(skill["ability"])):
 			continue
 		seen[str(skill["ability"])] = true
-		if not bool(skill.get("inputs", {}).get("buff_active", true)):
-			continue
-		var mods: Array = skill_store(build, slot, store)["global_mods"]
-		var prefix: String = "Умение «%s» (бафф): " % GameData.display_name(ability)
-		for mod: StatMod in mods:
-			mod.source = prefix + mod.source
-			collected.append(mod)
-	store.add_all(collected)
+		var active: bool = bool(skill.get("inputs", {}).get("buff_active", true))
+		var mods: Array[StatMod] = []
+		var toggle: bool = false
+		if active or not only_active:
+			# a switched-off skill is shown as it would be when switched on (the skill models drop their global mods
+			# while `buff_active` is off); the input is restored right away
+			var inputs: Dictionary = skill.get("inputs", {})
+			if not active:
+				inputs["buff_active"] = true
+			var s: Dictionary = skill_store(build, slot, parent)
+			if not active:
+				inputs["buff_active"] = false
+			var prefix: String = BUFF_SOURCE_PREFIX % GameData.display_name(ability)
+			for mod: StatMod in s["global_mods"]:
+				mod.source = prefix + mod.source
+				mods.append(mod)
+			for inp: Dictionary in s["inputs"]:
+				if inp.get("key") == "buff_active":
+					toggle = true
+		result.append({"slot": slot, "ability_name": GameData.display_name(ability), "active": active, "toggle": toggle, "mods": mods})
+	return result
+
+
+## "CriticalMultiplier" -> "Critical Multiplier".
+static func _split_camel(text: String) -> String:
+	var result: String = ""
+	for i: int in range(text.length()):
+		var c: String = text[i]
+		if i > 0 and c != c.to_lower() and text[i - 1] == text[i - 1].to_lower() and text[i - 1] != " ":
+			result += " "
+		result += c
+	return result
+
+
+## One readable line for a buff mod, e.g. "+15% inc Damage (Fire, Spell) — Holy Aura": value, property, tags, source
+## without the skill prefix.
+static func describe_mod(mod: StatMod) -> String:
+	var value: String = ""
+	if mod.added != 0.0:
+		value = ("+" if mod.added > 0.0 else "") + LE.fmt_num(mod.added)
+	elif mod.increased != 0.0:
+		value = ("+" if mod.increased > 0.0 else "") + LE.fmt_pct(mod.increased) + " inc"
+	elif not mod.more.is_empty():
+		var prod: float = 1.0
+		for m: float in mod.more:
+			prod *= 1.0 + m
+		value = "×" + LE.fmt_num(prod) + " more"
+	else:
+		value = "0"
+	var prop: String = _split_camel(GameData.sp_name(mod.property))
+	if prop == "":
+		prop = "#%d" % mod.property
+	var tag_names: PackedStringArray = []
+	for i: int in range(LE.TAG_NAMES.size()):
+		if mod.tags & (1 << i) != 0:
+			tag_names.append(LE.TAG_NAMES[i])
+	var text: String = "%s %s" % [value, prop]
+	if not tag_names.is_empty():
+		text += " (%s)" % ", ".join(tag_names)
+	var source: String = mod.source
+	var cut: int = source.find("): ")
+	if source.begins_with("Умение «") and cut >= 0:
+		source = source.substr(cut + 3)
+	if source != "":
+		text += " — " + source
+	return text
 
 
 ## Skill-local store (parent = global store) plus mutator-field totals. Scope-global mods are returned in

@@ -1,10 +1,20 @@
 extends PanelContainer
 
+## Stats panel on the right (docs/UI.md «Панель характеристик»). Rows are updated in place while the set of
+## stats is unchanged; changed values are highlighted by StatRow.
+
 @export var row_scene: PackedScene
 @export var group_scene: PackedScene
 
+var _pending: bool = false
+var _signature: String = ""
+var _rows: Array[StatRow] = []  # stat rows only (group headers are not listed)
+
 @onready var rows_container: VBoxContainer = %Rows
+@onready var summary_card: PanelContainer = %SummaryCard
+@onready var skill_name_label: Label = %SkillName
 @onready var skill_summary_label: Label = %SkillSummary
+@onready var skill_target_label: Label = %SkillTarget
 
 
 func _ready() -> void:
@@ -12,126 +22,112 @@ func _ready() -> void:
 	_update_stats()
 
 
+## At most one recalculation per frame.
 func _on_build_changed() -> void:
-	call_deferred("_update_stats")
+	if _pending:
+		return
+	_pending = true
+	_update_stats.call_deferred()
 
 
 func _update_stats() -> void:
-	# Clear existing rows
+	_pending = false
+	var items: Array[Dictionary] = _collect_items()
+	var sig: PackedStringArray = []
+	for item: Dictionary in items:
+		sig.append("%s:%s" % [item["kind"], item["key"]])
+	var signature: String = "\n".join(sig)
+
+	if signature == _signature:
+		var index: int = 0
+		for item: Dictionary in items:
+			if item["kind"] == "row":
+				_rows[index].update_row(str(item["text"]), str(item["tooltip"]), float(item["value"]))
+				index += 1
+	else:
+		_signature = signature
+		_rebuild(items)
+	_update_skill_summary()
+
+
+func _rebuild(items: Array[Dictionary]) -> void:
 	for child: Node in rows_container.get_children():
+		rows_container.remove_child(child)
 		child.queue_free()
+	_rows.clear()
+	for item: Dictionary in items:
+		if item["kind"] == "group":
+			var group: Label = group_scene.instantiate() as Label
+			rows_container.add_child(group)
+			group.text = str(item["title"])
+		else:
+			var row: StatRow = row_scene.instantiate() as StatRow
+			rows_container.add_child(row)
+			row.setup(str(item["key"]), str(item["title"]), str(item["text"]), str(item["tooltip"]), float(item["value"]))
+			_rows.append(row)
 
-	# Get class data
+
+## Flat list of {kind: "group"|"row", key, title, text, tooltip, value (NAN if none)}.
+func _collect_items() -> Array[Dictionary]:
+	var items: Array[Dictionary] = []
+
 	var class_data: Dictionary = GameData.get_class_data(Build.class_id)
-
-	# Add class row
 	var class_title: String = "—"
 	if not class_data.is_empty():
-		class_title = class_data.get("className", "—")
-	_add_simple_row("Класс", class_title)
+		class_title = str(class_data.get("className", "—"))
+	items.append(_row_item("", "Класс", class_title))
 
-	# Add mastery row
 	var mastery_name: String = "Нет"
 	if Build.mastery > 0 and not class_data.is_empty():
 		var masteries: Array = class_data.get("masteries", [])
 		if Build.mastery < masteries.size():
 			var mastery_data: Dictionary = masteries[Build.mastery] as Dictionary
 			if not mastery_data.is_empty():
-				mastery_name = mastery_data.get("name", "Нет")
-	_add_simple_row("Мастерство", mastery_name)
+				mastery_name = str(mastery_data.get("name", "Нет"))
+	items.append(_row_item("", "Мастерство", mastery_name))
+	items.append(_row_item("", "Уровень", str(Build.level)))
+	items.append(_row_item("", "Пассивных очков", str(Build.spent_points())))
 
-	# Add level row
-	_add_simple_row("Уровень", str(Build.level))
-
-	# Add spent points row
-	_add_simple_row("Пассивных очков", str(Build.spent_points()))
-
-	# Compute global mods and character stats
 	var g: Dictionary = BuildMods.global_store(Build)
 	var global_store: StatStore = g["store"]
-
 	var char_rows: Array[Dictionary] = CharacterCalc.compute(global_store, Build)
 
-	# Group rows by group name
 	var groups: Dictionary = {}
 	for row: Dictionary in char_rows:
-		var group_name: String = row.get("group", "")
+		var group_name: String = str(row.get("group", ""))
 		if group_name not in groups:
 			groups[group_name] = []
 		groups[group_name].append(row)
 
-	# Add rows by group
 	for group_name: String in groups.keys():
-		# Add group label
-		var group_instance: Node = group_scene.instantiate()
-		rows_container.add_child(group_instance)
-		var group_label: Label = group_instance as Label
-		group_label.text = group_name
-
-		# Add rows in group
+		items.append({"kind": "group", "key": group_name, "title": group_name})
 		for row: Dictionary in groups[group_name]:
-			_add_stat_row(
-				row.get("label", ""),
-				row.get("text", ""),
-				row.get("breakdown", "")
-			)
-
-	# Update skill summary
-	_update_skill_summary()
+			var number: float = NAN
+			var raw: Variant = row.get("value")
+			if raw is float or raw is int:
+				number = float(raw)
+			items.append(_row_item(group_name, str(row.get("label", "")), str(row.get("text", "")), str(row.get("breakdown", "")), number))
+	return items
 
 
-func _add_simple_row(title: String, value: String) -> void:
-	var row_instance: Node = row_scene.instantiate()
-	rows_container.add_child(row_instance)
-
-	var name_label: Label = row_instance.get_node("NameLabel") as Label
-	var value_label: Label = row_instance.get_node("ValueLabel") as Label
-
-	name_label.text = title
-	value_label.text = value
-
-
-func _add_stat_row(title: String, value: String, breakdown: String) -> void:
-	var row_instance: Node = row_scene.instantiate()
-	rows_container.add_child(row_instance)
-
-	var name_label: Label = row_instance.get_node("NameLabel") as Label
-	var value_label: Label = row_instance.get_node("ValueLabel") as Label
-
-	name_label.text = title
-	value_label.text = value
-
-	if breakdown != "":
-		row_instance.tooltip_text = breakdown
+static func _row_item(group_name: String, title: String, text: String, tooltip: String = "", value: float = NAN) -> Dictionary:
+	return {"kind": "row", "key": group_name + "|" + title, "title": title, "text": text, "tooltip": tooltip, "value": value}
 
 
 func _update_skill_summary() -> void:
-	skill_summary_label.text = ""
-
-	# Check if selected skill has an ability
+	summary_card.visible = false
 	if Build.selected_skill < 0 or Build.selected_skill >= Build.skills.size():
 		return
-
 	var skill: Dictionary = Build.skills[Build.selected_skill] as Dictionary
-	if skill.is_empty() or skill.get("ability", "") == "":
+	if skill.is_empty() or str(skill.get("ability", "")) == "":
 		return
 
-	# Compute skill
 	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill)
-	var sections: Array = result.get("sections", [])
-
-	# Extract DPS from the "Против врага" section
-	var dps_value: String = ""
-	var tooltip: String = ""
-
-	var enemy_dps: String = ""
-	for section: Dictionary in sections:
-		for row: Dictionary in section.get("rows", []):
-			if row.get("label") == "DPS по врагу":
-				enemy_dps = str(row.get("text", ""))
-				tooltip = str(row.get("breakdown", ""))
-	dps_value = enemy_dps
-
-	if dps_value != "":
-		skill_summary_label.text = "%s: DPS по врагу (%s) %s" % [str(result.get("title", "")), Enemy.describe(Build.enemy), enemy_dps]
-		skill_summary_label.tooltip_text = tooltip
+	var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL)
+	if dps.is_empty():
+		return
+	summary_card.visible = true
+	skill_name_label.text = "%s · DPS по врагу" % str(result.get("title", ""))
+	skill_summary_label.text = str(dps.get("text", ""))
+	skill_target_label.text = "цель: %s" % Enemy.describe(Build.enemy)
+	summary_card.tooltip_text = str(dps.get("breakdown", ""))

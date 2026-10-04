@@ -20,28 +20,36 @@ func _ready() -> void:
 	var main: Control = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 	await _frames(3)
+	var tabs: TabContainer = main.get_node("%Tabs")
+	var margin: Control = main.get_node("Margin")
+
+	# 1. empty default build (empty-state texts differ from a filled build)
+	await _check_tabs(tabs, margin, "empty")
+
+	# 2. imported sample build
 	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
 	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
 	main.get_node("%ImportDialog").imported.emit()
 	await _frames(3)
-
-	var tabs: TabContainer = main.get_node("%Tabs")
-	var margin: Control = main.get_node("Margin")
-	for i in range(tabs.get_tab_count()):
-		tabs.current_tab = i
-		await _frames(3)
-		var width: float = margin.get_combined_minimum_size().x
-		print("tab %s: min width %d" % [tabs.get_tab_title(i), int(width)])
-		if width > WINDOW_WIDTH:
-			_failed = true
-			print("FAIL: tab %s needs %d px > %d" % [tabs.get_tab_title(i), int(width), int(WINDOW_WIDTH)])
-			_report(margin, 1)
+	await _check_tabs(tabs, margin, "sample")
 
 	if not headless:
 		tabs.current_tab = CALCS_TAB
 		return
 	print("LAYOUT TEST: %s" % ("FAIL" if _failed else "OK"))
 	get_tree().quit(1 if _failed else 0)
+
+
+func _check_tabs(tabs: TabContainer, margin: Control, label: String) -> void:
+	for i in range(tabs.get_tab_count()):
+		tabs.current_tab = i
+		await _frames(3)
+		var width: float = margin.get_combined_minimum_size().x
+		print("[%s] tab %s: min width %d" % [label, tabs.get_tab_title(i), int(width)])
+		if width > WINDOW_WIDTH:
+			_failed = true
+			print("FAIL: [%s] tab %s needs %d px > %d" % [label, tabs.get_tab_title(i), int(width), int(WINDOW_WIDTH)])
+			_report(margin, 1)
 
 
 ## Prints the chain of visible controls whose minimum width is large (the culprit is the deepest one).

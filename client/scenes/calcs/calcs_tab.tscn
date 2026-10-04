@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/calcs/calcs_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_section.tscn" id="2_section"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_row.tscn" id="3_row"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/skill_input_row.tscn" id="4_input_row"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_summary.tscn" id="5_summary"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/buffs_panel.tscn" id="6_buffs"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_notes.tscn" id="7_notes"]
 
 [node name="Расчёты" type="VBoxContainer"]
 theme_override_constants/separation = 8
@@ -31,39 +34,16 @@ focus_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "«+» раскрывает расшифровку числа"
+text = "«+» раскрывает расшифровку числа · изменившиеся значения подсвечиваются"
+autowrap_mode = 3
 horizontal_alignment = 2
 
-[node name="ParamsPanel" type="PanelContainer" parent="."]
-layout_mode = 2
-
-[node name="ParamsContent" type="VBoxContainer" parent="ParamsPanel"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="HitsRow" type="HBoxContainer" parent="ParamsPanel/ParamsContent"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="HitsLabel" type="Label" parent="ParamsPanel/ParamsContent/HitsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Попаданий по цели за применение"
-
-[node name="HitsSpin" type="SpinBox" parent="ParamsPanel/ParamsContent/HitsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(100, 0)
-min_value = 0.0
-max_value = 50.0
-step = 0.1
-value = 1.0
-
-[node name="Inputs" type="VBoxContainer" parent="ParamsPanel/ParamsContent"]
+[node name="Summary" parent="." instance=ExtResource("5_summary")]
 unique_name_in_owner = true
 layout_mode = 2
 
 [node name="Scroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -73,6 +53,57 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="ParamsPanel" type="PanelContainer" parent="Scroll/Sections"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="ParamsContent" type="VBoxContainer" parent="Scroll/Sections/ParamsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ParamsTitle" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+text = "Параметры расчёта"
+
+[node name="ParamsHint" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Это ваши допущения о бое. Меняйте значения: числа ниже и в «Характеристиках» обновляются сразу."
+autowrap_mode = 3
+
+[node name="Inputs" type="GridContainer" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="HitsRow" type="HBoxContainer" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HitsLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs/HitsRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Попаданий по цели за применение"
+autowrap_mode = 3
+
+[node name="HitsSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs/HitsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_value = 50.0
+step = 0.1
+value = 1.0
+update_on_text_changed = true
+
+[node name="Buffs" parent="Scroll/Sections" instance=ExtResource("6_buffs")]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="Columns" type="HBoxContainer" parent="Scroll/Sections"]
 layout_mode = 2
@@ -94,3 +125,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="Notes" parent="Scroll/Sections/Wide" instance=ExtResource("7_notes")]
+unique_name_in_owner = true
+layout_mode = 2

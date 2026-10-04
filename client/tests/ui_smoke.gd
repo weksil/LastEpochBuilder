@@ -144,13 +144,55 @@ func _ready() -> void:
 	await _frames(3)
 	var calcs: Node = tabs.get_child(5)
 	var section_count: int = 0
-	for column: String in ["%Left", "%Right", "%Wide"]:
+	for column: String in ["%Left", "%Right"]:
 		section_count += calcs.get_node(column).get_child_count()
 	print("calc sections: %d" % section_count)
-	var summary: Label = main.get_node("Margin/Layout/Split/StatsPanel/VBox/SkillSummary")
+	var summary: Label = main.get_node("Margin/Layout/Split/StatsPanel/VBox/SummaryCard/SummaryBox/SkillSummary")
 	print("summary: %s" % summary.text)
-	print("UI SMOKE DONE")
-	get_tree().quit()
+
+	# instant updates: typing in a SpinBox applies without Enter and the rows are updated in place
+	var failed: bool = false
+	var hits_spin: SpinBox = calcs.get_node("%HitsSpin")
+	var edit: LineEdit = hits_spin.get_line_edit()
+	edit.text = "2"
+	edit.text_changed.emit("2")
+	await _frames(3)
+	var rows_before: Array = calcs._row_nodes.duplicate()
+	edit.text = "3"
+	edit.text_changed.emit("3")
+	await _frames(3)
+	var hits_now: float = float(Build.skills[Build.selected_skill]["hits"])
+	print("typed hits: %s" % hits_now)
+	if not is_equal_approx(hits_now, 3.0):
+		failed = true
+		print("FAIL: typed text was not applied")
+	if calcs._row_nodes.size() != rows_before.size() or (not rows_before.is_empty() and calcs._row_nodes[0] != rows_before[0]):
+		failed = true
+		print("FAIL: calc rows were rebuilt on a value change")
+	var summary_tile: Label = calcs.get_node("%Summary").get_node("%DpsTile").get_node("%Value")
+	print("headline DPS: %s" % summary_tile.text)
+	if summary_tile.text == "—":
+		failed = true
+		print("FAIL: headline DPS is empty")
+	# buffs panel lists the equipped skills
+	print("buff rows: %d" % calcs.get_node("%Buffs").get_node("%List").get_child_count())
+	# conditions: reset buttons and the show-all switch
+	tabs.current_tab = 6
+	await _frames(3)
+	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 4)
+	await _frames(2)
+	Build.clear_enemy_ailments()
+	await _frames(2)
+	if not (Build.enemy["ailments"] as Dictionary).is_empty():
+		failed = true
+		print("FAIL: clear_enemy_ailments")
+	Build.set_player_state("haste", true)
+	Build.reset_player_conditions()
+	if bool(Build.player_state["haste"]):
+		failed = true
+		print("FAIL: reset_player_conditions")
+	print("UI SMOKE %s" % ("FAIL" if failed else "DONE"))
+	get_tree().quit(1 if failed else 0)
 
 
 func _frames(n: int) -> void:
