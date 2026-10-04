@@ -13,31 +13,31 @@ static func compute(store: StatStore, build) -> Array[Dictionary]:
 
 	var level: int = build.level if build and "level" in build else 100
 
-	# Group: Атрибуты (Attributes)
+	# Group: Attributes
 	rows.append_array(_compute_attributes(store))
 
-	# Group: Ресурсы (Resources)
+	# Group: Resources
 	rows.append_array(_compute_resources(store))
 
-	# Group: Защита (Defence)
+	# Group: Defense
 	rows.append_array(_compute_defence(store, level))
 
-	# Group: Прочее (Other)
+	# Group: Other
 	rows.append_array(_compute_other(store))
 
 	return rows
 
 
-## Атрибуты: Strength, Vitality, Intelligence, Dexterity, Attunement
+## Attributes: Strength, Vitality, Intelligence, Dexterity, Attunement
 static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
 	var attr_ids: Array[int] = [LE.STRENGTH, LE.VITALITY, LE.INTELLIGENCE, LE.DEXTERITY, LE.ATTUNEMENT]
-	var attr_names_ru: Array[String] = ["Сила", "Живучесть", "Интеллект", "Ловкость", "Настройка"]
+	var attr_names: Array[String] = [LE.t("Strength"), LE.t("Vitality"), LE.t("Intelligence"), LE.t("Dexterity"), LE.t("Attunement")]
 
 	for i in range(attr_ids.size()):
 		var attr_id: int = attr_ids[i]
-		var attr_name: String = attr_names_ru[i]
+		var attr_name: String = attr_names[i]
 
 		# Sum added from attribute and ALL_ATTRIBUTES (46)
 		var properties: Array[int] = [attr_id, LE.ALL_ATTRIBUTES]
@@ -48,7 +48,7 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 		var breakdown: String = _format_breakdown(mods, float(value), "")
 
 		rows.append({
-			"group": "Атрибуты",
+			"group": LE.t("Attributes"),
 			"label": attr_name,
 			"value": float(value),
 			"text": str(value),
@@ -58,7 +58,7 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 	return rows
 
 
-## Ресурсы: Health, Mana, Health Regen, Mana Regen
+## Resources: Health, Mana, Health Regen, Mana Regen
 static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
@@ -66,8 +66,8 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	var health_query: StatQuery = store.query_untagged(LE.HEALTH)
 	var health_value: int = LE.round_half_even(health_query.value())
 	rows.append({
-		"group": "Ресурсы",
-		"label": "Здоровье",
+		"group": LE.t("Resources"),
+		"label": LE.t("Health"),
 		"value": float(health_value),
 		"text": str(health_value),
 		"breakdown": health_query.breakdown()
@@ -77,8 +77,8 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	var mana_query: StatQuery = store.query_untagged(LE.MANA)
 	var mana_value: int = LE.round_half_even(mana_query.value())
 	rows.append({
-		"group": "Ресурсы",
-		"label": "Мана",
+		"group": LE.t("Resources"),
+		"label": LE.t("Mana"),
 		"value": float(mana_value),
 		"text": str(mana_value),
 		"breakdown": mana_query.breakdown()
@@ -88,8 +88,8 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	var health_regen_query: StatQuery = store.query_untagged(LE.HEALTH_REGEN)
 	var health_regen_value: float = health_regen_query.value()
 	rows.append({
-		"group": "Ресурсы",
-		"label": "Регенерация здоровья",
+		"group": LE.t("Resources"),
+		"label": LE.t("Health regen"),
 		"value": health_regen_value,
 		"text": LE.fmt_num(health_regen_value),
 		"breakdown": health_regen_query.breakdown()
@@ -99,8 +99,8 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	var mana_regen_query: StatQuery = store.query_untagged(LE.MANA_REGEN)
 	var mana_regen_value: float = mana_regen_query.value()
 	rows.append({
-		"group": "Ресурсы",
-		"label": "Регенерация маны",
+		"group": LE.t("Resources"),
+		"label": LE.t("Mana regen"),
 		"value": mana_regen_value,
 		"text": LE.fmt_num(mana_regen_value),
 		"breakdown": mana_regen_query.breakdown()
@@ -109,70 +109,70 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 	return rows
 
 
-## Защита: Armour, Dodge, Block, Parry, Endurance, Stun Avoidance, Resistances
+## Defense: Armour, Dodge, Block, Parry, Endurance, Stun Avoidance, Resistances
 static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
-	# Armour (10) - Броня
+	# Armour (10) - armor
 	var armour_query: StatQuery = store.query_untagged(LE.ARMOUR)
 	var neg_armour_sum: float = store.sum_added_untagged([LE.NEG_ARMOUR])
 	var armour_value: float = armour_query.value() - neg_armour_sum
 	rows.append({
-		"group": "Защита",
-		"label": "Броня",
+		"group": LE.t("Defense"),
+		"label": LE.t("Armor"),
 		"value": armour_value,
 		"text": LE.fmt_num(armour_value),
-		"breakdown": armour_query.breakdown() + "\n− (" + LE.fmt_num(neg_armour_sum) + ") из -броня"
+		"breakdown": armour_query.breakdown() + LE.t("\n− (%s) from -armor") % LE.fmt_num(neg_armour_sum)
 	})
 
-	# Armour Mitigation - Снижение физического урона от брони
+	# Armour Mitigation - armor physical damage reduction
 	var armour_mit: float = Enemy.armour_mitigation(armour_value, level, false)
 	rows.append({
-		"group": "Защита",
-		"label": "Снижение физ. урона от брони",
+		"group": LE.t("Defense"),
+		"label": LE.t("Armor physical damage reduction"),
 		"value": armour_mit,
 		"text": LE.fmt_pct(armour_mit),
-		"breakdown": "Броня: %s\nФормула: 0.55·0.0015x²/(0.0015x² + 180L) + 0.30·1.2x/(0.05L² + 80 + 1.2x), где L = %d" % [LE.fmt_num(armour_value), level + 5]
+		"breakdown": LE.t("Armor: %s\nFormula: 0.55·0.0015x²/(0.0015x² + 180L) + 0.30·1.2x/(0.05L² + 80 + 1.2x), where L = %d") % [LE.fmt_num(armour_value), level + 5]
 	})
 
-	# Dodge Rating (11) - Рейтинг уклонения
+	# Dodge Rating (11) - dodge rating
 	var dodge_rating_query: StatQuery = store.query_untagged(LE.DODGE_RATING)
 	var dodge_rating_value: float = dodge_rating_query.value()
 	rows.append({
-		"group": "Защита",
-		"label": "Рейтинг уклонения",
+		"group": LE.t("Defense"),
+		"label": LE.t("Dodge rating"),
 		"value": dodge_rating_value,
 		"text": LE.fmt_num(dodge_rating_value),
 		"breakdown": dodge_rating_query.breakdown()
 	})
 
-	# Dodge Chance - Шанс уклонения
+	# Dodge Chance - dodge chance
 	var dodge_chance: float = _compute_dodge_chance(dodge_rating_value, level)
 	rows.append({
-		"group": "Защита",
-		"label": "Шанс уклонения",
+		"group": LE.t("Defense"),
+		"label": LE.t("Dodge chance"),
 		"value": dodge_chance,
 		"text": LE.fmt_pct(dodge_chance),
 		"breakdown": _explain_dodge_chance(dodge_rating_value, level)
 	})
 
-	# Block Chance (29) - Шанс блока
+	# Block Chance (29) - block chance
 	var block_query: StatQuery = store.query_untagged(LE.BLOCK_CHANCE)
 	var block_value: float = block_query.value()
 	rows.append({
-		"group": "Защита",
-		"label": "Шанс блока",
+		"group": LE.t("Defense"),
+		"label": LE.t("Block chance"),
 		"value": block_value,
 		"text": LE.fmt_pct(block_value),
 		"breakdown": block_query.breakdown()
 	})
 
-	# Block Effectiveness (53) - Эффективность блока
+	# Block Effectiveness (53) - block effectiveness
 	var block_eff_query: StatQuery = store.query_untagged(LE.BLOCK_EFFECTIVENESS)
 	var block_eff_value: float = block_eff_query.value()
 	rows.append({
-		"group": "Защита",
-		"label": "Эффективность блока",
+		"group": LE.t("Defense"),
+		"label": LE.t("Block effectiveness"),
 		"value": block_eff_value,
 		"text": LE.fmt_num(block_eff_value),
 		"breakdown": block_eff_query.breakdown()
@@ -181,31 +181,31 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	# Block mitigation - share of hit damage removed by a block (character sheet, research/06c §2.3)
 	var block_mit: float = block_mitigation(block_eff_value, level)
 	rows.append({
-		"group": "Защита",
-		"label": "Снижение урона при блоке",
+		"group": LE.t("Defense"),
+		"label": LE.t("Block damage reduction"),
 		"value": block_mit,
 		"text": LE.fmt_pct(block_mit),
 		"breakdown": _explain_block_mitigation(block_eff_value, level)
 	})
 
-	# Parry (121) - Шанс парирования
+	# Parry (121) - parry chance
 	var parry_query: StatQuery = store.query_untagged(LE.PARRY)
 	var parry_value: float = min(0.75, parry_query.value())
 	rows.append({
-		"group": "Защита",
-		"label": "Шанс парирования",
+		"group": LE.t("Defense"),
+		"label": LE.t("Parry chance"),
 		"value": parry_value,
 		"text": LE.fmt_pct(parry_value),
 		"breakdown": "min(0.75, %s)\n%s" % [LE.fmt_pct(parry_query.value()), parry_query.breakdown()]
 	})
 
-	# Endurance (75) - Выносливость
+	# Endurance (75) - endurance
 	var endurance_sum: float = store.sum_added_untagged([LE.ENDURANCE])
 	var endurance_value: float = min(0.6, endurance_sum)
 	var endurance_mods: Array[StatMod] = store.untagged_mods([LE.ENDURANCE])
 	rows.append({
-		"group": "Защита",
-		"label": "Выносливость",
+		"group": LE.t("Defense"),
+		"label": LE.t("Endurance"),
 		"value": endurance_value,
 		"text": LE.fmt_pct(endurance_value),
 		"breakdown": _format_breakdown(endurance_mods, endurance_value * 100.0, "min(0.6,)")
@@ -214,81 +214,81 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	# Endurance Threshold (76)
 	var endurance_threshold: float = _compute_endurance_threshold(store)
 	rows.append({
-		"group": "Защита",
-		"label": "Порог выносливости",
+		"group": LE.t("Defense"),
+		"label": LE.t("Endurance threshold"),
 		"value": endurance_threshold,
 		"text": LE.fmt_num(endurance_threshold),
 		"breakdown": _explain_endurance_threshold(store)
 	})
 
-	# Stun Avoidance (12) - Избежание оглушения
+	# Stun Avoidance (12) - stun avoidance
 	var stun_query: StatQuery = store.query_untagged(LE.STUN_AVOIDANCE)
 	var stun_value: float = stun_query.value()
 	rows.append({
-		"group": "Защита",
-		"label": "Избежание оглушения",
+		"group": LE.t("Defense"),
+		"label": LE.t("Stun avoidance"),
 		"value": stun_value,
 		"text": LE.fmt_num(stun_value),
 		"breakdown": stun_query.breakdown()
 	})
 
-	# Resistances (7 rows) - Сопротивления
+	# Resistances (7 rows) - resistances
 	rows.append_array(_compute_resistances(store))
 
 	# Damage taken multipliers (SP 6): hits and damage over time, per damage type
-	rows.append(_damage_taken_row(store, LE.HIT, "Получаемый урон от ударов"))
-	rows.append(_damage_taken_row(store, LE.DOT, "Получаемый урон от DoT"))
+	rows.append(_damage_taken_row(store, LE.HIT, LE.t("Damage taken from hits")))
+	rows.append(_damage_taken_row(store, LE.DOT, LE.t("Damage taken from DoT")))
 
 	# Ward per second (92) and ward decay threshold (119)
-	for entry: Array in [[LE.WARD_REGEN, "Ward в секунду"], [LE.WARD_DECAY_THRESHOLD, "Порог распада ward"]]:
+	for entry: Array in [[LE.WARD_REGEN, LE.t("Ward per second")], [LE.WARD_DECAY_THRESHOLD, LE.t("Ward decay threshold")]]:
 		var q: StatQuery = store.query_untagged(entry[0])
-		rows.append({"group": "Защита", "label": entry[1], "value": q.value(), "text": LE.fmt_num(q.value()), "breakdown": q.breakdown()})
+		rows.append({"group": LE.t("Defense"), "label": entry[1], "value": q.value(), "text": LE.fmt_num(q.value()), "breakdown": q.breakdown()})
 
 	return rows
 
 
-## Прочее: Movespeed, Ward Retention, Crit Avoidance
+## Other: Movespeed, Ward Retention, Crit Avoidance
 static func _compute_other(store: StatStore) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
-	# Movespeed (9) - Скорость передвижения
+	# Movespeed (9) - movement speed
 	var movespeed_query: StatQuery = store.query_untagged(LE.MOVESPEED)
 	var movespeed_more: float = movespeed_query.more - 1.0
 	rows.append({
-		"group": "Прочее",
-		"label": "Скорость передвижения",
+		"group": LE.t("Other"),
+		"label": LE.t("Movement speed"),
 		"value": movespeed_more,
 		"text": LE.fmt_pct(movespeed_more),
-		"breakdown": movespeed_query.breakdown() + "\nИспользуется только more компонент: more - 1"
+		"breakdown": movespeed_query.breakdown() + LE.t("\nOnly the more component is used: more - 1")
 	})
 
-	# Ward Retention (16) - Удержание защиты
+	# Ward Retention (16) - ward retention
 	var ward_query: StatQuery = store.query_untagged(LE.WARD_RETENTION)
 	var ward_value: float = ward_query.value()
 	rows.append({
-		"group": "Прочее",
-		"label": "Удержание защиты",
+		"group": LE.t("Other"),
+		"label": LE.t("Ward retention"),
 		"value": ward_value,
 		"text": LE.fmt_pct(ward_value),
 		"breakdown": ward_query.breakdown()
 	})
 
-	# Thorns (85) - Отражение урона атакующим
+	# Thorns (85) - thorns
 	var thorns_query: StatQuery = store.query_untagged(LE.THORNS)
 	rows.append({
-		"group": "Прочее",
-		"label": "Отражение урона атакующим",
+		"group": LE.t("Other"),
+		"label": LE.t("Thorns"),
 		"value": thorns_query.value(),
 		"text": LE.fmt_num(thorns_query.value()),
 		"breakdown": thorns_query.breakdown()
 	})
 
-	# Crit Avoidance (89) - Избежание крита
+	# Crit Avoidance (89) - crit avoidance
 	var crit_avoid_query: StatQuery = store.query_untagged(LE.CRIT_AVOIDANCE)
 	var crit_avoid_value: float = crit_avoid_query.value()
 	rows.append({
-		"group": "Прочее",
-		"label": "Избежание крита",
+		"group": LE.t("Other"),
+		"label": LE.t("Crit avoidance"),
 		"value": crit_avoid_value,
 		"text": LE.fmt_pct(crit_avoid_value),
 		"breakdown": crit_avoid_query.breakdown()
@@ -325,16 +325,13 @@ static func block_mitigation(block_effectiveness: float, level: int) -> float:
 
 static func _explain_block_mitigation(block_effectiveness: float, level: int) -> String:
 	if block_effectiveness <= 0:
-		return "Эффективность блока = 0, поэтому снижение = 0"
+		return LE.t("Block effectiveness = 0, so the reduction = 0")
 	var L: float = float(level) + 5.0
 	var x: float = block_effectiveness
 	var q: float = 0.0006 * x * x + 1.2 * x
 	var term1: float = 0.6 * q / (q + 60.0 * L)
 	var term2: float = 0.25 * 3.0 * x / (0.03 * L * L + 40.0 + 3.0 * x)
-	return "L = %d + 5 = %.0f, x = %s
-Терм1 = 0.6·(0.0006x² + 1.2x)/(0.0006x² + 1.2x + 60L) = %s
-Терм2 = 0.25·3x/(0.03L² + 40 + 3x) = %s
-Итого = %s" % [
+	return LE.t("L = %d + 5 = %.0f, x = %s\nTerm 1 = 0.6·(0.0006x² + 1.2x)/(0.0006x² + 1.2x + 60L) = %s\nTerm 2 = 0.25·3x/(0.03L² + 40 + 3x) = %s\nTotal = %s") % [
 		level, L, LE.fmt_num(x), LE.fmt_pct(term1), LE.fmt_pct(term2), LE.fmt_pct(term1 + term2)
 	]
 
@@ -342,7 +339,7 @@ static func _explain_block_mitigation(block_effectiveness: float, level: int) ->
 ## Explain dodge chance calculation
 static func _explain_dodge_chance(dodge_rating: float, level: int) -> String:
 	if dodge_rating <= 0:
-		return "Рейтинг уклонения = 0, поэтому шанс = 0"
+		return LE.t("Dodge rating = 0, so the chance = 0")
 
 	var L: float = float(level) + 5.0
 	var x: float = dodge_rating
@@ -351,7 +348,7 @@ static func _explain_dodge_chance(dodge_rating: float, level: int) -> String:
 	var term2: float = 0.25 * x / (0.05 * L * L + 80.0 + x)
 	var result: float = term1 + term2
 
-	return "L = %d + 5 = %.0f, x = %s\nТерм1 = 0.6·0.001x²/(0.001x² + 32L) = %s\nТерм2 = 0.25x/(0.05L² + 80 + x) = %s\nИтого = %s" % [
+	return LE.t("L = %d + 5 = %.0f, x = %s\nTerm 1 = 0.6·0.001x²/(0.001x² + 32L) = %s\nTerm 2 = 0.25x/(0.05L² + 80 + x) = %s\nTotal = %s") % [
 		level,
 		L,
 		LE.fmt_num(x),
@@ -427,15 +424,14 @@ static func _damage_taken_row(store: StatStore, kind_tag: int, label: String) ->
 		var m: float = (1.0 + q.added) * (1.0 + q.increased) * q.more
 		low = minf(low, m)
 		high = maxf(high, m)
-		lines.append("%s: ×%s" % [LE.DT_NAME_RU[i], LE.fmt_num(m)])
+		lines.append("%s: ×%s" % [LE.t(LE.DT_NAME[i]), LE.fmt_num(m)])
 		for mod: StatMod in q.mods:
 			if not seen.has(mod):
 				seen[mod] = true
 	for mod: StatMod in seen:
 		lines.append(mod.describe())
 	var text: String = "×" + LE.fmt_num(low) if is_equal_approx(low, high) else "×%s … ×%s" % [LE.fmt_num(low), LE.fmt_num(high)]
-	return {"group": "Защита", "label": label, "value": low, "text": text, "breakdown": "
-".join(lines)}
+	return {"group": LE.t("Defense"), "label": label, "value": low, "text": text, "breakdown": "\n".join(lines)}
 
 
 ## Compute resistances (7 rows)
@@ -443,7 +439,7 @@ static func _compute_resistances(store: StatStore) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
 	for i in range(7):
-		var res_name: String = LE.DT_NAME_RU[i]
+		var res_name: String = LE.t(LE.DT_NAME[i])
 		var res_query: StatQuery = Enemy.resistance(store, i)
 		var res_value: float = res_query.value()
 
@@ -452,10 +448,10 @@ static func _compute_resistances(store: StatStore) -> Array[Dictionary]:
 		var uncapped_text: String = LE.fmt_pct(res_value)
 
 		rows.append({
-			"group": "Защита",
-			"label": "Сопротивление " + res_name,
+			"group": LE.t("Defense"),
+			"label": LE.t("Resistance %s") % res_name,
 			"value": res_value,
-			"text": LE.fmt_pct(capped_res) + " (без капа " + uncapped_text + ")",
+			"text": LE.fmt_pct(capped_res) + LE.t(" (uncapped %s)") % uncapped_text,
 			"breakdown": res_query.breakdown()
 		})
 

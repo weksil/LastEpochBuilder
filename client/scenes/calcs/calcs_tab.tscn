@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/calcs/buffs_panel.tscn" id="6_buffs"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_notes.tscn" id="7_notes"]
 
-[node name="Расчёты" type="VBoxContainer"]
+[node name="Calculations" type="VBoxContainer"]
 theme_override_constants/separation = 8
 script = ExtResource("1_script")
 section_scene = ExtResource("2_section")
@@ -22,7 +22,7 @@ theme_override_constants/separation = 8
 [node name="SkillLabel" type="Label" parent="Header"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Умение"
+text = "Skill"
 
 [node name="SkillSelect" type="OptionButton" parent="Header"]
 unique_name_in_owner = true
@@ -34,7 +34,7 @@ focus_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "«+» раскрывает расшифровку числа · изменившиеся значения подсвечиваются"
+text = "\"+\" expands the breakdown of the number · changed values are highlighted"
 autowrap_mode = 3
 horizontal_alignment = 2
 
@@ -65,12 +65,12 @@ theme_override_constants/separation = 6
 [node name="ParamsTitle" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
 layout_mode = 2
 theme_type_variation = &"SectionTitle"
-text = "Параметры расчёта"
+text = "Calculation parameters"
 
 [node name="ParamsHint" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Это ваши допущения о бое. Меняйте значения: числа ниже и в «Характеристиках» обновляются сразу."
+text = "These are your assumptions about the fight. Change the values: the numbers below and in the \"Stats\" update at once."
 autowrap_mode = 3
 
 [node name="Inputs" type="GridContainer" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
@@ -89,7 +89,7 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Попаданий по цели за применение"
+text = "Hits on the target per use"
 autowrap_mode = 3
 
 [node name="HitsSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs/HitsRow"]

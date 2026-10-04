@@ -11,11 +11,11 @@ static func store(enemy: Dictionary) -> StatStore:
 	for i in range(7):
 		var res_sp = LE.RES_SP[i]
 		var res_value: float = enemy.get("res", [0,0,0,0,0,0,0])[i] / 100.0
-		s.add(StatMod.make(res_sp, "added", res_value, 0, "Сопротивление врага"))
+		s.add(StatMod.make(res_sp, "added", res_value, 0, LE.t("Enemy resistance")))
 
 	# Armour: added to SP 10
 	var armour_value: float = enemy.get("armour", 0)
-	s.add(StatMod.make(LE.ARMOUR, "added", armour_value, 0, "Броня врага"))
+	s.add(StatMod.make(LE.ARMOUR, "added", armour_value, 0, LE.t("Enemy armor")))
 
 	# Ailments with stacks
 	var ailments: Dictionary = enemy.get("ailments", {})
@@ -142,17 +142,17 @@ static func armour_mitigation(x: float, area_level: int, non_phys: bool) -> floa
 	return f
 
 
-const KIND_RU: Dictionary = {"dummy": "манекен", "normal": "обычный", "magic": "магический", "rare": "редкий",
-	"miniboss": "мини-босс", "boss": "босс"}
+const KIND_NAMES: Dictionary = {"dummy": "training dummy", "normal": "normal", "magic": "magic", "rare": "rare",
+	"miniboss": "miniboss", "boss": "boss"}
 
 
-## Short description of the target for summaries: «босс 100 ур.», «манекен».
+## Short description of the target for summaries: "boss lvl 100", "training dummy".
 static func describe(enemy: Dictionary) -> String:
 	var kind: String = str(enemy.get("kind", "dummy"))
-	var kind_ru: String = str(KIND_RU.get(kind, kind))
+	var kind_name: String = LE.t(str(KIND_NAMES.get(kind, kind)))
 	if kind == "dummy":
-		return kind_ru
-	return "%s %d ур." % [kind_ru, int(enemy.get("level", 100))]
+		return kind_name
+	return LE.t("%s lvl %d") % [kind_name, int(enemy.get("level", 100))]
 
 
 ## Calculate level-based damage reduction.

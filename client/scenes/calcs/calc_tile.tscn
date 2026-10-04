@@ -14,7 +14,7 @@ theme_override_constants/separation = 0
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeroCaption"
-text = "Показатель"
+text = "Metric"
 autowrap_mode = 3
 
 [node name="Value" type="Label" parent="VBox"]

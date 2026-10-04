@@ -1,150 +1,157 @@
 # Last Epoch Builder
 
-Планировщик билдов для Last Epoch в духе Path of Building: точные числа с расшифровкой
-каждого значения, предметы / идолы / благословения / деревья скиллов и пассивок,
-галочки условий игрока и врага, импорт персонажа в несколько кликов.
+A build planner for Last Epoch in the spirit of Path of Building: exact numbers with a breakdown
+of every value, items / idols / blessings / skill and passive trees,
+checkboxes for player and enemy conditions, and character import in a few clicks.
 
-Версия игры, с которой сверены данные: **1.5.0 (Season 5)**.
-Полный план, архитектура и риски: [PLAN.md](PLAN.md).
+Game version the data was checked against: **1.5.0 (Season 5)**.
+Full plan, architecture and risks: [PLAN.md](PLAN.md).
 
-## Статус
+## Status
 
-| Часть | Состояние |
+| Part | State |
 |---|---|
-| Исследование формул и данных | завершено (`research/`) |
-| Извлечённые игровые данные | готовы (`research/data/game/`) |
-| Движок расчёта (GDScript, `client/scripts/engine/`) | общий слой работает: модель статов, источники модов (класс, пассивки, предметы, уникальные предметы и сетовые бонусы, особые эффекты уникальных по таблице моделей (784 из 866, остальное — обычные моды и алтарь), особые списки пассивок, алтари идолов, идолы, атрибуты, благословения, дерево скилла), модели всех 4890 полей мутаторов деревьев умений и особых списков статов (статы, скорость, мана, перезарядка, параметры, срабатывания, подумения, статы миньонов), умение как набор компонентов урона (основной удар, подумения (одно подумение из префаба и узла дерева — один компонент с числом детонаций), урон из кода, поддерживаемый периодический урон одного экземпляра (Spirit Plague: урон за всё действие и в секунду, без крита), урон проклятий при попадании по цели — частота из двух входов «ваши попадания» (по умолчанию по панели умений) и «попадания миньонов и союзников», срабатывания, миньоны), конверсии урона и смена тегов умения из узлов дерева, характеристики персонажа, урон умения, крит, скорость, урон айлментов (поджог, кровотечение, яд и т. д.: шанс, стаки, урон стака, лимиты), DPS «как в игре» и против врага. Тест-векторы из исследований проходят |
-| Клиент (Godot 4.7) | рабочий MVP: пассивки, 5 умений с деревьями (визуал деревьев из клиента игры: иконки, рамки, фоны, орнаменты, связи), 11 слотов предметов с аффиксами, сетка идолов, условия игрока и врага, вкладка «Расчёты» с полосой итогов, баффами умений на персонажа и расшифровкой каждого числа, «Условия» с фильтром по источникам, панель характеристик с подсветкой изменений |
-| Не сделано | базовые баффы, заданные в данных префабов, а не в коде (Flame Ward 30%, Focus, Rebuke и др. — их числа в выгрузке не найдены), сохранение/загрузка билда, импорт из файла сохранения офлайн-персонажа (импорт по ссылке Last Epoch Tools есть; Weaver и сетовые id не импортируются, благословения не проверены на примере). Урон считается по одной цели: распространение айлментов, цепи и урон по площади на других врагов в DPS не входят. Особые эффекты, сводимые к поведению без чисел (иммунитеты, ИИ, визуальное), перечислены в «Не учтено». Что не учтено в конкретном билде, видно в разделе «Не учтено» вкладки «Расчёты» |
+| Formula and data research | done (`research/`) |
+| Extracted game data | ready (`research/data/game/`) |
+| Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers, minions), damage conversions and skill tag changes from tree nodes, character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy. The test vectors from the research pass |
+| Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, Conditions with a filter by source, a stats panel with highlighting of changes |
+| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), saving/loading a build, import from an offline character save file (import by Last Epoch Tools link exists; Weaver and set ids are not imported, blessings have not been verified on an example). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
 
-Отложенные задачи — в [BACKLOG.md](BACKLOG.md).
+Deferred tasks are in [BACKLOG.md](BACKLOG.md).
 
-## Откуда формулы и данные
+## Where the formulas and data come from
 
-Каждая формула движка опирается на один из источников ниже. Метка источника стоит в заметках `research/` и в
-[client/docs/ENGINE.md](client/docs/ENGINE.md). При расхождении источников побеждает код игры (D), затем официальный гайд (A).
-Расхождения помечены ⚠ в `research/02_le_formulas.md`.
+Every engine formula relies on one of the sources below. The source label appears in the `research/` notes and in
+[client/docs/ENGINE.md](client/docs/ENGINE.md). When sources disagree, the game code (D) wins, then the official guide (A).
+Disagreements are marked ⚠ in `research/02_le_formulas.md`.
 
-| Метка | Источник | Как получено | Где лежит |
+| Label | Source | How it was obtained | Where it is stored |
 |---|---|---|---|
-| **A** | Официальный внутриигровой гайд Eleventh Hour Games (Game Guide) и патчноуты | Текст гайда взят из файла локализации, который раздаёт LE Tools (`/data/version150/i18n/full/en.json`, ключи `GameGuide.*`). Картинки формул (броня, вард, уклонение, блок, оглушение, заморозка) переписаны в текст | `research/02_le_formulas.md`, копии в `research/02_assets/` |
-| **A** (данные) | Ассеты установленного клиента 1.5.0: классы, атрибуты, свойства, аффиксы, предметы, уникальные, сеты, айлменты, идолы и алтари, благословения, деревья, монстры | Бандлы Unity прочитаны через UnityPy и экспорт AssetRipper. Сериализация Odin (сетки алтарей) разобрана своим декодером. Таблицы ActorScaler взяты из `global-metadata.dat` | `research/data/game/*.json`, описание в `research/07a`, `07b`, `07f` |
-| **D** | Код клиента игры (Unity 6000.4.8f1, IL2CPP) | Локальная декомпиляция: Cpp2IL (сигнатуры C# и ISIL-дизассемблер каждого метода), Il2CppInspectorRedux (адреса методов), Ghidra (псевдо-C). Float-константы читались прямо из `GameAssembly.dll`. Метод сначала проверен на формуле брони: восстановленный код совпал с гайдом до последней константы | Выводы — в `research/07*` и ENGINE.md. Заметки с фрагментами дизассемблирования (`05`, `06*`, `07j`) и сам дамп хранятся локально и не публикуются |
-| **D?** | Тот же код, но смысл места неоднозначен | Причина указана рядом с формулой. Такие места перепроверялись отдельными волнами (`research/07k`, `07m`) | там же |
-| **B / X** | Данные и код сообщества: бандлы и планировщик LE Tools, библиотека Tunklab, статьи Maxroll, тесты на форумах | Использовались для сверки и там, где кода или ассета нет | `research/02_le_formulas.md`, `research/03_le_data_sources.md` |
-| **C** | Догадка или источник не найден | Не считается подтверждённым. Что движок не реализует, перечислено в разделе «Не учтено» вкладки «Расчёты» | `research/02_le_formulas.md` |
+| **A** | The official in-game guide by Eleventh Hour Games (Game Guide) and patch notes | The guide text was taken from the localization file served by LE Tools (`/data/version150/i18n/full/en.json`, keys `GameGuide.*`). The formula images (armor, ward, dodge, block, stun, freeze) were transcribed into text | `research/02_le_formulas.md`, copies in `research/02_assets/` |
+| **A** (data) | Assets of the installed 1.5.0 client: classes, attributes, properties, affixes, items, uniques, sets, ailments, idols and altars, blessings, trees, monsters | Unity bundles read with UnityPy and an AssetRipper export. Odin serialization (altar grids) parsed with a custom decoder. ActorScaler tables taken from `global-metadata.dat` | `research/data/game/*.json`, described in `research/07a`, `07b`, `07f` |
+| **D** | Game client code (Unity 6000.4.8f1, IL2CPP) | Local decompilation: Cpp2IL (C# signatures and an ISIL disassembly of every method), Il2CppInspectorRedux (method addresses), Ghidra (pseudo-C). Float constants were read directly from `GameAssembly.dll`. The method was first checked on the armor formula: the recovered code matched the guide down to the last constant | Findings are in `research/07*` and ENGINE.md. The notes with disassembly fragments (`05`, `06*`, `07j`) and the dump itself are kept locally and are not published |
+| **D?** | The same code, but the meaning of the spot is ambiguous | The reason is given next to the formula. Such spots were re-checked in separate waves (`research/07k`, `07m`) | same place |
+| **B / X** | Community data and code: LE Tools bundles and planner, the Tunklab library, Maxroll articles, forum tests | Used for cross-checking and where there is no code or asset | `research/02_le_formulas.md`, `research/03_le_data_sources.md` |
+| **C** | A guess or no source found | Not considered confirmed. What the engine does not implement is listed in the "Not counted" section of the Calculations tab | `research/02_le_formulas.md` |
 
-Механики деревьев умений и особые эффекты уникальных собраны поэтапно:
-- **Поля мутаторов деревьев умений** (4890 полей). Для каждого поля прослежено, куда код игры передаёт его значение
-  (`research/07c`, `07g`, `07h`; трассировщик `tools/extract/field_tracer.py`). Затем поля размечены моделями по `tools/models/AUTHORING.md`
-  и проверены `validate.py`. Метка `D(w4*)` значит: использование поля подтверждено дословной цитатой кода, а формула частично выведена разметкой.
-  Результат — `client/data/field_models.json`.
-- **Особые эффекты уникальных** (`research/07d`, `07i`): обработчики PlayerProperty и AbilityProperty прочитаны в коде.
-  Результат — `client/data/unique_effect_models.json`.
-- **Конверсии урона и айлментов из деревьев** (`research/data/game/skill_conversions.json`) размечены по описаниям кода мутаторов.
-  Это D?, сверка в игре стоит в [BACKLOG.md](BACKLOG.md).
-- **Сложные случаи разобраны вручную** по коду: Holy Aura (`research/07l`), миньоны (`07d`, `07j`), формат сохранения (`07e`).
+Skill tree mechanics and unique special effects were assembled in stages:
+- **Skill tree mutator fields** (4890 fields). For each field, we traced where the game code passes its value
+  (`research/07c`, `07g`, `07h`; the tracer is `tools/extract/field_tracer.py`). The fields were then annotated with models following `tools/models/AUTHORING.md`
+  and checked by `validate.py`. The label `D(w4*)` means: the use of the field is confirmed by a verbatim code quote, and the formula is partly derived by the annotation.
+  The result is `client/data/field_models.json`.
+- **Unique special effects** (`research/07d`, `07i`): the PlayerProperty and AbilityProperty handlers were read in the code.
+  The result is `client/data/unique_effect_models.json`.
+- **Damage and ailment conversions from trees** (`research/data/game/skill_conversions.json`) were annotated from the descriptions in the mutator code.
+  This is D?; the in-game check is in [BACKLOG.md](BACKLOG.md).
+- **Complex cases were worked out by hand** from the code: Holy Aura (`research/07l`), minions (`07d`, `07j`), the save format (`07e`).
 
-Проверка в игре. Числа удара сверены с тренировочным манекеном. Например, Harvest тестового билда даёт 995 без крита и 2487 с критом — как в игре.
-Поэтому цель по умолчанию — манекен, а расчёт показывает его «удар без крита» и «удар с критом». Раскладка сеток алтарей идолов сверена
-со скриншотом из игры. Тест-векторы из исследований прогоняет `client/tests/engine_test`.
+In-game verification. Hit numbers were checked against the training dummy. For example, Harvest of the test build gives 995 without a crit and 2487 with a crit — the same as in the game.
+That is why the default target is the dummy, and the calculation shows its "hit without crit" and "hit with crit". The layout of the idol altar grids was checked
+against a screenshot from the game. The test vectors from the research are run by `client/tests/engine_test`.
 
-Источники данных и формул нужно перепроверять после каждого патча игры. Адреса бандлов LE Tools меняются с версией,
-команды повторного извлечения описаны в заметках `research/03`–`07` (часть из них локальная) и в скриптах `tools/extract/`.
+The data and formula sources need to be re-checked after every game patch. The LE Tools bundle addresses change with the version,
+the commands for repeating the extraction are described in the notes `research/03`–`07` (some of them local) and in the scripts under `tools/extract/`.
 
-## Структура репозитория
+## Repository layout
 
 ```
-LICENSE          лицензия MIT (на код проекта, см. «Лицензия»)
-PLAN.md          вердикт, архитектура, фазы, риски
-BACKLOG.md       отложенные задачи
-research/        заметки исследования (01…07m) и данные
-  02_assets/     тексты и картинки формул из игрового гайда (PNG — в Git LFS)
-  data/          enum'ы, таблицы и JSON с данными игры (data/game/*.json)
-client/          проект Godot
-  assets/trees/  спрайты деревьев умений и пассивок из клиента игры (PNG в Git LFS; tools/extract/extract_tree_art.py)
-  data/          рукописные таблицы клиента: unique_effect_models.json (особые эффекты уникальных),
-                 field_models.json (модели полей мутаторов и особых списков статов, ENGINE.md §9)
-  docs/          ENGINE.md — спецификация движка, UI.md — контракт UI-скриптов
-  scenes/        сцены UI (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, common/
-  scripts/       логика (.gd): autoload/ (GameData, Build), engine/ (расчёты), UI-скрипты по папкам сцен
-  tests/         headless-проверки: engine_test (тест-векторы), ui_smoke (прогон всех вкладок), trees_test, minion_test, letools_import_test, layout_test
-  theme/         main_theme.tres — общая тема и варианты стилей
-  addons/        плагин godot_ai
-.mcp.json        MCP-серверы проекта (Serena)
+LICENSE          MIT license (for the project code, see "License")
+build_windows.ps1  builds the Windows x64 release (see "Release build")
+release/         README.txt shipped inside the release zip
+PLAN.md          verdict, architecture, phases, risks
+BACKLOG.md       deferred tasks
+research/        research notes (01…07m) and data
+  02_assets/     texts and images of the formulas from the in-game guide (PNGs are in Git LFS)
+  data/          enums, tables and JSON with game data (data/game/*.json)
+client/          Godot project
+  assets/trees/  skill and passive tree sprites from the game client (PNGs in Git LFS; tools/extract/extract_tree_art.py)
+  i18n/          ru.po — Russian translation (msgid = English source text)
+  data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
+                 field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
+  docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
+  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, common/
+  scripts/       logic (.gd): autoload/ (Settings, GameData, Build), engine/ (calculations), UI scripts in folders matching the scenes
+  tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test,
+                 layout_test, relevance_test, i18n_test
+  export_presets.cfg  export preset "Windows Desktop"
+  theme/         main_theme.tres — the shared theme and style variations
+  addons/        the godot_ai plugin
+.mcp.json        the project's MCP servers (Serena)
 ```
 
-Не входит в репозиторий (лежит локально, см. `.gitignore`):
-`dump/` и `tools/` (декомпиляция клиента, Ghidra, Cpp2IL, скрипты), заметки,
-выведенные напрямую из дизассемблирования (`05_*`, `06?_dump_*`, `07j_*`,
-`abilities_code_damage.json`), брифы для агентов, `client/.godot/`, логи.
+Not part of the repository (kept locally, see `.gitignore`):
+`dump/` and `tools/` (client decompilation, Ghidra, Cpp2IL, scripts), `build/` (release output), notes
+derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
+`abilities_code_damage.json`), agent briefs, `client/.godot/`, logs.
 
-## Клиент (Godot)
+## Client (Godot)
 
-- Движок: Godot 4.7, рендерер GL Compatibility, физика Jolt.
-- Проект открывается из `client/project.godot`, главная сцена — `scenes/main.tscn`.
-- Данные игры читаются напрямую из `research/data/game/` (путь `res://../research/data/game`),
-  копий в `client/` нет (в `client/data/` — только рукописные таблицы планировщика). Для экспортированной сборки это нужно будет заменить упаковкой данных.
-- Плагин **Godot AI** (`client/addons/godot_ai`, v4.1.0, исходник
-  <https://github.com/hi-godot/godot-ai>) включён в `[editor_plugins]`.
-  При открытии проекта в редакторе плагин подключается к MCP-серверу `godot-ai`,
-  и Claude Code может управлять редактором (сцены, узлы, скрипты, запуск).
-- Требуется [uv](https://docs.astral.sh/uv/) (`uvx`) — им запускается MCP-сервер.
+- Engine: Godot 4.7, GL Compatibility renderer, Jolt physics.
+- Interface language: English (default) or Russian — selector in the top bar; translations in client/i18n/ru.po (msgid = English source text).
+- The project opens from `client/project.godot`, the main scene is `scenes/main.tscn`.
+- Game data is read from `research/data/` through `LE.research_dir()` / `LE.game_data_dir()`: in the editor directly from the repository
+  (`res://../research/data`), in the exported build from the packed copy `res://data/research` that `build_windows.ps1` puts there
+  for the export (the copy is not committed). `client/data/` itself holds only the planner's hand-written tables.
+- The **Godot AI** plugin (`client/addons/godot_ai`, v4.1.0, source
+  <https://github.com/hi-godot/godot-ai>) is enabled in `[editor_plugins]`.
+  When the project is opened in the editor, the plugin connects to the `godot-ai` MCP server,
+  and Claude Code can drive the editor (scenes, nodes, scripts, running).
+- [uv](https://docs.astral.sh/uv/) (`uvx`) is required — it launches the MCP server.
 
-### Правила кода клиента
+### Client code rules
 
-- Весь визуал — только в файлах сцен (`.tscn`) и теме (`theme/main_theme.tres`).
-  Скрипты не создают UI-узлы и не задают стили; они лишь инстансят готовые сцены
-  (`PackedScene` через `@export`), заполняют значения и переключают `theme_type_variation`.
-- Значения применяются сразу: у всех `SpinBox` включено `update_on_text_changed`, пересчёт откладывается и идёт не чаще раза за кадр,
-  строки обновляются на месте (набор не меняется — узлы живут, фокус, раскрытые расшифровки и прокрутка сохраняются), изменившиеся числа подсвечиваются.
-  Чекбоксы и переключатели оформлены в теме (иконки `client/theme/icons/`, включённая строка — с золотой рамкой).
-- Автозагрузки: `GameData` — загрузка JSON игры и поиск по ним; `Build` — состояние билда
-  (класс, мастерство, уровень, пассивки, умения, предметы, враг, состояние игрока) с сигналом `changed`.
-- Движок описан в [client/docs/ENGINE.md](client/docs/ENGINE.md), контракты UI-скриптов —
-  в [client/docs/UI.md](client/docs/UI.md). Новые файлы пишутся по этим документам.
-- Каждое число на экране сопровождается расшифровкой (источник каждого мода).
-  Если механика не реализована, она попадает в список «Не учтено», а не молча пропускается.
+- All visuals live only in scene files (`.tscn`) and the theme (`theme/main_theme.tres`).
+  Scripts do not create UI nodes and do not set styles; they only instantiate ready-made scenes
+  (`PackedScene` via `@export`), fill in values and switch `theme_type_variation`.
+- Values apply immediately: every `SpinBox` has `update_on_text_changed` enabled, recalculation is deferred and runs at most once per frame,
+  rows are updated in place (the set of rows does not change — nodes stay alive, so focus, expanded breakdowns and scroll position are preserved), and changed numbers are highlighted.
+  Checkboxes and toggles are styled in the theme (icons in `client/theme/icons/`, an enabled row has a gold frame).
+- Autoloads: `GameData` — loading the game JSON and searching it; `Build` — the build state
+  (class, mastery, level, passives, skills, items, enemy, player state) with a `changed` signal.
+- The engine is described in [client/docs/ENGINE.md](client/docs/ENGINE.md), the contracts of the UI scripts
+  in [client/docs/UI.md](client/docs/UI.md). New files are written according to these documents.
+- Every number on screen comes with a breakdown (the source of each mod).
+  If a mechanic is not implemented, it goes into the "Not counted" list instead of being silently skipped.
 
-### Вкладки
+### Tabs
 
-- **Деревья** (пассивки и умения) выглядят как в игре: иконки узлов под маской, рамки (светлая — у взятых), плашка очков, фон,
-  руны и орнаменты, рельсы связей со свечением между взятыми узлами — всё из префабов UI игры (`research/data/game/tree_art.json`,
-  `client/assets/trees/`). Дерево вписывается в окно, Ctrl + колесо — масштаб. 5 узлов пассивок без UI-узла в префабах игры показаны кругом.
-- **Пассивки** — дерево класса и трёх мастерств; ЛКМ добавить очко, ПКМ убрать. Требования узла
-  (`requirements`) работают как «ИЛИ»: достаточно любого соседа с нужным числом очков
-  (`LocalTreeData.ArePassiveNodeRequirementsMet`); снять очко нельзя, если узел отрывается от корня. Учитывается
-  порог `masteryRequirement` (очки в узлах базового дерева и этого мастерства с меньшим
-  порогом). Лимит очков: уровень − 2 + квестовые 15 (07e §6); ограничение на чужие мастерства не реализовано.
-- **Скиллы** — 5 слотов, умения класса и выбранного мастерства; очки дерева = уровень умения + бонус «+N к уровню» с предметов.
-- **Предметы** — 11 слотов: база, подтип, импликиты (ролл 0–255), 2 префикса и 2 суффикса (тир, ролл).
-  Уникальный предмет выбирается списком: его моды с роллами по `rollID`, импликиты базы, легендарные аффиксы.
-  Сетовые бонусы считаются по числу разных предметов сета (Legends Entwined засчитывается в каждый сет).
-  Особые эффекты уникальных, сводимые к статам, считаются по таблице `client/data/unique_effect_models.json`
-  (статы от атрибутов и сопротивлений, условные бонусы, свойства конкретных умений, множители получаемого урона);
-  условные включаются флагами во вкладке «Условия», остальные перечислены в «Не учтено» с причиной.
-  Значения квантуются как в игре (`AffixMath`, 07a §6) с учётом модификатора эффекта базы.
-- **Благословения** — по одному на таймлайн (обычное или великое) с роллом, импликиты идут в характеристики.
-- **Идолы** — сетка 5×5, алтарь (13 подтипов) меняет сетку и даёт преломлённые клетки и свойства; клик по клетке ставит идол,
-  размер базы проверяется по свободным клеткам; 1 префикс и 1 суффикс, аффиксы и крупные идолы — по классу.
-- **Расчёты** — сверху полоса итогов: DPS по врагу (с названием цели), средний удар, применений в секунду, шанс крита; ниже параметры расчёта
-  (попаданий по цели, стаки, число миньонов, частота событий для срабатываний — меняются на лету), панель «Баффы умений на персонажа»
-  (каждое умение на панели с его модами на персонажа и галочкой включения; баффы действуют на все умения и характеристики: эффекты деревьев «на персонажа»,
-  Holy Aura, Symbols of Hope, Enchant Weapon, Firebrand, Aura of Decay, Dark Quiver) и секции в фиксированном порядке: компоненты урона (основной удар, подумения,
-  срабатывания, миньоны), конверсии и итоговые теги, крит и пробивание, скорость, мана и перезарядка, айлменты (раздел на каждый), параметры умения из дерева,
-  DPS против врага (удар без крита и с критом как на манекене, средний удар, по компонентам и итог), восполнение (вампиризм, здоровье/мана/ward за удар).
-  «+» раскрывает расшифровку (моноширинным шрифтом; раскрытые строки не схлопываются при пересчёте), «Не учтено» — сворачиваемый блок.
-- **Условия** — здоровье и состояние игрока (поражён/критовал недавно, движение, вампиризм, мана ниже 50%, Haste, Frenzy,
-  ward, проклятия и стаки на себе), тип/уровень/броня/сопротивления врага, флаги (в т. ч. «заморожен») и стаки айлментов,
-  шредов и проклятий (баффы берутся из `ailments.json`, штраф против боссов учитывается). Как в Path of Building, показываются только условия,
-  у которых есть источник в билде (умение, предмет, пассивка; `ConfigRelevance`), с подписью источника; галочка «Показать все условия» открывает полный список,
-  включённые условия без источника подсвечиваются красным. У каждой группы строка «Активно: …» и кнопка «Сбросить»; айлменты показаны читаемыми названиями.
-- **Импорт** (кнопка «Импорт…» в верхней панели) — билд по ссылке lastepochtools.com/planner/<код> (или по вставленному JSON
-  planner_data): класс, мастерство, уровень, пассивки, 5 умений с деревьями, предметы, идолы с алтарём, благословения.
-  Текущий билд заменяется; неподдерживаемое (Weaver, сетовые предметы) и непонятные id перечисляются предупреждениями.
-- **Характеристики** (справа) — атрибуты, ресурсы, защита, сопротивления; подсказка строки = расшифровка.
+- **Trees** (passives and skills) look like in the game: node icons under a mask, frames (a light one for taken nodes), a points badge, background,
+  runes and ornaments, connection rails with a glow between taken nodes — all from the game's UI prefabs (`research/data/game/tree_art.json`,
+  `client/assets/trees/`). The tree fits the window, Ctrl + mouse wheel zooms. 5 passive nodes without a UI node in the game prefabs are shown as a circle.
+- **Passives** — the class tree and three masteries; LMB adds a point, RMB removes one. A node's requirements
+  (`requirements`) work as "OR": any neighbor with the required number of points is enough
+  (`LocalTreeData.ArePassiveNodeRequirementsMet`); a point cannot be removed if the node would be cut off from the root. The
+  `masteryRequirement` threshold is taken into account (points in nodes of the base tree and of this mastery with a lower
+  threshold). Point limit: level − 2 + 15 from quests (07e §6); the restriction on other masteries is not implemented.
+- **Skills** — 5 slots, skills of the class and the chosen mastery; tree points = skill level + the "+N to level" bonus from items.
+- **Items** — 11 slots: base, subtype, implicits (roll 0–255), 2 prefixes and 2 suffixes (tier, roll).
+  A unique item is chosen from a list: its mods with rolls by `rollID`, the base's implicits, legendary affixes.
+  Set bonuses are counted by the number of distinct set items (Legends Entwined counts toward every set).
+  Unique special effects that reduce to stats are computed from the `client/data/unique_effect_models.json` table
+  (stats from attributes and resistances, conditional bonuses, properties of specific skills, multipliers of damage taken);
+  conditional ones are enabled by flags in the Conditions tab, the rest are listed in "Not counted" with the reason.
+  Values are quantized as in the game (`AffixMath`, 07a §6), taking the base's effect modifier into account.
+- **Blessings** — one per timeline (normal or grand) with a roll, implicits go into stats.
+- **Idols** — a 5×5 grid, an altar (13 subtypes) changes the grid and gives refracted cells and properties; clicking a cell places an idol,
+  the base size is checked against free cells; 1 prefix and 1 suffix, affixes and large idols are by class.
+- **Calculations** — at the top is a totals strip: DPS vs enemy (with the target name), average hit, uses per second, crit chance; below are the calculation parameters
+  (hits on the target, stacks, number of minions, event frequency for triggers — change on the fly), the "Skill buffs on the character" panel
+  (each skill on the bar with its mods on the character and an enable checkbox; the buffs apply to all skills and stats: "on the character" tree effects,
+  Holy Aura, Symbols of Hope, Enchant Weapon, Firebrand, Aura of Decay, Dark Quiver) and sections in a fixed order: damage components (main hit, sub-skills,
+  triggers, minions), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
+  DPS vs enemy (hit without crit and with crit as on the dummy, average hit, per component and the total), sustain (leech, health/mana/ward per hit).
+  "+" expands the breakdown (in a monospace font; expanded rows do not collapse on recalculation), "Not counted" is a collapsible block.
+- **Conditions** — health and player state (hit recently / crit recently, movement, leech, mana below 50%, Haste, Frenzy,
+  ward, curses and stacks on yourself), enemy type/level/armor/resistances, flags (including "frozen") and stacks of ailments,
+  shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for). As in Path of Building, only the conditions
+  that have a source in the build (skill, item, passive; `ConfigRelevance`) are shown, labeled with the source; the "Show all conditions" checkbox opens the full list,
+  and enabled conditions without a source are highlighted in red. Each group has an "Active: …" line and a "Reset" button; ailments are shown with readable names.
+- **Import** (the "Import…" button in the top bar) — a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data
+  JSON): class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings.
+  The current build is replaced; unsupported things (Weaver, set items) and unrecognized ids are listed as warnings.
+- **Stats** (on the right) — attributes, resources, defenses, resistances; a row's tooltip is its breakdown.
 
-### Проверки
+### Checks
 
 ```
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/engine_test.tscn
@@ -152,68 +159,89 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/ui_smok
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/trees_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/layout_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/relevance_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/i18n_test.tscn
 ```
-`engine_test` сверяет тест-векторы из `research/06a–06c`, `07a`, проверяет уникальные, сеты и особые эффекты
-(в т. ч. прогон всех уникальных при включённых условиях) и печатает пример билда с расшифровкой;
-`ui_smoke` прогоняет все вкладки и выводит ошибки скриптов в консоль (сторожевой таймер 180 с), проверяет набор текста в `SpinBox` без Enter,
-обновление строк «Расчётов» на месте, полосу итогов и кнопки «Сбросить»;
-`relevance_test` проверяет фильтр «Условий» (`ConfigRelevance`: какие флаги, числа и айлменты имеют источник в билде);
-`minion_test` проверяет перенос статов игрока на миньона (07d §1.1);
-`layout_test` импортирует пример билда и проверяет, что каждая вкладка помещается в окно шириной 1600 px (длинные тексты переносятся);
-`letools_import_test` проверяет импорт из Last Epoch Tools (LZString, id, ссылки, сохранённый ответ `tests/fixtures/letools_A83KxJq5.json`,
-применение к `Build`, кнопка в верхней панели); `letools_live` (в набор не входит, нужна сеть) грузит живую ссылку через диалог;
-`trees_test` проверяет, что у узлов деревьев есть иконки из клиента игры, и что каждый узел всех 136 действующих деревьев умений и 5 пассивных деревьев можно взять
-(устаревшие деревья version 0 — Fire Shield, Ice Ward и т. п. — пропускаются).
+`engine_test` checks the test vectors from `research/06a–06c`, `07a`, checks uniques, sets and special effects
+(including a run of all uniques with conditions enabled) and prints an example build with a breakdown;
+`ui_smoke` runs through all tabs and prints script errors to the console (watchdog timer 180 s), checks typing into a `SpinBox` without Enter,
+in-place updates of the Calculations rows, the totals strip and the "Reset" buttons;
+`i18n_test` imports both saved builds, shows every tab in Russian and fails on every string that went through `LE.t()` without a
+translation in `client/i18n/ru.po` (`LE.missing`);
+`relevance_test` checks the Conditions filter (`ConfigRelevance`: which flags, numbers and ailments have a source in the build);
+`minion_test` checks the transfer of player stats to a minion (07d §1.1);
+`layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
+`letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,
+applying to `Build`, the button in the top bar); `letools_live` (not part of the suite, needs network) loads a live link through the dialog;
+`trees_test` checks that tree nodes have icons from the game client and that every node of all 136 current skill trees and 5 passive trees can be taken
+(obsolete version 0 trees — Fire Shield, Ice Ward, etc. — are skipped).
 
-Визуал деревьев собирается локальным скриптом `tools/extract/extract_tree_art.py` (UnityPy по бандлам игры: префабы UI деревьев,
-спрайты по `m_Sprite` и мягким ссылкам `m_SpriteSoftRef`) в `research/data/game/tree_art.json` и `client/assets/trees/`; после него
-нужен импорт ассетов (`Godot --headless --path client --import` или открыть редактор).
+The tree visuals are built by the local script `tools/extract/extract_tree_art.py` (UnityPy over the game bundles: tree UI prefabs,
+sprites by `m_Sprite` and soft references `m_SpriteSoftRef`) into `research/data/game/tree_art.json` and `client/assets/trees/`; after it
+an asset import is needed (`Godot --headless --path client --import` or open the editor).
 
-Модели `client/data/field_models.json` собираются локальным конвейером `tools/models/` (пакеты по семантике полей из
-`research/data/game/mutator_field_semantics_*.json` → разметка агентами по `AUTHORING.md` → `validate.py` → `merge.py`).
+The models in `client/data/field_models.json` are built by the local pipeline `tools/models/` (packs by field semantics from
+`research/data/game/mutator_field_semantics_*.json` → annotation by agents following `AUTHORING.md` → `validate.py` → `merge.py`).
 
-Правила конверсий `research/data/game/skill_conversions.json` собираются локальными скриптами
-`tools/extract/conversions/` (`prefilter.py` → разметка пачек → `merge.py` с проверками и ручными исправлениями).
-Редактор, в котором автозагрузки добавили без перезапуска, показывает ложные ошибки
-`Identifier not found: Build/GameData` — они уходят после перезапуска редактора.
+The conversion rules in `research/data/game/skill_conversions.json` are built by the local scripts
+`tools/extract/conversions/` (`prefilter.py` → annotation of batches → `merge.py` with checks and manual fixes).
+An editor in which the autoloads were added without a restart shows false errors
+`Identifier not found: Build/GameData` — they go away after the editor is restarted.
 
-### Инструменты разработки
+### Development tools
 
-| Инструмент | Что делает | Как подключён |
+| Tool | What it does | How it is connected |
 |---|---|---|
-| godot-ai | управление редактором Godot из Claude Code | плагин в `client/addons/godot_ai` + пользовательский MCP-сервер `godot-ai` |
-| Serena | семантическая навигация и правка кода | `.mcp.json` (запуск через `uvx` из `oraios/serena`) |
+| godot-ai | controls the Godot editor from Claude Code | the plugin in `client/addons/godot_ai` + the user-scope MCP server `godot-ai` |
+| Serena | semantic code navigation and editing | `.mcp.json` (launched via `uvx` from `oraios/serena`) |
 
-При первом запуске Claude Code спросит разрешение на проектный MCP-сервер `serena`.
+On first launch, Claude Code will ask for permission to use the project MCP server `serena`.
+
+### Release build
+
+```
+.uild_windows.ps1 -Version 0.1.0
+```
+Needs Godot 4.7 with the 4.7 export templates (`-Godot <console exe>` or the `GODOT` environment variable). The script copies
+`research/data` into `client/data/research`, imports and exports the preset "Windows Desktop" (`client/export_presets.cfg`, x86_64,
+data and assets embedded in the exe), deletes the copy and packs `build/LastEpochBuilder-<version>-windows-x64.zip`
+(exe, LICENSE, `release/README.txt`). The version is also set in `client/project.godot` (`application/config/version`).
+
+### Localization
+
+Source strings are English. Russian lives in `client/i18n/ru.po` (msgid = English text): scene texts are translated by Godot,
+texts built in code go through `tr()` in nodes and `LE.t()` in static engine code, data labels from `client/data/*.json` are English
+and are passed through `LE.t()` when shown. New user-visible strings need a Russian entry in `ru.po`; `i18n_test` lists the missing ones.
+The language is chosen in the top bar and saved in `user://settings.cfg` (`Settings` autoload); switching reloads the main scene,
+the build is kept in the `Build` autoload. Details: [client/docs/UI.md](client/docs/UI.md) "Localization".
 
 ## Git
 
-- Ветка `main`, все пути в репозитории относительные.
-- Git LFS включён для бинарных файлов (`.gitattributes`: изображения, аудио, шрифты,
-  модели, архивы, `*.pck/*.res/*.scn`). JSON и Markdown — обычный git.
-- Коммитим только то, что нужно для дальнейшей работы: код, документацию, данные.
-  Временные файлы, скрипты извлечения и материалы дизассемблирования — не коммитим.
+- Branch `main`, all paths in the repository are relative.
+- Git LFS is enabled for binary files (`.gitattributes`: images, audio, fonts,
+  models, archives, `*.pck/*.res/*.scn`). JSON and Markdown use plain git.
+- We commit only what is needed for further work: code, documentation, data.
+  Temporary files, extraction scripts and disassembly materials are not committed.
 
-## Как развивать
+## How to develop
 
-1. Источники истины по формулам: `research/02_le_formulas.md` (метки достоверности)
-   и заметки `06*`/`07*`; метка **D** — подтверждено кодом игры.
-2. Данные движка брать из `research/data/game/*.json`, не править вручную —
-   они получены из выгрузки клиента.
-3. Следующие шаги: проки уникальных (`item_procs.json`), механики полей мутаторов по скиллам
-   (07c/07g/07h), сохранение билда (см. [PLAN.md](PLAN.md), раздел 5).
+1. Sources of truth for formulas: `research/02_le_formulas.md` (confidence labels)
+   and the notes `06*`/`07*`; the label **D** means confirmed by the game code.
+2. Take engine data from `research/data/game/*.json`, do not edit it by hand —
+   it was obtained from the client dump.
+3. Next steps: unique procs (`item_procs.json`), skill mutator field mechanics
+   (07c/07g/07h), saving a build (see [PLAN.md](PLAN.md), section 5).
 
-## Поддержка README
+## Maintaining the README
 
-README обновляется в том же коммите, что и изменение, которое его устаревает:
-новая папка или инструмент, смена статуса из таблицы выше, новый шаг сборки/запуска,
-изменение правил git. Секции «Статус», «Структура» и «Инструменты» держим актуальными.
+The README is updated in the same commit as the change that makes it stale:
+a new folder or tool, a status change in the table above, a new build/run step,
+a change to the git rules. We keep the "Status", "Repository layout" and "Development tools" sections up to date.
 
-## Лицензия
+## License
 
-Код и документация проекта распространяются по лицензии MIT, см. [LICENSE](LICENSE).
+The project's code and documentation are distributed under the MIT license, see [LICENSE](LICENSE).
 
-Лицензия не распространяется на материалы Last Epoch. Это данные, извлечённые из клиента (`research/data/game/`),
-тексты и картинки внутриигрового гайда (`research/02_assets/`) и графика деревьев (`client/assets/trees/`).
-Права на них принадлежат Eleventh Hour Games. Они хранятся в репозитории только для работы планировщика.
-Плагин `client/addons/godot_ai` распространяется по собственной лицензии MIT (`client/addons/godot_ai/LICENSE`).
+The license does not cover Last Epoch materials. These are the data extracted from the client (`research/data/game/`),
+the texts and images of the in-game guide (`research/02_assets/`) and the tree graphics (`client/assets/trees/`).
+The rights to them belong to Eleventh Hour Games. They are kept in the repository only for the planner to work.
+The `client/addons/godot_ai` plugin is distributed under its own MIT license (`client/addons/godot_ai/LICENSE`).

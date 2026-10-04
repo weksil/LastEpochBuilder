@@ -44,9 +44,9 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		var sub: Dictionary = GameData.ability_by_name(str(extra.get("ability", "")))
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
-			_skip_note(out_notes, "Узел «%s»: у под-умения «%s» нет урона — не учтено." % [extra.get("node", "?"), extra.get("ability", "?")])
+			_skip_note(out_notes, LE.t("Node \"%s\": sub-skill \"%s\" has no damage — not counted.") % [extra.get("node", "?"), extra.get("ability", "?")])
 			continue
-		_add_sub(result, str(sub.get("name", "")), sub, entry, float(extra.get("count", 1.0)), "узел «%s»" % extra.get("node", ""))
+		_add_sub(result, str(sub.get("name", "")), sub, entry, float(extra.get("count", 1.0)), LE.t("node \"%s\"") % extra.get("node", ""))
 
 	for trig: Variant in s.get("triggers", []):
 		if not trig is Dictionary:
@@ -54,7 +54,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		var sub: Dictionary = GameData.ability_by_name(str(trig.get("ability", "")))
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
-			_skip_note(out_notes, "Триггер «%s»: у умения «%s» нет урона — не учтено." % [trig.get("label", "?"), trig.get("ability", "?")])
+			_skip_note(out_notes, LE.t("Trigger \"%s\": skill \"%s\" has no damage — not counted.") % [trig.get("label", "?"), trig.get("ability", "?")])
 			continue
 		var rate: float = float(trig.get("rate", 0.0))
 		if rate <= 0.0:
@@ -68,7 +68,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		if slot >= 0 and slot < build.skills.size():
 			count = float(build.skills[slot].get("inputs", {}).get("minions", 0.0))
 		if s.get("inputs") is Array:
-			s["inputs"].append({"key": "minions", "label": "Миньонов активно (0 — по лимиту призыва)", "default": 0.0})
+			s["inputs"].append({"key": "minions", "label": LE.t("Active minions (0 = by summon limit)"), "default": 0.0})
 		result.append_array(MinionCalc.components(s["store"], ab, s.get("minion_mods", []), count))
 	return result
 
@@ -129,7 +129,7 @@ static func _add_code_damage(result: Array[Dictionary], build: Node, slot: int, 
 			else:
 				numeric = false
 		if not numeric:
-			_skip_note(out_notes, "Урон «%s» у умения «%s» считается кодом по значениям узлов, а не числом — не учтён." % [label, ab_name])
+			_skip_note(out_notes, LE.t("Damage \"%s\" of skill \"%s\" is computed by code from node values, not a plain number — not counted.") % [label, ab_name])
 			continue
 		var ade_v: Variant = comp.get("ADE")
 		var crit_v: Variant = comp.get("crit")
@@ -153,7 +153,7 @@ static func _add_code_damage(result: Array[Dictionary], build: Node, slot: int, 
 		if not is_hit and (dur_v is float or dur_v is int) and float(dur_v) > 0.0 and (max_v is float or max_v is int) and int(max_v) == 1:
 			result.append(_dot_component(s, label, ab, base, float(dur_v)))
 			continue
-		result.append(_component(label, "sub", ab, base, 1.0, 0.0, "урон кодом (abilities_code_damage.json)"))
+		result.append(_component(label, "sub", ab, base, 1.0, 0.0, LE.t("damage by code (abilities_code_damage.json)")))
 
 
 ## Maintained DoT (one instance per target, maxInstances 1): `base` damage is the total over the base duration, the instance is
@@ -168,7 +168,7 @@ static func _dot_component(s: Dictionary, label: String, ab: Dictionary, base: D
 			var p: Dictionary = params[key]
 			if str(p.get("param", "")) == "duration":
 				inc += float(p.get("increased", 0.0))
-	var comp: Dictionary = _component(label, "dot", ab, base, 1.0, 1.0 / duration, "периодический урон одного экземпляра (abilities_code_damage.json)")
+	var comp: Dictionary = _component(label, "dot", ab, base, 1.0, 1.0 / duration, LE.t("periodic damage of one instance (abilities_code_damage.json)"))
 	comp["duration"] = duration
 	comp["duration_inc"] = inc
 	return comp
@@ -204,24 +204,24 @@ static func _curse_hit_component(build: Node, slot: int, s: Dictionary, label: S
 	var own: float = float(inputs.get(CURSE_OWN_KEY, estimate["rate"]))
 	var other: float = float(inputs.get(CURSE_OTHER_KEY, 0.0))
 	if s.get("inputs") is Array:
-		_declare_input(s["inputs"], {"key": CURSE_OWN_KEY, "label": "Ваших попаданий по проклятой цели в секунду (другими умениями)", "default": float(estimate["rate"])})
-		_declare_input(s["inputs"], {"key": CURSE_OTHER_KEY, "label": "Попаданий миньонов и союзников по проклятой цели в секунду", "default": 0.0})
+		_declare_input(s["inputs"], {"key": CURSE_OWN_KEY, "label": LE.t("Your hits on the cursed target per second (by other skills)"), "default": float(estimate["rate"])})
+		_declare_input(s["inputs"], {"key": CURSE_OTHER_KEY, "label": LE.t("Hits of minions and allies on the cursed target per second"), "default": 0.0})
 	var weighted: float = own * own_mult + other
 	var hits: float = own + other
 	var b: PackedStringArray = []
-	b.append("Проклятие бьёт цель каждый раз, когда по ней попадают (любым источником); само применение урона не наносит, повторное применение только обновляет проклятие.")
+	b.append(LE.t("The curse hits the target every time it is hit (by any source); casting it deals no damage itself, recasting only refreshes the curse."))
 	if inputs.has(CURSE_OWN_KEY):
-		b.append("Ваших попаданий по проклятой цели: %s/с (задано во вкладке «Расчёты»)." % LE.fmt_num(own))
+		b.append(LE.t("Your hits on the cursed target: %s/s (set on the Calculations tab).") % LE.fmt_num(own))
 	else:
-		b.append("Ваших попаданий по проклятой цели: %s/с (оценка по панели умений: %s)." % [LE.fmt_num(own), "; ".join(estimate["lines"]) if not estimate["lines"].is_empty() else "других умений с уроном удара нет"])
-	b.append("Попаданий миньонов и союзников: %s/с." % LE.fmt_num(other))
-	b.append("Ваши попадания бьют в ×%s сильнее (moreDamageWhenHitByCreator %s + 1): событий урона = %s × %s + %s = %s в секунду." % [
+		b.append(LE.t("Your hits on the cursed target: %s/s (estimate from the skill bar: %s).") % [LE.fmt_num(own), "; ".join(estimate["lines"]) if not estimate["lines"].is_empty() else LE.t("no other skills with hit damage")])
+	b.append(LE.t("Hits of minions and allies: %s/s.") % LE.fmt_num(other))
+	b.append(LE.t("Your hits deal ×%s more (moreDamageWhenHitByCreator %s + 1): damage events = %s × %s + %s = %s per second.") % [
 		LE.fmt_num(own_mult), LE.fmt_num(own_mult - 1.0), LE.fmt_num(own), LE.fmt_num(own_mult), LE.fmt_num(other), LE.fmt_num(weighted)])
-	b.append("Попаданий по цели в секунду (для шансов айлментов): %s + %s = %s." % [LE.fmt_num(own), LE.fmt_num(other), LE.fmt_num(hits)])
-	b.append("Число попаданий за применение не используется.")
+	b.append(LE.t("Hits on the target per second (for ailment chances): %s + %s = %s.") % [LE.fmt_num(own), LE.fmt_num(other), LE.fmt_num(hits)])
+	b.append(LE.t("The number of hits per use is not used."))
 	if weighted <= 0.0:
-		_skip_note(out_notes, "Проклятие «%s»: 0 попаданий по цели в секунду — задайте частоту попаданий во вкладке «Расчёты»." % label)
-	var comp: Dictionary = _component(label, "curse_hit", ab, base, 1.0, weighted, "урон проклятия при попадании по цели (abilities_code_damage.json)")
+		_skip_note(out_notes, LE.t("Curse \"%s\": 0 hits on the target per second — set the hit rate on the Calculations tab.") % label)
+	var comp: Dictionary = _component(label, "curse_hit", ab, base, 1.0, weighted, LE.t("curse damage when the target is hit (abilities_code_damage.json)"))
 	comp["hit_rate"] = hits
 	comp["event_text"] = "\n".join(b)
 	return comp

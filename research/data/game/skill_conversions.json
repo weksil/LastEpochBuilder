@@ -3319,7 +3319,7 @@
    "tags_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "убирает регенерацию здоровья сигил",
+   "note": "removes sigil health regen",
    "trees": [
     "si4lgl"
    ],
@@ -3352,7 +3352,7 @@
      "to": "Chill"
     }
    ],
-   "note": "добавляет freeze rate 120",
+   "note": "adds freeze rate 120",
    "trees": [
     "deeco"
    ],
@@ -3441,7 +3441,7 @@
      "to": "Time Rot"
     }
    ],
-   "note": "отключает Holy Nova и лечение",
+   "note": "disables Holy Nova and healing",
    "trees": [
     "sm87r4"
    ],
@@ -3581,7 +3581,7 @@
    "tags_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "ward конвертируется в health",
+   "note": "ward converts to health",
    "trees": [
     "fe8at"
    ],
@@ -3725,7 +3725,7 @@
      "to": "Frostbite"
     }
    ],
-   "note": "удаляет pull",
+   "note": "removes pull",
    "trees": [
     "so35a"
    ],
@@ -3913,7 +3913,7 @@
      "to": "Frostbite"
     }
    ],
-   "note": "Также конверсия яда в обморозь",
+   "note": "Also poison to chill conversion",
    "trees": [
     "sbf4m"
    ],
@@ -3991,7 +3991,7 @@
    "tags_when": "active",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "Масштабирование урона отряда по модификаторам урона миньонов",
+   "note": "Unit damage scaling by minion damage modifiers",
    "trees": [
     "sbf4m"
    ],
@@ -4047,7 +4047,7 @@
    "tags_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "Условная конверсия каждые 3 секунды",
+   "note": "Conditional conversion every 3 seconds",
    "trees": [
     "sw43"
    ],
@@ -4131,7 +4131,7 @@
    "tags_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "Заморозка 100",
+   "note": "Chill 100",
    "trees": [
     "ts50pl"
    ],
@@ -4545,7 +4545,7 @@
    "tags_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "+30% урон на следующей атаке огнем",
+   "note": "+30% damage on the next fire attack",
    "trees": [
     "v01cv"
    ],
@@ -4731,7 +4731,7 @@
      "to": "Frostbite"
     }
    ],
-   "note": "Оглушение становится заморозкой",
+   "note": "Stun converts to freeze",
    "trees": [
     "wc57"
    ],
@@ -4801,7 +4801,7 @@
      "to": "Time Rot"
     }
    ],
-   "note": "+30% шанс Time Rot",
+   "note": "+30% Time Rot chance",
    "trees": [
     "va53st"
    ],

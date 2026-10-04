@@ -1,6 +1,6 @@
 class_name CalcNotes extends PanelContainer
 
-## Collapsible «Не учтено» block of the «Расчёты» tab: mechanics of the build that the engine does not count.
+## Collapsible "Not counted" block of the "Calculations" tab: mechanics of the build that the engine does not count.
 
 @onready var _toggle: Button = %ToggleButton
 @onready var _notes_label: Label = %NotesLabel
@@ -25,4 +25,4 @@ func show_notes(notes: Array) -> void:
 
 func _refresh() -> void:
 	_notes_label.visible = _toggle.button_pressed and _count > 0
-	_toggle.text = "%s Не учтено (%d)" % ["▾" if _toggle.button_pressed else "▸", _count]
+	_toggle.text = "%s %s (%d)" % ["▾" if _toggle.button_pressed else "▸", tr("Not counted"), _count]

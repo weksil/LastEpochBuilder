@@ -1,6 +1,6 @@
 class_name BuffsPanel extends PanelContainer
 
-## «Баффы умений на персонажа»: every equipped skill with the mods it gives the character (BuildMods.skill_buffs)
+## "Skill buffs on the character": every equipped skill with the mods it gives the character (BuildMods.skill_buffs)
 ## and a switch bound to the skill input `buff_active`. Rows are reused while the set of skills is unchanged.
 
 @export var row_scene: PackedScene

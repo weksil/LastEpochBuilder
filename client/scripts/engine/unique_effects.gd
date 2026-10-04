@@ -44,14 +44,14 @@ static func apply_global(build: Node, store: StatStore, notes: Array[String], ph
 		var kind: String = str(model.get("kind", "stat"))
 		if kind == "resource":
 			if phase == "pre":
-				notes.append("%s: %s (особый эффект, на расчёт урона не влияет)" % [e["label"], str(model.get("label", model.get("resource", "")))])
+				notes.append(LE.t("%s: %s (special effect, does not affect the damage calculation)") % [e["label"], LE.t(str(model.get("label", model.get("resource", ""))))])
 			continue
 		if (kind != "stat" and kind != "overcap_taken") or _is_skill_scoped(model):
 			continue  # flag is listed by add_notes; trigger / param / speed … are skill-level; conversion is handled by §5.5
 		var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}
 		var reason: String = EffectModels.blocked(model, ctx)
 		if reason != "":
-			notes.append("%s — учитывается при условии: %s" % [e["label"], reason])
+			notes.append(LE.t("%s — counted when: %s") % [e["label"], reason])
 			continue
 		if kind == "overcap_taken":
 			_apply_overcap_taken(store, e)
@@ -94,7 +94,7 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 		var ctx2: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}
 		var reason: String = EffectModels.blocked(model, ctx2)
 		if reason != "":
-			result["notes"].append("%s — учитывается при условии: %s" % [e["label"], reason])
+			result["notes"].append(LE.t("%s — counted when: %s") % [e["label"], reason])
 			continue
 		if kind == "mana_added":
 			result["mana_added"] += e["pp"]
@@ -125,9 +125,9 @@ static func add_notes(build: Node, notes: Array[String]) -> void:
 			continue  # ordinary mods of the item (SP 100 / 115 / 117), computed by the engine
 		if not e["model"].is_empty():
 			if str(e["model"].get("kind", "")) == "flag":
-				notes.append("%s — %s" % [e["label"], str(e["model"].get("text", ""))])
+				notes.append("%s — %s" % [e["label"], LE.t(str(e["model"].get("text", "")))])
 			elif e["ability_index"] >= 0 and not bar.has(e["ability_index"]):
-				notes.append("%s — действует только на умение «%s», его нет на панели" % [e["label"], str(effect.get("ability", "?"))])
+				notes.append(LE.t("%s — applies only to skill \"%s\", it is not on the skill bar") % [e["label"], str(effect.get("ability", "?"))])
 			continue
 		notes.append("%s — %s" % [e["label"], _unmodelled_reason(effect)])
 	# +levels of skills (SP 88) raise the skill-tree point cap (Build.skill_point_cap)
@@ -165,7 +165,7 @@ static func _apply_overcap_taken(store: StatStore, e: Dictionary) -> void:
 			continue
 		var x: float = maxf(-cap, (res - 0.75) / 0.02 * float(e["pp"]))
 		mods.append(StatMod.make(LE.DAMAGE_TAKEN, "more", x, LE.DT_TAG[i],
-			"%s (%s сверх капа %s)" % [e["label"], LE.DT_NAME_RU[i], LE.fmt_pct(res - 0.75)]))
+			LE.t("%s (%s above cap %s)") % [e["label"], LE.t(LE.DT_NAME[i]), LE.fmt_pct(res - 0.75)]))
 	store.add_all(mods)
 
 
@@ -173,9 +173,9 @@ static func _unmodelled_reason(effect: Dictionary) -> String:
 	var src: String = str(effect.get("source", ""))
 	var pm: String = str(effect.get("plannerModel", ""))
 	if src == "IdolAltarProperty":
-		return "свойство алтаря идолов, алтари не поддерживаются"
+		return LE.t("idol altar property, altars are not supported")
 	if pm in ["flag", "util", "skillMechanicFlag"]:
-		return "не влияет на урон и защиту в расчёте"
+		return LE.t("does not affect damage or defence in the calculation")
 	if pm in ["proc", "skillProc/chance"] or src.begins_with("Component"):
-		return "срабатывание или отдельная механика, не моделируется (в коде: %s)" % str(effect.get("formula", ""))
-	return "не моделируется (в коде: %s)" % str(effect.get("formula", ""))
+		return LE.t("trigger or a separate mechanic, not modelled (in code: %s)") % str(effect.get("formula", ""))
+	return LE.t("not modelled (in code: %s)") % str(effect.get("formula", ""))

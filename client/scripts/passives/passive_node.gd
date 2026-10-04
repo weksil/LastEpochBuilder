@@ -30,7 +30,7 @@ func setup(node: Dictionary, stats: Dictionary, art: Dictionary = {}) -> void:
 			if stat.has("statName") and stat.has("value"):
 				tooltip_parts.append("%s %s" % [str(stat["statName"]), str(stat["value"])])
 
-	tooltip_parts.append("Макс. очков: %d" % max_points)
+	tooltip_parts.append(tr("Max points: %d") % max_points)
 
 	tooltip_text = "\n".join(tooltip_parts)
 	_apply_art(art)

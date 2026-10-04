@@ -14,7 +14,7 @@ static var _tree_loaded: bool = false
 static func find(ability_name: String) -> Dictionary:
 	if not _loaded:
 		_loaded = true
-		var path: String = ProjectSettings.globalize_path(MODELS_PATH)
+		var path: String = MODELS_PATH
 		if FileAccess.file_exists(path):
 			var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 			if parsed is Dictionary:
@@ -59,7 +59,7 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 	var k: float = float(model.get("active_multiplier", 1.0)) if active else 1.0
 	var x: float = ability_property(build, str(model.get("ability_id", "")), int(model.get("effect_index", -1)))
 	var m: float = 1.0 + x
-	var mode: String = str(model.get("mode_active", "активный режим")) if active else str(model.get("mode_passive", "постоянно"))
+	var mode: String = LE.t(str(model.get("mode_active", "active mode"))) if active else LE.t(str(model.get("mode_passive", "always on")))
 	var suffix: String = " ×M %s" % LE.fmt_num(m) if x != 0.0 else ""
 	var out: Array = result["global_mods"]
 
@@ -67,7 +67,7 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 		var base: float = float(entry["value"]) * k
 		if active and entry.has("active_value"):
 			base = float(entry["active_value"])
-		var mod: StatMod = _entry_mod(build, slot, entry, base, active, m, "%s, %s%s" % [str(entry.get("label", "базовый бафф")), mode, suffix], result)
+		var mod: StatMod = _entry_mod(build, slot, entry, base, active, m, "%s, %s%s" % [LE.t(str(entry.get("label", "base buff"))), mode, suffix], result)
 		if mod != null:
 			out.append(mod)
 
@@ -86,9 +86,9 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 				if str(effect.get("target", "")) != list_target or effect.get("op") != "add_stat":
 					continue
 				var mod: StatMod = BuildMods.stat_from_effect(effect.get("stat", {}), points,
-					"Узел «%s» ×%d, %s%s" % [title, points, mode, suffix])
+					LE.t("Node \"%s\" ×%d, %s%s") % [title, points, mode, suffix])
 				if mod == null:
-					result["notes"].append("Узел «%s»: стат ауры (%s) — не учитывается" % [title, BuildMods._effect_label(effect)])
+					result["notes"].append(LE.t("Node \"%s\": aura stat (%s) — not counted") % [title, BuildMods._effect_label(effect)])
 					continue
 				out.append(mod.scaled(m))
 
@@ -97,7 +97,7 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 		if v == 0.0:
 			continue
 		var factor: float = k if bool(entry.get("active_k", false)) else 1.0
-		var mod: StatMod = _entry_mod(build, slot, entry, v * factor, active, m, "%s, %s%s" % [str(entry.get("label", "")), mode, suffix], result)
+		var mod: StatMod = _entry_mod(build, slot, entry, v * factor, active, m, "%s, %s%s" % [LE.t(str(entry.get("label", ""))), mode, suffix], result)
 		if mod != null:
 			out.append(mod)
 
@@ -170,7 +170,7 @@ static func _make(entry: Dictionary, value: float, source: String) -> StatMod:
 static func tree_mutators(tree_id: String) -> Array:
 	if not _tree_loaded:
 		_tree_loaded = true
-		var path: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game/skill_node_effects.json").simplify_path()
+		var path: String = LE.game_data_dir().path_join("skill_node_effects.json")
 		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
 		if parsed is Array:
 			for tree: Dictionary in parsed:

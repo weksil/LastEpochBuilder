@@ -1,19 +1,19 @@
-# 07g. Семантика полей мутаторов навыков A–L (Last Epoch 1.5.0)
+# 07g. Semantics of skill mutator fields A–L (Last Epoch 1.5.0)
 
-Волна 3 reverse-engineering: для каждого навыкового мутатора `<X>Mutator` (буквы A–L, 97 классов) определено, что делает каждое поле заголовка, которое пишет дерево навыков (skill tree), в формуле игры. Источники: срезы Ghidra/ISIL (`dump/work_wave3/ms/slices`), `fn.py`, `readconst.py`; фоновые документы `07c_skill_mutators.md`, `dump_agent_brief.md`. Машиночитаемый результат: `research/data/game/mutator_field_semantics_AL.json` (плоский список, формат как у `mutator_field_semantics_MZ.json`; ключи: mutator, field, offset, type, declaredIn, semantic, formula, category, affectsNumbers, readers, confidence, notes, trees, nodes).
+Wave 3 reverse-engineering: for each skill mutator `<X>Mutator` (letters A–L, 97 classes) determined what each header field does, written by the skill tree (skill tree), in the game formula. Sources: Ghidra/ISIL slices (`dump/work_wave3/ms/slices`), `fn.py`, `readconst.py`; background documents `07c_skill_mutators.md`, `dump_agent_brief.md`. Machine-readable result: `research/data/game/mutator_field_semantics_AL.json` (flat list, format as `mutator_field_semantics_MZ.json`; keys: mutator, field, offset, type, declaredIn, semantic, formula, category, affectsNumbers, readers, confidence, notes, trees, nodes).
 
-Уровни уверенности: **D** — поведение прочитано непосредственно в коде (Mutate / getTempStats / On* / геттеры). **D?** — поле только копируется в компонент, который не прослежен, значение читается только через ISIL без полного разбора, либо эффект выведен из названия узла/тултипа.
+Confidence levels: **D** — behavior read directly in code (Mutate / getTempStats / On* / getters). **D?** — field only copied to a component that was not traced, value read via ISIL only without full parsing, or effect inferred from node name/tooltip.
 
-## 1. Итоги
+## 1. Summary
 
-- Мутаторов: **97** (из них 6 сделаны в предыдущей волне: ClawTotem, ColdTempest, DeathSealExit, DetonateDecoy, DivineBolt, DivineFlare; 91 новых).
-- Полей всего: **2237**; числовые категории (урон, недуги, защита, скорость, область, стоимость и т.д.): **2005**; поведенческие флаги/режимы (категория behaviour): **209** (из них 132 переключают формулы, `affectsNumbers=true`); мёртвые (unused): **23**.
-- Уверенность D: **1989**, D?: **248** (11.1%).
-- Все файлы `out/*.json` проходят `validate.py --all` (OK).
+- Mutators: **97** (of which 6 made in previous wave: ClawTotem, ColdTempest, DeathSealExit, DetonateDecoy, DivineBolt, DivineFlare; 91 new).
+- Total fields: **2237**; numeric categories (damage, ailments, defense, speed, area, cost, etc.): **2005**; behavioral flags/modes (behaviour category): **209** (of which 132 switch formulas, `affectsNumbers=true`); dead (unused): **23**.
+- Confidence D: **1989**, D?: **248** (11.1%).
+- All files `out/*.json` pass `validate.py --all` (OK).
 
-## 2. Таблица покрытия
+## 2. Coverage table
 
-| Мутатор | Полей | D | D? | Числовые | Поведение/unused |
+| Mutator | Fields | D | D? | Numeric | Behaviour/unused |
 |---|---:|---:|---:|---:|---:|
 | AbyssalEchoesMutator | 31 | 28 | 3 | 29 | 2 |
 | AcidFlaskMutator | 23 | 18 | 5 | 21 | 2 |
@@ -39,22 +39,22 @@
 | CharacterMutator | 30 | 29 | 1 | 30 | 0 |
 | ChthonicFissureMutator | 35 | 16 | 19 | 33 | 2 |
 | CinderStrikeMutator | 33 | 29 | 4 | 30 | 3 |
-| ClawTotemMutator (прошлая волна) | 1 | 1 | 0 | 1 | 0 |
-| ColdTempestMutator (прошлая волна) | 6 | 6 | 0 | 6 | 0 |
+| ClawTotemMutator (previous wave) | 1 | 1 | 0 | 1 | 0 |
+| ColdTempestMutator (previous wave) | 6 | 6 | 0 | 6 | 0 |
 | DancingStrikesMutator | 33 | 32 | 1 | 32 | 1 |
 | DarkBladeMutator | 8 | 8 | 0 | 7 | 1 |
 | DarkQuiverBuffMutator | 17 | 17 | 0 | 14 | 3 |
 | DarkQuiverMutator | 10 | 10 | 0 | 10 | 0 |
-| DeathSealExitMutator (прошлая волна) | 1 | 1 | 0 | 0 | 1 |
+| DeathSealExitMutator (previous wave) | 1 | 1 | 0 | 0 | 1 |
 | DeathSealMutator | 34 | 34 | 0 | 31 | 3 |
 | DecoyMutator | 10 | 8 | 2 | 9 | 1 |
-| DetonateDecoyMutator (прошлая волна) | 1 | 1 | 0 | 1 | 0 |
+| DetonateDecoyMutator (previous wave) | 1 | 1 | 0 | 1 | 0 |
 | DetonatingArrowMutator | 39 | 39 | 0 | 36 | 3 |
 | DevouringOrbMutator | 31 | 31 | 0 | 28 | 3 |
 | DisintegrateMutator | 31 | 31 | 0 | 31 | 0 |
 | DiveBombMutator | 29 | 29 | 0 | 27 | 2 |
-| DivineBoltMutator (прошлая волна) | 2 | 2 | 0 | 2 | 0 |
-| DivineFlareMutator (прошлая волна) | 6 | 5 | 1 | 6 | 0 |
+| DivineBoltMutator (previous wave) | 2 | 2 | 0 | 2 | 0 |
+| DivineFlareMutator (previous wave) | 6 | 5 | 1 | 6 | 0 |
 | DrainLifeMutator | 35 | 34 | 1 | 33 | 2 |
 | DreadShadeMutator | 35 | 33 | 2 | 31 | 4 |
 | DreamslashMutator | 31 | 31 | 0 | 29 | 2 |
@@ -112,35 +112,35 @@
 | LightTempestMutator | 7 | 6 | 1 | 7 | 0 |
 | LightningBlastMutator | 33 | 33 | 0 | 27 | 6 |
 | LungeMutator | 28 | 21 | 7 | 27 | 1 |
-| **Итого** | **2237** | **1989** | **248** | **2005** | **232** |
+| **Total** | **2237** | **1989** | **248** | **2005** | **232** |
 
-## 3. Поля, влияющие на числа, и поведенческие поля
+## 3. Fields affecting numbers and behavioral fields
 
-| Категория | Всего | из них `affectsNumbers=true` | D? | Что входит |
+| Category | Total | with `affectsNumbers=true` | D? | Includes |
 |---|---:|---:|---:|---|
-| damage | 548 | 548 | 68 | урон: more/increased/added, конвертации, крит, проникающий урон, cull |
-| trigger | 240 | 240 | 42 | шансы срабатывания, ренкасты, спавн объектов |
-| ailment | 226 | 226 | 28 | шансы/длительность/эффект недугов, заморозка, шреды |
-| behaviour | 209 | 132 | 11 | флаги режимов (канал, телепорт, наведение, цель и т.д.) |
-| defence | 190 | 189 | 14 | здоровье, ward, мана, блок, сопротивления, лиф |
-| buff | 181 | 181 | 20 | баффы/статы на игрока и союзников |
-| cost_cooldown | 167 | 167 | 17 | мана-стоимость, кулдаун, эффективность маны, сброс КД |
-| area | 124 | 122 | 19 | радиус/площадь/ширина конуса |
-| speed | 94 | 94 | 6 | скорость каста/атаки, частота, скорость снарядов |
-| count | 93 | 93 | 10 | число снарядов/цепей/целей/стаков |
-| minion | 72 | 72 | 9 | миньоны |
-| duration | 70 | 70 | 4 | длительности |
-| unused | 23 | 0 | 0 | поле никогда не читается (мёртвое) |
+| damage | 548 | 548 | 68 | damage: more/increased/added, conversions, crit, penetrating damage, cull |
+| trigger | 240 | 240 | 42 | trigger chances, recasts, object spawns |
+| ailment | 226 | 226 | 28 | ailment chances/duration/effect, freeze, shreds |
+| behaviour | 209 | 132 | 11 | mode flags (channel, teleport, targeting, target type, etc.) |
+| defence | 190 | 189 | 14 | health, ward, mana, block, resistances, leech |
+| buff | 181 | 181 | 20 | buffs/stats on player and allies |
+| cost_cooldown | 167 | 167 | 17 | mana cost, cooldown, mana efficiency, cooldown reset |
+| area | 124 | 122 | 19 | radius/area/cone width |
+| speed | 94 | 94 | 6 | cast/attack speed, frequency, projectile speed |
+| count | 93 | 93 | 10 | number of projectiles/chains/targets/stacks |
+| minion | 72 | 72 | 9 | minions |
+| duration | 70 | 70 | 4 | durations |
+| unused | 23 | 0 | 0 | field never read (dead) |
 
-Поведенческие поля (категория behaviour) — булевы режимы и флаги: канальный режим, телепорт/траверс, смена цели, «не наводится», «не пробивает» и т.п. Сами по себе они числа не добавляют, но переключают формулы: `affectsNumbers=true` стоит там, где режим меняет итоговые числа (стоимость, число снарядов, тип урона); `false` — чисто визуальные/целевые флаги. Остальные категории — прямые числовые модификаторы.
+Behavioral fields (behaviour category) — boolean modes and flags: channelling mode, teleport/traverse, target switching, "not homing", "not piercing", etc. By themselves they add no numbers, but switch formulas: `affectsNumbers=true` where mode changes final numbers (cost, projectile count, damage type); `false` — purely visual/targeting flags. Other categories — direct numeric modifiers.
 
-## 4. Системные находки
+## 4. System findings
 
-1. **Слоты `Stats.Stat` ctor.** Порядок аргументов: `(this, SP, AT, added, increased, more, byte, int)`. Float в 6-й позиции — это **MORE**, а не increased. Это приводит к расхождению тултип/код: тултип «+X% increased», а код кладёт значение в more-слот (BurstOfFlame.increasedDamage, ArcaneAscendance mark explosion, AbyssalEchoes и др.; DivineFlare per-sigil, HolyFlameBurst.finalHitDamageMultiplier и Glacier.noCritMulti — тоже MORE).
-2. **Копирование в компоненты.** Многие мутаторы почти ничего не считают сами, а копируют поля в компонент на созданном объекте (Adapter / ExplosionMutator / DamageMutator / JudgementAoEMutator / FallingJavelinMutator / LightningBlastMutator и т.п.). Для Falconry, FlameRush, ChthonicFissure, FrenzyTotem, IceBarrage, ChaosBolts, Lunge значительная доля полей помечена D? именно потому, что логика компонента не прослежена.
-3. **getTempStats / addsTempStats.** Всё, что приходит как `unconditionalTempStats`, копируется через `EpochExtensions.replaceWith` в `conditionalTempStats`, а дополнительные числовые поля навыка добавляются к списку в `getTempStats` (бонусы «за N», «при условии»). Планировщику достаточно воспроизвести этот список стат.
-4. **Базовые AbilityMutator-поля.** `increasedManaCost` (+0xC4) и `addedManaCostDivider` (+0xC0) читаются базовым `AbilityMutator.getManaCost`, а не классом навыка, поэтому у класса они выглядят «нечитаемыми» (readers пуст). Семантика стандартная: множитель стоимости и эффективность маны.
-5. **Мёртвые поля (23 шт.).** Записываются деревом, но никогда не читаются ни самим классом, ни другими:
+1. **Slots `Stats.Stat` ctor.** Argument order: `(this, SP, AT, added, increased, more, byte, int)`. Float in 6th position is **MORE**, not increased. This causes tooltip/code mismatch: tooltip ""+X% increased"", code puts value in more slot (BurstOfFlame.increasedDamage, ArcaneAscendance mark explosion, AbyssalEchoes, etc.; DivineFlare per-sigil, HolyFlameBurst.finalHitDamageMultiplier, Glacier.noCritMulti — also MORE).
+2. **Copying to components.** Many mutators compute almost nothing themselves, copying fields to a component on the spawned object (Adapter / ExplosionMutator / DamageMutator / JudgementAoEMutator / FallingJavelinMutator / LightningBlastMutator, etc.). For Falconry, FlameRush, ChthonicFissure, FrenzyTotem, IceBarrage, ChaosBolts, Lunge a significant portion of fields marked D? because component logic not traced.
+3. **getTempStats / addsTempStats.** Everything arriving as `unconditionalTempStats` copied via `EpochExtensions.replaceWith` to `conditionalTempStats`, additional numeric skill fields added to the list in `getTempStats` (bonuses "per N", "if condition"). Planner enough to reproduce this stat list.
+4. **Base AbilityMutator fields.** `increasedManaCost` (+0xC4) and `addedManaCostDivider` (+0xC0) read by base `AbilityMutator.getManaCost`, not class, so class reads appear "unread" (readers empty). Semantics standard: cost multiplier and mana efficiency.
+5. **Dead fields (23 total).** Written by tree but never read by self or others:
    - `AerialAssaultMutator.aerialProwessStackOnKillChance`
    - `AuraMutator.addedFieryInquisitionStacksOnMeleeHit`
    - `AuraOfDecayMutator.chanceToGainFesterInsteadOfLose`
@@ -164,478 +164,478 @@
    - `LethalMirageMutator.smokeCloudDuration`
    - `LethalMirageMutator.smokeMakesAlliesUncrittable`
    - `LethalMirageMutator.smokeCloudConvertedToPoison`
-   Для части из них эффект тултипа реализован другим путём (например, бонус крита HailOfArrows идёт через `unconditionalTempStats`; `Aura/HolyAura.addedFieryInquisitionStacksOnMeleeHit` дублирует запись в `statsToApply`), для остальных — вероятно, реально не работает в 1.5.0.
-6. **Расхождения тултип/код**, найденные при анализе (подробности в поле `notes`):
-   - ChaosBolts: поля единичного снаряда `increasedAreaPerProjectile`/`moreDamagePerProjectile` поменяны местами относительно тултипа (0.5 в area, 0.35 в damage).
-   - Glacier: `percentManaGainedOnKill` служит только условием (>0), реальная мана = maxMana * `percentManaGainedOnHit` (+0x164) — другое поле, которое дерево не пишет (проверено в ISIL). Эффект «мана за убийство» на деле не масштабируется деревом.
-   - Judgement: `noHealConsecratedGround` пишется узлом «Added Critical Strike Multiplier» (побочный эффект «Consecrated Ground не лечит» не отражён в тултипе).
-   - Firebrand/CharacterMutator: константа 0.12 в коде против «15%» в тултипе (moreDamageForNextMeleeAttackFromFirebrand).
-   - EnchantWeapon: `zapActiveReducedCooldown` пишется 2 при тултипе 50% (формула `1 - f`, предположительно клампится).
-   - DreadShade `reducedDecayRate`: знак значения противоположен формулировке тултипа.
-   - AbyssalEchoes `chanceToDetonateDevouringOrbs`: тултип 25%, код 0.15 за очко.
-   - BurstOfFlame/ArcaneAscendance: increased в тултипе, more в коде (п. 1).
-   - Ice Barrage: значение `lessRateOfFire` в узле конуса показано как 1053609152.0 — это битовый образ float 0.4 (артефакт экстрактора).
-   - InfernalShade `explosionIncreasedArea` читается только в ChaosBoltsMutator.Mutate; сам InfernalShadeMutator.Mutate его не использует.
-7. **Перекрёстные читатели.** Поля мутаторов часто читаются «чужими» классами: Glacier.Mutate читает IceBarrage-поля (Glacier запускает Ice Barrage); LightningBlast.Mutate читает поля GlyphOfDominion; ChaosBolts.Mutate читает InfernalShade; Judgement/RadiantLance, FuryLeap/WerebearMaul и компоненты Hammer/Javelin. В JSON они указаны в `readers`.
+   For some, tooltip effect is implemented differently (e.g. HailOfArrows crit bonus goes through `unconditionalTempStats`; `Aura/HolyAura.addedFieryInquisitionStacksOnMeleeHit` duplicates entry in `statsToApply`), for rest probably actually doesn't work in 1.5.0.
+6. **Tooltip/code mismatches**, found during analysis (details in `notes` field):
+   - ChaosBolts: per-projectile fields `increasedAreaPerProjectile`/`moreDamagePerProjectile` swapped vs tooltip (0.5 in area, 0.35 in damage).
+   - Glacier: `percentManaGainedOnKill` only as condition (>0), actual mana = maxMana * `percentManaGainedOnHit` (+0x164) — different field tree doesn't write (verified in ISIL). "Mana on kill" effect not scaled by tree.
+   - Judgement: `noHealConsecratedGround` written by "Added Critical Strike Multiplier" node (side effect "Consecrated Ground doesn't heal" not in tooltip).
+   - Firebrand/CharacterMutator: code constant 0.12 vs "15%" in tooltip (moreDamageForNextMeleeAttackFromFirebrand).
+   - EnchantWeapon: `zapActiveReducedCooldown` writes 2 with tooltip 50% (formula `1 - f`, presumably clamped).
+   - DreadShade `reducedDecayRate`: value sign opposite to tooltip wording.
+   - AbyssalEchoes `chanceToDetonateDevouringOrbs`: tooltip 25%, code 0.15 per point.
+   - BurstOfFlame/ArcaneAscendance: increased in tooltip, more in code (p. 1).
+   - Ice Barrage: value `lessRateOfFire` in node shown as 1053609152.0 — this is bit image of float 0.4 (extractor artifact).
+   - InfernalShade `explosionIncreasedArea` read only by ChaosBoltsMutator.Mutate; InfernalShadeMutator.Mutate doesn't use it.
+7. **Cross-readers.** Mutator fields often read by "foreign" classes: Glacier.Mutate reads IceBarrage fields (Glacier casts Ice Barrage); LightningBlast.Mutate reads GlyphOfDominion fields; ChaosBolts.Mutate reads InfernalShade; Judgement/RadiantLance, FuryLeap/WerebearMaul and Hammer/Javelin components. In JSON listed in `readers`.
 
-## 5. Заметные механики по навыкам
+## 5. Notable mechanics per skill
 
-(Краткие технические выводы по каждому мутатору; тексты на английском, как в `out/_notes_AL.json`.)
+(Brief technical conclusions per mutator; texts in English as in `out/_notes_AL.json`.)
 
 ### AbyssalEchoesMutator
 
-- Механика: Echoed casts (UseType 5) spawn from the rift; echo-only more damage and tripled chains. Ailments are applied via echo-object ChanceToApplyAilmentsOnHit; Abyssal Decay is modified through mutateAilmentInstance (spread, lingering, on-hit portion). Void spell on-hit damage replaces Decay when noDecay.
-- Пробелы: Several ActiveAilment fields (+0x98,+0x110,+0x114) not decoded; tempBuffStats duration unknown.
+- Mechanic: Echoed casts (UseType 5) spawn from the rift; echo-only more damage and tripled chains. Ailments applied via echo-object ChanceToApplyAilmentsOnHit; Abyssal Decay modified through mutateAilmentInstance (spread, lingering, on-hit portion). Void spell on-hit damage replaces Decay when noDecay.
+- Gaps: Several ActiveAilment fields (+0x98,+0x110,+0x114) not decoded; tempBuffStats duration unknown.
 
 ### AcidFlaskMutator
 
-- Механика: Flask hit/explosion/pool are separate objects: pool poison DPS and cluster bombs are separate DPS appliers; fire conversion removes poison chance and pools and turns poison shred/duration into fire ones. Area is additive (increasedArea+statArea) into the explosion radius.
-- Пробелы: AcidFlaskExplosionMutator / pool-side effects (Ballista synergy, efficacious toxins, ally stats) not followed.
+- Mechanic: Flask hit/explosion/pool separate objects: pool poison DPS and cluster bombs separate DPS appliers; fire conversion removes poison chance and pools turns poison shred/duration to fire ones. Area additive (increasedArea+statArea) into explosion radius.
+- Gaps: AcidFlaskExplosionMutator / pool-side effects (Ballista synergy, efficacious toxins, ally stats) not followed.
 
 ### AerialAssaultMutator
 
-- Механика: Aerial Prowess stacks (8 s window after cast, cap 12/pt) are gained on hit/crit/kill/dodge and consumed on the next cast for health/ward, Haste+Frenzy duration and more damage; with the cross node they are also consumed by Ballista/Explosive Trap/Dive Bomb. Many nodes feed other falcon/ballista skills.
-- Пробелы: Featherstorm and Umbral Blade damage are in other mutators.
+- Mechanic: Aerial Prowess stacks (8 s window after cast, cap 12/pt) gained on hit/crit/kill/dodge consumed on next cast for health/ward, Haste+Frenzy duration and more damage; with cross node also consumed by Ballista/Explosive Trap/Dive Bomb. Many nodes feed other falcon/ballista skills.
+- Gaps: Featherstorm and Umbral Blade damage in other mutators.
 
 ### AnomalyMutator
 
-- Механика: Anomaly teleports enemies forward in time and ailments are modified when they return (speed, reset, Time Rot/Ignite, Future Strike chances via addChance). Optional Time Wave (start and/or end) and Time Bubble / Time Lock modes spawn extra mutators with their own damage.
-- Пробелы: Time Wave / Time Bubble / Time Lock internals not followed.
+- Mechanic: Anomaly teleports enemies forward in time ailments modified on return (speed, reset, Time Rot/Ignite, Future Strike chances via addChance). Optional Time Wave (start and/or end) and Time Bubble / Time Lock modes spawn extra mutators with their own damage.
+- Gaps: Time Wave / Time Bubble / Time Lock internals not followed.
 
 ### ArcaneAscendanceMutator
 
-- Механика: Arcane Ascendance is a buff: statsWhileActive/statsGainedPerSecond/WhenHit are stat lists on the buff objects; ManaDrain is a stat inside the list that noManaDrain removes and reducedManaDrain modifies. Distant-enemy hit effects use a manhattan distance threshold; mark explosion damage uses temp stats.
-- Пробелы: Mark explosion object (ExplodeMarks) and Lightning Blast cost not followed. manaGainWhenHit sign/guard.
+- Mechanic: Arcane Ascendance is a buff: statsWhileActive/statsGainedPerSecond/WhenHit are stat lists on buff objects; ManaDrain is a stat inside the list noManaDrain removes reducedManaDrain modifies. Distant-enemy hit effects use manhattan distance threshold; mark explosion damage uses temp stats.
+- Gaps: Mark explosion object (ExplodeMarks) and Lightning Blast cost not followed. manaGainWhenHit sign/guard.
 
 ### AssembleAbominationMutator
 
-- Механика: Assemble Abomination is configured entirely through the AssembleAbominationAdapter on the spawned Abomination: absorbed minion counts (skeleton warriors/rogues/archers capped jointly at 20, wraith/golem/zombie/mage flags and type counts) turn into stat lists, extra abilities and per-count more-damage on those abilities.
-- Пробелы: Devour-side fields (health restore on devour, temp health, sacrifice, zombie devour, cooldown-ability damage) not followed into RepeatedlyAbsorbMinion.
+- Mechanic: Assemble Abomination configured entirely through AssembleAbominationAdapter on spawned Abomination: absorbed minion counts (skeleton warriors/rogues/archers capped jointly at 20, wraith/golem/zombie/mage flags and type counts) turn into stat lists, extra abilities and per-count more-damage on those abilities.
+- Gaps: Devour-side fields (health restore on devour, temp health, sacrifice, zombie devour, cooldown-ability damage) not followed into RepeatedlyAbsorbMinion.
 
 ### AuraMutator
 
-- Механика: Generic aura object used by Holy Aura: tree stats are multiplied by the aura effect (manager increased effect + passives) and handed to allies via BuffOnAllyHit.
-- Пробелы: Only the shared base class; Holy Aura specifics are in HolyAuraMutator.
+- Mechanic: Generic aura object used by Holy Aura: tree stats multiplied by the aura effect (manager increased effect + passives) handed to allies via BuffOnAllyHit.
+- Gaps: Only shared base class; Holy Aura specifics in HolyAuraMutator.
 
 ### AuraOfDecayMutator
 
-- Механика: Aura object that repeatedly applies ailments to enemies in a radius (RepeatedlyApplyAilmentsInRadius) and a self-poison; conversion flags re-tag poison to cold/physical/fire. Fester stacks give aura damage per stack. Lots of side effects (nova, bombs, bolts, heals) via separate mutators.
-- Пробелы: Retaliation/bomb/nova/bolt damage in other mutators; aura damage tick itself is on the aura object.
+- Mechanic: Aura object repeatedly applies ailments to enemies in radius (RepeatedlyApplyAilmentsInRadius) and self-poison; conversion flags re-tag poison to cold/physical/fire. Fester stacks give aura damage per stack. Lots of side effects (nova, bombs, bolts, heals) via separate mutators.
+- Gaps: Retaliation/bomb/nova/bolt damage in other mutators; aura damage tick itself on aura object.
 
 ### AvalancheMutator
 
-- Механика: Avalanche drops big and small boulders; conversion flags switch Physical/Cold via tags and which prefab the DPS uses. Channelled mode adds shrinking area and post-channel persistence.
-- Пробелы: moreDamage application; reducedFallAreaPerSecond law.
+- Mechanic: Avalanche drops big and small boulders; conversion flags switch Physical/Cold via tags and which prefab the DPS uses. Channelled mode adds shrinking area and post-channel persistence.
+- Gaps: moreDamage application; reducedFallAreaPerSecond law.
 
 ### AvalancheSnowballMutator
 
-- Механика: Avalanche large/small boulder impacts are AvalancheAoEMutator objects that receive copies of the snowball fields. Large boulder chance gates most effects (upheaval, fissure, frozen ground, elemental, earthquake counter).
-- Пробелы: Per-hit damage slots (increased vs more) inside AvalancheAoEMutator not followed.
+- Mechanic: Avalanche large/small boulder impacts are AvalancheAoEMutator objects that receive copies of snowball fields. Large boulder chance gates most effects (upheaval, fissure, frozen ground, elemental, earthquake counter).
+- Gaps: Per-hit damage slots (increased vs more) inside AvalancheAoEMutator not followed.
 
 ### BallistaMutator
 
-- Механика: Ballista is a placed minion configured through BallistaAdapter. The ballista copies fractions of the player Damage/crit/ailment stats (ratio nodes) into its own stat list; Dexterity scales placement speed, attack speed and explosion damage/area.
-- Пробелы: Adapter-side behaviour of copied flags (double shot, pierce, tripwire) not followed.
+- Mechanic: Ballista is placed minion configured through BallistaAdapter. The ballista copies fractions of player Damage/crit/ailment stats (ratio nodes) into its own stat list; Dexterity scales placement speed, attack speed and explosion damage/area.
+- Gaps: Adapter-side behaviour of copied flags (double shot, pierce, tripwire) not followed.
 
 ### BlackHoleMutator
 
-- Механика: Black Hole spawns a stationary or drifting object; ailments (chill/ignite/blind) are applied every 0.5 s in the radius; end shockwave and optional periodic shockwaves are separate abilities; binary star and fire conversion change the base damage types. Pull parameters are mostly behavioural.
-- Пробелы: Binary star split ratio; center-distance threshold.
+- Mechanic: Black Hole spawns stationary or drifting object; ailments (chill/ignite/blind) applied every 0.5 s in radius; end shockwave and optional periodic shockwaves are separate abilities; binary star and fire conversion change base damage types. Pull parameters mostly behavioural.
+- Gaps: Binary star split ratio; center-distance threshold.
 
 ### BladestormThrowMutator
 
-- Механика: Bladestorm throws up to 3 (+/- nodes) storm objects whose own BladestormMutator receives copies of these fields. Weapon-dependent bonuses (daggers/swords/2h) are computed at cast from WeaponInfoHolder. Umbral Blade consumption gives more damage and area per stack.
-- Пробелы: Damage numbers of the storm hit live in BladestormMutator (not part of this batch).
+- Mechanic: Bladestorm throws up to 3 (+/- nodes) storm objects whose own BladestormMutator receives copies of these fields. Weapon-dependent bonuses (daggers/swords/2h) computed at cast from WeaponInfoHolder. Umbral Blade consumption gives more damage and area per stack.
+- Gaps: Damage numbers of storm hit live in BladestormMutator (not part of this batch).
 
 ### BloodSplatterMutator
 
-- Механика: Blood Splatter is a Rip Blood spawned object; its tree fields live on the Rip Blood tree but are stored here. Area grows with minion count (cap 20); minions hit get a 4 s buff; necrotic conversion changes tags and ailments.
-- Пробелы: Splatter hit damage numbers are in the Rip Blood mutator.
+- Mechanic: Blood Splatter is Rip Blood spawned object; its tree fields live on Rip Blood tree stored here. Area grows with minion count (cap 20); minions hit get 4 s buff; necrotic conversion changes tags and ailments.
+- Gaps: Splatter hit damage numbers in Rip Blood mutator.
 
 ### BoneArmorMutator
 
-- Механика: Only a flat +duration for Bone Armor from the Transplant tree.
+- Mechanic: Only flat +duration for Bone Armor from Transplant tree.
 
 ### BoneCurseMutator
 
-- Механика: Bone Curse is applied as an ailment; most nodes mutate the ActiveAilment instance (cull, max hits, always crit, damage multiplier, whenHit ailments, death procs). Damage nodes are mirrored in tooltipStats purely for the tooltip. Aura mode, prison, cursed ground, on-hit recast and minion buffs are separate modes.
-- Пробелы: Instance field meanings (+0x110/+0x98) inferred from tooltips.
+- Mechanic: Bone Curse applied as ailment; most nodes mutate ActiveAilment instance (cull, max hits, always crit, damage multiplier, whenHit ailments, death procs). Damage nodes mirrored in tooltipStats purely for tooltip. Aura mode, prison, cursed ground, on-hit recast and minion buffs are separate modes.
+- Gaps: Instance field meanings (+0x110/+0x98) inferred from tooltips.
 
 ### BurningDaggerConeMutator
 
-- Механика: Cinder Strike spawns burning dagger cones; the only tree field is a temp-stat list (more Damage).
+- Mechanic: Cinder Strike spawns burning dagger cones; only tree field is temp-stat list (more Damage).
 
 ### BurningDaggerMutator
 
-- Механика: Single burning dagger; only the more Damage temp stat from the Cinder Strike tree.
+- Mechanic: Single burning dagger; only more Damage temp stat from Cinder Strike tree.
 
 ### BurstOfFlameMutator
 
-- Механика: Burst of Flame is the Flame Ward retaliation. Conversion flags convert all base fire damage and alter ailment stats; the damage node is applied as more despite its name.
+- Mechanic: Burst of Flame is Flame Ward retaliation. Conversion flags convert all base fire damage and alter ailment stats; damage node applied as more despite its name.
 
 ### CaltropsMutator
 
-- Механика: Caltrops is a ground object triggered by Aerial Assault or Net; its tree fields are temp-stat ailment chances, damage, and area. Crit scales with the global slow chance.
-- Пробелы: Area combination formula partly hidden.
+- Mechanic: Caltrops is ground object triggered by Aerial Assault or Net; its tree fields are temp-stat ailment chances, damage, and area. Crit scales with global slow chance.
+- Gaps: Area combination formula partly hidden.
 
 ### ChaosBoltsMutator
 
-- Механика: Chaos Bolts spawns bolts whose damage/secondary missiles are governed by ChaosBoltsDamageMutator/SecondaryMissilesMutator copies of these fields; conversion flags re-tag Necrotic->Physical and Fire->Cold. Many conditional damage nodes (vs Bleeding/Damned/Ignited/Frostbitten/Cursed) are stored on the bolt, not in temp stats. Single-projectile mode multiplies damage by (projectiles+5).
-- Пробелы: Bolt-side consumers (ChaosBoltsDamageMutator, SecondaryMissiles) not followed, so several conditional damage fields are D?.
+- Mechanic: Chaos Bolts spawns bolts whose damage/secondary missiles governed by ChaosBoltsDamageMutator/SecondaryMissilesMutator copies of these fields; conversion flags re-tag Necrotic->Physical and Fire->Cold. Many conditional damage nodes (vs Bleeding/Damned/Ignited/Frostbitten/Cursed) stored on bolt, not in temp stats. Single-projectile mode multiplies damage by (projectiles+5).
+- Gaps: Bolt-side consumers (ChaosBoltsDamageMutator, SecondaryMissiles) not followed, so several conditional damage fields are D?.
 
 ### CharacterMutator
 
-- Механика: Player-side synergy fields: one-shot "next skill" buffs (activated by OnAbilityUse/OnHit, consumed in ApplyConditionalTemporaryStats / PopulateActorTempStatsForCast), echo-chance modifiers for the Void Knight, retaliation casts and Healing Hands extras. Each field is implemented as a temp stat added to the next cast of the target ability.
-- Пробелы: Application sites of "next damage" buffs on the target skill side (ErasingStrike, VoidCleave, Judgement, ForgeStrike) not followed; moreHealthRegenWithABear has no reader.
+- Mechanic: Player-side synergy fields: one-shot "next skill" buffs (activated by OnAbilityUse/OnHit, consumed in ApplyConditionalTemporaryStats / PopulateActorTempStatsForCast), echo-chance modifiers for Void Knight, retaliation casts and Healing Hands extras. Each field implemented as temp stat added to next cast of target ability.
+- Gaps: Application sites of "next damage" buffs on target skill side (ErasingStrike, VoidCleave, Judgement, ForgeStrike) not followed; moreHealthRegenWithABear has no reader.
 
 ### ChthonicFissureMutator
 
-- Механика: Chthonic Fissure spawns a fissure object plus Tormenting Spirits; most spirit/torment nodes are copied into TormentingSpiritMutator, ChthonicFissureHitMutator or applied via mutateAilmentInstance on the Torment ailment. Conversion flags (Fire->Physical/Poison) re-tag the damage and convert ignite chance to bleed/poison chance.
-- Пробелы: Spirit and hit mutator consumers not followed (hence many D?).
+- Mechanic: Chthonic Fissure spawns fissure object plus Tormenting Spirits; most spirit/torment nodes copied into TormentingSpiritMutator, ChthonicFissureHitMutator or applied via mutateAilmentInstance on Torment ailment. Conversion flags (Fire->Physical/Poison) re-tag damage convert ignite chance to bleed/poison chance.
+- Gaps: Spirit and hit mutator consumers not followed (hence many D?).
 
 ### CinderStrikeMutator
 
-- Механика: Cinder Strike is a 3-strike combo (melee and bow variants); the base class holds tree fields and each strike mutator builds its own conditional temp stats. First-strike bonuses are added only to strike 1 (more damage, ignite duration, crit multi, doubled added fire). Incendiary Ammo stack system gives scaling buffs to the player.
-- Пробелы: Flask/trap/explosion objects not followed; shadowsImitateBurningDaggers consumer not found.
+- Mechanic: Cinder Strike is 3-strike combo (melee and bow variants); base class holds tree fields each strike mutator builds its own conditional temp stats. First-strike bonuses added only to strike 1 (more damage, ignite duration, crit multi, doubled added fire). Incendiary Ammo stack system gives scaling buffs to player.
+- Gaps: Flask/trap/explosion objects not followed; shadowsImitateBurningDaggers consumer not found.
 
 ### ClawTotemMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/ClawTotemMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/ClawTotemMutator.json`.
 
 ### ColdTempestMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/ColdTempestMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/ColdTempestMutator.json`.
 
 ### DancingStrikesMutator
 
-- Механика: Dancing Strikes is a 4-strike combo (separate DancingStrikes1/2/4 mutators read the base fields). Many nodes give timed buffs on use of any other strike; Rhythm stacks and the third-strike Arena are additional systems. Conditional damage components are built per cast as DamageConditionalEffect entries.
-- Пробелы: Strike-specific consumers partly followed; Puncture synergy not.
+- Mechanic: Dancing Strikes is 4-strike combo (separate DancingStrikes1/2/4 mutators read base fields). Many nodes give timed buffs on use of any other strike; Rhythm stacks and third-strike Arena are additional systems. Conditional damage components built per cast as DamageConditionalEffect entries.
+- Gaps: Strike-specific consumers partly followed; Puncture synergy not.
 
 ### DarkBladeMutator
 
-- Механика: Iron Blade (Vengeance): ricocheting projectile; weapon-conditional temp stats (sword crit, polearm bleed duration), recent block/parry doubling, and per-ignite fire damage conditional effect.
+- Mechanic: Iron Blade (Vengeance): ricocheting projectile; weapon-conditional temp stats (sword crit, polearm bleed duration), recent block/parry doubling, and per-ignite fire damage conditional effect.
 
 ### DarkQuiverBuffMutator
 
-- Механика: Dark Quiver Buff is the pickup effect object of a black arrow: pickup effects (health, mana, shrouds, frenzy, shadow, ballista buffs) are applied in Mutate; black arrow stats are applied to skills via DarkQuiverMutator. arrowManaConsumption and arrowConsumesShadows on this class are dead copies.
+- Mechanic: Dark Quiver Buff is pickup effect object of black arrow: pickup effects (health, mana, shrouds, frenzy, shadow, ballista buffs) applied in Mutate; black arrow stats applied to skills via DarkQuiverMutator. arrowManaConsumption and arrowConsumesShadows on this class are dead copies.
 
 ### DarkQuiverMutator
 
-- Механика: Dark Quiver drops black arrows over a duration; the arrow count and drop rate set the interval. Picking up an arrow empowers the next ability via applyStatsFromBlackArrow (mana cost, shadow consumption, elemental ailment chances).
+- Mechanic: Dark Quiver drops black arrows over duration; arrow count and drop rate set interval. Picking up arrow empowers next ability via applyStatsFromBlackArrow (mana cost, shadow consumption, elemental ailment chances).
 
 ### DeathSealExitMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/DeathSealExitMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/DeathSealExitMutator.json`.
 
 ### DeathSealMutator
 
-- Механика: Death Seal is a buff on the player (or a minion): current-health drain / delayed damage mechanics with release effects. The Wave of Death fields are copied into DeathSealWaveMutator in SetupWaveMutator; cast every second with the wave-interval node. Conversion flags convert wave necrotic damage to physical/cold and convert resistance/shred lists.
-- Пробелы: Wave mutator consumers (DeathSealWaveMutator) not followed; hence the wave damage fields are D by field name only.
+- Mechanic: Death Seal is buff on player (or minion): current-health drain / delayed damage mechanics with release effects. Wave of Death fields copied into DeathSealWaveMutator in SetupWaveMutator; cast every second with wave-interval node. Conversion flags convert wave necrotic damage to physical/cold convert resistance/shred lists.
+- Gaps: Wave mutator consumers (DeathSealWaveMutator) not followed; hence wave damage fields are D by field name only.
 
 ### DecoyMutator
 
-- Механика: Decoy throws one (or more) decoys that explode; damage nodes are collected in finalExplosionUnconditionalTempStats and used by the explosion/DPS. Remote-detonate mode makes it a two-step combo. Cooldown/charge fields partially unresolved.
-- Пробелы: addedManaCost and treeAddedCharges readers not found.
+- Mechanic: Decoy throws one (or more) decoys that explode; damage nodes collected in finalExplosionUnconditionalTempStats used by explosion/DPS. Remote-detonate mode makes it two-step combo. Cooldown/charge fields partially unresolved.
+- Gaps: addedManaCost and treeAddedCharges readers not found.
 
 ### DetonateDecoyMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/DetonateDecoyMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/DetonateDecoyMutator.json`.
 
 ### DetonatingArrowMutator
 
-- Механика: Detonating Arrow places an arming charge; explosion parameters are written onto the explosion/charge object. Charge-up mode (channelled) adds pierce and damage per second charged. Arming time scales explosion hit damage per second armed.
-- Пробелы: Explosion-side consumers not followed in detail; field-to-offset mapping done by name.
+- Mechanic: Detonating Arrow places arming charge; explosion parameters written onto explosion/charge object. Charge-up mode (channelled) adds pierce and damage per second charged. Arming time scales explosion hit damage per second armed.
+- Gaps: Explosion-side consumers not followed in detail; field-to-offset mapping done by name.
 
 ### DevouringOrbMutator
 
-- Механика: Devouring Orb is a slow orb (or orbiting orb) that creates Void Rifts (own mutator); rift growth, abyssal orbs and void eruption are separate spawned objects. Per-second ailments are applied via RepeatedlyApplyAilmentsInRadius with interval 0.25 s.
-- Пробелы: Void Rift/Abyssal Orb internals not followed.
+- Mechanic: Devouring Orb is slow orb (or orbiting orb) that creates Void Rifts (own mutator); rift growth, abyssal orbs and void eruption are separate spawned objects. Per-second ailments applied via RepeatedlyApplyAilmentsInRadius with interval 0.25 s.
+- Gaps: Void Rift/Abyssal Orb internals not followed.
 
 ### DisintegrateMutator
 
-- Механика: Disintegrate is a channelled beam with a tier power-up system (tier 2/3 nodes, powerUpInterval) and Lucomancer stacks; ailments are applied per second of channelling (chance*0.5 per tick style via addChance). Many side casts (lightning blast, fire aura, orbs, fireballs) use CastAfterDuration and the ability mana cost.
+- Mechanic: Disintegrate is channelled beam with tier power-up system (tier 2/3 nodes, powerUpInterval) and Lucomancer stacks; ailments applied per second of channelling (chance*0.5 per tick style via addChance). Many side casts (lightning blast, fire aura, orbs, fireballs) use CastAfterDuration and ability mana cost.
 
 ### DiveBombMutator
 
-- Механика: Dive Bomb is a falcon skill; the Falcon adapter copies most fields. Talon Blades stacks (creator buff), Crimson Shroud, shadow falcons per rogue shadow (capped by umbral blades), feather rain side casts and decoy/trap detonation.
+- Mechanic: Dive Bomb is falcon skill; Falcon adapter copies most fields. Talon Blades stacks (creator buff), Crimson Shroud, shadow falcons per rogue shadow (capped by umbral blades), feather rain side casts and decoy/trap detonation.
 
 ### DivineBoltMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/DivineBoltMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/DivineBoltMutator.json`.
 
 ### DivineFlareMutator
 
-Сделан в предыдущей волне; см. `dump/work_wave3/ms/out/DivineFlareMutator.json`.
+Done in previous wave; see `dump/work_wave3/ms/out/DivineFlareMutator.json`.
 
 ### DrainLifeMutator
 
-- Механика: Drain Life is a channelled beam (or a casted version); many fields are copied into the beam component (+0xa0.. offsets). Mana-to-health conversion node adds AcceleratingHealthDrain. Damned/contempt systems give conditional damage and defensive stacks.
-- Пробелы: Beam component internals not followed.
+- Mechanic: Drain Life is channelled beam (or casted version); many fields copied into beam component (+0xa0.. offsets). Mana-to-health conversion node adds AcceleratingHealthDrain. Damned/contempt systems give conditional damage and defensive stacks.
+- Gaps: Beam component internals not followed.
 
 ### DreadShadeMutator
 
-- Механика: Dread Shade is a shade attached to a minion that drains its health and gives it and nearby minions an aura (stats lists). Many nodes only toggle ailments/behaviours on the parent minion; InfernalShadeMutator reads addedMaxShades, auraStats and markedForDeath fields from this mutator.
-- Пробелы: Doom Brand and decay-rate sign conventions unclear.
+- Mechanic: Dread Shade is shade attached to minion that drains its health gives it and nearby minions aura (stats lists). Many nodes only toggle ailments/behaviours on parent minion; InfernalShadeMutator reads addedMaxShades, auraStats and markedForDeath fields from this mutator.
+- Gaps: Doom Brand and decay-rate sign conventions unclear.
 
 ### DreamslashMutator
 
-- Механика: Dreamslash is a Rogue shadow-synergy skill: casts are repeated by Rogue Shadows (UseType 6) with their own temp stats and area bonuses; Dream stacks (time, kill, elite, consumed shadows) give damage/crit; shroud ailments scale ailment chance and ward.
-- Пробелы: Shadow-side behaviour (RogueShadow) not followed.
+- Mechanic: Dreamslash is Rogue shadow-synergy skill: casts repeated by Rogue Shadows (UseType 6) with their own temp stats and area bonuses; Dream stacks (time, kill, elite, consumed shadows) give damage/crit; shroud ailments scale ailment chance and ward.
+- Gaps: Shadow-side behaviour (RogueShadow) not followed.
 
 ### EarthquakeSeekingCrackMutator
 
-- Механика: Earthquake aftershocks are EarthquakeAftershockMutator objects fed with copies of these fields (also copied to the Bear minion via CopyVariablesToMinionMutator).
-- Пробелы: EarthquakeAftershockMutator consumers not followed.
+- Mechanic: Earthquake aftershocks are EarthquakeAftershockMutator objects fed with copies of these fields (also copied to Bear minion via CopyVariablesToMinionMutator).
+- Gaps: EarthquakeAftershockMutator consumers not followed.
 
 ### EarthquakeSlamMutator
 
-- Механика: Earthquake slam (Bear/Primalist): initial slam plus aftershock objects (EarthquakeMutator) fed by copies; triple hit recasts the slam via CreateAbilityObjectOnDeath (extra slams cost mana); noAftershocks folds aftershock damage into the slam.
-- Пробелы: Aftershock consumers in EarthquakeMutator/EarthquakeAftershockMutator not followed.
+- Mechanic: Earthquake slam (Bear/Primalist): initial slam plus aftershock objects (EarthquakeMutator) fed by copies; triple hit recasts slam via CreateAbilityObjectOnDeath (extra slams cost mana); noAftershocks folds aftershock damage into slam.
+- Gaps: Aftershock consumers in EarthquakeMutator/EarthquakeAftershockMutator not followed.
 
 ### EnchantWeaponMutator
 
-- Механика: Enchant Weapon is a timed buff; its tree stats are a player stat list while active plus proc effects on melee hits (zap, fire burst, ice shards) limited by ProcTimeTrackers that change while active.
-- Пробелы: zapActiveReducedCooldown sign.
+- Mechanic: Enchant Weapon is timed buff; its tree stats are player stat list while active plus proc effects on melee hits (zap, fire burst, ice shards) limited by ProcTimeTrackers that change while active.
+- Gaps: zapActiveReducedCooldown sign.
 
 ### EnchantWeaponPassiveMutator
 
-- Механика: Enchant Weapon passive part: a list of player stats plus a player property granting Frostbite chance from Chill chance.
-- Пробелы: Property 0x274 identity inferred from tooltip.
+- Mechanic: Enchant Weapon passive part: list of player stats plus player property granting Frostbite chance from Chill chance.
+- Gaps: Property 0x274 identity inferred from tooltip.
 
 ### EntanglingRootsMutator
 
-- Механика: Entangling Roots creates a root wave object (EntanglingRootsWrapMutator) plus seeds (EntanglingRootsSeedMutator) with copied fields; many ally/minion buffs are BuffOnAllyHit components (8 s) with stat lists for specific minion abilities. UpheavalMutator reads several fields for the Upheaval interaction.
-- Пробелы: Wrap/Seed mutator consumers not followed.
+- Mechanic: Entangling Roots creates root wave object (EntanglingRootsWrapMutator) plus seeds (EntanglingRootsSeedMutator) with copied fields; many ally/minion buffs are BuffOnAllyHit components (8 s) with stat lists for specific minion abilities. UpheavalMutator reads several fields for Upheaval interaction.
+- Gaps: Wrap/Seed mutator consumers not followed.
 
 ### ErasingStrikeMutator
 
-- Механика: Erasing Strike (Void Knight) applies Time Rot via temp stats and creates Void Rifts / void beams. Weapon-type conditionals (2h mace/sword/axe) use WeaponInfoHolder. AbyssalEchoesMutator.Mutate reads many of these fields to run Erasing Strike through Abyssal Echoes.
+- Mechanic: Erasing Strike (Void Knight) applies Time Rot via temp stats creates Void Rifts / void beams. Weapon-type conditionals (2h mace/sword/axe) use WeaponInfoHolder. AbyssalEchoesMutator.Mutate reads many of these fields to run Erasing Strike through Abyssal Echoes.
 
 ### EterrasBlessingMutator
 
-- Механика: Eterra's Blessing is a heal spell that creates a Sacred Plant (heal buff area); synergy nodes grant effects depending on the type of companion healed. Healing amount scales with the IncreasedHealing stat plus the tree increased healing.
-- Пробелы: Base heal amount and HoT details not decoded.
+- Mechanic: Eterra's Blessing is heal spell that creates Sacred Plant (heal buff area); synergy nodes grant effects depending on type of companion healed. Healing amount scales with IncreasedHealing stat plus tree increased healing.
+- Gaps: Base heal amount and HoT details not decoded.
 
 ### ExplosiveTrapMutator
 
-- Механика: Explosive Trap throws traps that detonate through ExplosiveTrapDamageMutator / ExplosiveTrapOnGroundMutator with copied fields. Arming time, trigger radius, per-second growth and conversion-of-each-type determine the effective hit damage and area; max traps matter for Mine Field.
-- Пробелы: Trap-side consumers partly followed.
+- Mechanic: Explosive Trap throws traps that detonate through ExplosiveTrapDamageMutator / ExplosiveTrapOnGroundMutator with copied fields. Arming time, trigger radius, per-second growth and conversion-of-each-type determine effective hit damage and area; max traps matter for Mine Field.
+- Gaps: Trap-side consumers partly followed.
 
 ### FalconStrikeMutator
 
-- Механика: Only a flat mana cost increase for Falcon Strike.
+- Mechanic: Only flat mana cost increase for Falcon Strike.
 
 ### FalconryMutator
 
-- Механика: Falconry is the falcon companion mutator holding the falcon-related trees (Falconry, Aerial Assault feather skills, Dive Bomb, Net synergies). Mutate copies most fields into FalconAdapter / falcon abilities; ratio fields convert player stats into falcon stats.
-- Пробелы: Almost all fields are D? by name/tooltip; falcon-side consumers (FalconAdapter, feather burst, featherstorm, falcon strikes) not followed.
+- Mechanic: Falconry is falcon companion mutator holding falcon-related trees (Falconry, Aerial Assault feather skills, Dive Bomb, Net synergies). Mutate copies most fields into FalconAdapter / falcon abilities; ratio fields convert player stats into falcon stats.
+- Gaps: Almost all fields are D? by name/tooltip; falcon-side consumers (FalconAdapter, feather burst, featherstorm, falcon strikes) not followed.
 
 ### FinalExplosionMutator
 
-- Механика: Decoy final explosion: area, damage nodes via temp stats, cold conversion converts base fire damage to cold and ignite to chill, ignite stacks.
+- Mechanic: Decoy final explosion: area, damage nodes via temp stats, cold conversion converts base fire damage to cold and ignite to chill, ignite stacks.
 
 ### FireAuraMutator
 
-- Механика: Fire Aura spawned by Flame Ward; Flame Ward writes conversion flags and duration here.
+- Mechanic: Fire Aura spawned by Flame Ward; Flame Ward writes conversion flags and duration here.
 
 ### FireShieldMutator
 
-- Механика: Fire Shield is a timed shield buff with retaliation fireballs (FireballMutator on the retaliation object) and an optional AoE damage aura. Resistances and granted damage are stats in the shield BuffParent.
+- Mechanic: Fire Shield is timed shield buff with retaliation fireballs (FireballMutator on retaliation object) and optional AoE damage aura. Resistances and granted damage are stats in shield BuffParent.
 
 ### FireballExplosionMutator
 
-- Механика: Explosion part of Fireball: penetration/crit temp stats, partial base damage conversion to lightning, crit bonus vs ignited.
+- Mechanic: Explosion part of Fireball: penetration/crit temp stats, partial base damage conversion to lightning, crit bonus vs ignited.
 
 ### FireballMutator
 
-- Механика: Fireball: projectile stats copied to the spawned FireballMutator; extra projectile count with halving/sequence nodes, conversion to lightning as a fraction, flamethrower channelled mode.
+- Mechanic: Fireball: projectile stats copied to spawned FireballMutator; extra projectile count with halving/sequence nodes, conversion to lightning as fraction, flamethrower channelled mode.
 
 ### FirebrandMutator
 
-- Механика: Firebrand builds up to 4+ stacks (4 s each, duration scaled) that give per-stack stats and per-stack melee damage/crit through getTempStats; consumption by other melee attacks is configured in CharacterMutator. LightningBlastMutator reuses most of these fields for the lightning variant.
+- Mechanic: Firebrand builds up to 4+ stacks (4 s each, duration scaled) that give per-stack stats and per-stack melee damage/crit through getTempStats; consumption by other melee attacks configured in CharacterMutator. LightningBlastMutator reuses most of these fields for lightning variant.
 
 ### FlameReaveMutator
 
-- Механика: Flame Reave sends a fire wave (FireWaveMutator) that can return and cycle; Rhythm of Fire stacks (max 12) empower the cast at max; conditional damage/crit vs ignited; Firebrand stack consumption adds ignite chance.
+- Mechanic: Flame Reave sends fire wave (FireWaveMutator) that can return and cycle; Rhythm of Fire stacks (max 12) empower cast at max; conditional damage/crit vs ignited; Firebrand stack consumption adds ignite chance.
 
 ### FlameRushMutator
 
-- Механика: Flame Rush is a channelled dash through enemies with Rune Embers; many nodes trigger side effects (ward, ignite consumption, glyph/orbs). Damage scales with current mana (1% per 40). Conversion modes alter ailments through temp-stat conversion entries.
-- Пробелы: Mutate body of Flame Rush not read; many side-effect fields D?.
+- Mechanic: Flame Rush is channelled dash through enemies with Rune Embers; many nodes trigger side effects (ward, ignite consumption, glyph/orbs). Damage scales with current mana (1% per 40). Conversion modes alter ailments through temp-stat conversion entries.
+- Gaps: Mutate body of Flame Rush not read; many side-effect fields D?.
 
 ### FlameWardMutator
 
-- Механика: Flame Ward is a ward buff: ward amount = (base + additional)*(1+increased)+missing health part, optionally split over 6 ticks; its retaliation is BurstOfFlameMutator (fed by copies of retaliation fields).
+- Mechanic: Flame Ward is ward buff: ward amount = (base + additional)*(1+increased)+missing health part, optionally split over 6 ticks; its retaliation is BurstOfFlameMutator (fed by copies of retaliation fields).
 
 ### FlayBloodExplosionMutator
 
-- Механика: Blood Eruption part of Flay (also used by Rip Blood): area grows with curses, conditional more damage vs low life/chilled/frozen, converted ailment chance/duration (bleed -> frostbite/damned/poison) through temp stats, and Blood Revelry stacks for Harvest/Rip Blood.
+- Mechanic: Blood Eruption part of Flay (also used by Rip Blood): area grows with curses, conditional more damage vs low life/chilled/frozen, converted ailment chance/duration (bleed -> frostbite/damned/poison) through temp stats, and Blood Revelry stacks for Harvest/Rip Blood.
 
 ### FlayMutator
 
-- Механика: Flay alternates melee hits (copied into a hit component) and a Blood Eruption; Spirit Step traversal can be removed or turned into a traversal skill. Many on-hit effects use onDetailedHit.
+- Mechanic: Flay alternates melee hits (copied into hit component) and Blood Eruption; Spirit Step traversal can be removed or turned into traversal skill. Many on-hit effects use onDetailedHit.
 
 ### FlurryMutator
 
-- Механика: Flurry is a 3-strike melee combo (bow variant BowFlurryMutator): per-strike damage/ailment modifiers are written into separate hit components (strike 1, 2, 3); Onslaught (Adrenaline Rush) stacks give +5% more damage and other bonuses.
+- Mechanic: Flurry is 3-strike melee combo (bow variant BowFlurryMutator): per-strike damage/ailment modifiers written into separate hit components (strike 1, 2, 3); Onslaught (Adrenaline Rush) stacks give +5% more damage and other bonuses.
 
 ### FocusMutator
 
-- Механика: Focus is a channelled mana skill: it converts mana gain into lightning damage (during channel waves and at the end), ward and haste; ailments are applied per second in a radius of 5.
+- Mechanic: Focus is channelled mana skill: it converts mana gain into lightning damage (during channel waves and at end), ward and haste; ailments applied per second in radius of 5.
 
 ### ForgeStrikeMutator
 
-- Механика: Forge Strike: mode flags sword/spear/anvil change the forged weapon (sword 35% more attack speed, no crit; spear 100% crit multi, -35% area; anvil 20% less attack speed, stun chance and phys damage). Detonating Ground eruption added through castDetonateGround.
+- Mechanic: Forge Strike: mode flags sword/spear/anvil change forged weapon (sword 35% more attack speed, no crit; spear 100% crit multi, -35% area; anvil 20% less attack speed, stun chance and phys damage). Detonating Ground eruption added through castDetonateGround.
 
 ### FrenzyTotemMutator
 
-- Механика: Frenzy Totem is mostly a data hand-off: Mutate copies almost every field into FrenzyTotemAdapter (aura radius, tether, damage storage, companion bonuses); the adapter logic was not followed so those are D?.
-- Пробелы: FrenzyTotemAdapter behaviour not analysed.
+- Mechanic: Frenzy Totem is mostly data hand-off: Mutate copies almost every field into FrenzyTotemAdapter (aura radius, tether, damage storage, companion bonuses); adapter logic not followed so those are D?.
+- Gaps: FrenzyTotemAdapter behaviour not analysed.
 
 ### FrostClawMutator
 
-- Механика: Frost Claw (Nova derived): mana cost/ward/freeze rate mechanics are in Mutate; the projectile behaviour flags (five projectiles, second/third cast, no explosion, projectile speed) are copied to the claw component; Frozen Sleeper stacks accumulate in OnMutatorUpdate.
-- Пробелы: Claw component flags are not followed.
+- Mechanic: Frost Claw (Nova derived): mana cost/ward/freeze rate mechanics in Mutate; projectile behaviour flags (five projectiles, second/third cast, no explosion, projectile speed) copied to claw component; Frozen Sleeper stacks accumulate in OnMutatorUpdate.
+- Gaps: Claw component flags not followed.
 
 ### FrostWallMutator
 
-- Механика: Frost Wall (also used by Abyssal Echoes): wall + two pylons; ally pass-through grants ward/mana/haste/frenzy, buffs next Glyph of Dominion/Runic Invocation, casts Flame Ward; enemy pass-through grants ward, increases pylon blast frequency; idle >= 15 s gives free cast with more damage; Fire/Lightning conversion variants.
-- Пробелы: recastManaGain and explosionChecksFacing are never read (dead fields).
+- Mechanic: Frost Wall (also used by Abyssal Echoes): wall + two pylons; ally pass-through grants ward/mana/haste/frenzy, buffs next Glyph of Dominion/Runic Invocation, casts Flame Ward; enemy pass-through grants ward, increases pylon blast frequency; idle >= 15 s gives free cast with more damage; Fire/Lightning conversion variants.
+- Gaps: recastManaGain and explosionChecksFacing never read (dead fields).
 
 ### FuryLeapMutator
 
-- Механика: Fury Leap: landing buffs (added melee/spell damage 3 s, frenzy, heal, cleanse), Storm Bolts while leaping, cooldown resets on kill, Upheaval at the end; shares data with the companion version (CopyVariablesToMinionMutator) and WerebearMaulMutator.
-- Пробелы: getTempStats read via ISIL only.
+- Mechanic: Fury Leap: landing buffs (added melee/spell damage 3 s, frenzy, heal, cleanse), Storm Bolts while leaping, cooldown resets on kill, Upheaval at end; shares data with companion version (CopyVariablesToMinionMutator) and WerebearMaulMutator.
+- Gaps: getTempStats read via ISIL only.
 
 ### GatheringStorm1Mutator
 
-- Механика: Gathering Storm 1/2 are cast-variant subclasses of GatheringStormMutator; only the scorpion soak flag is added.
-- Пробелы: All other behaviour is documented under GatheringStormMutator.
+- Mechanic: Gathering Storm 1/2 are cast-variant subclasses of GatheringStormMutator; only scorpion soak flag added.
+- Gaps: All other behaviour documented under GatheringStormMutator.
 
 ### GatheringStorm2Mutator
 
-- Механика: Gathering Storm 1/2 are cast-variant subclasses of GatheringStormMutator; only the scorpion soak flag is added.
-- Пробелы: All other behaviour is documented under GatheringStormMutator.
+- Mechanic: Gathering Storm 1/2 are cast-variant subclasses of GatheringStormMutator; only scorpion soak flag added.
+- Gaps: All other behaviour documented under GatheringStormMutator.
 
 ### GatheringStormMutator
 
-- Механика: Gathering Storm builds Storm Stacks and expends them to cast Storm Bolts (most of the logic is in GatheringStorm1Mutator); conversions (cold/physical), melee bonuses and attunement-scaled stats go through getTempStats.
-- Пробелы: Several on-hit effects (repeat on boss, 3-enemy stack, mana for stacks) read via ISIL only.
+- Mechanic: Gathering Storm builds Storm Stacks and expends them to cast Storm Bolts (most logic in GatheringStorm1Mutator); conversions (cold/physical), melee bonuses and attunement-scaled stats go through getTempStats.
+- Gaps: Several on-hit effects (repeat on boss, 3-enemy stack, mana for stacks) read via ISIL only.
 
 ### GhostflameMutator
 
-- Механика: Ghostflame: channelled skull; per-second ailment chances are added to a ChanceToApplyAilmentsOnHit component; channel cost = (base+added)*(1+increased)*(1+more)*(1+less); the skull can detach, move, screech and fire Marrow Shards.
-- Пробелы: screechAreaIncrease, canCastStygianBeam and dodgeRatingConvertedToArmorWhileChanneling are never read.
+- Mechanic: Ghostflame: channelled skull; per-second ailment chances added to ChanceToApplyAilmentsOnHit component; channel cost = (base+added)*(1+increased)*(1+more)*(1+less); skull can detach, move, screech and fire Marrow Shards.
+- Gaps: screechAreaIncrease, canCastStygianBeam and dodgeRatingConvertedToArmorWhileChanneling never read.
 
 ### GlacierMutator
 
-- Механика: Glacier casts three explosions (smallest/middle/largest) through Glacier1/2/3Mutator components; per-explosion stat lists and shared fields are copied to those components. Rime is a player buff (DoT increased + freeze rate multiplier).
-- Пробелы: percentManaGainedOnKill is only a >0 gate; the mana gained uses percentManaGainedOnHit (another field) - verified in ISIL (+0x160 gate, +0x164 multiplier).
+- Mechanic: Glacier casts three explosions (smallest/middle/largest) through Glacier1/2/3Mutator components; per-explosion stat lists and shared fields copied to those components. Rime is player buff (DoT increased + freeze rate multiplier).
+- Gaps: percentManaGainedOnKill is only >0 gate; mana gained uses percentManaGainedOnHit (another field) - verified in ISIL (+0x160 gate, +0x164 multiplier).
 
 ### GlyphOfDominionMutator
 
-- Механика: Glyph of Dominion places a zone (up to 1 + additionalMaxGlyphs glyphs) that grants buffs to allies through BuffOnAllyHit and afflicts enemies through RepeatedlyApplyAilmentsInRadius; runes of Runic Invocation can be consumed (Rah/Heo/Gon). LightningBlastMutator.Mutate reads many of the same fields when Lightning Blast is cast on the glyph.
-- Пробелы: Explosion component, static charge and ward-per-resistance details not followed.
+- Mechanic: Glyph of Dominion places zone (up to 1 + additionalMaxGlyphs glyphs) that grants buffs to allies through BuffOnAllyHit afflicts enemies through RepeatedlyApplyAilmentsInRadius; runes of Runic Invocation can be consumed (Rah/Heo/Gon). LightningBlastMutator.Mutate reads many same fields when Lightning Blast cast on glyph.
+- Gaps: Explosion component, static charge and ward-per-resistance details not followed.
 
 ### HailOfArrowsMutator
 
-- Механика: Hail of Arrows creates an area object with RepeatedlyApplyAilmentsInRadius (0.2 s interval; chance per tick = f*0.2). Conversion flags change damage type, ailment and VFX; channelled mode changes delay/cost; advancing rectangle moves the area.
-- Пробелы: addedCritChance never read (crit bonus goes through unconditionalTempStats).
+- Mechanic: Hail of Arrows creates area object with RepeatedlyApplyAilmentsInRadius (0.2 s interval; chance per tick = f*0.2). Conversion flags change damage type, ailment and VFX; channelled mode changes delay/cost; advancing rectangle moves area.
+- Gaps: addedCritChance never read (crit bonus goes through unconditionalTempStats).
 
 ### HammerThrowMutator
 
-- Механика: Hammer Throw: the same class acts as skill mutator and as a component of each thrown hammer (many fields copied there). Zeal stacking buff stats are applied through StatBuffs on cast; spiral/nova/chain flags control projectile layout.
-- Пробелы: increasedAttackSpeed/freeWhenOutOfMana read only via ISIL. centreOnCaster/spiralMovement/ignoreTerrainCollision have no tooltip writers.
+- Mechanic: Hammer Throw: same class acts as skill mutator and as component of each thrown hammer (many fields copied there). Zeal stacking buff stats applied through StatBuffs on cast; spiral/nova/chain flags control projectile layout.
+- Gaps: increasedAttackSpeed/freeWhenOutOfMana read only via ISIL. centreOnCaster/spiralMovement/ignoreTerrainCollision have no tooltip writers.
 
 ### HarvestMutator
 
-- Механика: Harvest: weapon-attack skill converting necrotic base damage (physical/cold options); curse-gated bonuses (more damage, ward, heal per Int); on-kill/on-hit triggers (Wandering Spirits, Volatile Zombie, Blood Wraith); CopyToMinionMutator copies the whole state to the Rip Blood version.
-- Пробелы: Zombie/Wraith/Spirit chance are in OnKill (ISIL only).
+- Mechanic: Harvest: weapon-attack skill converting necrotic base damage (physical/cold options); curse-gated bonuses (more damage, ward, heal per Int); on-kill/on-hit triggers (Wandering Spirits, Volatile Zombie, Blood Wraith); CopyToMinionMutator copies whole state to Rip Blood version.
+- Gaps: Zombie/Wraith/Spirit chance in OnKill (ISIL only).
 
 ### HealingHandsMutator
 
-- Механика: Healing Hands copies its numbers into an adapter on the cast object (+0x138..+0x190) and applies healing/ward as ailment instances (mutateAilmentInstance); upfront healing base 100 + f, channelled base cost 10; traversal mode reuses the Shield Rush ability.
-- Пробелы: Adapter-side use of the copied fields not followed.
+- Mechanic: Healing Hands copies its numbers into adapter on cast object (+0x138..+0x190) applies healing/ward as ailment instances (mutateAilmentInstance); upfront healing base 100 + f, channelled base cost 10; traversal mode reuses Shield Rush ability.
+- Gaps: Adapter-side use of copied fields not followed.
 
 ### HeartseekerMutator
 
-- Механика: Heartseeker: recurve mechanic (chance + dex bonus with minimum) with many OnRecurve triggers (Dark Arrow, Burning Dagger, Crimson/Dusk Shroud, Hail of Arrows extension, Dragonfang stacks); conversions to cold/fire via convertBaseDamage.
-- Пробелы: Arrow component fields (+0x38, +0x3c, minimum chance) not followed.
+- Mechanic: Heartseeker: recurve mechanic (chance + dex bonus with minimum) with many OnRecurve triggers (Dark Arrow, Burning Dagger, Crimson/Dusk Shroud, Hail of Arrows extension, Dragonfang stacks); conversions to cold/fire via convertBaseDamage.
+- Gaps: Arrow component fields (+0x38, +0x3c, minimum chance) not followed.
 
 ### HolyAuraMutator
 
-- Механика: Holy Aura: passive aura plus active boost; most bonuses are entries of statsToApply (including HolyAuraStack ailment chances), so few dedicated fields exist.
-- Пробелы: addedFieryInquisitionStacksOnMeleeHit never read; finalHitDamageMultiplier read only by DPS calculation.
+- Mechanic: Holy Aura: passive aura plus active boost; most bonuses are entries of statsToApply (including HolyAuraStack ailment chances), so few dedicated fields exist.
+- Gaps: addedFieryInquisitionStacksOnMeleeHit never read; finalHitDamageMultiplier read only by DPS calculation.
 
 ### HolyFlameBurstMutator
 
-- Механика: Holy Flame Burst (released by Holy Aura): small mutator with one MORE-damage stat and an area increase.
+- Mechanic: Holy Flame Burst (released by Holy Aura): small mutator with one MORE-damage stat and area increase.
 
 ### HungeringSoulsMutator
 
-- Механика: Hungering Souls: CopyVariablesToMinionMutator copies the full state into the spawned soul (offsets +0x130..+0x19c); damage bonuses per minion go through getTempStats; kill/hit triggers (mana, ward, cast when hit) in OnKill/whenHit.
+- Mechanic: Hungering Souls: CopyVariablesToMinionMutator copies full state into spawned soul (offsets +0x130..+0x19c); damage bonuses per minion go through getTempStats; kill/hit triggers (mana, ward, cast when hit) in OnKill/whenHit.
 
 ### IceBarrageMutator
 
-- Механика: Ice Barrage launches frostbolts with fire interval = 1/((1-less)*(1/base)) / (1+increased); Mutate copies many numbers into the barrage component (+0x128..+0x188). GlacierMutator.Mutate also reads several Ice Barrage fields (Glacier launches Ice Barrage). Ice Shield is a separate mutator receiving iceShield* fields.
-- Пробелы: Barrage component use of copied fields not followed (D?).
+- Mechanic: Ice Barrage launches frostbolts with fire interval = 1/((1-less)*(1/base)) / (1+increased); Mutate copies many numbers into barrage component (+0x128..+0x188). GlacierMutator.Mutate also reads several Ice Barrage fields (Glacier launches Ice Barrage). Ice Shield is separate mutator receiving iceShield* fields.
+- Gaps: Barrage component use of copied fields not followed (D?).
 
 ### IceSpiralMutator
 
-- Механика: Ice Spiral fields come from the Frost Claw tree: per-spiral buffs for Glacier / Snap Freeze are Stats.AbilityPropertyStat entries; double cast is a roll in onCast.
-- Пробелы: Property ids 0x2f / 0xa6 (Glacier / Snap Freeze) identified from tooltips, not enum.
+- Mechanic: Ice Spiral fields come from Frost Claw tree: per-spiral buffs for Glacier / Snap Freeze are Stats.AbilityPropertyStat entries; double cast is roll in onCast.
+- Gaps: Property ids 0x2f / 0xa6 (Glacier / Snap Freeze) identified from tooltips, not enum.
 
 ### IceThornsMutator
 
-- Механика: Ice Thorns (Thorn Burst): projectile volley or Thorn Shield barrier (thornShieldMode); shield numbers copied to a component (+0x130..+0x1a4); proc-based extras (Sundering Thorns, Thorn Trail/Totem) in OnHit/OnKill.
-- Пробелы: Tree entries have no tooltip text for this skill; semantics from code and node names. delayWindow and damageAndFreezeBuffStacks marked D?.
+- Mechanic: Ice Thorns (Thorn Burst): projectile volley or Thorn Shield barrier (thornShieldMode); shield numbers copied to component (+0x130..+0x1a4); proc-based extras (Sundering Thorns, Thorn Trail/Totem) in OnHit/OnKill.
+- Gaps: Tree entries have no tooltip text for this skill; semantics from code and node names. delayWindow and damageAndFreezeBuffStacks marked D?.
 
 ### IceWardMutator
 
-- Механика: Ice Ward builds a ward buff from stat entries (block, armour, ward retention/regen, mana regen); Frost Nova is cast periodically via CastAfterDuration with numbers written into FrostNovaMutator.
-- Пробелы: Stat ids (0x35, 0x39, 0x27, 0x12, 0x10) inferred from node names.
+- Mechanic: Ice Ward builds ward buff from stat entries (block, armour, ward retention/regen, mana regen); Frost Nova cast periodically via CastAfterDuration with numbers written into FrostNovaMutator.
+- Gaps: Stat ids (0x35, 0x39, 0x27, 0x12, 0x10) inferred from node names.
 
 ### InfernalShadeMutator
 
-- Механика: Infernal Shade: shades attach to enemies/minions (or wait on the ground) and apply per-second ailment chances through RepeatedlyApplyAilmentsInRadius (chance = f * interval). Chaos Bolts (ChaosBoltsMutator.Mutate) reads the same fields to build its shade variant.
-- Пробелы: explosionIncreasedArea is read only by ChaosBoltsMutator.Mutate.
+- Mechanic: Infernal Shade: shades attach to enemies/minions (or wait on ground) apply per-second ailment chances through RepeatedlyApplyAilmentsInRadius (chance = f * interval). Chaos Bolts (ChaosBoltsMutator.Mutate) reads same fields to build its shade variant.
+- Gaps: explosionIncreasedArea read only by ChaosBoltsMutator.Mutate.
 
 ### JavelinMutator
 
-- Механика: Javelin: base throw with distance/pierce scaling, optional lightning conversion; modes Javelin Rain (falling javelins, optionally flag with healing aura and smite) and a lunge combo; fields are copied into JavelinSpearBurstMutator, FallingJavelinMutator and FlameTrailMutator.
-- Пробелы: moreAttackSpeed/addedManaCost read via ISIL only.
+- Mechanic: Javelin: base throw with distance/pierce scaling, optional lightning conversion; modes Javelin Rain (falling javelins, optionally flag with healing aura and smite) and lunge combo; fields copied into JavelinSpearBurstMutator, FallingJavelinMutator and FlameTrailMutator.
+- Gaps: moreAttackSpeed/addedManaCost read via ISIL only.
 
 ### JudgementMutator
 
-- Механика: Judgement hits via JudgementAoEMutator and creates Consecrated Ground (or Holy Eruption/aura); most tree numbers are written into ConsecratedGroundMutator through the mutatorManager at fixed offsets.
-- Пробелы: Tooltip/code mismatch: noHealConsecratedGround is written by a crit-multiplier node. eruptionMoreDamage read only by the DPS calculation.
+- Mechanic: Judgement hits via JudgementAoEMutator creates Consecrated Ground (or Holy Eruption/aura); most tree numbers written into ConsecratedGroundMutator through mutatorManager at fixed offsets.
+- Gaps: Tooltip/code mismatch: noHealConsecratedGround written by crit-multiplier node. eruptionMoreDamage read only by DPS calculation.
 
 ### LethalMirageDamageMutator
 
-- Механика: Damage-side component of Lethal Mirage; only the ally-buff fields are used here, the other two are consumed through LethalMirageMutator.
+- Mechanic: Damage-side component of Lethal Mirage; only ally-buff fields used here, other two consumed through LethalMirageMutator.
 
 ### LethalMirageMutator
 
-- Механика: Lethal Mirage: 6 mirages (+additional) are created by CastAfterDuration; per-mirage numbers are copied to LethalMirageDamageMutator; self/ally mirage-form buffs are bleed chance + dodge rating for 4 s.
-- Пробелы: smokeCloudDuration, smokeMakesAlliesUncrittable, smokeCloudConvertedToPoison are never read. lightningConversion only enters addsTempStats.
+- Mechanic: Lethal Mirage: 6 mirages (+additional) created by CastAfterDuration; per-mirage numbers copied to LethalMirageDamageMutator; self/ally mirage-form buffs are bleed chance + dodge rating for 4 s.
+- Gaps: smokeCloudDuration, smokeMakesAlliesUncrittable, smokeCloudConvertedToPoison never read. lightningConversion only enters addsTempStats.
 
 ### LightTempestMutator
 
-- Механика: Light Tempest (Tempest Strike lightning variant): small mutator, penetration scales with typed minions and uncapped resistance through getTempStats; area is a collider radius multiplier.
-- Пробелы: chanceToGainGladiatorOfLagonStack via ISIL only.
+- Mechanic: Light Tempest (Tempest Strike lightning variant): small mutator, penetration scales with typed minions and uncapped resistance through getTempStats; area is collider radius multiplier.
+- Gaps: chanceToGainGladiatorOfLagonStack via ISIL only.
 
 ### LightningBlastMutator
 
-- Механика: Lightning Blast: base chains = tree chains + recent-cast chains (min(recent, f+2)); Mutate copies nearly all fields into a LightningBlastMutator component on the cast object. Glyph of Dominion and Firebrand add chains through glyphMut (+0x144) and firebrandMut (+0x158).
+- Mechanic: Lightning Blast: base chains = tree chains + recent-cast chains (min(recent, f+2)); Mutate copies nearly all fields into LightningBlastMutator component on cast object. Glyph of Dominion and Firebrand add chains through glyphMut (+0x144) and firebrandMut (+0x158).
 
 ### LungeMutator
 
-- Механика: Lunge: path hit with distance scaling (damage/area/cull/haste/smite at up to 10 m); the distance-scaled numbers and conversions are copied into the lunge component (+0x130..+0x160); cooldown recovery via onAbilityUse of other melee abilities.
-- Пробелы: Lunge component logic for the copied fields not followed.
+- Mechanic: Lunge: path hit with distance scaling (damage/area/cull/haste/smite at up to 10 m); distance-scaled numbers and conversions copied into lunge component (+0x130..+0x160); cooldown recovery via onAbilityUse of other melee abilities.
+- Gaps: Lunge component logic for copied fields not followed.
 
-## 6. Список D? (поля с пониженной уверенностью)
+## 6. List of D? (fields with reduced confidence)
 
-Всего 248. Причина — копирование в непрослеженный компонент, чтение только через ISIL либо вывод по названию/тултипу.
+Total 248. Reason — copying to untracted component, reading only via ISIL, or inference from name/tooltip.
 
 
 **AbyssalEchoesMutator**
@@ -651,10 +651,10 @@
 - `poisonDamageToGiveBallistaOnHit` — Application to Ballista not followed.
 
 **AerialAssaultMutator**
-- `featherstormAtEnd` — Featherstorm damage is in the falcon skills; not followed.
+- `featherstormAtEnd` — Featherstorm damage in falcon skills; not followed.
 
 **ArcaneAscendanceMutator**
-- `manaGainWhenHit` — Applied only when 0 < f in the guard ("0.0 < f"), so the negative tree values never reach it; guard likely makes the node tooltip incorrect (-1 mana drained when hit has 
+- `manaGainWhenHit` — Applied only when 0 < f in guard ("0.0 < f"), so negative tree values never reach it; guard likely makes node tooltip incorrect (-1 mana drained when hit has
 - `frozenKillsProliferationDuration` — Target selection geometry (cone test) partially visible only.
 
 **AssembleAbominationMutator**
@@ -670,8 +670,8 @@
 - `coldRetaliationChanceWhenHit` — Retaliation ability details not followed.
 
 **AvalancheMutator**
-- `reducedFallAreaPerSecond` — Exact shrink law lives in the spawned object (CastAtRandomLocation..); only the constants are visible.
-- `moreDamage` — Real hit damage application not located; the tree node probably also adds a Damage more Stat (not a header field).
+- `reducedFallAreaPerSecond` — Exact shrink law lives in spawned object (CastAtRandomLocation..); only constants visible.
+- `moreDamage` — Real hit damage application not located; tree node probably also adds Damage more Stat (not header field).
 
 **ChaosBoltsMutator**
 - `chanceToFearOnHit` — Consumer not followed.
@@ -689,41 +689,41 @@
 - `recastChanceOnHitCursed` — Recast cost (80% mana per tooltip) not decoded.
 
 **CharacterMutator**
-- `moreHealthRegenWithABear` — No reader located; written by the Summon Bear tree.
+- `moreHealthRegenWithABear` — No reader located; written by Summon Bear tree.
 
 **ChthonicFissureMutator**
 - `percentManaRefundedIfCursedEntityNearBy` — Refund computation partly dropped.
 - `igniteStackSpreadOnTormentToEnemiesCount` — Spirit-side mechanics not followed.
 - `chaosBoltCastInsteadOfSpiritChance` — Chaos Bolt side not followed.
-- `tormentChainOnDeathChance` — Chance that a dying tormented enemy releases a Spirit (mutateAilmentInstance on the Torment ailment).
+- `tormentChainOnDeathChance` — Chance that dying tormented enemy releases Spirit (mutateAilmentInstance on Torment ailment).
 - `spiritFireResShredStacks` — Fire/physical/poison resistance shred stacks applied by spirits (copied to TormentingSpiritMutator).
 - `consumesInfernalShades` — Spirit/Shade interaction not followed.
 - `moreDamageToTormentPer3PercentUncappedNecroticResistance` — Torment damage increases with uncapped Necrotic resistance (mutateAilmentInstance).
-- `moreDamageToBossAndRareEnemies` — More damage to bosses and rare enemies (doubled if cursed); applied to the fissure/torment/spirit (copied to TormentingSpiritMutator, read by FlameWhipMutator and mutateA
+- `moreDamageToBossAndRareEnemies` — More damage to bosses and rare enemies (doubled if cursed); applied to fissure/torment/spirit (copied to TormentingSpiritMutator, read by FlameWhipMutator and mutateA
 - `spiritTargetsPlayer` — Buff values (3, 15) are constants in TormentingSpiritMutator.
 - `castVolatileZombie` — Zombie side not followed.
-- `appliesDamageOnHit` — Amount in the hit mutator.
-- `spellDamageGainedPer2PercentOfIgniteBleedOrPoisonChance` — Fissure hit mutator adds Added Spell Damage = f per 2% of the player Ignite/Bleed/Poison chance (matching the converted ailment).
-- `increasedStunChancePer2PercentOfIgniteBleedOrPoisonChance` — Increased stun chance per 2% of the ailment chance (5% per 2%).
-- `applyAcidSkin` — Fissure hit applies Acid Skin to the player (+20% crit chance from Acid Skin per tooltip).
+- `appliesDamageOnHit` — Amount in hit mutator.
+- `spellDamageGainedPer2PercentOfIgniteBleedOrPoisonChance` — Fissure hit mutator adds Added Spell Damage = f per 2% of player Ignite/Bleed/Poison chance (matching converted ailment).
+- `increasedStunChancePer2PercentOfIgniteBleedOrPoisonChance` — Increased stun chance per 2% of ailment chance (5% per 2%).
+- `applyAcidSkin` — Fissure hit applies Acid Skin to player (+20% crit chance from Acid Skin per tooltip).
 - `ailmentStackSpreadOnImpactToEnemiesCount` — Number of enemies Ignite/Bleed/Poison stacks spread to on fissure impact.
-- `igniteChanceOnHitAsIgniteChancePerSecond` — Player ignite chance on hit is converted into ignite chance per second on the fissure (fraction f).
-- `igniteChancePerSecond` — Flat ignite chance per second applied by the fissure.
-- `increasedTormentDuration` — Increased Torment duration (copied to the Torment ailment application).
+- `igniteChanceOnHitAsIgniteChancePerSecond` — Player ignite chance on hit converted into ignite chance per second on fissure (fraction f).
+- `igniteChancePerSecond` — Flat ignite chance per second applied by fissure.
+- `increasedTormentDuration` — Increased Torment duration (copied to Torment ailment application).
 - `tormentMoreDamageToIgnitedPoisonedOrBleedingEnemies` — Torment deals more damage to enemies that are ignited, poisoned or bleeding (mutateAilmentInstance).
 
 **CinderStrikeMutator**
 - `firstStrikeFlaskChance` — Flask damage not followed.
-- `flasksReplacedWithTraps` — The Volatile Flask is replaced with an Explosive Trap (AddFlaskChanceToObject, OnKill).
+- `flasksReplacedWithTraps` — Volatile Flask replaced with Explosive Trap (AddFlaskChanceToObject, OnKill).
 - `firstStrikeMoreCritChancePerIgnite` — Application on explosion object not followed.
-- `maxFirstStrikeMoreCritChancePerIgnite` — Cap of the crit chance bonus (0.09 per point).
+- `maxFirstStrikeMoreCritChancePerIgnite` — Cap of crit chance bonus (0.09 per point).
 
 **DancingStrikesMutator**
-- `morePunctureDamageOnNextUse` — Application is in the Puncture mutator (not followed).
+- `morePunctureDamageOnNextUse` — Application in Puncture mutator (not followed).
 
 **DecoyMutator**
 - `addedManaCost` — Reader not found in this slice.
-- `treeAddedCharges` — Probably consumed through getAddedCharges of base AbilityMutator via a different field; 07c В§1 covers cooldown fields.
+- `treeAddedCharges` — Probably consumed through getAddedCharges of base AbilityMutator via different field; 07c §1 covers cooldown fields.
 
 **DivineFlareMutator**
 - `divineFlareChanceToCleanseAilmentsPerSigil` — CleanseAilmentsOnHit field meanings (+0x38 count, +0x58 flag) inferred from names; utility only.
@@ -739,113 +739,113 @@
 - `aftershockChanceToSlow` — Application inside EarthquakeAftershockMutator not followed.
 - `aftershockIncreasedRadius` — Aftershock-side formula not followed (probably Maths.GetIncreasedRadiusAfterAdditiveAreaIncrease).
 - `aftershockChanceToRepeat` — Chain rules not followed.
-- `aftershockChanceToDropSnowball` — Chance that an aftershock hit casts a Boulder (snowball), 5 mana consumption.
+- `aftershockChanceToDropSnowball` — Chance that aftershock hit casts Boulder (snowball), 5 mana consumption.
 - `aftershockIncreasedSlowDuration` — Increased slow duration of aftershocks.
 - `aftershockIncreasedStunChance` — Increased stun chance of aftershocks.
 - `aftershockConvertToDoT` — Aftershock hits become damage over time (convertToDoT).
 - `aftershockIncreasedDuration` — Aftershock duration (also read by BearAdapter.adapt).
 - `aftershockChanceToBlind` — Chance to blind enemies with aftershocks.
-- `igniteInsteadOfArmorShred` — Fire mode: base damage -> Fire, Armour Shred -> Ignite chance in the aftershock.
-- `spellConversion` — Melee attack becomes a spell with physical -> lightning conversion; +80 initial slam spell damage and +20 aftershock spell damage (the +20 is in aftershock_unconditionalT
-- `frostbiteInsteadOfArmorShred` — Cold mode: base damage -> Cold, Armour Shred -> Frostbite chance in the aftershock.
+- `igniteInsteadOfArmorShred` — Fire mode: base damage -> Fire, Armour Shred -> Ignite chance in aftershock.
+- `spellConversion` — Melee attack becomes spell with physical -> lightning conversion; +80 initial slam spell damage and +20 aftershock spell damage (the +20 is in aftershock_unconditionalT
+- `frostbiteInsteadOfArmorShred` — Cold mode: base damage -> Cold, Armour Shred -> Frostbite chance in aftershock.
 
 **EntanglingRootsMutator**
 - `increasedArea` — Reader not located.
 
 **FalconryMutator**
-- `acidFlaskManaCostRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `chanceFalconGainFlaskChargeOnPlayerFlaskUse` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `prioritiseTargetsCloseToPlayer` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `prioritiseSummonerTargetLocation` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `ailmentChanceFromPlayerEffectivenessRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `throwsFeatherKnives` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `featherKnivesCooldownFromPlayerThrowingAttackSpeedRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `highestIncreasedDamageTypeFromPlayerRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `falconTypedCritMultiOnCrit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `reducedFalconStrikeCooldownPercentageOnHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `secondHitScreeches` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `slowStacksWithScreech` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `frailtyStacksWithScreech` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `protectiveScreechOnPlayerLowLife` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `screechFears` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `addedHits` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `cullPercentage` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `razorWingsMode` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedWidthPerIncreasedAreaRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreDamageIfUsedAreaSkillRecently` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `extraHitsFromKills` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `extraHitsFromRareBossHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `chanceToAddHitFromRareBossHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `healthPerTotalAttributesOnKillOrRareBossHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `manaPerTotalAttributesOnKillOrRareBossHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `falconWakeDurationOnMarkConsume` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `consumingFalconMarkRecoversFalconStrikeCooldown` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `slowChancePerSecondInFeatherstorm` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `shadowFeatherstormBossOrRare` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreDamagePerSecondFeatherstormActive` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedFeatherstormDuration` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `blackArrowPerSecondInFeatherstormChance` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `poisonConversionForFeatherstorm` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreDamagePerAerialProwessStackConsumed` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreDiveBombDamageFromAerialProwess` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreFeatherBurstDamageToHighHealth` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreFeatherstormDamageToHighHealth` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `throwingDamageFeatherBurstStatsRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `throwingDamageFeatherstormStatsRatio` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreFeatherBurstDamageToRareAndBoss` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreFeatherstormDamageToRareAndBoss` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `featherRainTargets` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedDiveBombRadius` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `diveBombStats` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `giveCreatorTalonBladesOnDiveBombOrFeatherRainHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedMoveSpeedWith5TalonBladeStacks` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `detonateExplosiveTraps` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedAreaForTriggeredExplosiveTraps` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `maxCrimsonShroudStacksPerUseOfDiveBomb` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `consumeBleedStacksWithDiveBomb` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreDamagePerBleed` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `reducedDelayWithDiveBomb` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `shadowFalconCount` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `duskShroudChanceIfShadowFalconHits` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `shadowFalconsBounceInSmokeBombChance` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreShadowFalconDamagePerUmbralBlade` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `dualWieldingWeaponStatPercentage` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `moreAilmentDamagePer10PercentStunChance` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `manaRestoreOnRareOrBossFirstHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `traversalRemainingCooldownRestoreOnRareOrBossFirstHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `detonateDecoys` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `decoyMoreDamageOnHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `decoyIncreasedAreaOnHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `diveBombAddedManaCost` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `increasedSmokeBombDurationOnHit` — Consumed in the falcon adapter/spawned falcon objects (not followed).
-- `featherRainArmorShredChance` — Consumed in the falcon adapter/spawned falcon objects (not followed).
+- `acidFlaskManaCostRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `chanceFalconGainFlaskChargeOnPlayerFlaskUse` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `prioritiseTargetsCloseToPlayer` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `prioritiseSummonerTargetLocation` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `ailmentChanceFromPlayerEffectivenessRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `throwsFeatherKnives` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `featherKnivesCooldownFromPlayerThrowingAttackSpeedRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `highestIncreasedDamageTypeFromPlayerRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `falconTypedCritMultiOnCrit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `reducedFalconStrikeCooldownPercentageOnHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `secondHitScreeches` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `slowStacksWithScreech` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `frailtyStacksWithScreech` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `protectiveScreechOnPlayerLowLife` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `screechFears` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `addedHits` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `cullPercentage` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `razorWingsMode` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedWidthPerIncreasedAreaRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreDamageIfUsedAreaSkillRecently` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `extraHitsFromKills` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `extraHitsFromRareBossHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `chanceToAddHitFromRareBossHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `healthPerTotalAttributesOnKillOrRareBossHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `manaPerTotalAttributesOnKillOrRareBossHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `falconWakeDurationOnMarkConsume` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `consumingFalconMarkRecoversFalconStrikeCooldown` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `slowChancePerSecondInFeatherstorm` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `shadowFeatherstormBossOrRare` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreDamagePerSecondFeatherstormActive` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedFeatherstormDuration` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `blackArrowPerSecondInFeatherstormChance` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `poisonConversionForFeatherstorm` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreDamagePerAerialProwessStackConsumed` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreDiveBombDamageFromAerialProwess` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreFeatherBurstDamageToHighHealth` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreFeatherstormDamageToHighHealth` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `throwingDamageFeatherBurstStatsRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `throwingDamageFeatherstormStatsRatio` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreFeatherBurstDamageToRareAndBoss` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreFeatherstormDamageToRareAndBoss` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `featherRainTargets` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedDiveBombRadius` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `diveBombStats` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `giveCreatorTalonBladesOnDiveBombOrFeatherRainHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedMoveSpeedWith5TalonBladeStacks` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `detonateExplosiveTraps` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedAreaForTriggeredExplosiveTraps` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `maxCrimsonShroudStacksPerUseOfDiveBomb` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `consumeBleedStacksWithDiveBomb` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreDamagePerBleed` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `reducedDelayWithDiveBomb` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `shadowFalconCount` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `duskShroudChanceIfShadowFalconHits` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `shadowFalconsBounceInSmokeBombChance` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreShadowFalconDamagePerUmbralBlade` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `dualWieldingWeaponStatPercentage` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `moreAilmentDamagePer10PercentStunChance` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `manaRestoreOnRareOrBossFirstHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `traversalRemainingCooldownRestoreOnRareOrBossFirstHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `detonateDecoys` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `decoyMoreDamageOnHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `decoyIncreasedAreaOnHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `diveBombAddedManaCost` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `increasedSmokeBombDurationOnHit` — Consumed in falcon adapter/spawned falcon objects (not followed).
+- `featherRainArmorShredChance` — Consumed in falcon adapter/spawned falcon objects (not followed).
 
 **FlameRushMutator**
-- `castGlyphOfDominionAtTargetLocation` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `volcanicOrbTravelsWithYou` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `buffOverflowDurationPercentage` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `wardAtEnd` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `castStaticOrbBackwards` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `applyBrandOfSubjugationWhileTravelling` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `brandOfSubjugationMoreDamagePerChillChance` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `frenzyAtEndDuration` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `castRunicInvocationAtEnd` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `moreDamageIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `increasedRadiusIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `manaRefundIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `runicBurstOnFireballHitDuringFlameRush` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `fireResShredStacksOnHitWhileChannelling` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `wardPerIgnitedEnemyYouTravelThrough` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `consumeYourIgnitesOnEnemiesYouTravelThrough` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `wardGainedPerIgniteConsumed` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `consumedIgnitesDealDamageImmediately` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `moreIgniteDamagePerInt` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `increasedRadiusOnFrostWallHit` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `moreCritChanceOnFrostWallHit` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `maxRuneEmberCount` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `additionalRuneEmbersOnFlameRushUse` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `increasedRuneEmberGenerationSpeed` — Mutate body not followed in detail; semantics from the node tooltips and field name.
-- `chanceToGainRuneEmberOnFlameRushKill` — Mutate body not followed in detail; semantics from the node tooltips and field name.
+- `castGlyphOfDominionAtTargetLocation` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `volcanicOrbTravelsWithYou` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `buffOverflowDurationPercentage` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `wardAtEnd` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `castStaticOrbBackwards` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `applyBrandOfSubjugationWhileTravelling` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `brandOfSubjugationMoreDamagePerChillChance` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `frenzyAtEndDuration` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `castRunicInvocationAtEnd` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `moreDamageIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `increasedRadiusIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `manaRefundIfCastFireballInSameDirection` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `runicBurstOnFireballHitDuringFlameRush` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `fireResShredStacksOnHitWhileChannelling` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `wardPerIgnitedEnemyYouTravelThrough` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `consumeYourIgnitesOnEnemiesYouTravelThrough` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `wardGainedPerIgniteConsumed` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `consumedIgnitesDealDamageImmediately` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `moreIgniteDamagePerInt` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `increasedRadiusOnFrostWallHit` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `moreCritChanceOnFrostWallHit` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `maxRuneEmberCount` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `additionalRuneEmbersOnFlameRushUse` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `increasedRuneEmberGenerationSpeed` — Mutate body not followed in detail; semantics from node tooltips and field name.
+- `chanceToGainRuneEmberOnFlameRushKill` — Mutate body not followed in detail; semantics from node tooltips and field name.
 
 **FlayMutator**
 - `chanceEveryOtherMeleeExplodeOnElite` — ISIL-only read; effect inferred from tooltip.
@@ -857,96 +857,96 @@
 
 **FrenzyTotemMutator**
 - `chanceToCastEterrasBlessingPerSecond` — Copied to FrenzyTotemAdapter; adapter rolls each second to cast Eterra's Blessing for allies in range (adapter not followed).
-- `damageStoredByTotem` — Fraction of damage taken by the totem stored (copied to adapter).
-- `totemDamageTakenThresholdToRelease` — Threshold of max health in damage taken at which the totem releases the stored damage (adapter).
-- `playerDamageTakenStoredByTotem` — Fraction of damage taken by the player stored by the totem (adapter).
-- `AoEHealOnCompanionRevival` — Healing nova of f when a companion is revived (adapter).
+- `damageStoredByTotem` — Fraction of damage taken by totem stored (copied to adapter).
+- `totemDamageTakenThresholdToRelease` — Threshold of max health in damage taken at which totem releases stored damage (adapter).
+- `playerDamageTakenStoredByTotem` — Fraction of damage taken by player stored by totem (adapter).
+- `AoEHealOnCompanionRevival` — Healing nova of f when companion revived (adapter).
 - `addedSabertoothSwipes` — Extra Sabertooth swipe(s) per cast (adapter).
-- `wolfHowlIncreasedCritChance` — Wolf Howl grants increased crit chance to the player (adapter.wolfHowlIncreasePlayerCritChance).
-- `scorpionNovaIncreasedArea` — Increased area of the scorpion venom nova (adapter).
+- `wolfHowlIncreasedCritChance` — Wolf Howl grants increased crit chance to player (adapter.wolfHowlIncreasePlayerCritChance).
+- `scorpionNovaIncreasedArea` — Increased area of scorpion venom nova (adapter).
 
 **FrostClawMutator**
 - `addedManaCost` — Added mana cost read in getAddedManaCost via ISIL only (tree: -2 per point, +4/+2 for extra casts).
-- `elementalNovaAtTargetChance` — Chance for an Elemental Nova at the target, copied to the claw component (+0x14c).
+- `elementalNovaAtTargetChance` — Chance for Elemental Nova at target, copied to claw component (+0x14c).
 
 **FrostWallMutator**
-- `fireballChanceOnhit` — Chance for a Fireball when an enemy passes through (OnHit via ISIL only; Fireball mana cost evaluated).
+- `fireballChanceOnhit` — Chance for Fireball when enemy passes through (OnHit via ISIL only; Fireball mana cost evaluated).
 
 **FuryLeapMutator**
-- `unconditionalTempStats` — Temp stats of Fury Leap (crit multi, stun chance/duration, ...), returned by getTempStats (ISIL); copied to the companion mutator.
-- `moreDamagePerDistance` — Damage more per meter travelled: distance-scaled value (max distance = (range bonus + 1) * 8) multiplied by f; applied through the AoE hit (branch details not followed).
+- `unconditionalTempStats` — Temp stats of Fury Leap (crit multi, stun chance/duration, ...), returned by getTempStats (ISIL); copied to companion mutator.
+- `moreDamagePerDistance` — Damage more per meter travelled: distance-scaled value (max distance = (range bonus + 1) * 8) multiplied by f; applied through AoE hit (branch details not followed).
 
 **GatheringStormMutator**
-- `stormBoltRepeatChanceOnBossOrRare` — Chance for the Storm Bolt to be cast again against a boss or rare (OnHit via ISIL only).
+- `stormBoltRepeatChanceOnBossOrRare` — Chance for Storm Bolt to be cast again against boss or rare (OnHit via ISIL only).
 - `addedManaCost` — Flat mana cost added (+6 for ranged staff bolt), read in getAddedManaCost via ISIL only.
-- `manaConsumptionForAdditionalStacks` — Mana consumed when the chance roll for additional stacks succeeds (OnHit via ISIL).
-- `chanceForAdditionalStormStackWith3EnemiesHit` — Chance for an additional Storm Stack when 3+ enemies are hit (OnHit via ISIL).
+- `manaConsumptionForAdditionalStacks` — Mana consumed when chance roll for additional stacks succeeds (OnHit via ISIL).
+- `chanceForAdditionalStormStackWith3EnemiesHit` — Chance for additional Storm Stack when 3+ enemies hit (OnHit via ISIL).
 
 **GlacierMutator**
-- `chanceForSuperIceVortex` — Greater Ice Vortex chance, copied to each Glacier component (OnHit via ISIL) and counted in the DPS applier.
+- `chanceForSuperIceVortex` — Greater Ice Vortex chance, copied to each Glacier component (OnHit via ISIL) counted in DPS applier.
 - `moreDamageToBosses` — More damage vs rares/bosses copied to each Glacier component (component not followed).
 - `moreDamageAgainstChilled` — More hit damage vs chilled copied to each Glacier component (Double Chill node).
 
 **GlyphOfDominionMutator**
 - `moreExplosionDamagePerSlow` — Copied to GlyphOfDominionExplosionMutator.moreDamagePerSlow (explosion component not followed); LightningBlastMutator.Mutate also reads it.
-- `glyphsExplodeAtSameTime` — Glyphs explode at the same time when two glyphs exist (checked with glyph count == 1).
-- `moreDoTPerArmorShredUpTo14Buff` — Conditional more DoT per armour shred stack (cap 14%) added to the BuffOnAllyHit buffs (Stats.ConditionalMoreDamageStat 0x12, DoT).
-- `wardPerSecondPerUncappedResistance` — Ward per second granted to allies on the glyph, scaled with uncapped resistances (BuffOnAllyHit buff built from f; formula details not followed).
-- `grantsAcceleratingStaticCharges` — Static charges gained at an accelerating rate (gainingStaticCharges, totalChargesGainedPerInterval).
-- `grantedLightningBlastChains` — Lightning Blast cast on the glyph gets +f chains (read by LightningBlastMutator.Mutate, getChannelCost).
-- `manaConsumedByLightningBlast` — Mana added to the Lightning Blast channel cost on the glyph (LightningBlastMutator.getChannelCost).
+- `glyphsExplodeAtSameTime` — Glyphs explode at same time when two glyphs exist (checked with glyph count == 1).
+- `moreDoTPerArmorShredUpTo14Buff` — Conditional more DoT per armour shred stack (cap 14%) added to BuffOnAllyHit buffs (Stats.ConditionalMoreDamageStat 0x12, DoT).
+- `wardPerSecondPerUncappedResistance` — Ward per second granted to allies on glyph, scaled with uncapped resistances (BuffOnAllyHit buff built from f; formula details not followed).
+- `grantsAcceleratingStaticCharges` — Static charges gained at accelerating rate (gainingStaticCharges, totalChargesGainedPerInterval).
+- `grantedLightningBlastChains` — Lightning Blast cast on glyph gets +f chains (read by LightningBlastMutator.Mutate, getChannelCost).
+- `manaConsumedByLightningBlast` — Mana added to Lightning Blast channel cost on glyph (LightningBlastMutator.getChannelCost).
 
 **HammerThrowMutator**
 - `increasedAttackSpeed` — Added in getIncreasedCastSpeed (read via ISIL only).
 - `freeWhenOutOfMana` — noManaCost and getIncreasedManaCost: hammer throw costs no mana when out of mana (actor mana check via ISIL).
-- `noPierce` — Hammers do not pierce; with no chains and no chain history the pierce is removed; copied to the hammer component.
+- `noPierce` — Hammers do not pierce; with no chains and no chain history pierce removed; copied to hammer component.
 
 **HarvestMutator**
-- `necroticShred` — getTempStats / addsTempStats adds a Necrotic resistance shred chance stat (read via ISIL in CopyToMinionMutator).
-- `increasedBleedEffect` — Read in getTempStats (adds a temp stat; tooltip: +50% physical penetration with bleed with Self Bleed node; exact stat not decoded).
-- `zombieChanceOnKillOrRareBossHit` — Chance for a Volatile Zombie on kill or rare/boss hit (OnKill read via ISIL).
-- `chanceToSummonBloodWraith` — Chance for a Blood Wraith on kill (OnKill via ISIL); bloodWraithStats applied.
+- `necroticShred` — getTempStats / addsTempStats adds Necrotic resistance shred chance stat (read via ISIL in CopyToMinionMutator).
+- `increasedBleedEffect` — Read in getTempStats (adds temp stat; tooltip: +50% physical penetration with bleed with Self Bleed node; exact stat not decoded).
+- `zombieChanceOnKillOrRareBossHit` — Chance for Volatile Zombie on kill or rare/boss hit (OnKill read via ISIL).
+- `chanceToSummonBloodWraith` — Chance for Blood Wraith on kill (OnKill via ISIL); bloodWraithStats applied.
 
 **HealingHandsMutator**
 - `moreDamageToVoidEnemies` — Conditional more damage vs Void enemies, built into ChanceToApplyAilmentsOnHit.ConditionalAilment/condition (ISIL-level detail).
 - `moreDamageToUndeadEnemies` — Conditional more damage vs undead (Fear Undead node).
-- `moreCastSpeed` — Copied to the adapter and applied in mutateUseSpeed (ISIL).
+- `moreCastSpeed` — Copied to adapter applied in mutateUseSpeed (ISIL).
 
 **HeartseekerMutator**
-- `punctureOnRecurveChance` — Copied to the arrow component (+0x3c): chance for a Puncture per recurve after the arrow dies.
-- `moreAilmentDamageOnRecurve` — Copied to the arrow component (+0x38): DoT more damage per recurve (8 stacks max per tooltip).
-- `minimumRecurveChance` — Minimum recurve chance written to the arrow component (Mutate).
+- `punctureOnRecurveChance` — Copied to arrow component (+0x3c): chance for Puncture per recurve after arrow dies.
+- `moreAilmentDamageOnRecurve` — Copied to arrow component (+0x38): DoT more damage per recurve (8 stacks max per tooltip).
+- `minimumRecurveChance` — Minimum recurve chance written to arrow component (Mutate).
 
 **HolyAuraMutator**
-- `finalHitDamageMultiplier` — Only read by getDPSAppliersForDPSCalculation (final hit of the Flame Burst); the in-game hit multiplier is applied elsewhere.
+- `finalHitDamageMultiplier` — Only read by getDPSAppliersForDPSCalculation (final hit of Flame Burst); in-game hit multiplier applied elsewhere.
 
 **HungeringSoulsMutator**
-- `increasedDamageWith3Minions` — getTempStats via ISIL: more damage when exactly three minions are present.
+- `increasedDamageWith3Minions` — getTempStats via ISIL: more damage when exactly three minions present.
 
 **IceBarrageMutator**
-- `freezeRateMultiplierPerCastOfFrostbolt` — Copied to the barrage component (+0x148): freeze rate multiplier per Frostbolt cast (ice shard), up to freezeRateMultiplierPerCastMaxStacks.
-- `freezeRateMultiplierPerCastMaxStacks` — Copied to the barrage component (+0x14c): cap of the per-cast freeze rate stacks.
-- `chanceToCastFrostNovaOnHit` — Copied to the barrage component (+0x154): chance to cast Frost Nova on hit (nova radius from increasedFrostNovaRadius).
-- `moreDamagePerCastOfFrostbolt` — Copied to the barrage component (+0x140): more damage per frostbolt cast, cap moreDamagePerCastMaxStacks.
-- `moreDamagePerCastMaxStacks` — Copied to the barrage component (+0x144): cap of the per-cast damage stacks.
-- `noHoming` — Copied to the barrage component (+0x164): shards do not home.
-- `chanceToMakePiercingProjectile` — Copied to the barrage component (+0x138): pierce chance.
-- `chanceToApplyForstbiteIfPiercingProjectile` — Copied to the barrage component (+0x13c): frostbite chance on piercing shards.
-- `increasedDelayBeforeFire` — Copied to the barrage component (+0x130): delay before each shard fires.
-- `increasedProjectilSize` — Copied to the barrage component (+0x168): projectile size.
-- `extraProjectiles` — Copied to the barrage component (+0x184): extra frostbolts per volley.
-- `addedMaxAngle` — Copied to the barrage component (+0x180): cone width in degrees.
-- `splinterOnHit` — Copied to the barrage component (+0x188): ice shards shatter on hit.
-- `moreCritToFrozenTargets` — Copied to the barrage component (+0x12c): crit chance more vs frozen.
-- `moreDamageToFrozen` — Copied to the barrage component (+0x128): more damage vs frozen.
-- `moreFreezeRateToNoDelayBolts` — Copied to the barrage component (+0x170): Ice Burst freeze rate more.
+- `freezeRateMultiplierPerCastOfFrostbolt` — Copied to barrage component (+0x148): freeze rate multiplier per Frostbolt cast (ice shard), up to freezeRateMultiplierPerCastMaxStacks.
+- `freezeRateMultiplierPerCastMaxStacks` — Copied to barrage component (+0x14c): cap of per-cast freeze rate stacks.
+- `chanceToCastFrostNovaOnHit` — Copied to barrage component (+0x154): chance to cast Frost Nova on hit (nova radius from increasedFrostNovaRadius).
+- `moreDamagePerCastOfFrostbolt` — Copied to barrage component (+0x140): more damage per frostbolt cast, cap moreDamagePerCastMaxStacks.
+- `moreDamagePerCastMaxStacks` — Copied to barrage component (+0x144): cap of per-cast damage stacks.
+- `noHoming` — Copied to barrage component (+0x164): shards do not home.
+- `chanceToMakePiercingProjectile` — Copied to barrage component (+0x138): pierce chance.
+- `chanceToApplyForstbiteIfPiercingProjectile` — Copied to barrage component (+0x13c): frostbite chance on piercing shards.
+- `increasedDelayBeforeFire` — Copied to barrage component (+0x130): delay before each shard fires.
+- `increasedProjectilSize` — Copied to barrage component (+0x168): projectile size.
+- `extraProjectiles` — Copied to barrage component (+0x184): extra frostbolts per volley.
+- `addedMaxAngle` — Copied to barrage component (+0x180): cone width in degrees.
+- `splinterOnHit` — Copied to barrage component (+0x188): ice shards shatter on hit.
+- `moreCritToFrozenTargets` — Copied to barrage component (+0x12c): crit chance more vs frozen.
+- `moreDamageToFrozen` — Copied to barrage component (+0x128): more damage vs frozen.
+- `moreFreezeRateToNoDelayBolts` — Copied to barrage component (+0x170): Ice Burst freeze rate more.
 
 **IceThornsMutator**
-- `delayWindow` — Enum DelayWindow (0/1/2) selecting the projectile delay/pattern in Mutate and OnHit (value 2 used for the re-cast on hit).
-- `damageAndFreezeBuffStacks` — Stacking buff on cast: stack index cycles up to f (byte), a 4 s buff with stacks is added to the player (damage and freeze rate per tree text).
+- `delayWindow` — Enum DelayWindow (0/1/2) selecting projectile delay/pattern in Mutate and OnHit (value 2 used for re-cast on hit).
+- `damageAndFreezeBuffStacks` — Stacking buff on cast: stack index cycles up to f (byte), 4 s buff with stacks added to player (damage and freeze rate per tree text).
 
 **InfernalShadeMutator**
-- `increasedCastSpeed` — mutateUseSpeed (read via ISIL) and ChaosBoltsMutator.Mutate (Chaos Bolts casting the shade).
+- `increasedCastSpeed` — mutateUseSpeed (read via ISIL) and ChaosBoltsMutator.Mutate (Chaos Bolts casting shade).
 - `explosionIncreasedArea` — Read only by ChaosBoltsMutator.Mutate; InfernalShadeMutator.Mutate does not read it (area may be applied in ShadeExplosionMutator via ISIL, not followed).
 
 **JavelinMutator**
@@ -955,27 +955,27 @@
 
 **JudgementMutator**
 - `increasedRadiusConsecratedGround` — Consecrated Ground radius increase (read in Mutate via ISIL only).
-- `eruptionMoreDamage` — Read only by getDPSAppliersForDPSCalculation (Holy Eruption more damage); the in-game effect is carried by eruptionStats (same tree node writes both).
+- `eruptionMoreDamage` — Read only by getDPSAppliersForDPSCalculation (Holy Eruption more damage); in-game effect carried by eruptionStats (same tree node writes both).
 
 **LethalMirageMutator**
-- `lightningConversion` — Flag read only in addsTempStats; the conversion amount comes from percentBaseDamageConvertedToLightning.
+- `lightningConversion` — Flag read only in addsTempStats; conversion amount comes from percentBaseDamageConvertedToLightning.
 
 **LightTempestMutator**
-- `chanceToGainGladiatorOfLagonStack` — Chance for a Gladiator of Lagon stack when the tempest is cast (Mutate read via ISIL only).
+- `chanceToGainGladiatorOfLagonStack` — Chance for Gladiator of Lagon stack when tempest cast (Mutate read via ISIL only).
 
 **LungeMutator**
-- `immobilizeOnHitDuration` — Copied to the lunge component (+0x134): immobilize duration on the final hit.
-- `increasedHitAreaPerDistanceTraveled` — Copied to the lunge component (+0x148): max area bonus reached at 10 m distance.
-- `moreDamagePerDistanceTraveled` — Copied to the lunge component (+0x14c): max damage bonus at 10 m distance.
-- `cullEnemiesBelowHealthThresholdAtMaxDistanceTraveled` — Copied to the lunge component (+0x150): cull threshold at max distance.
-- `physicalPenPerEnemyHit` — Copied to the lunge component (+0x158): physical penetration per enemy hit.
-- `chanceToCast3SmitesOnArrivalAtMaxDistanceTraveled` — Copied to the lunge component (+0x160): chance for 3 Smites on arrival at max distance.
-- `shieldBashAtEnd` — Copied to the lunge component (+0x138): Shield Bash after the lunge (shieldBashMut; written by the Shield Bash tree).
+- `immobilizeOnHitDuration` — Copied to lunge component (+0x134): immobilize duration on final hit.
+- `increasedHitAreaPerDistanceTraveled` — Copied to lunge component (+0x148): max area bonus reached at 10 m distance.
+- `moreDamagePerDistanceTraveled` — Copied to lunge component (+0x14c): max damage bonus at 10 m distance.
+- `cullEnemiesBelowHealthThresholdAtMaxDistanceTraveled` — Copied to lunge component (+0x150): cull threshold at max distance.
+- `physicalPenPerEnemyHit` — Copied to lunge component (+0x158): physical penetration per enemy hit.
+- `chanceToCast3SmitesOnArrivalAtMaxDistanceTraveled` — Copied to lunge component (+0x160): chance for 3 Smites on arrival at max distance.
+- `shieldBashAtEnd` — Copied to lunge component (+0x138): Shield Bash after lunge (shieldBashMut; written by Shield Bash tree).
 
-## 7. Пробелы и ограничения
+## 7. Gaps and limitations
 
-- Логика компонентов, в которые копируются поля, не разбиралась: FrenzyTotemAdapter, компоненты FlameRush, Ice Barrage component, Lunge component, HealingHands adapter и др. (см. D?).
-- Поля, читаемые только через ISIL (например, `getAddedManaCost`, `mutateUseSpeed`, части `OnHit/OnKill`), помечены D?, если константы/ветви не удалось подтвердить прямым чтением.
-- Значения `per_point`/`flat` берутся из `trees`/`tree_node_stats` как есть; в `formula` они приведены лишь как справка и не заменяют данные из `skill_node_effects.json`.
-- Идентификаторы Stat/AT/SP в части мест (ward per second 0x5c, block 0x1d/0x35, mana drain 0x39 и т.п.) выведены из названий узлов; сверка с enum выполнялась там, где enum известен (`sp_enum.json`).
-- Список пробелов по каждому мутатору — в `out/_notes_AL.json` (поле `gaps`), он продублирован в разделе 5.
+- Component logic where fields copied not parsed: FrenzyTotemAdapter, FlameRush, Ice Barrage component, Lunge component, HealingHands adapter, etc. (see D?).
+- Fields read via ISIL only (e.g., `getAddedManaCost`, `mutateUseSpeed`, parts of `OnHit/OnKill`) marked D? if constants/branches couldn't be confirmed by direct read.
+- Values `per_point`/`flat` taken from `trees`/`tree_node_stats` as-is; in `formula` provided only as reference do not replace data from `skill_node_effects.json`.
+- Stat/AT/SP identifiers in some places (ward per second 0x5c, block 0x1d/0x35, mana drain 0x39, etc.) derived from node names; enum verification done where enum known (`sp_enum.json`).
+- List of gaps per mutator — in `out/_notes_AL.json` (field `gaps`), duplicated in section 5.

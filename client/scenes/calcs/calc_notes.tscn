@@ -16,7 +16,7 @@ layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"FlatToggle"
 toggle_mode = true
-text = "▸ Не учтено"
+text = "▸ Not counted"
 alignment = 0
 
 [node name="NotesLabel" type="Label" parent="VBox"]

@@ -2,7 +2,7 @@ class_name LEToolsImport
 
 ## Import of a build from a lastepochtools.com planner link. Pure functions: URL / hash parsing, id decoding,
 ## conversion of the planner_data JSON into the client build model and applying it to the Build autoload.
-## Data format: client/docs/UI.md «Импорт из Last Epoch Tools».
+## Data format: client/docs/UI.md "Import from Last Epoch Tools".
 ## Requests carry no browser User-Agent on purpose: Cloudflare answers 403 to a Chrome UA that comes with a non-Chrome
 ## TLS fingerprint, while the engine default User-Agent passes.
 
@@ -134,20 +134,20 @@ static func to_build(response: Dictionary) -> Dictionary:
 	}
 	var bio: Variant = data.get("bio")
 	if not bio is Dictionary:
-		warnings.append("В данных нет блока bio (класс, мастерство, уровень).")
+		warnings.append(LE.t("The data has no bio block (class, mastery, level)."))
 		return doc
 
 	var class_id: int = int(bio.get("characterClass", -1))
 	var class_data: Dictionary = GameData.get_class_data(class_id)
 	if class_data.is_empty():
-		warnings.append("Неизвестный класс: %d." % class_id)
+		warnings.append(LE.t("Unknown class: %d.") % class_id)
 		return doc
 	doc["class_id"] = class_id
 	doc["level"] = clampi(int(bio.get("level", 100)), 1, LEVEL_MAX)
 
 	var mastery: int = int(bio.get("chosenMastery", 0))
 	if mastery < 0 or mastery >= class_data.get("masteries", []).size():
-		warnings.append("Неизвестное мастерство: %d, выбрано «Без мастерства»." % mastery)
+		warnings.append(LE.t("Unknown mastery: %d, \"No mastery\" selected.") % mastery)
 		mastery = 0
 	doc["mastery"] = mastery
 
@@ -164,7 +164,7 @@ static func to_build(response: Dictionary) -> Dictionary:
 	var weaver_used: bool = weaver is Dictionary and weaver.get("selected") is Dictionary and not weaver["selected"].is_empty()
 	var containers: Variant = data.get("weaverTreeContainers")
 	if weaver_used or (containers is Array and not containers.is_empty()):
-		warnings.append("Дерево Weaver и идолы Weaver не поддерживаются, пропущены.")
+		warnings.append(LE.t("The Weaver tree and Weaver idols are not supported, skipped."))
 	return doc
 
 
@@ -187,7 +187,7 @@ static func _passives(class_id: int, tree: Variant, warnings: Array[String]) -> 
 			continue
 		result[int(key)] = points
 	if unknown > 0:
-		warnings.append("Пассивки: %d неизвестных узлов пропущено." % unknown)
+		warnings.append(LE.t("Passives: %d unknown nodes skipped.") % unknown)
 	return result
 
 
@@ -210,7 +210,7 @@ static func _skills(data: Dictionary, warnings: Array[String]) -> Array:
 			continue
 		var ability: Dictionary = GameData.get_ability(ability_id)
 		if ability.is_empty():
-			warnings.append("Умение %d: неизвестный id «%s», пропущено." % [i + 1, ability_id])
+			warnings.append(LE.t("Skill %d: unknown id \"%s\", skipped.") % [i + 1, ability_id])
 			continue
 		slot["ability"] = ability_id
 
@@ -237,7 +237,7 @@ static func _skills(data: Dictionary, warnings: Array[String]) -> Array:
 				tree[int(key)] = points
 		slot["tree"] = tree
 		if unknown > 0:
-			warnings.append("Умение %d (%s): %d неизвестных узлов пропущено." % [i + 1, ability_id, unknown])
+			warnings.append(LE.t("Skill %d (%s): %d unknown nodes skipped.") % [i + 1, ability_id, unknown])
 	return skills
 
 
@@ -250,13 +250,13 @@ static func _equipment(equipment: Variant, items: Dictionary, warnings: Array[St
 			continue
 		var slot: String = str(SLOT_MAP.get(str(le_slot), ""))
 		if slot == "":
-			warnings.append("Неизвестный слот «%s», пропущен." % le_slot)
+			warnings.append(LE.t("Unknown slot \"%s\", skipped.") % le_slot)
 			continue
-		var item: Dictionary = _convert_item(raw, ItemMods.SLOT_NAMES_RU.get(slot, slot), warnings)
+		var item: Dictionary = _convert_item(raw, LE.t(str(ItemMods.SLOT_NAMES.get(slot, slot))), warnings)
 		if item.is_empty():
 			continue
 		if slot == IdolGrid.ALTAR_SLOT and int(item["base"]) != IdolGrid.ALTAR_BASE:
-			warnings.append("Алтарь идолов: предмет не является алтарём, пропущен.")
+			warnings.append(LE.t("Idol altar: the item is not an altar, skipped."))
 			continue
 		items[slot] = item
 
@@ -269,18 +269,18 @@ static func _idols(idols: Variant, items: Dictionary, warnings: Array[String]) -
 			continue
 		var row: int = int(raw.get("y", 0)) - 1
 		var col: int = int(raw.get("x", 0)) - 1
-		var label: String = "Идол (%d:%d)" % [row + 1, col + 1]
+		var label: String = LE.t("Idol (%d:%d)") % [row + 1, col + 1]
 		var item: Dictionary = _convert_item(raw, label, warnings)
 		if item.is_empty():
 			continue
 		if row < 0 or col < 0:
-			warnings.append("%s: неверная позиция, пропущен." % label)
+			warnings.append(LE.t("%s: invalid position, skipped.") % label)
 			continue
 		if not GameData.is_idol_type(int(item["base"])):
-			warnings.append("%s: предмет не является идолом, пропущен." % label)
+			warnings.append(LE.t("%s: the item is not an idol, skipped.") % label)
 			continue
 		if not IdolGrid.fits(items, row, col, int(item["base"])):
-			warnings.append("%s: не помещается в сетку идолов (занято или закрыто), пропущен." % label)
+			warnings.append(LE.t("%s: does not fit in the idol grid (occupied or locked), skipped.") % label)
 			continue
 		if raw.get("corruptedAffix") is Dictionary:
 			item["corrupted"] = true
@@ -301,17 +301,17 @@ static func _convert_item(raw: Dictionary, label: String, warnings: Array[String
 			unique_id = int(dec["unique"])
 			var unique: Dictionary = GameData.unique(unique_id)
 			if unique.is_empty():
-				warnings.append("%s: неизвестный уникальный предмет %d, пропущен." % [label, unique_id])
+				warnings.append(LE.t("%s: unknown unique item %d, skipped.") % [label, unique_id])
 				return {}
 			base_id = int(unique.get("baseType", -1))
 		"S":
-			warnings.append("%s: сетовый предмет (id типа S) не поддерживается, пропущен." % label)
+			warnings.append(LE.t("%s: set item (id of type S) is not supported, skipped.") % label)
 			return {}
 		_:
-			warnings.append("%s: не удалось разобрать id предмета, пропущен." % label)
+			warnings.append(LE.t("%s: could not parse the item id, skipped.") % label)
 			return {}
 	if GameData.item_base(base_id).is_empty() or GameData.item_sub(base_id, sub_id).is_empty():
-		warnings.append("%s: неизвестная база %d / подтип %d, пропущен." % [label, base_id, sub_id])
+		warnings.append(LE.t("%s: unknown base %d / subtype %d, skipped.") % [label, base_id, sub_id])
 		return {}
 
 	var implicit_rolls: Array = []
@@ -335,7 +335,7 @@ static func _convert_item(raw: Dictionary, label: String, warnings: Array[String
 			continue
 		var affix_dec: Dictionary = decode_id(str(entry.get("id", "")))
 		if affix_dec.get("kind", "") != "A" or GameData.affix(int(affix_dec["affix"])).is_empty():
-			warnings.append("%s: неизвестный аффикс «%s», пропущен." % [label, entry.get("id", "")])
+			warnings.append(LE.t("%s: unknown affix \"%s\", skipped.") % [label, entry.get("id", "")])
 			continue
 		item["affixes"].append({"id": int(affix_dec["affix"]), "tier": int(entry.get("tier", 1)), "roll": int(entry.get("r", 255))})
 	return item
@@ -352,13 +352,13 @@ static func _blessings(raw_list: Variant, warnings: Array[String]) -> Dictionary
 			continue
 		var dec: Dictionary = decode_id(str(raw.get("id", "")))
 		if dec.get("kind", "") != "I" or int(dec["base"]) != BLESSING_BASE:
-			warnings.append("Благословение: не удалось разобрать id, пропущено.")
+			warnings.append(LE.t("Blessing: could not parse the id, skipped."))
 			continue
 		var blessing_id: int = int(dec["sub"])
 		var blessing: Dictionary = GameData.blessing(blessing_id)
 		var timelines: Array = blessing.get("timelines", [])
 		if blessing.is_empty() or timelines.is_empty():
-			warnings.append("Благословение %d неизвестно, пропущено." % blessing_id)
+			warnings.append(LE.t("Blessing %d is unknown, skipped.") % blessing_id)
 			continue
 		var rolls: Variant = raw.get("ir")
 		var roll: int = int(rolls[0]) if rolls is Array and not rolls.is_empty() else 255

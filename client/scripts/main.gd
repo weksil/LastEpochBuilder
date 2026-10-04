@@ -5,6 +5,7 @@ extends Control
 @onready var level_spin: SpinBox = %LevelSpin
 @onready var import_button: Button = %ImportButton
 @onready var import_dialog: Window = %ImportDialog
+@onready var language_select: OptionButton = %LanguageSelect
 
 func _ready() -> void:
 	# Fill ClassSelect with class names
@@ -24,8 +25,18 @@ func _ready() -> void:
 	import_button.pressed.connect(_on_import_pressed)
 	import_dialog.imported.connect(_on_imported)
 
+	# Interface language (Settings autoload): item index = index in Settings.LOCALES
+	language_select.select(Settings.LOCALES.find(Settings.locale))
+	language_select.item_selected.connect(func(index: int) -> void: Settings.set_locale(Settings.LOCALES[index]))
+
 	# Initialize LevelSpin value
-	level_spin.value = Build.level
+	level_spin.set_value_no_signal(Build.level)
+
+	if Build.class_id >= 0:
+		# the scene was reloaded (language switch): keep the build and redraw every view from it
+		_on_imported()
+		Build.changed.emit.call_deferred()
+		return
 
 	# Select the first class and trigger initial setup
 	class_select.select(0)
@@ -38,7 +49,7 @@ func _on_class_selected(index: int) -> void:
 
 func _fill_masteries(class_id: int) -> void:
 	mastery_select.clear()
-	mastery_select.add_item("Без мастерства", 0)
+	mastery_select.add_item(tr("No mastery"), 0)
 
 	var class_data = GameData.get_class_data(class_id)
 	if class_data:

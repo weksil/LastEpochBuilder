@@ -1,13 +1,13 @@
 extends ScrollContainer
 
-## «Условия» (docs/UI.md): player conditions, enemy and its ailments. Only conditions with a source in the build are shown
+## "Conditions" tab (docs/UI.md): player conditions, enemy and its ailments. Only conditions with a source in the build are shown
 ## (ConfigRelevance), already switched-on ones always; every group has a one-line summary of what is on.
 
 const RELEVANCE_PATH: String = "res://scripts/engine/config_relevance.gd"
 const HEALTH_VALUES: PackedStringArray = ["full", "high", "normal", "low"]
 const KIND_VALUES: PackedStringArray = ["dummy", "normal", "magic", "rare", "miniboss", "boss"]
 const MAX_LISTED: int = 8
-## Enemy flags that are on by default (Build._init_defaults); only a deviation counts as «set».
+## Enemy flags that are on by default (Build._init_defaults); only a deviation counts as "set".
 const ENEMY_FLAG_DEFAULTS: Dictionary = {"high_health": true, "full_health": true}
 
 @export var ailment_row_scene: PackedScene
@@ -207,14 +207,14 @@ func _apply_player() -> void:
 	_player_flags_grid.visible = _any_visible(_player_flag_checks)
 	_player_values_box.visible = _any_visible(_player_value_spins, 2)
 	_player_shown = shown
-	_set_summary(_player_summary, active, "Ничего не включено", hidden, no_source_on)
+	_set_summary(_player_summary, active, tr("Nothing enabled"), hidden, no_source_on)
 
 
 static func _source_tooltip(reason: String, has_source: bool) -> String:
 	if reason != "":
-		return "Источник: " + reason
+		return LE.t("Source: ") + reason
 	if not has_source:
-		return "Нет источника в билде: условие ни на что не влияет"
+		return LE.t("No source in the build: the condition has no effect")
 	return ""
 
 
@@ -248,7 +248,7 @@ func _apply_enemy() -> void:
 	_enemy_flags_grid.visible = shown > 0
 	_enemy_flags_title.visible = shown > 0
 	_enemy_shown = shown
-	_set_summary(_enemy_summary, active, "Без особых состояний", hidden, no_source_on)
+	_set_summary(_enemy_summary, active, tr("No special states"), hidden, no_source_on)
 
 
 static func _any_visible(controls: Array, parent_levels: int = 0) -> bool:
@@ -316,7 +316,7 @@ func _apply_ailments() -> void:
 			index += 1
 
 	_ailments_shown = listed_count
-	_set_summary(_ailment_summary, active, "Ничего не наложено", hidden, no_source_on)
+	_set_summary(_ailment_summary, active, tr("Nothing applied"), hidden, no_source_on)
 
 
 # --- summaries ------------------------------------------------------------------------------------
@@ -326,14 +326,14 @@ func _set_summary(label: Label, active: PackedStringArray, empty_text: String, h
 	var shown: PackedStringArray = active
 	if active.size() > MAX_LISTED:
 		shown = active.slice(0, MAX_LISTED)
-		shown.append("и ещё %d" % (active.size() - MAX_LISTED))
+		shown.append(tr("and %d more") % (active.size() - MAX_LISTED))
 	if not active.is_empty():
-		text = "Активно: " + ", ".join(shown)
+		text = tr("Active: %s") % ", ".join(shown)
 	label.theme_type_variation = &"SummaryActive" if not active.is_empty() else &"SummaryOff"
 	if no_source_on > 0:
-		text += " · без источника: %d" % no_source_on
+		text += tr(" · without source: %d") % no_source_on
 	if hidden > 0:
-		text += " · скрыто %d без источника" % hidden
+		text += tr(" · %d hidden without source") % hidden
 	label.text = text
 
 

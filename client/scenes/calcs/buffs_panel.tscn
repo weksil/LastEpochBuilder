@@ -15,12 +15,12 @@ theme_override_constants/separation = 6
 [node name="Title" type="Label" parent="VBox"]
 layout_mode = 2
 theme_type_variation = &"SectionTitle"
-text = "Баффы умений на персонажа"
+text = "Skill buffs on the character"
 
 [node name="Hint" type="Label" parent="VBox"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Умения на панели усиливают персонажа, а значит и все остальные умения и «Характеристики». Галочка включает или выключает бафф."
+text = "Skills on the skill bar buff the character, and with it every other skill and the \"Stats\". The checkbox turns a buff on or off."
 autowrap_mode = 3
 
 [node name="List" type="VBoxContainer" parent="VBox"]

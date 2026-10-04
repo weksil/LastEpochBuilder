@@ -4,12 +4,13 @@ extends Node
 ## Run: Godot_console.exe --headless --path client res://tests/engine_test.tscn
 
 const LEToolsImportScript: GDScript = preload("res://scripts/engine/letools_import.gd")
-const CURSE_SECTION: String = "Урон за попадание по проклятой цели (до врага)"
+const CURSE_SECTION: String = "Damage per hit on the cursed target (before enemy)"
 
 var _failed: int = 0
 
 
 func _ready() -> void:
+	TranslationServer.set_locale("en")  # the checks compare English engine texts, whatever language the user chose
 	_vectors()
 	_sample_build()
 	_idol_altar()
@@ -97,11 +98,11 @@ func _sample_build() -> void:
 	print("--- Mage L100, no gear")
 	var g: Dictionary = BuildMods.global_store(Build)
 	for row: Dictionary in CharacterCalc.compute(g["store"], Build):
-		if row["label"] in ["Здоровье", "Мана", "Интеллект", "Регенерация здоровья", "Избежание оглушения"]:
+		if row["label"] in ["Health", "Mana", "Intelligence", "Health regen", "Stun avoidance"]:
 			print("  %s = %s" % [row["label"], row["text"]])
-	_check("Mage L100 health 100+10·100", _row(g, "Здоровье"), 1100)
-	_check("Mage L100 mana round(50+0.50506·100)", _row(g, "Мана"), 101)
-	_check("Mage intelligence", _row(g, "Интеллект"), 3)
+	_check("Mage L100 health 100+10·100", _row(g, "Health"), 1100)
+	_check("Mage L100 mana round(50+0.50506·100)", _row(g, "Mana"), 101)
+	_check("Mage intelligence", _row(g, "Intelligence"), 3)
 
 	# Unique: Snowblind (cold res 0.2–0.4, rollID 0) at roll 255 and roll 0
 	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
@@ -110,7 +111,7 @@ func _sample_build() -> void:
 	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [0, 255, 255]})
 	g = BuildMods.global_store(Build)
 	_check("Snowblind cold res roll 0 (fixed value)", Enemy.resistance(g["store"], 2).added, 0.20)
-	_check("Snowblind special effects listed", 1.0 if str(g["notes"]).contains("Snowblind") else 0.0, 1.0)
+	_check("Snowblind special effects listed", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains("Snowblind") else 0.0, 1.0)
 	Build.clear_item("helmet")
 	# Set: Isadora's — 2 distinct items enable the 2-piece Damned chance, not the 3-piece bonuses
 	var damned: int = GameData.enum_value("AilmentID", "Damned")
@@ -137,27 +138,27 @@ func _sample_build() -> void:
 	var r: Dictionary = SkillCalc.compute(Build, 0)
 	print("--- %s" % r["title"])
 	_print_sections(r)
-	_check("Fireball fire hit 25 × 1.12", _section_value(r, "Урон за применение (до врага)", "Огонь"), 28.0)
+	_check("Fireball fire hit 25 × 1.12", _section_value(r, "Damage per use (before enemy)", "Fire"), 28.0)
 	# Ignite (06d): 40% chance from the Fireball prefab, base 40 fire / 2.5 s, +12% generic damage from Int
-	_check("Ignite chance", _section_value(r, "Айлмент: Ignite", "Шанс наложения"), 40.0)
-	_check("Ignite stack damage 40 × 1.12", _section_value(r, "Айлмент: Ignite", "Полный урон одного стака"), 44.8)
-	_check("Ignite DPS = uses × 0.4 × 44.8", _section_value(r, "Айлмент: Ignite", "DPS (без врага)"), 1.1 / 0.75 * 0.4 * 44.8, 0.01)
-	_check("Ignite stacks = rate × 2.5", _section_value(r, "Айлмент: Ignite", "Стаков на цели в среднем"), 1.1 / 0.75 * 0.4 * 2.5, 0.01)
+	_check("Ignite chance", _section_value(r, "Ailment: Ignite", "Application chance"), 40.0)
+	_check("Ignite stack damage 40 × 1.12", _section_value(r, "Ailment: Ignite", "Total damage of one stack"), 44.8)
+	_check("Ignite DPS = uses × 0.4 × 44.8", _section_value(r, "Ailment: Ignite", "DPS (without enemy)"), 1.1 / 0.75 * 0.4 * 44.8, 0.01)
+	_check("Ignite stacks = rate × 2.5", _section_value(r, "Ailment: Ignite", "Average stacks on target"), 1.1 / 0.75 * 0.4 * 2.5, 0.01)
 	# Carrion of Creation: SP 100 converts the Ignite chance into Bleed
 	Build.set_item("gloves", {"unique": 431, "base": 4, "sub": 12, "implicit_rolls": [0, 0], "unique_rolls": [0, 0, 0, 0]})
 	var conv_r: Dictionary = SkillCalc.compute(Build, 0)
-	_check("Carrion: no Ignite left", 1.0 if _section_value(conv_r, "Айлмент: Ignite", "Шанс наложения") <= 0.0 else 0.0, 1.0)
-	_check("Carrion: Bleed = 100% item + 40% converted", _section_value(conv_r, "Айлмент: Bleed", "Шанс наложения"), 140.0)
+	_check("Carrion: no Ignite left", 1.0 if _section_value(conv_r, "Ailment: Ignite", "Application chance") <= 0.0 else 0.0, 1.0)
+	_check("Carrion: Bleed = 100% item + 40% converted", _section_value(conv_r, "Ailment: Bleed", "Application chance"), 140.0)
 	Build.clear_item("gloves")
 	# Oceareon SP 115: more damage per Shock stack on the target
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 10)
-	var no_ring: float = _section_value(SkillCalc.compute(Build, 0), "Против врага", "DPS удара по врагу")
+	var no_ring: float = _section_value(SkillCalc.compute(Build, 0), "Against enemy", "Hit DPS vs enemy")
 	Build.set_item("ring1", {"unique": 125, "base": 21, "sub": 2, "implicit_rolls": [0, 0], "unique_rolls": [0, 0, 0, 0, 0, 0]})
 	var per_stack: float = 0.0
 	for umod: Dictionary in GameData.unique(125)["mods"]:
 		if int(umod["property"]) == LE.DAMAGE_PER_AILMENT_STACK:
 			per_stack = AffixMath.unique_value(umod, 0)
-	_check("Oceareon: ×(1 + per stack × 10 shocks)", _section_value(SkillCalc.compute(Build, 0), "Против врага", "DPS удара по врагу") / no_ring, 1.0 + per_stack * 10.0, 0.002)
+	_check("Oceareon: ×(1 + per stack × 10 shocks)", _section_value(SkillCalc.compute(Build, 0), "Against enemy", "Hit DPS vs enemy") / no_ring, 1.0 + per_stack * 10.0, 0.002)
 	Build.clear_item("ring1")
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 0)
 
@@ -221,14 +222,14 @@ func _sample_build() -> void:
 	_print_sections(r)
 	var aoe_breakdown: String = ""
 	for section: Dictionary in r["sections"]:
-		if section["title"] == "Урон за применение (до врага)":
+		if section["title"] == "Damage per use (before enemy)":
 			for row: Dictionary in section["rows"]:
-				if row["label"] == "Огонь":
+				if row["label"] == "Fire":
 					aoe_breakdown = str(row["breakdown"])
-	_check("Meteor: MeteorAoe base fire 240", 1.0 if aoe_breakdown.contains("База: 240") else 0.0, 1.0)
-	_check("Meteor: fire damage >= 240", 1.0 if _section_value(r, "Урон за применение (до врага)", "Огонь") >= 240.0 else 0.0, 1.0)
-	_check("Meteor: hit vs enemy > 0", 1.0 if _section_value(r, "Против врага", "Средний удар по врагу") > 0.0 else 0.0, 1.0)
-	_check("Meteor: DPS vs enemy > 0", 1.0 if _section_value(r, "Против врага", "DPS по врагу") > 0.0 else 0.0, 1.0)
+	_check("Meteor: MeteorAoe base fire 240", 1.0 if aoe_breakdown.contains("Base: 240") else 0.0, 1.0)
+	_check("Meteor: fire damage >= 240", 1.0 if _section_value(r, "Damage per use (before enemy)", "Fire") >= 240.0 else 0.0, 1.0)
+	_check("Meteor: hit vs enemy > 0", 1.0 if _section_value(r, "Against enemy", "Average hit vs enemy") > 0.0 else 0.0, 1.0)
+	_check("Meteor: DPS vs enemy > 0", 1.0 if _section_value(r, "Against enemy", "DPS vs enemy") > 0.0 else 0.0, 1.0)
 
 	# Blessings: choose first timeline's first blessing with a non-104 implicit at roll 255
 	var timelines: Array = GameData.blessing_timelines()
@@ -252,7 +253,7 @@ func _sample_build() -> void:
 				g = BuildMods.global_store(Build)
 				var blessing_source_found: bool = false
 				for mod: StatMod in g["store"].all_mods():
-					if mod.source.begins_with("Благословение"):
+					if mod.source.begins_with("Blessing"):
 						blessing_source_found = true
 						break
 				_check("Blessing mod in global store", 1.0 if blessing_source_found else 0.0, 1.0)
@@ -270,7 +271,7 @@ func _minion_skill() -> void:
 	var wolf_dps: float = -1.0
 	for s: Dictionary in r["sections"]:
 		for row: Dictionary in s["rows"]:
-			if str(row["label"]).begins_with("DPS по врагу: Primal Wolf") or (str(row["label"]) == "DPS по врагу" and wolf_dps < 0.0):
+			if str(row["label"]).begins_with("DPS vs enemy: Primal Wolf") or (str(row["label"]) == "DPS vs enemy" and wolf_dps < 0.0):
 				wolf_dps = float(str(row["text"]))
 	print("--- Summon Wolf: %s" % str(r["sections"].map(func(x: Dictionary) -> String: return x["title"])))
 	_check("Summon Wolf deals minion DPS", 1.0 if wolf_dps > 0.0 else 0.0, 1.0)
@@ -285,7 +286,7 @@ func _unique_special_effects() -> void:
 	Build.set_item("helmet", {"unique": 2, "base": 0, "sub": 6, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255]})
 	var g: Dictionary = BuildMods.global_store(Build)
 	_check("Snowblind armour more without chill", g["store"].query_untagged(LE.ARMOUR).more, 1.0)
-	_check("Snowblind condition listed", 1.0 if str(g["notes"]).contains("учитывается при условии") else 0.0, 1.0)
+	_check("Snowblind condition listed", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains("counted when") else 0.0, 1.0)
 	Build.set_enemy_ailment(chill, 1)
 	g = BuildMods.global_store(Build)
 	_check("Snowblind armour more vs chilled", g["store"].query_untagged(LE.ARMOUR).more, 1.24)
@@ -298,7 +299,7 @@ func _unique_special_effects() -> void:
 	for mod: StatMod in g["store"].query_untagged(LE.HEALTH).mods:
 		if mod.source.contains("Health per Vitality"):
 			per_vit += mod.added
-	_check("Apostate's health = 2 × Vitality", per_vit, 2.0 * _row(g, "Живучесть"))
+	_check("Apostate's health = 2 × Vitality", per_vit, 2.0 * _row(g, "Vitality"))
 	Build.clear_item("amulet")
 	# Haste toggle: +30% increased movement speed
 	Build.set_player_state("haste", true)
@@ -335,14 +336,14 @@ func _unique_skill_level_models() -> void:
 	player_models["285"] = {"kind": "trigger", "ability": str(ab.get("abilityName", "")), "on": "hit", "chance": 0.25}
 	var s: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
 	_check("global trigger reaches the skill result", float(s["triggers"].size()), 1.0)
-	_check("global trigger is not a global stat", BuildMods.global_store(Build)["store"].query_untagged(LE.HEALTH).added, g["store"].query_untagged(LE.HEALTH).added - 2.0 * _row(g, "Живучесть"))
+	_check("global trigger is not a global stat", BuildMods.global_store(Build)["store"].query_untagged(LE.HEALTH).added, g["store"].query_untagged(LE.HEALTH).added - 2.0 * _row(g, "Vitality"))
 	_check("skill with a global trigger computes", 1.0 if not SkillCalc.compute(Build, 0)["sections"].is_empty() else 0.0, 1.0)
-	player_models["285"] = {"kind": "param", "param": "projectiles", "label": "Тест-параметр", "mod": "added"}
+	player_models["285"] = {"kind": "param", "param": "projectiles", "label": "Test parameter", "mod": "added"}
 	s = BuildMods.skill_store(Build, 0, g["store"])
-	_check("global param row appears", 1.0 if s["params"].has("Тест-параметр") else 0.0, 1.0)
-	player_models["285"] = {"kind": "flag", "text": "тестовый флаг"}
+	_check("global param row appears", 1.0 if s["params"].has("Test parameter") else 0.0, 1.0)
+	player_models["285"] = {"kind": "flag", "text": "test flag"}
 	g = BuildMods.global_store(Build)
-	_check("flag effect is listed", 1.0 if str(g["notes"]).contains("тестовый флаг") else 0.0, 1.0)
+	_check("flag effect is listed", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains("test flag") else 0.0, 1.0)
 	if had:
 		player_models["285"] = old
 	else:
@@ -355,9 +356,9 @@ func _unique_skill_level_models() -> void:
 func _all_uniques_smoke() -> void:
 	const SLOT_BY_TYPE: Dictionary = {0: "helmet", 1: "body", 2: "belt", 3: "boots", 4: "gloves", 17: "offhand", 18: "offhand",
 		19: "offhand", 20: "amulet", 21: "ring1", 22: "relic"}
-	for key: String in EffectModels.PLAYER_FLAGS_RU:
+	for key: String in EffectModels.PLAYER_FLAG_NAMES:
 		Build.set_player_state(key, true)
-	for key: String in EffectModels.PLAYER_VALUES_RU:
+	for key: String in EffectModels.PLAYER_VALUE_NAMES:
 		Build.set_player_state(key, 20)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 1)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 50)
@@ -380,9 +381,9 @@ func _all_uniques_smoke() -> void:
 				modelled += 1
 		Build.clear_item(slot)
 	print("--- all uniques: %d special effects, %d modelled" % [total, modelled])
-	for key: String in EffectModels.PLAYER_FLAGS_RU:
+	for key: String in EffectModels.PLAYER_FLAG_NAMES:
 		Build.set_player_state(key, false)
-	for key: String in EffectModels.PLAYER_VALUES_RU:
+	for key: String in EffectModels.PLAYER_VALUE_NAMES:
 		Build.set_player_state(key, 0)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Chill"), 0)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Bleed"), 0)
@@ -416,29 +417,29 @@ func _passive_field_models() -> void:
 		_check("passive %d allocated" % id, float(Build.get_points(id)), 1.0)
 	var title: String = GameData.display_name(effects[weapon_id])
 	var g: Dictionary = BuildMods.global_store(Build)
-	var wr_note: String = "Пассивка «%s» — учитывается при условии" % title
-	_check("statsWithWeaponRequirements without a catalyst: condition note", 1.0 if str(g["notes"]).contains(wr_note) else 0.0, 1.0)
+	var wr_note: String = "Passive \"%s\" — counted when" % title
+	_check("statsWithWeaponRequirements without a catalyst: condition note", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains(wr_note) else 0.0, 1.0)
 	Build.set_item("offhand", {"base": 19, "sub": 0, "implicit_rolls": [255, 255]})
 	g = BuildMods.global_store(Build)
 	var found: bool = false
 	for mod: StatMod in g["store"].all_mods():
-		if mod.source.begins_with("Пассивка «%s»" % title):
+		if mod.source.begins_with("Passive \"%s\"" % title):
 			found = true
 	_check("statsWithWeaponRequirements with a catalyst: mod with the node title in the global store", 1.0 if found else 0.0, 1.0)
 	Build.clear_item("offhand")
 	g = BuildMods.global_store(Build)
 	var dual_title: String = GameData.display_name(effects[dual_id])
-	var dual_note: String = "Пассивка «%s» — учитывается при условии" % dual_title
-	_check("statsWhileDualWielding without weapons: condition note", 1.0 if str(g["notes"]).contains(dual_note) else 0.0, 1.0)
+	var dual_note: String = "Passive \"%s\" — counted when" % dual_title
+	_check("statsWhileDualWielding without weapons: condition note", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains(dual_note) else 0.0, 1.0)
 	Build.set_item("weapon", {"base": 10, "sub": 1, "implicit_rolls": [255, 255]})
 	Build.set_item("offhand", {"base": 10, "sub": 1, "implicit_rolls": [255, 255]})
 	g = BuildMods.global_store(Build)
 	var dual_found: bool = false
 	for mod: StatMod in g["store"].all_mods():
-		if mod.source.begins_with("Пассивка «%s»" % dual_title):
+		if mod.source.begins_with("Passive \"%s\"" % dual_title):
 			dual_found = true
 	_check("statsWhileDualWielding with two weapons: mod in the global store", 1.0 if dual_found else 0.0, 1.0)
-	_check("statsWhileDualWielding with two weapons: no condition note", 0.0 if str(g["notes"]).contains(dual_note) else 1.0, 1.0)
+	_check("statsWhileDualWielding with two weapons: no condition note", 0.0 if "\n".join(PackedStringArray(g["notes"])).contains(dual_note) else 1.0, 1.0)
 	Build.clear_item("weapon")
 	Build.clear_item("offhand")
 
@@ -493,12 +494,12 @@ func _sustain() -> void:
 	Build.set_skill(0, "fi9")
 	Build.set_enemy("kind", "dummy")
 	var r: Dictionary = SkillCalc.compute(Build, 0)
-	_check("no leech without a leech mod", _section_value(r, "Восполнение", "Вампиризм здоровья в секунду"), -1.0)
+	_check("no leech without a leech mod", _section_value(r, "Sustain", "Health leech per second"), -1.0)
 	# Gloves affix 1003: +0.01 added HealthLeech (untagged) and +10% increased
 	Build.set_item("gloves", {"base": 4, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 1003, "tier": 1, "roll": 255}]})
 	r = SkillCalc.compute(Build, 0)
 	_print_sections(r)
-	var leech: float = _section_value(r, "Восполнение", "Вампиризм здоровья в секунду")
+	var leech: float = _section_value(r, "Sustain", "Health leech per second")
 	_check("HealthLeech mod gives a leech row", 1.0 if leech > 0.0 else 0.0, 1.0)
 	Build.clear_item("gloves")
 
@@ -522,7 +523,7 @@ func _buff_skills() -> void:
 	Build.skills[0]["tree"][2] = 2  # points are written directly: the tree rules are not under test
 	_check("Flame Ward node allocated", float(Build.get_skill_points(0, 2)), 2.0)
 	var g: Dictionary = BuildMods.global_store(Build)
-	var node_src: String = "Умение «Flame Ward» (бафф): Узел «Flame Ward Increased Fire Damage» ×2"
+	var node_src: String = "Skill \"Flame Ward\" (buff): Node \"Flame Ward Increased Fire Damage\" ×2"
 	_check("tree global model reaches the global store", _mods_sum(g["store"], LE.DAMAGE, node_src, true), 1.0)
 	var fireball: Dictionary = BuildMods.skill_store(Build, 1, g["store"])
 	_check("another skill sees the Flame Ward buff", _mods_sum(fireball["store"], LE.DAMAGE, node_src, true), 1.0)
@@ -538,11 +539,11 @@ func _buff_skills() -> void:
 	_check("buff_active off: no buff in the global store", _mods_sum(g["store"], LE.DAMAGE, node_src, true), 0.0)
 	Build.set_skill_input(0, "buff_active", true)
 
-	# read-only list of the skill buffs (UI «Баффы умений на персонажа») agrees with the global store
+	# read-only list of the skill buffs (UI "Skill buffs on the character") agrees with the global store
 	g = BuildMods.global_store(Build)
 	var listed: Array[Dictionary] = BuildMods.skill_buffs(Build)
 	var fw_entry: Dictionary = listed[0]
-	var fw_prefix: String = "Умение «Flame Ward» (бафф)"
+	var fw_prefix: String = "Skill \"Flame Ward\" (buff)"
 	_check("skill_buffs: first entry is slot 0", float(fw_entry["slot"]), 0.0)
 	_check("skill_buffs: Flame Ward is active and has a switch", 1.0 if (fw_entry["active"] and fw_entry["toggle"]) else 0.0, 1.0)
 	_check("skill_buffs: listed mods = buff mods of the global store", float(fw_entry["mods"].size()), _count_source_prefix(g["store"], fw_prefix))
@@ -558,7 +559,7 @@ func _buff_skills() -> void:
 	Build.skills[0]["tree"][12] = 5  # Shelter from the Storm: +5% elemental resistance and +3% endurance per point
 	Build.passives[119] = 5
 	g = BuildMods.global_store(Build)
-	var holy: String = "Умение «Holy Aura» (бафф)"
+	var holy: String = "Skill \"Holy Aura\" (buff)"
 	_check("Holy Aura passive: ElementalResistance (0.15 + 0.25) × 1.2", _mods_sum(g["store"], LE.ELEMENTAL_RES, holy, false), 0.48)
 	_check("Holy Aura passive: Damage increased 0.30 × 1.2", _mods_sum(g["store"], LE.DAMAGE, holy, true), 0.36)
 	_check("Holy Aura passive: Endurance 0.15 × 1.2", _mods_sum(g["store"], LE.ENDURANCE, holy, false), 0.18)
@@ -602,7 +603,7 @@ func _buff_skill_base_models() -> void:
 	Build.set_skill(0, "si4lgl")
 	Build.passives[119] = 5
 	Build.passives[95] = 5
-	var sigils: String = "Умение «Symbols of Hope» (бафф)"
+	var sigils: String = "Skill \"Symbols of Hope\" (buff)"
 	var g: Dictionary = BuildMods.global_store(Build)
 	_check("Symbols of Hope ×3: HealthRegen increased 0.2 × 3 × 1.2", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, true), 0.72)
 	_check("Symbols of Hope ×3: HealthRegen added 5 × 3 × 1.2", _mods_sum(g["store"], LE.HEALTH_REGEN, sigils, false), 18.0)
@@ -622,7 +623,7 @@ func _buff_skill_base_models() -> void:
 	Build.skills[0].erase("inputs")
 
 	Build.set_skill(0, "sb44eQ")
-	var enchant: String = "Умение «Enchant Weapon» (бафф)"
+	var enchant: String = "Skill \"Enchant Weapon\" (buff)"
 	g = BuildMods.global_store(Build)
 	_check("Enchant Weapon passive: 0.15 more (Elemental|Melee)", _mods_more_sum(g["store"], LE.DAMAGE, enchant), 0.15)
 	Build.skills[0]["tree"][2] = 2  # node 2 Melee Shock Chance: +10% per point in the passive list, +20% in the active list
@@ -634,7 +635,7 @@ func _buff_skill_base_models() -> void:
 	_check("Enchant Weapon active list replaces the passive one: shock chance 0.2 × 2", _mods_sum(g["store"], LE.AILMENT_CHANCE, enchant, false), 0.4)
 
 	Build.set_skill(0, "f1b4d")
-	var firebrand: String = "Умение «Firebrand» (бафф)"
+	var firebrand: String = "Skill \"Firebrand\" (buff)"
 	g = BuildMods.global_store(Build)
 	_check("Firebrand default 4 stacks: +5 melee fire damage per stack", _mods_sum(g["store"], LE.DAMAGE, firebrand, false), 20.0)
 	Build.set_skill_input(0, "firebrand_stacks", 2.0)
@@ -714,7 +715,7 @@ func _idol_altar() -> void:
 	g = BuildMods.global_store(Build)
 	var per_refracted: float = 0.0
 	for mod: StatMod in g["store"].all_mods():
-		if mod.property == LE.HEALTH and mod.source.contains("Алтарь") and mod.source.contains("refracted-слоте") and not mod.source.contains("—"):
+		if mod.property == LE.HEALTH and mod.source.contains("Altar") and mod.source.contains("in a refracted slot") and not mod.source.contains("—"):
 			per_refracted += mod.added
 	_check("altar: +2 health per idol in a refracted slot (1 idol)", per_refracted, 2.0)
 	# the same idol outside the altar's refracted slot is not scaled
@@ -750,7 +751,7 @@ func _curse_hits() -> void:
 		var ab: Dictionary = GameData.get_ability(str(Build.skills[slot]["ability"]))
 		if SkillComponents.deals_hit_damage(ab):
 			var other: Dictionary = SkillCalc.compute(Build, slot)
-			var uses: float = _section_value(other, "Скорость и мана", "Применений в секунду")
+			var uses: float = _section_value(other, "Speed and mana", "Uses per second")
 			expected += uses
 			contributors.append("%s %s" % [ab.get("name"), uses])
 	print("  expected own hits/s = %s (%s)" % [expected, ", ".join(contributors)])
@@ -761,7 +762,7 @@ func _curse_hits() -> void:
 			own_default = float(inp["value"])
 	_check("curse default estimate > 0", 1.0 if own_default > 0.0 else 0.0, 1.0)
 	_check("curse default estimate = Σ uses/s of the other hitting skills", own_default, expected, 0.02)
-	_check("curse events with defaults = estimate × 3", _section_value(r, CURSE_SECTION, "Событий урона в секунду"), own_default * 3.0, 0.01)
+	_check("curse events with defaults = estimate × 3", _section_value(r, CURSE_SECTION, "Damage events per second"), own_default * 3.0, 0.01)
 	_check("curse inputs are declared", 1.0 if _has_input(r, "curse_own_hits") and _has_input(r, "curse_other_hits") else 0.0, 1.0)
 
 	# explicit inputs: 2 own hits (×3) + 1 other hit = 7 weighted hits per second
@@ -769,22 +770,22 @@ func _curse_hits() -> void:
 	Build.skills[0]["inputs"]["curse_other_hits"] = 1.0
 	r = SkillCalc.compute(Build, 0)
 	_print_sections(r)
-	_check("curse events = 2×3 + 1", _section_value(r, CURSE_SECTION, "Событий урона в секунду"), 7.0)
-	var plain_hit: float = _section_value(r, "Против врага", "Удар без крита")
-	var avg_hit: float = _section_value(r, "Против врага", "Средний удар по врагу")
-	_check("curse average hit = non-crit hit × average crit multiplier", avg_hit, plain_hit * _section_value(r, "Против врага", "Средний множитель крита"), 0.05)
-	_check("curse DPS vs enemy = average hit × 7", _section_value(r, "Против врага", "DPS удара по врагу"), avg_hit * 7.0, 0.1)
-	_check("curse: no Poison section from generic on-hit chances", _count_sections(r, "Айлмент: Poison"), 0.0)
+	_check("curse events = 2×3 + 1", _section_value(r, CURSE_SECTION, "Damage events per second"), 7.0)
+	var plain_hit: float = _section_value(r, "Against enemy", "Hit without crit")
+	var avg_hit: float = _section_value(r, "Against enemy", "Average hit vs enemy")
+	_check("curse average hit = non-crit hit × average crit multiplier", avg_hit, plain_hit * _section_value(r, "Against enemy", "Average crit multiplier"), 0.05)
+	_check("curse DPS vs enemy = average hit × 7", _section_value(r, "Against enemy", "Hit DPS vs enemy"), avg_hit * 7.0, 0.1)
+	_check("curse: no Poison section from generic on-hit chances", _count_sections(r, "Ailment: Poison"), 0.0)
 	# the tree's «when the cursed enemy is hit» ArmourShred: 100% × (2 + 1) hits/s × 4 s
-	_check("curse ArmourShred stacks = curse hits 3/s × 100% × 4 s", _section_value(r, "Наложение айлментов без урона", "ArmourShred: стаков на цели"), 12.0, 0.01)
+	_check("curse ArmourShred stacks = curse hits 3/s × 100% × 4 s", _section_value(r, "Non-damaging ailments", "ArmourShred: stacks on target"), 12.0, 0.01)
 	# the per-cast hits input does not matter
 	Build.skills[0]["hits"] = 5.0
 	var r5: Dictionary = SkillCalc.compute(Build, 0)
-	_check("curse events ignore hits per cast", _section_value(r5, CURSE_SECTION, "Событий урона в секунду"), 7.0)
+	_check("curse events ignore hits per cast", _section_value(r5, CURSE_SECTION, "Damage events per second"), 7.0)
 	Build.skills[0]["hits"] = 1.0
 	# another skill of the bar is still calculated per cast
 	var plague: Dictionary = SkillCalc.compute(Build, 2)
-	_check("other skill (Spirit Plague) still has a DPS", 1.0 if _section_value(plague, "Против врага", "DPS по врагу") > 0.0 else 0.0, 1.0)
+	_check("other skill (Spirit Plague) still has a DPS", 1.0 if _section_value(plague, "Against enemy", "DPS vs enemy") > 0.0 else 0.0, 1.0)
 	Build.skills[0]["inputs"].erase("curse_own_hits")
 	Build.skills[0]["inputs"].erase("curse_other_hits")
 
@@ -822,22 +823,22 @@ func _high_health_vs_dummy() -> void:
 	_check("Harvest crit hit vs dummy = game 2487", high * 2.5, 2487.0, 2.0)
 	_check("High Health more is ×1.17", high / low, 1.17, 0.0005)
 	var r: Dictionary = SkillCalc.compute(Build, 4)
-	_check("Harvest «Удар без крита» row = game 995", _section_value(r, "Против врага", "Удар без крита"), 995.0, 1.0)
-	_check("Harvest «Удар с критом» row = game 2487", _section_value(r, "Против врага", "Удар с критом"), 2487.0, 2.0)
+	_check("Harvest \"Hit without crit\" row = game 995", _section_value(r, "Against enemy", "Hit without crit"), 995.0, 1.0)
+	_check("Harvest \"Hit with crit\" row = game 2487", _section_value(r, "Against enemy", "Hit with crit"), 2487.0, 2.0)
 	print("  Harvest vs dummy: no crit %s, crit %s, average %s, hit DPS %s, DPS %s" % [
-		_section_value(r, "Против врага", "Удар без крита"), _section_value(r, "Против врага", "Удар с критом"),
-		_section_value(r, "Против врага", "Средний удар по врагу"), _section_value(r, "Против врага", "DPS удара по врагу"),
-		_section_value(r, "Против врага", "DPS по врагу")])
+		_section_value(r, "Against enemy", "Hit without crit"), _section_value(r, "Against enemy", "Hit with crit"),
+		_section_value(r, "Against enemy", "Average hit vs enemy"), _section_value(r, "Against enemy", "Hit DPS vs enemy"),
+		_section_value(r, "Against enemy", "DPS vs enemy")])
 
 
-## Sum of the per-type rows of the «Против врага» section (average non-crit hit against the target).
+## Sum of the per-type rows of the "Against enemy" section (average non-crit hit against the target).
 func _hit_vs_enemy(r: Dictionary) -> float:
 	var total: float = 0.0
 	for s: Dictionary in r["sections"]:
-		if s["title"] != "Против врага":
+		if s["title"] != "Against enemy":
 			continue
 		for row: Dictionary in s["rows"]:
-			if LE.DT_NAME_RU.has(str(row["label"])):
+			if LE.DT_NAME.has(str(row["label"])):
 				total += float(row["text"])
 	return total
 
@@ -853,57 +854,57 @@ func _detonations_and_maintained_dot() -> void:
 		Build.skills[i]["inputs"]["enemy_cursed"] = false
 		Build.skills[i]["inputs"]["buff_active"] = false
 	Build.enemy["kind"] = "dummy"
-	const HEAD: String = "Урон за применение (до врага)"
+	const HEAD: String = "Damage per use (before enemy)"
 	var r: Dictionary = SkillCalc.compute(Build, 3)
 	_print_sections(r)
-	var uses: float = _section_value(r, "Скорость и мана", "Применений в секунду")
+	var uses: float = _section_value(r, "Speed and mana", "Uses per second")
 	_check("Transplant: one damage component", _count_sections(r, HEAD), 1.0)
 	_check("Transplant: no duplicate DetonateBody sections", _count_prefixed_sections(r, "DetonateBody:"), 0.0)
-	_check("Transplant: no duplicate per-component DPS rows", _count_rows(r, "Против врага", "DPS по врагу: DetonateBody"), 0.0)
-	var avg: float = _section_value(r, "Против врага", "Средний удар по врагу")
-	var ail: float = _section_value(r, "Против врага", "DPS айлментов по врагу")
+	_check("Transplant: no duplicate per-component DPS rows", _count_rows(r, "Against enemy", "DPS vs enemy: DetonateBody"), 0.0)
+	var avg: float = _section_value(r, "Against enemy", "Average hit vs enemy")
+	var ail: float = _section_value(r, "Against enemy", "Ailment DPS vs enemy")
 	# the sample build has «Reign of Blood» (explodes at arrival): the prefab detonation + 1 extra per cast
-	_check("Transplant: 2 detonations per cast with the node", _section_value(r, HEAD, "Событий урона в секунду"), uses * 2.0, 0.005)
-	_check("Transplant: hit DPS = average hit × casts/s × 2", _section_value(r, "Против врага", "DPS удара по врагу"), avg * uses * 2.0, 0.05)
-	_check("Transplant: DPS = hit DPS + ailments once", _section_value(r, "Против врага", "DPS по врагу"), avg * uses * 2.0 + ail, 0.05)
+	_check("Transplant: 2 detonations per cast with the node", _section_value(r, HEAD, "Damage events per second"), uses * 2.0, 0.005)
+	_check("Transplant: hit DPS = average hit × casts/s × 2", _section_value(r, "Against enemy", "Hit DPS vs enemy"), avg * uses * 2.0, 0.05)
+	_check("Transplant: DPS = hit DPS + ailments once", _section_value(r, "Against enemy", "DPS vs enemy"), avg * uses * 2.0 + ail, 0.05)
 	# without the node there is one detonation per cast: the same average hit, half the hit DPS
 	var tree: Dictionary = Build.skills[3]["tree"]
 	var node_points: Variant = tree.get(17)
 	tree.erase(17)
 	var plain: Dictionary = SkillCalc.compute(Build, 3)
 	_check("Transplant without the node: one component", _count_sections(plain, HEAD), 1.0)
-	_check("Transplant without the node: same average hit", _section_value(plain, "Против врага", "Средний удар по врагу"), avg, 0.005)
-	_check("Transplant without the node: DPS = average hit × casts/s", _section_value(plain, "Против врага", "DPS удара по врагу"),
-		avg * _section_value(plain, "Скорость и мана", "Применений в секунду"), 0.05)
-	_check("Transplant without the node: no events row (1 per cast)", _count_rows(plain, HEAD, "Событий урона в секунду"), 0.0)
+	_check("Transplant without the node: same average hit", _section_value(plain, "Against enemy", "Average hit vs enemy"), avg, 0.005)
+	_check("Transplant without the node: DPS = average hit × casts/s", _section_value(plain, "Against enemy", "Hit DPS vs enemy"),
+		avg * _section_value(plain, "Speed and mana", "Uses per second"), 0.05)
+	_check("Transplant without the node: no events row (1 per cast)", _count_rows(plain, HEAD, "Damage events per second"), 0.0)
 	if node_points != null:
 		tree[17] = node_points
 
 	# Spirit Plague: one maintained instance, total over the base 3 s
 	var sp: Dictionary = SkillCalc.compute(Build, 2)
 	_print_sections(sp)
-	var instance: float = _section_value(sp, "Против врага", "Урон за всё действие по врагу (3 с)")
-	var per_second: float = _section_value(sp, "Против врага", "Урон в секунду по врагу")
+	var instance: float = _section_value(sp, "Against enemy", "Damage over the whole duration vs enemy (3 s)")
+	var per_second: float = _section_value(sp, "Against enemy", "Damage per second vs enemy")
 	_check("Spirit Plague: instance vs dummy > 0", 1.0 if instance > 0.0 else 0.0, 1.0)
 	_check("Spirit Plague: damage per second = instance / 3", per_second, instance / 3.0, 0.02)
-	_check("Spirit Plague: total DPS = per second + ailments", _section_value(sp, "Против врага", "DPS по врагу"),
-		per_second + _section_value(sp, "Против врага", "DPS айлментов по врагу"), 0.03)
-	_check("Spirit Plague: own section total over 3 s", _section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон за всё действие (3 с)"),
-		_section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон в секунду") * 3.0, 0.05)
-	_check("Spirit Plague: no crit section", _count_sections(sp, "Крит"), 0.0)
-	_check("Spirit Plague: no crit rows vs enemy", _count_rows(sp, "Против врага", "Удар с критом") + _count_rows(sp, "Против врага", "Удар без крита") +
-		_count_rows(sp, "Против врага", "Средний множитель крита"), 0.0)
-	_check("Spirit Plague: dummy mitigation = Necrotic penetration x1.18", instance / _section_value(sp, "Урон эффекта за всё действие (до врага)", "Урон за всё действие (3 с)"), 1.18, 0.005)
+	_check("Spirit Plague: total DPS = per second + ailments", _section_value(sp, "Against enemy", "DPS vs enemy"),
+		per_second + _section_value(sp, "Against enemy", "Ailment DPS vs enemy"), 0.03)
+	_check("Spirit Plague: own section total over 3 s", _section_value(sp, "Effect damage over its whole duration (before enemy)", "Damage over the whole duration (3 s)"),
+		_section_value(sp, "Effect damage over its whole duration (before enemy)", "Damage per second") * 3.0, 0.05)
+	_check("Spirit Plague: no crit section", _count_sections(sp, "Crit"), 0.0)
+	_check("Spirit Plague: no crit rows vs enemy", _count_rows(sp, "Against enemy", "Hit with crit") + _count_rows(sp, "Against enemy", "Hit without crit") +
+		_count_rows(sp, "Against enemy", "Average crit multiplier"), 0.0)
+	_check("Spirit Plague: dummy mitigation = Necrotic penetration x1.18", instance / _section_value(sp, "Effect damage over its whole duration (before enemy)", "Damage over the whole duration (3 s)"), 1.18, 0.005)
 	# increased duration does not change the damage per second
 	var tree_sp: Dictionary = Build.skills[2]["tree"]
 	tree_sp[15] = 2
 	var longer: Dictionary = SkillCalc.compute(Build, 2)
-	_check("Spirit Plague: increased duration keeps the damage per second", _section_value(longer, "Против врага", "Урон в секунду по врагу"), per_second, 0.005)
+	_check("Spirit Plague: increased duration keeps the damage per second", _section_value(longer, "Against enemy", "Damage per second vs enemy"), per_second, 0.005)
 	tree_sp.erase(15)
 	# the tree's «more damage» node applies to the DoT total
 	tree_sp[22] = 5
 	var more: Dictionary = SkillCalc.compute(Build, 2)
-	_check("Spirit Plague: node More Damage ×5 → ×1.5", _section_value(more, "Против врага", "Урон за всё действие по врагу (3 с)") / instance, 1.5, 0.005)
+	_check("Spirit Plague: node More Damage ×5 → ×1.5", _section_value(more, "Against enemy", "Damage over the whole duration vs enemy (3 s)") / instance, 1.5, 0.005)
 	tree_sp.erase(22)
 
 

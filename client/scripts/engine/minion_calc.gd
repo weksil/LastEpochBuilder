@@ -5,7 +5,7 @@ class_name MinionCalc
 
 ## Player stats handled by the summoner itself, never transferred (HealthGain, WardGain, ManaGain, HasteOnHit, ChanceToCast*).
 const SKIPPED_PROPERTIES: Array[int] = [38, 39, 40, 50, 126, 127]
-const TYPE_NAMES: Array[String] = ["Физический", "Огонь", "Холод", "Молния", "Некротический", "Void", "Яд"]
+const TYPE_NAMES: Array[String] = ["Physical", "Fire", "Cold", "Lightning", "Necrotic", "Void", "Poison"]
 
 static var _minions: Array[Dictionary] = []
 static var _abilities: Dictionary = {}  # ability name -> record (abilities.json)
@@ -16,7 +16,7 @@ static func _load() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	var data_dir: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game").simplify_path()
+	var data_dir: String = LE.game_data_dir()
 	var stats: Variant = _read_json(data_dir.path_join("minion_base_stats.json"))
 	if stats is Dictionary:
 		for rec: Variant in stats.get("data", []):
@@ -76,9 +76,9 @@ static func minion_store(player_store: StatStore, summon_ab: Dictionary, minion:
 		if SKIPPED_PROPERTIES.has(mod.property):
 			continue
 		if mod.extra != 0 and mod.extra != idx:
-			store.add(_copy(mod, mod.tags, mod.extra, "Игрок → миньон (как есть): %s" % mod.source))
+			store.add(_copy(mod, mod.tags, mod.extra, LE.t("Player → minion (as is): %s") % mod.source))
 		elif (mod.tags & LE.MINION) != 0 or (is_totem and (mod.tags & LE.TOTEM) != 0) or (idx != 0 and mod.extra == idx):
-			store.add(_copy(mod, mod.tags & ~(LE.MINION | LE.TOTEM), 0, "Игрок → миньон: %s" % mod.source))
+			store.add(_copy(mod, mod.tags & ~(LE.MINION | LE.TOTEM), 0, LE.t("Player → minion: %s") % mod.source))
 	for stat: Variant in minion.get("innateStats", []):
 		if not stat is Dictionary:
 			continue
@@ -88,7 +88,7 @@ static func minion_store(player_store: StatStore, summon_ab: Dictionary, minion:
 		innate.increased = float(stat.get("increased", 0.0))
 		for m: Variant in stat.get("more", []):
 			innate.more.append(float(m))
-		innate.source = "Миньон: врождённо"
+		innate.source = LE.t("Minion: innate")
 		store.add(innate)
 	for mod: Variant in minion_mods:
 		if mod is StatMod:
@@ -158,14 +158,14 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 				"name": "%s: %s" % [minion.get("actorName", "?"), ability.get("abilityName", ab_name)],
 				"kind": "minion", "ab": ability, "base": entry, "per_use": 0.0,
 				"rate": per_second * count, "store": store,
-				"note": "×%s миньонов, %s атак/с каждый" % [LE.fmt_num(count), LE.fmt_num(per_second)],
+				"note": LE.t("×%s minions, %s attacks/s each") % [LE.fmt_num(count), LE.fmt_num(per_second)],
 			})
 	return result
 
 
 static func _defence_base(label: String, base: float, q: StatQuery, extra_text: String = "") -> Dictionary:
 	var value: float = (base + q.added) * (1.0 + q.increased) * q.more
-	var head: String = "(%s база + %s) × (1 + %s) × %s = %s%s" % [
+	var head: String = LE.t("(%s base + %s) × (1 + %s) × %s = %s%s") % [
 		LE.fmt_num(base), LE.fmt_num(q.added), LE.fmt_pct(q.increased), LE.fmt_num(q.more), LE.fmt_num(value), extra_text]
 	return {"label": label, "text": str(LE.round_half_even(value)), "breakdown": head + "\n" + _mods_text(q), "value": value}
 
@@ -174,26 +174,26 @@ static func _defence_base(label: String, base: float, q: StatQuery, extra_text: 
 static func defence_rows(minion_store: StatStore, minion: Dictionary) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	var health: Dictionary = minion.get("health", {})
-	rows.append(_defence_base("Здоровье миньона", float(health.get("maxHealth", 0.0)), minion_store.query_untagged(LE.HEALTH)))
+	rows.append(_defence_base(LE.t("Minion health"), float(health.get("maxHealth", 0.0)), minion_store.query_untagged(LE.HEALTH)))
 
 	var protection: Dictionary = minion.get("protection", {})
 	var shred: float = minion_store.sum_added_untagged([LE.NEG_ARMOUR])
-	var armour_row: Dictionary = _defence_base("Броня", float(protection.get("armour", 0.0)), minion_store.query_untagged(LE.ARMOUR),
-		(" − %s (шред)" % LE.fmt_num(shred)) if shred != 0.0 else "")
+	var armour_row: Dictionary = _defence_base(LE.t("Armor"), float(protection.get("armour", 0.0)), minion_store.query_untagged(LE.ARMOUR),
+		(LE.t(" − %s (shred)") % LE.fmt_num(shred)) if shred != 0.0 else "")
 	armour_row["text"] = str(LE.round_half_even(float(armour_row["value"]) - shred))
 	rows.append(armour_row)
 
 	for i in range(LE.RES_SP.size()):
 		var q: StatQuery = Enemy.resistance(minion_store, i)
-		rows.append({"label": "Сопротивление: %s" % TYPE_NAMES[i], "text": LE.fmt_pct(q.added), "breakdown": q.breakdown()})
+		rows.append({"label": LE.t("Resistance: %s") % LE.t(TYPE_NAMES[i]), "text": LE.fmt_pct(q.added), "breakdown": q.breakdown()})
 
 	var taken: StatQuery = minion_store.query(LE.DAMAGE_TAKEN, 0)
 	var taken_pet: StatQuery = minion_store.query(LE.DAMAGE_TAKEN, LE.PET_RESISTED)
 	var taken_value: float = (1.0 + taken.increased) * taken.more
 	var taken_pet_value: float = (1.0 + taken_pet.increased) * taken_pet.more
 	rows.append({
-		"label": "Получаемый урон", "text": "×%s (с тегом PetResisted: ×%s)" % [LE.fmt_num(taken_value), LE.fmt_num(taken_pet_value)],
-		"breakdown": "(1 + inc) × Π more = %s\n%s\nС тегом PetResisted: %s\n%s" % [
+		"label": LE.t("Damage taken"), "text": LE.t("×%s (with the PetResisted tag: ×%s)") % [LE.fmt_num(taken_value), LE.fmt_num(taken_pet_value)],
+		"breakdown": LE.t("(1 + inc) × Π more = %s\n%s\nWith the PetResisted tag: %s\n%s") % [
 			LE.fmt_num(taken_value), _mods_text(taken), LE.fmt_num(taken_pet_value), _mods_text(taken_pet)],
 	})
 	return rows

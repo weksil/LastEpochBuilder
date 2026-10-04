@@ -1,6 +1,6 @@
 class_name CalcRow extends PanelContainer
 
-## One row of a «Расчёты» section (docs/UI.md): name, value, «+» that expands the breakdown.
+## One row of a "Calculations" section (docs/UI.md): name, value, "+" that expands the breakdown.
 ## update_row() refreshes the texts in place and briefly marks a changed value.
 
 signal expanded_changed(key: String, expanded: bool)

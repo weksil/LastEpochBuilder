@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/blessings/blessings_tab.gd" id="1_script"]
 
-[node name="БлагословенияTab" type="ScrollContainer"]
+[node name="BlessingsTab" type="ScrollContainer"]
 script = ExtResource("1_script")
 
 [node name="Rows" type="VBoxContainer" parent="."]

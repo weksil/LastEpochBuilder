@@ -2,7 +2,7 @@ extends Node
 
 ## Layout check: imports the sample LE Tools build (tests/fixtures) and verifies that every tab fits a 1600 px wide window
 ## (long texts must wrap instead of widening the whole interface). Wide controls are printed on failure.
-## Headless: prints «LAYOUT TEST: OK» and quits. Run from the editor (project_run custom) it stays open on «Расчёты».
+## Headless: prints "LAYOUT TEST: OK" and quits. Run from the editor (project_run custom) it stays open on "Calculations".
 
 const LEToolsImportScript: GDScript = preload("res://scripts/engine/letools_import.gd")
 const WINDOW_WIDTH: float = 1600.0

@@ -1,6 +1,6 @@
 extends PanelContainer
 
-## Stats panel on the right (docs/UI.md «Панель характеристик»). Rows are updated in place while the set of
+## Stats panel on the right (docs/UI.md "Stats panel"). Rows are updated in place while the set of
 ## stats is unchanged; changed values are highlighted by StatRow.
 
 @export var row_scene: PackedScene
@@ -75,18 +75,18 @@ func _collect_items() -> Array[Dictionary]:
 	var class_title: String = "—"
 	if not class_data.is_empty():
 		class_title = str(class_data.get("className", "—"))
-	items.append(_row_item("", "Класс", class_title))
+	items.append(_row_item("", tr("Class"), class_title))
 
-	var mastery_name: String = "Нет"
+	var mastery_name: String = tr("None")
 	if Build.mastery > 0 and not class_data.is_empty():
 		var masteries: Array = class_data.get("masteries", [])
 		if Build.mastery < masteries.size():
 			var mastery_data: Dictionary = masteries[Build.mastery] as Dictionary
 			if not mastery_data.is_empty():
-				mastery_name = str(mastery_data.get("name", "Нет"))
-	items.append(_row_item("", "Мастерство", mastery_name))
-	items.append(_row_item("", "Уровень", str(Build.level)))
-	items.append(_row_item("", "Пассивных очков", str(Build.spent_points())))
+				mastery_name = str(mastery_data.get("name", tr("None")))
+	items.append(_row_item("", tr("Mastery"), mastery_name))
+	items.append(_row_item("", tr("Level"), str(Build.level)))
+	items.append(_row_item("", tr("Passive points"), str(Build.spent_points())))
 
 	var g: Dictionary = BuildMods.global_store(Build)
 	var global_store: StatStore = g["store"]
@@ -127,7 +127,7 @@ func _update_skill_summary() -> void:
 	if dps.is_empty():
 		return
 	summary_card.visible = true
-	skill_name_label.text = "%s · DPS по врагу" % str(result.get("title", ""))
+	skill_name_label.text = tr("%s · DPS vs enemy") % str(result.get("title", ""))
 	skill_summary_label.text = str(dps.get("text", ""))
-	skill_target_label.text = "цель: %s" % Enemy.describe(Build.enemy)
+	skill_target_label.text = tr("target: %s") % Enemy.describe(Build.enemy)
 	summary_card.tooltip_text = str(dps.get("breakdown", ""))

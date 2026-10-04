@@ -2,22 +2,21 @@ extends VBoxContainer
 
 class_name CalcsTab
 
-## «Расчёты» (docs/UI.md): headline strip, calculation parameters, skill buffs on the character, sections of
+## "Calculations" tab (docs/UI.md): headline strip, calculation parameters, skill buffs on the character, sections of
 ## SkillCalc.compute in a fixed order. Everything is updated in place while the set of rows is unchanged, so typing in a
 ## SpinBox is never interrupted and expanded breakdowns stay open.
 
 ## Row whose value is highlighted as the main result.
-const KEY_ROW_LABEL: String = "DPS по врагу"
-## [title marker, rank]: sections are shown in rank order (damage, conversions, crit, speed, ailments, parameters, enemy, sustain).
+## Fixed engine label (English source; compared with LE.t(KEY_ROW_LABEL)).
+const KEY_ROW_LABEL: String = "DPS vs enemy"
+## [title marker (English source, translated at match time), rank]: sections are shown in rank order (damage, conversions,
+## crit, speed, ailments, parameters, enemy, sustain). A marker must start the title or follow a "Component: " prefix.
 const SECTION_RULES: Array = [
-	["Против врага", 6], ["Восполнение", 7], ["Параметры умения", 5], ["Скорость и мана", 3],
-	["Пробивание", 2], ["Крит", 2], ["Конверсии и теги", 1], ["Урон", 0],
-	["Айлмент: ", 4], ["Наложение айлментов", 4],
+	["Against enemy", 6], ["Sustain", 7], ["Skill parameters", 5], ["Speed and mana", 3],
+	["Penetration", 2], ["Crit", 2], ["Conversions and tags", 1], ["Damage per use (before enemy)", 0],
+	["Effect damage over its whole duration (before enemy)", 0], ["Damage per hit on the cursed target (before enemy)", 0],
+	["Ailment: %s", 4], ["Non-damaging ailments", 4],
 ]
-const NO_SKILL_SECTION: Dictionary = {
-	"title": "Нет умения",
-	"rows": [{"label": "Выберите умение во вкладке «Скиллы»", "text": "", "breakdown": ""}],
-}
 
 @export var section_scene: PackedScene
 @export var row_scene: PackedScene
@@ -140,7 +139,10 @@ func _update_inputs(result: Dictionary) -> void:
 func _update_sections(result: Dictionary) -> void:
 	var sections: Array = ordered_sections(result.get("sections", []))
 	if sections.is_empty():
-		sections = [NO_SKILL_SECTION]
+		sections = [{
+			"title": tr("No skill"),
+			"rows": [{"label": tr("Pick a skill in the \"Skills\" tab"), "text": "", "breakdown": ""}],
+		}]
 
 	# identity of every section and row: title / label, repeated ones get a counter
 	var entries: Array[Dictionary] = []
@@ -198,8 +200,8 @@ func _rebuild_sections(entries: Array[Dictionary]) -> void:
 			rows_container.add_child(row)
 			var key: String = str(item["key"])
 			var data: Dictionary = item["row"]
-			# the total of a component, not the «DPS по врагу» of an ailment section
-			var is_key: bool = str(data.get("label", "")) == KEY_ROW_LABEL and str(entry["title"]).ends_with(CalcSummary.ENEMY_SECTION)
+			# the total of a component, not the "DPS vs enemy" of an ailment section
+			var is_key: bool = str(data.get("label", "")) == LE.t(KEY_ROW_LABEL) and str(entry["title"]).ends_with(LE.t(CalcSummary.ENEMY_SECTION))
 			row.setup(key, data, alt, _expanded.has(key), is_key)
 			row.expanded_changed.connect(_on_row_expanded)
 			_row_nodes.append(row)
@@ -219,6 +221,20 @@ func _on_row_expanded(key: String, expanded: bool) -> void:
 		_expanded.erase(key)
 
 
+## Position of a section marker in a title: at the start or right after a "Component: " prefix; -1 if absent.
+static func _marker_at(title: String, source: String) -> int:
+	var marker: String = LE.t(source).replace("%s", "")
+	var from: int = 0
+	while from <= title.length():
+		var at: int = title.find(marker, from)
+		if at < 0:
+			return -1
+		if at == 0 or title.substr(at - 2, 2) == ": ":
+			return at
+		from = at + 1
+	return -1
+
+
 static func _unique_key(seen: Dictionary, base: String) -> String:
 	var count: int = int(seen.get(base, 0))
 	seen[base] = count + 1
@@ -236,7 +252,7 @@ static func ordered_sections(sections: Array) -> Array:
 		var rank: int = SECTION_RULES.size() + 1
 		var prefix: String = ""
 		for rule: Array in SECTION_RULES:
-			var at: int = title.find(str(rule[0]))
+			var at: int = _marker_at(title, str(rule[0]))
 			if at >= 0:
 				rank = int(rule[1])
 				prefix = title.substr(0, at)

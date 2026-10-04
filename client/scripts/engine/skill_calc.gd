@@ -7,10 +7,10 @@ const ATTACK_TAGS: int = LE.SPELL | LE.MELEE | LE.THROWING | LE.BOW
 const TYPE_RESOLVE_ORDER: Array[int] = [0, 3, 2, 1, 5, 4, 6]
 ## Trigger events whose frequency follows from the skill itself (docs/ENGINE.md §9.6); the rest are skill inputs `events_<on>`.
 const OWN_EVENTS: Array[String] = ["use", "cast", "end", "hit", "crit", "second"]
-const EVENT_RU: Dictionary = {
-	"use": "применение", "cast": "применение", "end": "окончание", "hit": "попадание", "crit": "крит", "second": "секунда",
-	"kill": "убийство", "hit_taken": "получение удара", "block": "блок", "dodge": "уклонение", "potion": "зелье",
-	"minion_hit": "удар миньона", "minion_death": "смерть миньона", "stun": "оглушение", "death": "смерть",
+const EVENT_NAMES: Dictionary = {
+	"use": "use", "cast": "use", "end": "end", "hit": "hit", "crit": "crit", "second": "second",
+	"kill": "kill", "hit_taken": "hit taken", "block": "block", "dodge": "dodge", "potion": "potion",
+	"minion_hit": "minion hit", "minion_death": "minion death", "stun": "stun", "death": "death",
 }
 
 
@@ -56,10 +56,10 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	var ail_notes: Array[String] = []
 	var sustain_hits: Array[Dictionary] = []
 	if components.is_empty():
-		notes.push_front("У умения нет урона удара в основном компоненте (урон задаётся кодом или под-умениями) — показаны скорость, мана и айлменты.")
+		notes.push_front(LE.t("The skill has no hit damage in its main component (damage is set by code or sub-skills) — speed, mana and ailments are shown."))
 		if not head_ctx["conversion_rows"].is_empty():
-			sections.append({"title": "Конверсии и теги", "rows": head_ctx["conversion_rows"]})
-		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
+			sections.append({"title": LE.t("Conversions and tags"), "rows": head_ctx["conversion_rows"]})
+		sections.append({"title": LE.t("Speed and mana"), "rows": speed["rows"]})
 		var head_ail: Dictionary = AilmentCalc.compute(build, head_ctx, uses, ail_notes)
 		sections.append_array(head_ail["sections"])
 		comp_results.append({"name": "", "hit_enemy": 0.0, "ail": head_ail, "events": uses})
@@ -73,35 +73,35 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var events: float = float(comp["rate"])
 		if events <= 0.0 and not is_curse:
 			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else hits)
-		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": "событий урона" if is_curse else "применений"}
+		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": LE.t("damage events") if is_curse else LE.t("uses")}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
-		var damage_title: String = "Урон за применение (до врага)"
+		var damage_title: String = LE.t("Damage per use (before enemy)")
 		if is_dot:
 			comp_speed["dot_duration"] = float(comp["duration"])
 			comp_speed["dot_duration_inc"] = float(comp.get("duration_inc", 0.0))
-			comp_speed["unit"] = "экземпляров эффекта"
+			comp_speed["unit"] = LE.t("effect instances")
 			damage_rows = _dot_damage_rows(comp, ds, uses)
-			damage_title = "Урон эффекта за всё действие (до врага)"
+			damage_title = LE.t("Effect damage over its whole duration (before enemy)")
 		elif idx > 0 or is_curse or not is_equal_approx(events, uses):
 			damage_rows = [_events_row(comp, events, uses, hits)] + damage_rows
 		if is_curse:
-			damage_title = "Урон за попадание по проклятой цели (до врага)"
+			damage_title = LE.t("Damage per hit on the cursed target (before enemy)")
 		sections.append({"title": prefix + damage_title, "rows": damage_rows})
 		if not ctx["conversion_rows"].is_empty():
-			sections.append({"title": prefix + "Конверсии и теги", "rows": ctx["conversion_rows"]})
+			sections.append({"title": prefix + LE.t("Conversions and tags"), "rows": ctx["conversion_rows"]})
 		if is_dot:
 			# a DoT cannot crit: only the penetration rows remain
 			var pen_rows: Array = []
 			for crit_row: Dictionary in ds["crit_rows"]:
-				if str(crit_row["label"]).begins_with("Пробивание"):
+				if str(crit_row["label"]).begins_with(LE.t("Penetration")):
 					pen_rows.append(crit_row)
 			if not pen_rows.is_empty():
-				sections.append({"title": prefix + "Пробивание", "rows": pen_rows})
+				sections.append({"title": prefix + LE.t("Penetration"), "rows": pen_rows})
 		else:
-			sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
+			sections.append({"title": prefix + LE.t("Crit"), "rows": ds["crit_rows"]})
 		if idx == 0:
-			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
+			sections.append({"title": LE.t("Speed and mana"), "rows": speed["rows"]})
 		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
 		# curse hits: damage (and leech) follow the weighted rate, per-hit gains and ailment chances the plain hit count
 		# a maintained DoT is applied by the casts: ailment chances roll per cast, not per damage event
@@ -113,7 +113,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		if idx == 0:
 			enemy_rows = comp_enemy
 		else:
-			extra_enemy_sections.append({"title": prefix + "Против врага", "rows": comp_enemy})
+			extra_enemy_sections.append({"title": prefix + LE.t("Against enemy"), "rows": comp_enemy})
 		comp_results.append({"name": str(comp["name"]), "hit_enemy": float(comp_speed["enemy_dps"]),
 			"ail": ail, "events": events})
 	for n: String in ail_notes:
@@ -125,30 +125,29 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	for cr: Dictionary in comp_results:
 		var ail_e: float = float(cr["ail"]["enemy_dps"])
 		total_enemy += float(cr["hit_enemy"]) + ail_e
-		enemy_lines.append("%s: удар %s + айлменты %s = %s" % [cr["name"], LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(ail_e), LE.fmt_num(float(cr["hit_enemy"]) + ail_e)])
+		enemy_lines.append(LE.t("%s: hit %s + ailments %s = %s") % [cr["name"], LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(ail_e), LE.fmt_num(float(cr["hit_enemy"]) + ail_e)])
 	var main: Dictionary = comp_results[0]
 	if float(main["ail"]["enemy_dps"]) > 0.0:
-		enemy_rows.append({"label": "DPS айлментов по врагу", "text": LE.fmt_num(main["ail"]["enemy_dps"]), "breakdown": "Сумма DPS всех айлментов по врагу (разделы «Айлмент: …»)."})
+		enemy_rows.append({"label": LE.t("Ailment DPS vs enemy"), "text": LE.fmt_num(main["ail"]["enemy_dps"]), "breakdown": LE.t("Sum of the DPS of all ailments vs enemy (the \"Ailment: …\" sections).")})
 	if comp_results.size() > 1:
 		for cr: Dictionary in comp_results:
-			enemy_rows.append({"label": "DPS по врагу: %s" % cr["name"], "text": LE.fmt_num(float(cr["hit_enemy"]) + float(cr["ail"]["enemy_dps"])), "breakdown":
-				"Событий урона в секунду: %s.\nУдар %s + айлменты %s." % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
-	enemy_rows.push_front({"label": "Цель", "text": Enemy.describe(build.enemy), "breakdown":
-		"Скрытое снижение урона по уровню цели: %s (таблица из кода игры; у босса и мини-босса + 5%% остатка).
-Тип и уровень цели — во вкладке «Условия»." % LE.fmt_pct(Enemy.level_dr(build.enemy))})
-	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(total_enemy), "breakdown":
-		"\n".join(enemy_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
+			enemy_rows.append({"label": LE.t("DPS vs enemy: %s") % cr["name"], "text": LE.fmt_num(float(cr["hit_enemy"]) + float(cr["ail"]["enemy_dps"])), "breakdown":
+				LE.t("Damage events per second: %s.\nHit %s + ailments %s.") % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
+	enemy_rows.push_front({"label": LE.t("Target"), "text": Enemy.describe(build.enemy), "breakdown":
+		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type and level are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
+	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "breakdown":
+		"\n".join(enemy_lines) if comp_results.size() > 1 else LE.t("Hit %s + ailments %s = %s") % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
 	var param_rows: Array = _param_rows(s)
 	for flag: String in s.get("flags", []):
-		param_rows.append({"label": "Механика", "text": "есть", "breakdown": flag})
+		param_rows.append({"label": LE.t("Mechanic"), "text": LE.t("yes"), "breakdown": flag})
 	if not param_rows.is_empty():
-		sections.append({"title": "Параметры умения", "rows": param_rows})
-	sections.append({"title": "Против врага", "rows": enemy_rows})
+		sections.append({"title": LE.t("Skill parameters"), "rows": param_rows})
+	sections.append({"title": LE.t("Against enemy"), "rows": enemy_rows})
 	sections.append_array(extra_enemy_sections)
 	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
 	if not sustain_rows.is_empty():
-		sections.append({"title": "Восполнение", "rows": sustain_rows})
+		sections.append({"title": LE.t("Sustain"), "rows": sustain_rows})
 	result["sections"] = sections
 	result["notes"] = notes
 	result["inputs"] = _inputs_result(build, slot, inputs)
@@ -157,6 +156,10 @@ static func compute(build: Node, slot: int) -> Dictionary:
 
 
 # --- triggers, inputs, parameters (docs/ENGINE.md §9.6) ----------------------------
+
+static func _event_name(on: String) -> String:
+	return LE.t(str(EVENT_NAMES.get(on, on)))
+
 
 ## Event rate -> component rate: event × chance × count, at most count / icd. Returns {rate, event, text}.
 ## `event_rate` is the skill input events_<on> for events that do not follow from the skill itself.
@@ -167,31 +170,31 @@ static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float
 	match on:
 		"use", "cast", "end":
 			event = uses
-			text = "события «%s» = применений/с %s" % [EVENT_RU.get(on, on), LE.fmt_num(uses)]
+			text = LE.t("event \"%s\" = uses/s %s") % [_event_name(on), LE.fmt_num(uses)]
 		"hit":
 			event = uses * hits
-			text = "попаданий/с = применений/с %s × попаданий %s = %s" % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_num(event)]
+			text = LE.t("hits/s = uses/s %s × hits %s = %s") % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_num(event)]
 		"crit":
 			event = uses * hits * minf(1.0, crit)
-			text = "критов/с = применений/с %s × попаданий %s × шанс крита %s = %s" % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_pct(minf(1.0, crit)), LE.fmt_num(event)]
+			text = LE.t("crits/s = uses/s %s × hits %s × crit chance %s = %s") % [LE.fmt_num(uses), LE.fmt_num(hits), LE.fmt_pct(minf(1.0, crit)), LE.fmt_num(event)]
 		"second":
 			event = 1.0
-			text = "раз в секунду"
+			text = LE.t("once per second")
 		_:
 			event = event_rate
-			text = "событий «%s» в секунду (вход «events_%s») = %s" % [EVENT_RU.get(on, on), on, LE.fmt_num(event_rate)]
+			text = LE.t("events \"%s\" per second (input \"events_%s\") = %s") % [_event_name(on), on, LE.fmt_num(event_rate)]
 	var chance: float = float(trig.get("chance", 1.0))
 	var count: float = float(trig.get("count", 1.0))
 	var icd: float = float(trig.get("icd", 0.0))
 	var rate: float = event * chance * count
-	var line: String = "%s; шанс %s × число %s → %s/с" % [text, LE.fmt_pct(chance), LE.fmt_num(count), LE.fmt_num(rate)]
+	var line: String = LE.t("%s; chance %s × count %s → %s/s") % [text, LE.fmt_pct(chance), LE.fmt_num(count), LE.fmt_num(rate)]
 	if icd > 0.0:
 		var cap: float = count / icd
 		if rate > cap:
-			line += "; ограничено перезарядкой %s с: %s/с" % [LE.fmt_num(icd), LE.fmt_num(cap)]
+			line += LE.t("; capped by cooldown %s s: %s/s") % [LE.fmt_num(icd), LE.fmt_num(cap)]
 			rate = cap
 		else:
-			line += "; перезарядка срабатывания %s с (предел %s/с) не достигнута" % [LE.fmt_num(icd), LE.fmt_num(cap)]
+			line += LE.t("; trigger cooldown %s s (limit %s/s) not reached") % [LE.fmt_num(icd), LE.fmt_num(cap)]
 	return {"rate": rate, "event": event, "text": line}
 
 
@@ -210,7 +213,7 @@ static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: D
 		var event_rate: float = 0.0
 		if not OWN_EVENTS.has(on):
 			var key: String = "events_" + on
-			_add_input(inputs, {"key": key, "label": "Событий в секунду: %s" % EVENT_RU.get(on, on), "default": 0.0})
+			_add_input(inputs, {"key": key, "label": LE.t("Events per second: %s") % _event_name(on), "default": 0.0})
 			event_rate = float(build.skills[slot].get("inputs", {}).get(key, 0.0))
 		if on == "crit" and crit < 0.0:
 			crit = float(_build_damage(head_ctx)["cc"])
@@ -220,10 +223,10 @@ static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: D
 		var copy: Dictionary = trig.duplicate()
 		copy["rate"] = float(tr["rate"])
 		copy["label"] = label
-		copy["note"] = "триггер, узел «%s»: %s" % [trig.get("node", "?"), tr["text"]]
+		copy["note"] = LE.t("trigger, node \"%s\": %s") % [trig.get("node", "?"), tr["text"]]
 		result.append(copy)
 		if float(tr["rate"]) <= 0.0:
-			var note: String = "Срабатывание «%s» (%s): 0 событий/с — задайте частоту во вкладке «Расчёты»" % [label, EVENT_RU.get(on, on)]
+			var note: String = LE.t("Trigger \"%s\" (%s): 0 events/s — set the rate on the Calculations tab") % [label, _event_name(on)]
 			if not notes.has(note):
 				notes.append(note)
 	return result
@@ -290,7 +293,7 @@ static func _param_rows(s: Dictionary) -> Array:
 			if more != 1.0:
 				parts.append("×%s more" % LE.fmt_num(more))
 			text = ", ".join(parts)
-		b.append("%s %s × (1 + %s) × %s = %s" % ["Задано" if is_set else "Добавлено", LE.fmt_num(base), LE.fmt_pct(inc), LE.fmt_num(more), LE.fmt_num(value)])
+		b.append("%s %s × (1 + %s) × %s = %s" % [LE.t("Set") if is_set else LE.t("Added"), LE.fmt_num(base), LE.fmt_pct(inc), LE.fmt_num(more), LE.fmt_num(value)])
 		rows.append({"label": str(label), "text": text, "breakdown": "\n".join(b)})
 	return rows
 
@@ -300,13 +303,13 @@ static func _events_row(comp: Dictionary, events: float, uses: float, hits: floa
 	if comp["kind"] == "curse_hit":
 		b.append(str(comp["event_text"]))
 	elif float(comp["rate"]) > 0.0:
-		b.append("Частота события (триггер): %s в секунду." % LE.fmt_num(events))
+		b.append(LE.t("Event rate (trigger): %s per second.") % LE.fmt_num(events))
 	else:
-		var hits_text: String = " × попаданий %s" % LE.fmt_num(hits) if comp["kind"] != "trigger" and hits != 1.0 else ""
-		b.append("Применений/с %s × за применение %s%s = %s" % [LE.fmt_num(uses), LE.fmt_num(comp["per_use"]), hits_text, LE.fmt_num(events)])
+		var hits_text: String = LE.t(" × hits %s") % LE.fmt_num(hits) if comp["kind"] != "trigger" and hits != 1.0 else ""
+		b.append(LE.t("Uses/s %s × per use %s%s = %s") % [LE.fmt_num(uses), LE.fmt_num(comp["per_use"]), hits_text, LE.fmt_num(events)])
 	if str(comp["note"]) != "":
-		b.append("Источник: %s" % comp["note"])
-	return {"label": "Событий урона в секунду", "text": LE.fmt_num(events), "breakdown": "\n".join(b)}
+		b.append(LE.t("Source: %s") % comp["note"])
+	return {"label": LE.t("Damage events per second"), "text": LE.fmt_num(events), "breakdown": "\n".join(b)}
 
 
 ## Rows of the damage section of a maintained DoT (kind `dot`): the total over the base duration and the damage per second.
@@ -314,29 +317,29 @@ static func _dot_damage_rows(comp: Dictionary, ds: Dictionary, uses: float) -> A
 	var duration: float = float(comp["duration"])
 	var rows: Array = []
 	for row: Dictionary in ds["rows"]:
-		if row["label"] != "Всего за удар (без крита)":
+		if row["label"] != LE.t("Total per hit (no crit)"):
 			rows.append(row)
-	rows.append({"label": "Урон за всё действие (%s с)" % LE.fmt_num(duration), "text": LE.fmt_num(ds["total"]), "breakdown":
-		"Сумма по типам урона: полный урон одного экземпляра за базовую длительность %s с (в данных игры базовый урон — это весь урон за действие, а не урон в секунду).\nКрита и разброса у периодического урона нет." % LE.fmt_num(duration)})
-	rows.append({"label": "Урон в секунду", "text": LE.fmt_num(float(ds["total"]) * float(comp["rate"])), "breakdown": _dot_rate_text(comp, float(ds["total"]), uses)})
+	rows.append({"label": LE.t("Damage over the whole duration (%s s)") % LE.fmt_num(duration), "text": LE.fmt_num(ds["total"]), "breakdown":
+		LE.t("Sum over damage types: the full damage of one instance over the base duration %s s (in the game data the base damage is the whole damage of the action, not damage per second).\nPeriodic damage has no crit and no variance.") % LE.fmt_num(duration)})
+	rows.append({"label": LE.t("Damage per second"), "text": LE.fmt_num(float(ds["total"]) * float(comp["rate"])), "breakdown": _dot_rate_text(comp, float(ds["total"]), uses)})
 	return rows
 
 
 static func _dot_rate_text(comp: Dictionary, total: float, uses: float) -> String:
 	var duration: float = float(comp["duration"])
 	var b: PackedStringArray = []
-	b.append("Один экземпляр на цель (maxInstances 1), его поддерживают повторным применением (применений/с %s, 100%% времени действия): событий урона в секунду = 1 / %s с = %s." % [
+	b.append(LE.t("One instance per target (maxInstances 1), kept up by recasting (uses/s %s, 100%% uptime): damage events per second = 1 / %s s = %s.") % [
 		LE.fmt_num(uses), LE.fmt_num(duration), LE.fmt_num(float(comp["rate"]))])
-	b.append("Урон в секунду = %s / %s с = %s." % [LE.fmt_num(total), LE.fmt_num(duration), LE.fmt_num(total * float(comp["rate"]))])
+	b.append(LE.t("Damage per second = %s / %s s = %s.") % [LE.fmt_num(total), LE.fmt_num(duration), LE.fmt_num(total * float(comp["rate"]))])
 	var inc: float = float(comp.get("duration_inc", 0.0))
 	if inc != 0.0:
-		b.append("Длительность +%s: эффект длится %s с и наносит ×%s урона (%s) — урон в секунду не меняется." % [
+		b.append(LE.t("Duration +%s: the effect lasts %s s and deals ×%s damage (%s) — damage per second is unchanged.") % [
 			LE.fmt_pct(inc), LE.fmt_num(duration * (1.0 + inc)), LE.fmt_num(1.0 + inc), LE.fmt_num(total * (1.0 + inc))])
 	else:
-		b.append("Увеличенная длительность растягивает эффект и повышает его полный урон в той же пропорции, поэтому урон в секунду от неё не меняется.")
-	b.append("Если применять реже, чем раз в %s с, эффект простаивает и средний урон в секунду ниже (D?: распределение тиков по времени не моделируется)." % LE.fmt_num(duration))
+		b.append(LE.t("Increased duration stretches the effect and raises its total damage in the same proportion, so damage per second does not change."))
+	b.append(LE.t("If used less often than once per %s s, the effect is idle and average damage per second is lower (D?: tick timing is not modelled).") % LE.fmt_num(duration))
 	if str(comp["note"]) != "":
-		b.append("Источник: %s" % comp["note"])
+		b.append(LE.t("Source: %s") % comp["note"])
 	return "\n".join(b)
 
 
@@ -408,38 +411,38 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 				continue
 			seen[dedupe] = true
 			var moved: float = dmg[from] * f
-			rows.append({"label": "%s → %s" % [LE.DT_NAME_RU[from], LE.DT_NAME_RU[to]], "text": LE.fmt_pct(f),
-				"breakdown": "Узел «%s»: %s базового урона типа «%s» переходит в «%s» до всех модификаторов (перенесено %s).\nПравило: %s" % [
-					c["node"], LE.fmt_pct(f), LE.DT_NAME_RU[from], LE.DT_NAME_RU[to], LE.fmt_num(moved), rule["key"]]})
+			rows.append({"label": "%s → %s" % [LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to])], "text": LE.fmt_pct(f),
+				"breakdown": LE.t("Node \"%s\": %s of the base damage of type \"%s\" is converted to \"%s\" before any modifier (moved %s).\nRule: %s") % [
+					c["node"], LE.fmt_pct(f), LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to]), LE.fmt_num(moved), rule["key"]]})
 			if moved <= 0.0:
 				continue
 			dmg[to] += moved
 			dmg[from] -= moved
-			lines[to].append("  +%s из «%s» (конверсия %s, узел «%s»)" % [LE.fmt_num(moved), LE.DT_NAME_RU[from], LE.fmt_pct(f), c["node"]])
-			lines[from].append("  −%s в «%s» (конверсия %s, узел «%s»)" % [LE.fmt_num(moved), LE.DT_NAME_RU[to], LE.fmt_pct(f), c["node"]])
+			lines[to].append(LE.t("  +%s from \"%s\" (conversion %s, node \"%s\")") % [LE.fmt_num(moved), LE.t(LE.DT_NAME[from]), LE.fmt_pct(f), c["node"]])
+			lines[from].append(LE.t("  −%s to \"%s\" (conversion %s, node \"%s\")") % [LE.fmt_num(moved), LE.t(LE.DT_NAME[to]), LE.fmt_pct(f), c["node"]])
 		var change_tags: bool = str(rule.get("tags_when", "active")) == "active" or full
 		var add_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_add", []))))
 		var remove_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_remove", []))))
 		if change_tags and (add_mask != 0 or remove_mask != 0) and not seen.has("tags:" + field):
 			seen["tags:" + field] = true
 			tags = (tags & ~remove_mask) | add_mask
-			rows.append({"label": "Теги: узел «%s»" % c["node"], "text": _tag_text(add_mask, remove_mask),
-				"breakdown": "Правило %s меняет теги умения; от тегов зависит, какие моды подходят к умению." % rule["key"]})
+			rows.append({"label": LE.t("Tags: node \"%s\"") % c["node"], "text": _tag_text(add_mask, remove_mask),
+				"breakdown": LE.t("Rule %s changes the skill's tags; the tags decide which mods apply to the skill.") % rule["key"]})
 		for ac: Dictionary in rule.get("ailment_convert", []):
 			var key: String = "ail:%s:%s" % [ac.get("from", "?"), ac.get("to", "?")]
 			if seen.has(key):
 				continue
 			seen[key] = true
 			ailment_conversions.append({"from": str(ac.get("from", "")), "to": str(ac.get("to", "")), "node": c["node"]})
-			rows.append({"label": "Айлмент: %s → %s" % [ac.get("from", "?"), ac.get("to", "?")], "text": "100%",
-				"breakdown": "Узел «%s»: шанс наложения %s переходит в %s (правило %s)." % [c["node"], ac.get("from", "?"), ac.get("to", "?"), rule["key"]]})
+			rows.append({"label": LE.t("Ailment: %s → %s") % [ac.get("from", "?"), ac.get("to", "?")], "text": "100%",
+				"breakdown": LE.t("Node \"%s\": the %s application chance becomes %s (rule %s).") % [c["node"], ac.get("from", "?"), ac.get("to", "?"), rule["key"]]})
 		if str(rule.get("note", "")) != "":
-			var note: String = "Узел «%s»: %s" % [c["node"], rule["note"]]
+			var note: String = LE.t("Node \"%s\": %s") % [c["node"], LE.t(str(rule["note"]))]
 			if not notes.has(note):
 				notes.append(note)
 	if tags != tags_before:
-		rows.append({"label": "Итоговые теги умения", "text": _tag_names(tags),
-			"breakdown": "Было: %s\nСтало: %s" % [_tag_names(tags_before), _tag_names(tags)]})
+		rows.append({"label": LE.t("Resulting skill tags"), "text": _tag_names(tags),
+			"breakdown": LE.t("Was: %s\nNow: %s") % [_tag_names(tags_before), _tag_names(tags)]})
 	return {"tags": tags, "before": before, "lines": lines, "rows": rows, "ailment_conversions": ailment_conversions}
 
 
@@ -517,7 +520,7 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 				if base_dmg[i] > 0.0:
 					var share: float = mod.added * ade * base_dmg[i] / total_base
 					flat_added[i] += share
-					lines_added[i].append("  +%s × %s × доля %s = %s  (%s, без типа)" % [
+					lines_added[i].append(LE.t("  +%s × %s × share %s = %s  (%s, untyped)") % [
 						LE.fmt_num(mod.added), LE.fmt_num(ade), LE.fmt_pct(base_dmg[i] / total_base), LE.fmt_num(share), mod.source])
 
 	# 2. damage, crit, penetration
@@ -578,21 +581,21 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 		total += final[i]
 		var b: PackedStringArray = []
 		if not ctx["conversion_lines"][i].is_empty():
-			b.append("База до конверсии: %s" % LE.fmt_num(ctx["base_before"][i]))
+			b.append(LE.t("Base before conversion: %s") % LE.fmt_num(ctx["base_before"][i]))
 			b.append_array(ctx["conversion_lines"][i])
-		b.append("База: %s (эффективность добавленного урона %s)" % [LE.fmt_num(base_dmg[i]), LE.fmt_num(ade)])
+		b.append(LE.t("Base: %s (added damage effectiveness %s)") % [LE.fmt_num(base_dmg[i]), LE.fmt_num(ade)])
 		if not lines_added[i].is_empty():
-			b.append("Добавленный урон:")
+			b.append(LE.t("Added damage:"))
 			b.append_array(lines_added[i])
-		b.append("Сумма до множителей: %s" % LE.fmt_num(pre))
+		b.append(LE.t("Sum before multipliers: %s") % LE.fmt_num(pre))
 		b.append("Increased: +%s" % LE.fmt_pct(inc[i]))
 		b.append_array(lines_inc[i])
 		b.append("More: ×%s" % LE.fmt_num(more[i]))
 		b.append_array(lines_more[i])
-		b.append("Итог: %s × %s × %s = %s" % [LE.fmt_num(pre), LE.fmt_num(1.0 + inc[i]), LE.fmt_num(more[i]), LE.fmt_num(final[i])])
-		rows.append({"label": LE.DT_NAME_RU[i], "text": LE.fmt_num(final[i]), "breakdown": "\n".join(b)})
-	rows.append({"label": "Всего за удар (без крита)", "text": LE.fmt_num(total),
-		"breakdown": "Сумма по типам урона. Разброс ±20% в среднем даёт ×1." if bool(ctx["hit"]) else "Урон периодического компонента."})
+		b.append(LE.t("Result: %s × %s × %s = %s") % [LE.fmt_num(pre), LE.fmt_num(1.0 + inc[i]), LE.fmt_num(more[i]), LE.fmt_num(final[i])])
+		rows.append({"label": LE.t(LE.DT_NAME[i]), "text": LE.fmt_num(final[i]), "breakdown": "\n".join(b)})
+	rows.append({"label": LE.t("Total per hit (no crit)"), "text": LE.fmt_num(total),
+		"breakdown": LE.t("Sum over damage types. The ±20% spread averages to ×1.") if bool(ctx["hit"]) else LE.t("Damage of the periodic component.")})
 
 	# 4. crit (06b §2.1)
 	var base_cc: float = float(ctx["base"].get("critChance", 0.0))
@@ -604,24 +607,24 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 		cc = (1.0 + cc_inc) * (base_cc + cc_add) * cc_more
 	if crit_type == 0:
 		cm = maxf(1.0, (1.0 + cm_inc) * (base_cm + cm_add) * cm_more)
-	var cc_text: PackedStringArray = ["(база %s + added %s) × (1 + %s) × %s = %s" % [
+	var cc_text: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s = %s") % [
 		LE.fmt_pct(base_cc), LE.fmt_pct(cc_add), LE.fmt_pct(cc_inc), LE.fmt_num(cc_more), LE.fmt_pct(cc)]]
 	cc_text.append_array(crit_lines)
-	var cm_text: PackedStringArray = ["(база %s + added %s) × (1 + %s) × %s = %s" % [
+	var cm_text: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s = %s") % [
 		LE.fmt_num(base_cm), LE.fmt_num(cm_add), LE.fmt_pct(cm_inc), LE.fmt_num(cm_more), LE.fmt_num(cm)]]
 	cm_text.append_array(multi_lines)
 	if crit_type == 1:
-		cc_text = ["Умение не может критовать (critType NoCritChance)."]
+		cc_text = [LE.t("The skill cannot crit (critType NoCritChance).")]
 	if crit_type != 0:
-		cm_text = ["Множитель крита не используется (critType %d)." % crit_type]
+		cm_text = [LE.t("Crit multiplier is not used (critType %d).") % crit_type]
 	var crit_rows: Array = [
-		{"label": "Шанс крита", "text": LE.fmt_pct(cc), "breakdown": "\n".join(cc_text)},
-		{"label": "Множитель крита", "text": "×" + LE.fmt_num(cm), "breakdown": "\n".join(cm_text)},
+		{"label": LE.t("Crit chance"), "text": LE.fmt_pct(cc), "breakdown": "\n".join(cc_text)},
+		{"label": LE.t("Crit multiplier"), "text": "×" + LE.fmt_num(cm), "breakdown": "\n".join(cm_text)},
 	]
 	var pen_rows: Array = []
 	for i in range(7):
 		if final[i] > 0.0 and pen[i] != 0.0:
-			pen_rows.append({"label": "Пробивание: " + LE.DT_NAME_RU[i], "text": LE.fmt_pct(pen[i]), "breakdown": "\n".join(lines_pen[i])})
+			pen_rows.append({"label": LE.t("Penetration: %s") % LE.t(LE.DT_NAME[i]), "text": LE.fmt_pct(pen[i]), "breakdown": "\n".join(lines_pen[i])})
 	crit_rows.append_array(pen_rows)
 	return {"final": final, "total": total, "cc": cc, "cm": cm, "pen": pen, "rows": rows, "crit_rows": crit_rows}
 
@@ -637,12 +640,12 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	var speed: float
 	if scaler == 54:
 		speed = 1.0 + use_inc
-		b.append("Скорость не масштабируется статами: 1 + %s (дерево)" % LE.fmt_pct(use_inc))
+		b.append(LE.t("Speed is not scaled by stats: 1 + %s (tree)") % LE.fmt_pct(use_inc))
 	else:
 		var q: StatQuery = store.query(scaler, int(ctx["tags"]))
 		speed = q.added * (1.0 + q.increased + use_inc) * q.more
-		b.append("%s: (Σ added %s) × (1 + %s + %s дерево) × %s = %s" % [
-			"Скорость атаки" if scaler == LE.ATTACK_SPEED else "Скорость каста",
+		b.append(LE.t("%s: (Σ added %s) × (1 + %s + %s tree) × %s = %s") % [
+			LE.t("Attack speed") if scaler == LE.ATTACK_SPEED else LE.t("Cast speed"),
 			LE.fmt_num(q.added), LE.fmt_pct(q.increased), LE.fmt_pct(use_inc), LE.fmt_num(q.more), LE.fmt_num(speed)])
 		for mod: StatMod in q.mods:
 			b.append("  " + mod.describe())
@@ -650,43 +653,43 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			var rate: float = _weapon_rate(build, int(ctx["tags"]))
 			if rate > 0.0:
 				speed *= rate
-				b.append("× скорость атаки оружия %s = %s" % [LE.fmt_num(rate), LE.fmt_num(speed)])
+				b.append(LE.t("× weapon attack speed %s = %s") % [LE.fmt_num(rate), LE.fmt_num(speed)])
 		if int(ab.get("speedScalerAppliedAsIncrease", 0)) == 1:
 			speed = speed * float(ab.get("speedScalerEffectiveness", 1.0)) + 1.0
-			b.append("Скорость как increased: × %s + 1 = %s" % [LE.fmt_num(float(ab.get("speedScalerEffectiveness", 1.0))), LE.fmt_num(speed)])
+			b.append(LE.t("Speed as increased: × %s + 1 = %s") % [LE.fmt_num(float(ab.get("speedScalerEffectiveness", 1.0))), LE.fmt_num(speed)])
 	var max_speed: float = float(ab.get("maximumUseSpeed", 0.0))
 	if max_speed > 0.0 and speed > max_speed:
 		speed = max_speed
-		b.append("Ограничение maximumUseSpeed: %s" % LE.fmt_num(max_speed))
+		b.append(LE.t("maximumUseSpeed cap: %s") % LE.fmt_num(max_speed))
 	if use_more != 1.0:
 		speed *= use_more
-		b.append("× more от дерева %s = %s" % [LE.fmt_num(use_more), LE.fmt_num(speed)])
+		b.append(LE.t("× more from the tree %s = %s") % [LE.fmt_num(use_more), LE.fmt_num(speed)])
 	var duration: float = float(ab.get("useDuration", 1.0))
 	var mult: float = float(ab.get("speedMultiplier", 1.0))
 	var instant: bool = int(ab.get("instantCastForPlayer", 0)) == 1
 	var uses: float = speed * mult * 1.1 / (1.0 if instant or duration <= 0.0 else duration)
-	b.append("Применений/с = %s × speedMultiplier %s × 1.1 / useDuration %s = %s" % [
+	b.append(LE.t("Uses/s = %s × speedMultiplier %s × 1.1 / useDuration %s = %s") % [
 		LE.fmt_num(speed), LE.fmt_num(mult), "—" if instant else LE.fmt_num(duration), LE.fmt_num(uses)])
 
-	var rows: Array = [{"label": "Применений в секунду", "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
+	var rows: Array = [{"label": LE.t("Uses per second"), "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
 	var mana_base: float = float(ab.get("manaCost", 0.0))
 	var mana: float = (mana_base + float(s["mana_added"])) * (1.0 + float(s["mana_inc"]))
-	var mana_lines: PackedStringArray = ["(база %s + добавлено %s) × (1 + %s) = %s" % [
+	var mana_lines: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) = %s") % [
 		LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]]
 	for line: String in s.get("mana_sources", []):
 		mana_lines.append("  " + line)
-	mana_lines.append("Добавлено — узлы дерева и свойства уникальных предметов; статы маны с аффиксов и пассивок пока не учитываются.")
-	rows.append({"label": "Стоимость маны", "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
+	mana_lines.append(LE.t("Added — tree nodes and properties of unique items; mana stats from affixes and passives are not counted yet."))
+	rows.append({"label": LE.t("Mana cost"), "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
 	var cd: Dictionary = cooldown_info(ab, store, int(ctx["tags"]), s)
 	if bool(cd["has"]):
-		rows.append({"label": "Перезарядка, с", "text": LE.fmt_num(cd["cd"]), "breakdown": cd["text"]})
+		rows.append({"label": LE.t("Cooldown, s"), "text": LE.fmt_num(cd["cd"]), "breakdown": cd["text"]})
 		if float(cd["charges"]) > 1.0:
-			rows.append({"label": "Заряды перезарядки", "text": LE.fmt_num(cd["charges"]), "breakdown":
-				"Зарядов: %s. Заряды дают серию применений подряд; в установившемся режиме частоту задаёт перезарядка." % LE.fmt_num(cd["charges"])})
+			rows.append({"label": LE.t("Cooldown charges"), "text": LE.fmt_num(cd["charges"]), "breakdown":
+				LE.t("Charges: %s. Charges allow a series of uses in a row; in steady state the cooldown sets the rate.") % LE.fmt_num(cd["charges"])})
 		var cap: float = 1.0 / float(cd["cd"])
 		if uses > cap:
 			rows[0]["text"] = LE.fmt_num(cap)
-			rows[0]["breakdown"] += "\nОграничено перезарядкой: min(%s, 1 / %s с) = %s" % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
+			rows[0]["breakdown"] += LE.t("\nCapped by cooldown: min(%s, 1 / %s s) = %s") % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
 			uses = cap
 	return {"uses": uses, "rows": rows, "mana": mana}
 
@@ -707,12 +710,12 @@ static func uses_per_second(build: Node, slot: int, global: StatStore) -> float:
 
 
 ## Default of the input «your hits on the cursed target per second» (docs/ENGINE.md §9.3): the sum of uses per second of the
-## other skills on the bar that deal hit damage. Returns {rate, lines: [«Skill N/с»]}.
+## other skills on the bar that deal hit damage. Returns {rate, lines: ["Skill N/s"]}.
 static func curse_own_hits_estimate(build: Node, slot: int, global: StatStore) -> Dictionary:
 	var rate: float = 0.0
 	var lines: Array[String] = []
 	if global == null:
-		return {"rate": 1.0, "lines": ["нет статов персонажа — принято 1/с"]}
+		return {"rate": 1.0, "lines": ["no character stats — assumed 1/s"]}
 	for other: int in range(build.skills.size()):
 		if other == slot:
 			continue
@@ -723,7 +726,7 @@ static func curse_own_hits_estimate(build: Node, slot: int, global: StatStore) -
 		if u <= 0.0:
 			continue
 		rate += u
-		lines.append("%s %s/с" % [GameData.display_name(ab), LE.fmt_num(u)])
+		lines.append("%s %s/s" % [GameData.display_name(ab), LE.fmt_num(u)])
 	return {"rate": rate, "lines": lines}
 
 
@@ -744,9 +747,9 @@ static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictio
 	var recovery: float = maxf((1.0 + rec_inc) * rec_more, 0.0001)
 	var cd: float = length / recovery
 	var lines: PackedStringArray = [
-		"Длина: (%s + %s) × (1 + %s) = %s" % [LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(len_inc), LE.fmt_num(length)],
-		"Восстановление: (1 + %s) × %s = %s" % [LE.fmt_pct(rec_inc), LE.fmt_num(rec_more), LE.fmt_num(recovery)],
-		"Перезарядка: %s / %s = %s с" % [LE.fmt_num(length), LE.fmt_num(recovery), LE.fmt_num(cd)]]
+		LE.t("Length: (%s + %s) × (1 + %s) = %s") % [LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(len_inc), LE.fmt_num(length)],
+		LE.t("Recovery: (1 + %s) × %s = %s") % [LE.fmt_pct(rec_inc), LE.fmt_num(rec_more), LE.fmt_num(recovery)],
+		LE.t("Cooldown: %s / %s = %s s") % [LE.fmt_num(length), LE.fmt_num(recovery), LE.fmt_num(cd)]]
 	for mod: StatMod in cdr.mods:
 		lines.append("  " + mod.describe())
 	return {"has": true, "cd": cd, "charges": charges, "text": "\n".join(lines)}
@@ -800,14 +803,14 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		var d: float = ds["final"][i]
 		if d <= 0.0:
 			continue
-		var b: PackedStringArray = ["Урон до врага: %s" % LE.fmt_num(d)]
+		var b: PackedStringArray = [LE.t("Damage before enemy: %s") % LE.fmt_num(d)]
 		var cond: float = _condition_factor(cond_mods, enemy, src, i, b)
 		# resistance with penetration (06b §4.2)
 		var res_q: StatQuery = Enemy.resistance(e, i)
 		var res: float = res_q.added
 		var pen: float = ds["pen"][i]
 		var res_mult: float = (0.25 if res > 0.75 else 1.0 - res) + pen
-		b.append("Сопротивление %s (кап 75%%, без нижнего предела), пробивание %s → ×%s" % [LE.fmt_pct(res), LE.fmt_pct(pen), LE.fmt_num(res_mult)])
+		b.append(LE.t("Resistance %s (cap 75%%, no lower limit), penetration %s → ×%s") % [LE.fmt_pct(res), LE.fmt_pct(pen), LE.fmt_num(res_mult)])
 		for mod: StatMod in res_q.mods:
 			if mod.added != 0.0:
 				b.append("  " + mod.describe())
@@ -815,7 +818,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		var dt_q: StatQuery = e.query(LE.DAMAGE_TAKEN, (src & ~0xFF) | LE.DT_TAG[i])
 		var dt: float = (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more
 		if dt != 1.0:
-			b.append("Получаемый урон врага: ×%s" % LE.fmt_num(dt))
+			b.append(LE.t("Enemy damage taken: ×%s") % LE.fmt_num(dt))
 			for mod: StatMod in dt_q.mods:
 				b.append("  " + mod.describe())
 		# armour (06c §2.2), hits only
@@ -823,20 +826,20 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		if hit and armour != 0.0:
 			var mit: float = Enemy.armour_mitigation(armour, area_level, i != 0)
 			arm = 1.0 - mit
-			b.append("Броня %s при уровне зоны %d: снижение %s%s → ×%s" % [
-				LE.fmt_num(armour), area_level, LE.fmt_pct(mit), "" if i == 0 else " (×0.7 для нефизического)", LE.fmt_num(arm)])
+			b.append(LE.t("Armor %s at area level %d: reduction %s%s → ×%s") % [
+				LE.fmt_num(armour), area_level, LE.fmt_pct(mit), "" if i == 0 else LE.t(" (×0.7 for non-physical)"), LE.fmt_num(arm)])
 		elif not hit and armour != 0.0 and armour_share > 0.0:
 			# DoT: armour only through «Armour Mitigation Applies to DoT» (SP 118), like the ailments (06d §3)
 			var mit_dot: float = Enemy.armour_mitigation(armour, area_level, i != 0) * armour_share
 			arm = 1.0 - mit_dot
-			b.append("Броня %s (только доля SP 118 %s) при уровне зоны %d: снижение %s → ×%s" % [
+			b.append(LE.t("Armor %s (only the SP 118 share %s) at area level %d: reduction %s → ×%s") % [
 				LE.fmt_num(armour), LE.fmt_pct(armour_share), area_level, LE.fmt_pct(mit_dot), LE.fmt_num(arm)])
-		b.append("Скрытое снижение урона по уровню: %s → ×%s" % [LE.fmt_pct(dr), LE.fmt_num(1.0 - dr)])
+		b.append(LE.t("Hidden level-based damage reduction: %s → ×%s") % [LE.fmt_pct(dr), LE.fmt_num(1.0 - dr)])
 		var hit_i: float = d * cond * res_mult * dt * (1.0 - dr) * arm
-		b.append("Итог: %s × %s × %s × %s × %s × %s = %s" % [LE.fmt_num(d), LE.fmt_num(cond), LE.fmt_num(res_mult), LE.fmt_num(dt), LE.fmt_num(1.0 - dr), LE.fmt_num(arm), LE.fmt_num(hit_i)])
+		b.append(LE.t("Result: %s × %s × %s × %s × %s × %s = %s") % [LE.fmt_num(d), LE.fmt_num(cond), LE.fmt_num(res_mult), LE.fmt_num(dt), LE.fmt_num(1.0 - dr), LE.fmt_num(arm), LE.fmt_num(hit_i)])
 		total += hit_i
 		by_type[i] = hit_i
-		rows.append({"label": LE.DT_NAME_RU[i], "text": LE.fmt_num(hit_i), "breakdown": "\n".join(b)})
+		rows.append({"label": LE.t(LE.DT_NAME[i]), "text": LE.fmt_num(hit_i), "breakdown": "\n".join(b)})
 
 	if speed.has("dot_duration"):
 		return _vs_enemy_dot(rows, total, by_type, speed)
@@ -851,30 +854,27 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var type_parts: PackedStringArray = []
 	for i in range(7):
 		if by_type[i] > 0.0:
-			type_parts.append("%s %s" % [LE.DT_NAME_RU[i], LE.fmt_num(by_type[i])])
-	const VARIANCE_NOTE: String = "
-Урон удара в игре обычно разбегается ×0.8–1.2 на каждый удар (research/06b §3.1); манекен для тренировок разброса не показывает."
-	rows.append({"label": "Удар без крита", "text": LE.fmt_num(total), "breakdown":
-		"Сумма урона по типам против цели: %s = %s." % [" + ".join(type_parts) if not type_parts.is_empty() else "нет урона", LE.fmt_num(total)] +
-		"
-Это число показывает манекен для обычного (не критического) удара." + VARIANCE_NOTE})
+			type_parts.append("%s %s" % [LE.t(LE.DT_NAME[i]), LE.fmt_num(by_type[i])])
+	var variance_note: String = LE.t("\nIn the game a hit's damage usually varies ×0.8–1.2 per hit (research/06b §3.1); the training dummy does not show the variance.")
+	rows.append({"label": LE.t("Hit without crit"), "text": LE.fmt_num(total), "breakdown":
+		LE.t("Sum of damage over types against the target: %s = %s.") % [" + ".join(type_parts) if not type_parts.is_empty() else LE.t("no damage"), LE.fmt_num(total)] +
+		LE.t("\nThe training dummy shows this number for a normal (non-crit) hit.") + variance_note})
 	if hit and p > 0.0:
-		rows.append({"label": "Удар с критом", "text": LE.fmt_num(total * cm), "breakdown":
-			"Удар без крита %s × множитель крита %s = %s." % [LE.fmt_num(total), LE.fmt_num(cm), LE.fmt_num(total * cm)] +
-			"
-Это число показывает манекен для критического удара." + VARIANCE_NOTE})
-	rows.append({"label": "Средний множитель крита", "text": "×" + LE.fmt_num(e_crit), "breakdown":
-		"Шанс %s + уязвимость цели %s = %s; 1 + %s × (%s − 1) = %s" % [
+		rows.append({"label": LE.t("Hit with crit"), "text": LE.fmt_num(total * cm), "breakdown":
+			LE.t("Hit without crit %s × crit multiplier %s = %s.") % [LE.fmt_num(total), LE.fmt_num(cm), LE.fmt_num(total * cm)] +
+			LE.t("\nThe training dummy shows this number for a critical hit.") + variance_note})
+	rows.append({"label": LE.t("Average crit multiplier"), "text": "×" + LE.fmt_num(e_crit), "breakdown":
+		LE.t("Chance %s + target vulnerability %s = %s; 1 + %s × (%s − 1) = %s") % [
 			LE.fmt_pct(cc), LE.fmt_pct(ctbc), LE.fmt_pct(p), LE.fmt_pct(p), LE.fmt_num(cm), LE.fmt_num(e_crit)]})
 	var avg: float = total * e_crit
 	var dps: float = avg * float(speed["uses"])
-	rows.append({"label": "Средний удар по врагу", "text": LE.fmt_num(avg), "breakdown":
+	rows.append({"label": LE.t("Average hit vs enemy"), "text": LE.fmt_num(avg), "breakdown":
 		"%s × %s = %s" % [LE.fmt_num(total), LE.fmt_num(e_crit), LE.fmt_num(avg)]})
 	speed["enemy_dps"] = dps
 	speed["enemy_types"] = by_type
 	speed["enemy_crit"] = e_crit
-	rows.append({"label": "DPS удара по врагу", "text": LE.fmt_num(dps), "breakdown":
-		"%s × %s %s/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), speed.get("unit", "применений"), LE.fmt_num(dps)]})
+	rows.append({"label": LE.t("Hit DPS vs enemy"), "text": LE.fmt_num(dps), "breakdown":
+		"%s × %s %s/s = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), speed.get("unit", LE.t("uses")), LE.fmt_num(dps)]})
 	return rows
 
 
@@ -885,15 +885,15 @@ static func _vs_enemy_dot(rows: Array, total: float, by_type: Array[float], spee
 	var type_parts: PackedStringArray = []
 	for i in range(7):
 		if by_type[i] > 0.0:
-			type_parts.append("%s %s" % [LE.DT_NAME_RU[i], LE.fmt_num(by_type[i])])
-	rows.append({"label": "Урон за всё действие по врагу (%s с)" % LE.fmt_num(duration), "text": LE.fmt_num(total), "breakdown":
-		"Сумма урона по типам против цели: %s = %s.\nКрита, разброса и блока у периодического урона нет; сопротивление и пробивание действуют, как на айлменты; броня — только при «Armour Mitigation Applies to DoT»." % [
-			" + ".join(type_parts) if not type_parts.is_empty() else "нет урона", LE.fmt_num(total)]})
+			type_parts.append("%s %s" % [LE.t(LE.DT_NAME[i]), LE.fmt_num(by_type[i])])
+	rows.append({"label": LE.t("Damage over the whole duration vs enemy (%s s)") % LE.fmt_num(duration), "text": LE.fmt_num(total), "breakdown":
+		LE.t("Sum of damage over types against the target: %s = %s.\nPeriodic damage has no crit, variance or block; resistance and penetration work as for ailments; armor only with \"Armour Mitigation Applies to DoT\".") % [
+			" + ".join(type_parts) if not type_parts.is_empty() else LE.t("no damage"), LE.fmt_num(total)]})
 	var inc: float = float(speed.get("dot_duration_inc", 0.0))
-	var text: String = "%s / %s с = %s.\nЭкземпляр поддерживается повторным применением; событий урона в секунду = 1 / %s с = %s.\n" % [
+	var text: String = LE.t("%s / %s s = %s.\nThe instance is kept up by recasting; damage events per second = 1 / %s s = %s.\n") % [
 		LE.fmt_num(total), LE.fmt_num(duration), LE.fmt_num(per_second), LE.fmt_num(duration), LE.fmt_num(speed["uses"])]
-	text += "Увеличенная длительность (сейчас %s) растягивает эффект и повышает его полный урон в той же пропорции: урон в секунду не меняется." % LE.fmt_pct(inc)
-	rows.append({"label": "Урон в секунду по врагу", "text": LE.fmt_num(per_second), "breakdown": text})
+	text += LE.t("Increased duration (now %s) stretches the effect and raises its total damage in the same proportion: damage per second does not change.") % LE.fmt_pct(inc)
+	rows.append({"label": LE.t("Damage per second vs enemy"), "text": LE.fmt_num(per_second), "breakdown": text})
 	speed["enemy_dps"] = per_second
 	speed["enemy_types"] = by_type
 	speed["enemy_crit"] = 1.0
@@ -919,21 +919,21 @@ static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src:
 			var f: float = 1.0 + m * count
 			cond *= f
 			if count > 0.0:
-				var what: String = "за стак %s ×%d" % [str(GameData.ailment(mod.special).get("name", mod.special)), int(count)] if per_stack else _cdp_name(mod.special)
-				lines.append("Условие «%s»: ×%s  (%s)" % [what, LE.fmt_num(f), mod.source])
+				var what: String = LE.t("per stack of %s ×%d") % [str(GameData.ailment(mod.special).get("name", mod.special)), int(count)] if per_stack else _cdp_name(mod.special)
+				lines.append(LE.t("Condition \"%s\": ×%s  (%s)") % [what, LE.fmt_num(f), mod.source])
 	return cond
 
 
 static func _cdp_name(cdp: int) -> String:
 	const NAMES: Dictionary = {
-		0: "оглушён", 1: "низкое здоровье", 2: "высокое здоровье", 3: "полное здоровье", 4: "боссы и редкие", 5: "подожжён",
-		6: "за стак яда", 7: "за стак кровотечения", 8: "охлаждён", 9: "замедлен", 10: "шокирован",
-		13: "проклят", 16: "двигается", 17: "боссы", 18: "за стак шреда брони", 19: "кровоточит",
-		20: "заморожен", 21: "за айлмент", 25: "проклят (Damned)", 26: "за айлмент (до 8)",
-		32: "заморожен или охлаждён", 33: "подожжён или шокирован", 36: "наэлектризован", 44: "отравлен",
-		46: "ослеплён", 47: "обморожен",
+		0: "stunned", 1: "low health", 2: "high health", 3: "full health", 4: "bosses and rares", 5: "ignited",
+		6: "per poison stack", 7: "per bleed stack", 8: "chilled", 9: "slowed", 10: "shocked",
+		13: "cursed", 16: "moving", 17: "bosses", 18: "per armor shred stack", 19: "bleeding",
+		20: "frozen", 21: "per ailment", 25: "cursed (Damned)", 26: "per ailment (up to 8)",
+		32: "frozen or chilled", 33: "ignited or shocked", 36: "electrified", 44: "poisoned",
+		46: "blinded", 47: "frostbitten",
 	}
-	return str(NAMES.get(cdp, "условие %d" % cdp))
+	return LE.t(str(NAMES[cdp])) if NAMES.has(cdp) else LE.t("condition %d") % cdp
 
 
 # --- 8.8 sustain: leech, gain on hit, ward from mana (docs/ENGINE.md §8.7, research/06c §3, §5) ----
@@ -950,7 +950,7 @@ const LEECH_SCALE: float = 0.1
 const LEECH_DURATION: float = 3.0
 
 
-## Rows of the «Восполнение» section: leech/s, health/mana/ward per hit, ward from mana spent. Empty when nothing applies.
+## Rows of the "Sustain" section: leech/s, health/mana/ward per hit, ward from mana spent. Empty when nothing applies.
 ## `hit_sources`: [{name, ctx, speed}] with the speed dictionary already filled by `_vs_enemy`.
 static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], uses: float, mana: float) -> Array:
 	var rows: Array = []
@@ -980,9 +980,9 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 				continue
 			var per_s: float = hit_i * e_crit * events * frac
 			leech_total += per_s
-			leech_lines.append("%s%s: %s × крит %s × %s ударов/с × вампиризм %s = %s/с" % [
-				prefix, LE.DT_NAME_RU[i], LE.fmt_num(hit_i), LE.fmt_num(e_crit), LE.fmt_num(events), LE.fmt_pct(frac), LE.fmt_num(per_s)])
-			leech_lines.append("    вампиризм = (Σ SP51 %s + доп. урон умения %s) × (1 + %s) × %s × %s" % [
+			leech_lines.append(LE.t("%s%s: %s × crit %s × %s hits/s × leech %s = %s/s") % [
+				prefix, LE.t(LE.DT_NAME[i]), LE.fmt_num(hit_i), LE.fmt_num(e_crit), LE.fmt_num(events), LE.fmt_pct(frac), LE.fmt_num(per_s)])
+			leech_lines.append(LE.t("    leech = (Σ SP51 %s + skill additional damage %s) × (1 + %s) × %s × %s") % [
 				LE.fmt_num(q.added), LE.fmt_num(base_leech / LEECH_SCALE), LE.fmt_pct(q.increased), LE.fmt_num(q.more), LE.fmt_num(LEECH_SCALE)])
 			for mod: StatMod in q.mods:
 				leech_lines.append("      " + mod.describe())
@@ -992,38 +992,35 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 				if qg.added == 0.0:
 					continue
 				gain_total[prop] += qg.added * gain_events
-				gain_lines[prop].append("%s%s за удар × %s ударов/с = %s/с" % [prefix, LE.fmt_num(qg.added), LE.fmt_num(gain_events), LE.fmt_num(qg.added * gain_events)])
+				gain_lines[prop].append(LE.t("%s%s per hit × %s hits/s = %s/s") % [prefix, LE.fmt_num(qg.added), LE.fmt_num(gain_events), LE.fmt_num(qg.added * gain_events)])
 				for mod: StatMod in qg.mods:
 					gain_lines[prop].append("    " + mod.describe())
 	if leech_total > 0.0:
 		var rate_q: StatQuery = head_ctx["store"].query(SP_INCREASED_LEECH_RATE, int(head_ctx["tags"]))
 		var duration: float = LEECH_DURATION / (1.0 + rate_q.added)
-		leech_lines.append("Каждый удар выплачивается равномерно за %s / (1 + скорость выплаты %s) = %s с (SP 102); капа нет." % [
+		leech_lines.append(LE.t("Each hit is paid out evenly over %s / (1 + payout speed %s) = %s s (SP 102); no cap.") % [
 			LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_num(duration)])
-		leech_lines.append("Лечение идёт, пока здоровье не полное, и ограничено остатком здоровья цели (06c §5.1–5.2): в расчёте не учтено (D?).")
-		leech_lines.append("Масштаб значения стата (×0.1 от значения мода) — D?, сверить с подсказкой игры.")
-		rows.append({"label": "Вампиризм здоровья в секунду", "text": LE.fmt_num(leech_total), "breakdown": "
-".join(leech_lines)})
-		rows.append({"label": "Скорость выплаты вампиризма", "text": "%s с" % LE.fmt_num(duration), "breakdown":
-			"%s / (1 + %s) — Σ IncreasedLeechRate (SP 102) = %s. На среднее лечение в секунду не влияет, только на скорость выплаты." % [
+		leech_lines.append(LE.t("Healing runs while health is not full and is limited by the target's remaining health (06c §5.1–5.2): not counted in the calculation (D?)."))
+		leech_lines.append(LE.t("The scale of the stat value (×0.1 of the mod value) is D?; check against the game tooltip."))
+		rows.append({"label": LE.t("Health leech per second"), "text": LE.fmt_num(leech_total), "breakdown": "\n".join(leech_lines)})
+		rows.append({"label": LE.t("Leech payout speed"), "text": "%s s" % LE.fmt_num(duration), "breakdown":
+			LE.t("%s / (1 + %s) — Σ IncreasedLeechRate (SP 102) = %s. Does not affect average healing per second, only the payout speed.") % [
 				LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_pct(rate_q.added)]})
-	var gain_labels: Dictionary = {SP_HEALTH_GAIN: "Здоровье за удар в секунду", SP_WARD_GAIN: "Ward за удар в секунду", SP_MANA_GAIN: "Мана за удар в секунду"}
+	var gain_labels: Dictionary = {SP_HEALTH_GAIN: LE.t("Health on hit per second"), SP_WARD_GAIN: LE.t("Ward on hit per second"), SP_MANA_GAIN: LE.t("Mana on hit per second")}
 	for prop: int in gain_total:
 		if float(gain_total[prop]) != 0.0:
 			var lines: PackedStringArray = gain_lines[prop]
-			lines.append("Статы SP %d с тегами умения; усиления восполнения (increased health gained и т.п.) не учтены (D?)." % prop)
-			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "
-".join(lines)})
+			lines.append(LE.t("SP %d stats with the skill's tags; sustain boosts (increased health gained etc.) are not counted (D?).") % prop)
+			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "\n".join(lines)})
 	var ward_q: StatQuery = head_ctx["store"].query(SP_MANA_SPENT_AS_WARD, int(head_ctx["tags"]), 0, _ability_index(head_ctx))
 	if ward_q.added != 0.0 and mana > 0.0:
 		var per_s_ward: float = mana * uses * ward_q.added
-		var b: PackedStringArray = ["Стоимость маны %s × применений/с %s × доля SP 99 %s = %s/с" % [
+		var b: PackedStringArray = [LE.t("Mana cost %s × uses/s %s × SP 99 share %s = %s/s") % [
 			LE.fmt_num(mana), LE.fmt_num(uses), LE.fmt_pct(ward_q.added), LE.fmt_num(per_s_ward)]]
 		for mod: StatMod in ward_q.mods:
 			b.append("  " + mod.describe())
-		b.append("Масштаб значения SP 99 (доля потраченной маны) — D?.")
-		rows.append({"label": "Ward от потраченной маны в секунду", "text": LE.fmt_num(per_s_ward), "breakdown": "
-".join(b)})
+		b.append(LE.t("The scale of the SP 99 value (share of mana spent) is D?."))
+		rows.append({"label": LE.t("Ward from mana spent per second"), "text": LE.fmt_num(per_s_ward), "breakdown": "\n".join(b)})
 	return rows
 
 

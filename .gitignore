@@ -4,6 +4,10 @@
 
 # Godot generated
 /client/.godot/
+
+# Release build output and the data copy packed into it (build_windows.ps1)
+/build/
+/client/data/research/
 *.translation
 
 # Temp / scripts / logs

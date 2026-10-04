@@ -3,7 +3,7 @@ class_name BuildMods
 ## Collects StatMods from every build source (docs/ENGINE.md §5).
 
 const STAT_KINDS: Array[String] = ["added", "increased", "more", "quotient"]
-const ATTRIBUTE_NAMES_RU: Array[String] = ["Сила", "Живучесть", "Интеллект", "Ловкость", "Настрой"]
+const ATTRIBUTE_NAMES: Array[String] = ["Strength", "Vitality", "Intelligence", "Dexterity", "Attunement"]
 const BUFF_SKILLS: GDScript = preload("res://scripts/engine/buff_skills.gd")  # class_name BuffSkills
 const SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "ring2", "relic"]
 
@@ -38,7 +38,7 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	return {"store": store, "notes": notes}
 
 
-const BUFF_SOURCE_PREFIX: String = "Умение «%s» (бафф): "
+const BUFF_SOURCE_PREFIX: String = "Skill \"%s\" (buff): "
 
 
 ## Buffs of the equipped skills on the character (docs/ENGINE.md §9.7): scope-global models of the skill tree and the
@@ -81,7 +81,7 @@ static func skill_buffs(build: Node, global: StatStore = null, only_active: bool
 			var s: Dictionary = skill_store(build, slot, parent)
 			if not active:
 				inputs["buff_active"] = false
-			var prefix: String = BUFF_SOURCE_PREFIX % GameData.display_name(ability)
+			var prefix: String = LE.t(BUFF_SOURCE_PREFIX) % GameData.display_name(ability)
 			for mod: StatMod in s["global_mods"]:
 				mod.source = prefix + mod.source
 				mods.append(mod)
@@ -129,9 +129,11 @@ static func describe_mod(mod: StatMod) -> String:
 	if not tag_names.is_empty():
 		text += " (%s)" % ", ".join(tag_names)
 	var source: String = mod.source
-	var cut: int = source.find("): ")
-	if source.begins_with("Умение «") and cut >= 0:
-		source = source.substr(cut + 3)
+	var prefix_parts: PackedStringArray = LE.t(BUFF_SOURCE_PREFIX).split("%s")
+	if prefix_parts.size() == 2 and source.begins_with(prefix_parts[0]):
+		var cut: int = source.find(prefix_parts[1], prefix_parts[0].length())
+		if cut >= 0:
+			source = source.substr(cut + prefix_parts[1].length())
 	if source != "":
 		text += " — " + source
 	return text
@@ -178,14 +180,14 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 	return result
 
 
-## Input «buff active» for a skill that has global-scope mods (global_store reads it from Build.skills[slot].inputs).
+## Input "buff active" for a skill that has global-scope mods (global_store reads it from Build.skills[slot].inputs).
 static func _declare_buff_input(result: Dictionary) -> void:
 	if result["global_mods"].is_empty() and not result.has("has_global"):
 		return
 	for inp: Dictionary in result["inputs"]:
 		if inp.get("key") == "buff_active":
 			return
-	result["inputs"].append({"key": "buff_active", "label": "Бафф умения активен", "default": true})
+	result["inputs"].append({"key": "buff_active", "label": LE.t("Skill buff active"), "default": true})
 
 
 # --- 5.1.5 blessings -------------------------------------------------------
@@ -216,7 +218,7 @@ static func _add_blessings(build: Node, store: StatStore, notes: Array[String]) 
 			var specialTag: int = int(implicit.get("specialTag", 0))
 			var extraTag: int = int(implicit.get("extraTag", 0))
 			var mod: StatMod = StatMod.make(property, modType.to_lower(), rolled_value, tags,
-				"Благословение «%s»" % display_name, specialTag, extraTag)
+				LE.t("Blessing \"%s\"") % display_name, specialTag, extraTag)
 			store.add(mod)
 
 
@@ -228,10 +230,10 @@ static func _add_class_base(build: Node, store: StatStore) -> void:
 		var value: float = float(entry.get("base", 0.0)) + float(entry.get("perLevel", 0.0)) * build.level
 		if value != 0.0:
 			store.add(StatMod.make(int(entry["property"]), str(entry["modType"]).to_lower(), value,
-				int(entry.get("tags", 0)), "База класса (уровень %d)" % build.level))
+				int(entry.get("tags", 0)), LE.t("Class base (level %d)") % build.level))
 	for entry: Dictionary in GameData.hidden_base_mods:
 		store.add(StatMod.make(int(entry["property"]), str(entry["modType"]).to_lower(), float(entry["value"]),
-			int(entry.get("tags", 0)), "Скрытая база персонажа"))
+			int(entry.get("tags", 0)), LE.t("Hidden character base")))
 
 
 # --- 5.2 passives -------------------------------------------------------------
@@ -248,7 +250,7 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String], p
 		if points <= 0 or node.is_empty():
 			continue
 		var title: String = GameData.display_name(node)
-		var source: String = "Пассивка «%s» ×%d" % [title, points]
+		var source: String = LE.t("Passive \"%s\" ×%d") % [title, points]
 		for effect: Dictionary in node.get("effects", []):
 			if points < int(effect.get("minPoints", 0)):
 				continue
@@ -285,7 +287,7 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 		if points <= 0 or node.is_empty():
 			continue
 		var title: String = GameData.display_name(node)
-		var source: String = "Пассивка «%s» ×%d" % [title, points]
+		var source: String = LE.t("Passive \"%s\" ×%d") % [title, points]
 		for effect: Dictionary in node.get("effects", []):
 			var target: String = str(effect.get("target", ""))
 			if points < int(effect.get("minPoints", 0)) or target.begins_with("CharacterMutator."):
@@ -295,14 +297,14 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 				continue
 			if effect.get("op") == "add_stat":
 				if not _apply_list_effect(effect, owned, points, source, title, result):
-					result["notes"].append("Пассивка «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
+					result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 				continue
 			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
 			var rule: Dictionary = _conversion_rule(owned)
 			if not rule.is_empty():
 				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
 			elif not _apply_field_models(owned, v, source, title, result):
-				result["notes"].append("Пассивка «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
+				result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
 ## First part of the target ("A & B") that has a field model.
@@ -315,7 +317,7 @@ static func _passive_model(target: String) -> Dictionary:
 
 
 static func _passive_unmodelled(notes: Array[String], title: String, effect: Dictionary) -> void:
-	notes.append("Пассивка «%s»: %s — не учитывается" % [title, _effect_label(effect)])
+	notes.append(LE.t("Passive \"%s\": %s — not counted") % [title, _effect_label(effect)])
 
 
 ## "global" / "minion" for the model's scope, "" if it cannot be applied to the character (component, ability-only field).
@@ -362,7 +364,7 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 							weapon_types.append(int(str(o).get_slice("=", 1)))
 						elif not str(o).begins_with("Boolean="):
 							# WeaponRequirementType / animation type: semantics unknown, not applied
-							notes.append("Пассивка «%s»: статы при определённом оружии (%s) — не учитывается" % [title, _effect_label(effect)])
+							notes.append(LE.t("Passive \"%s\": stats with a specific weapon (%s) — not counted") % [title, _effect_label(effect)])
 							return
 					stat = stat["stat"]
 				mod = stat_from_effect(stat, points, source)
@@ -376,13 +378,13 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 				return
 			var reason: String = EffectModels.blocked(model, ctx)
 			if reason != "":
-				notes.append("Пассивка «%s» — учитывается при условии: %s" % [title, reason])
+				notes.append(LE.t("Passive \"%s\" — counted when: %s") % [title, reason])
 				return
 			if not weapon_types.is_empty() and not _holds_weapon_type(ctx["build"], weapon_types):
 				var names: PackedStringArray = []
 				for t: int in weapon_types:
 					names.append(GameData.display_name(GameData.item_base(t)))
-				notes.append("Пассивка «%s» — учитывается при условии: в руках %s" % [title, " / ".join(names)])
+				notes.append(LE.t("Passive \"%s\" — counted when: holding %s") % [title, " / ".join(names)])
 				return
 			if kind == "stat_list":
 				if model.has("per"):
@@ -395,13 +397,13 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 					mod = mod.scaled(n)
 					mod.source += " × %s" % LE.fmt_num(n)
 				if model.has("note"):
-					mod.source += " — " + str(model["note"])
+					mod.source += " — " + LE.t(str(model["note"]))
 			_passive_add(store, mod, scope)
 		"flag", "param", "resource":
-			var text: String = str(model.get("text", model.get("label", model.get("param", model.get("resource", "")))))
+			var text: String = LE.t(str(model.get("text", model.get("label", model.get("param", model.get("resource", ""))))))
 			if kind != "flag" and effect.has("value"):
 				text += ": %s" % LE.fmt_num(v)
-			var line: String = "Пассивка «%s»: %s" % [title, text]
+			var line: String = LE.t("Passive \"%s\": %s") % [title, text]
 			if not notes.has(line):
 				notes.append(line)
 		_:
@@ -452,20 +454,20 @@ static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]
 	for set_id: int in counts:
 		var st: Dictionary = GameData.set_data(set_id)
 		var count: int = counts[set_id]
-		var source: String = "Сет «%s» (%d предм.)" % [str(st.get("setName", set_id)), count]
+		var source: String = LE.t("Set \"%s\" (%d items)") % [str(st.get("setName", set_id)), count]
 		for bonus: Dictionary in st.get("bonuses", []):
 			if int(bonus.get("setRequirement", 99)) > count:
 				continue
 			var prop_id: int = int(bonus.get("property", 0))
 			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
-				notes.append("%s: особый бонус (%s) — не считается" % [source, str(bonus.get("propertyName", prop_id))])
+				notes.append(LE.t("%s: special bonus (%s) — not counted") % [source, str(bonus.get("propertyName", prop_id))])
 				continue
 			store.add(StatMod.make(prop_id, str(bonus.get("modType", "ADDED")).to_lower(),
 				AffixMath.fixed_value(float(bonus.get("value", 0.0)), str(bonus.get("rounding", "Hundredth")), str(bonus.get("modType", "ADDED"))),
 				int(bonus.get("tags", 0)), source, int(bonus.get("specialTag", 0)), int(bonus.get("extraTag", 0))))
 
 
-## Haste / Frenzy on the player (Условия): ailment buffs × (1 + increased effect of the ailment on you, SP 120).
+## Haste / Frenzy on the player (Conditions tab): ailment buffs × (1 + increased effect of the ailment on you, SP 120).
 static func _add_player_ailments(build: Node, store: StatStore) -> void:
 	for key: String in PLAYER_AILMENTS:
 		if not build.player_state.get(key, false):
@@ -474,7 +476,7 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 		var ail: Dictionary = GameData.ailment(id)
 		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
 		for buff: Dictionary in ail.get("buffs", []):
-			var mod: StatMod = stat_from_record(buff, "%s на вас (эффект ×%s)" % [str(ail.get("name", key)), LE.fmt_num(effect)])
+			var mod: StatMod = stat_from_record(buff, LE.t("%s on you (effect ×%s)") % [str(ail.get("name", key)), LE.fmt_num(effect)])
 			store.add(mod.scaled(effect))
 
 
@@ -488,7 +490,7 @@ static func _add_attributes(store: StatStore, notes: Array[String]) -> void:
 		if n == 0:
 			continue
 		for per_point: Dictionary in attr.get("perPoint", []):
-			var mod: StatMod = stat_from_record(per_point, "%s ×%d" % [ATTRIBUTE_NAMES_RU[index], n])
+			var mod: StatMod = stat_from_record(per_point, "%s ×%d" % [LE.t(ATTRIBUTE_NAMES[index]), n])
 			store.add(mod.scaled(float(n)))
 
 
@@ -506,7 +508,7 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 	var store: StatStore = result["store"]
 	var notes: Array[String] = result["notes"]
 	var title: String = str(node.get("name", ""))
-	var source: String = "Узел «%s» ×%d" % [title, points]
+	var source: String = LE.t("Node \"%s\" ×%d") % [title, points]
 	for effect: Dictionary in node.get("effects", []):
 		var target: String = str(effect.get("target", ""))
 		var op: String = str(effect.get("op", ""))
@@ -549,7 +551,7 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 				"addedManaCost":
 					result["mana_added"] += v
 					continue
-		notes.append("Узел «%s»: %s — механика умения, пока не считается" % [title, _effect_label(effect)])
+		notes.append(LE.t("Node \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
 ## Field effect through its models (client/data/field_models.json, §9.1); false if no part of the target has a model.
@@ -609,7 +611,7 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		result["inputs"].append(inp)
 	var reason: String = EffectModels.blocked(model, ctx)
 	if reason != "":
-		result["notes"].append("Узел «%s» — учитывается при условии: %s" % [title, reason])
+		result["notes"].append(LE.t("Node \"%s\" — counted when: %s") % [title, reason])
 		return
 	var x: float = float(EffectModels.value(model, v, ctx)["x"])
 	match str(model.get("kind", "stat")):
@@ -640,7 +642,7 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 				result["cooldown"][ck] = float(result["cooldown"].get(ck, 0.0)) + x
 		"param", "resource":
 			var key: String = str(model.get("param", model.get("resource", "")))
-			var label: String = str(model.get("label", key))
+			var label: String = LE.t(str(model.get("label", key)))
 			var entry: Dictionary = result["params"].get(label, {"param": key, "added": 0.0, "increased": 0.0, "more": 1.0, "set": null, "sources": []})
 			match str(model.get("mod", "added")):
 				"increased":
@@ -660,7 +662,7 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		"component":
 			result["components"].append({"ability": str(model["ability"]), "count": _num(model.get("count", 1.0), v), "node": title})
 		"flag":
-			var text: String = "Узел «%s»: %s" % [title, str(model.get("text", ""))]
+			var text: String = LE.t("Node \"%s\": %s") % [title, LE.t(str(model.get("text", "")))]
 			if not result["flags"].has(text):
 				result["flags"].append(text)
 		_:
@@ -691,7 +693,7 @@ static func _apply_list_effect(effect: Dictionary, target: String, points: int, 
 			result["inputs"].append(inp)
 		var reason: String = EffectModels.blocked(model, ctx)
 		if reason != "":
-			result["notes"].append("Узел «%s» — учитывается при условии: %s" % [title, reason])
+			result["notes"].append(LE.t("Node \"%s\" — counted when: %s") % [title, reason])
 			return true
 		if model.has("per"):
 			var n: float = EffectModels.source(str(model["per"]), ctx, model)
@@ -750,12 +752,12 @@ static func _add_ability_scaling(build: Node, ability: Dictionary, global: StatS
 		var attr_sp: int = LE.STRENGTH + _attr_sp_offset(index)
 		var n: int = LE.round_half_even(_sum_added_any_tags(global, attr_sp) + _sum_added_any_tags(global, LE.ALL_ATTRIBUTES))
 		for stat: Dictionary in entry.get("stats", []):
-			var mod: StatMod = stat_from_record(stat, "Умение: за %s ×%d" % [ATTRIBUTE_NAMES_RU[index], n])
+			var mod: StatMod = stat_from_record(stat, LE.t("Skill: per %s ×%d") % [LE.t(ATTRIBUTE_NAMES[index]), n])
 			_convert_scaling_type(mod, conversions)
 			store.add(mod.scaled(float(n)))
 	for entry: Dictionary in ability.get("levelScaling", []):
 		for stat: Dictionary in entry.get("stats", []):
-			var mod: StatMod = stat_from_record(stat, "Умение: за уровень персонажа ×%d" % build.level)
+			var mod: StatMod = stat_from_record(stat, LE.t("Skill: per character level ×%d") % build.level)
 			store.add(mod.scaled(float(build.level)))
 
 
@@ -773,7 +775,7 @@ static func _convert_scaling_type(mod: StatMod, conversions: Array) -> void:
 			if from_i < 0 or to_i < 0 or (mod.tags & LE.DT_TAG[from_i]) == 0:
 				continue
 			mod.tags = (mod.tags & ~LE.DT_TAG[from_i]) | LE.DT_TAG[to_i]
-			mod.source += " (%s → %s, узел «%s»)" % [LE.DT_NAME_RU[from_i], LE.DT_NAME_RU[to_i], c.get("node", "")]
+			mod.source += LE.t(" (%s → %s, node \"%s\")") % [LE.t(LE.DT_NAME[from_i]), LE.t(LE.DT_NAME[to_i]), c.get("node", "")]
 
 
 ## CoreAttribute enum order is Str 0, Vit 1, Int 2, Dex 3, Att 4; SP order is Str 19, Vit 20, Int 21, Dex 22, Att 23.
@@ -865,7 +867,7 @@ static func _effect_label(effect: Dictionary) -> String:
 	if stat.has("property"):
 		parts.append(str(stat["property"]))
 	if stat.has("abilityID"):
-		parts.append("свойство умения %s" % stat["abilityID"])
+		parts.append(LE.t("skill property %s") % stat["abilityID"])
 	if stat.has("playerPropertyName"):
 		parts.append(str(stat["playerPropertyName"]))
-	return " / ".join(parts) if not parts.is_empty() else str(effect.get("op", "эффект"))
+	return " / ".join(parts) if not parts.is_empty() else str(effect.get("op", LE.t("effect")))

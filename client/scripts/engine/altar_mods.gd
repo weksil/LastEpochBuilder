@@ -10,41 +10,41 @@ const ADORNED_BASE: int = 33
 
 ## IdolAltarPropertyID -> {label, who, sp, kind, special?, tags?}; `who` is the idol kind counted.
 const PER_IDOL: Dictionary = {
-	9: {"label": "Рейтинг уклонения за осквернённый идол", "who": "corrupted", "sp": LE.DODGE_RATING, "kind": "added"},
-	10: {"label": "Мана за осквернённый идол", "who": "corrupted", "sp": LE.MANA, "kind": "added"},
-	11: {"label": "Броня за осквернённый идол", "who": "corrupted", "sp": LE.ARMOUR, "kind": "added"},
-	12: {"label": "Порог распада ward за осквернённый идол", "who": "corrupted", "sp": LE.WARD_DECAY_THRESHOLD, "kind": "added"},
-	13: {"label": "Здоровье за еретический идол", "who": "heretical", "sp": LE.HEALTH, "kind": "added"},
-	14: {"label": "Ward в секунду за еретический идол", "who": "heretical", "sp": LE.WARD_REGEN, "kind": "added"},
-	15: {"label": "Меньше бонусного урона от крит. ударов за еретический идол", "who": "heretical", "sp": LE.REDUCED_CRIT_BONUS_TAKEN, "kind": "added"},
-	16: {"label": "Регенерация маны за украшенный (Ornate) идол", "who": "ornate", "sp": LE.MANA_REGEN, "kind": "increased"},
-	17: {"label": "Здоровье за огромный (Huge) идол", "who": "huge", "sp": LE.HEALTH, "kind": "increased"},
-	18: {"label": "Эффект Haste на вас за идол-предзнаменование", "who": "omen", "sp": LE.EFFECT_OF_AILMENT_ON_YOU, "kind": "increased", "haste": true},
-	19: {"label": "Здоровье за идол-предзнаменование", "who": "omen", "sp": LE.HEALTH, "kind": "added"},
-	22: {"label": "Здоровье за идол в refracted-слоте", "who": "refracted", "sp": LE.HEALTH, "kind": "added"},
-	23: {"label": "Мана за идол в refracted-слоте", "who": "refracted", "sp": LE.MANA, "kind": "added"},
-	24: {"label": "Броня за идол в refracted-слоте", "who": "refracted", "sp": LE.ARMOUR, "kind": "added"},
-	25: {"label": "Порог распада ward за идол в refracted-слоте", "who": "refracted", "sp": LE.WARD_DECAY_THRESHOLD, "kind": "added"},
-	26: {"label": "Сила за еретический идол", "who": "heretical", "sp": LE.STRENGTH, "kind": "added"},
-	27: {"label": "Ловкость за еретический идол", "who": "heretical", "sp": LE.DEXTERITY, "kind": "added"},
-	28: {"label": "Живучесть за еретический идол", "who": "heretical", "sp": LE.VITALITY, "kind": "added"},
-	29: {"label": "Эффективность лечения за еретический идол", "who": "heretical", "sp": 44, "kind": "increased"},
-	30: {"label": "Сопротивление стихиям за еретический идол", "who": "heretical", "sp": LE.ELEMENTAL_RES, "kind": "added"},
+	9: {"label": "Dodge rating per corrupted idol", "who": "corrupted", "sp": LE.DODGE_RATING, "kind": "added"},
+	10: {"label": "Mana per corrupted idol", "who": "corrupted", "sp": LE.MANA, "kind": "added"},
+	11: {"label": "Armor per corrupted idol", "who": "corrupted", "sp": LE.ARMOUR, "kind": "added"},
+	12: {"label": "Ward decay threshold per corrupted idol", "who": "corrupted", "sp": LE.WARD_DECAY_THRESHOLD, "kind": "added"},
+	13: {"label": "Health per heretical idol", "who": "heretical", "sp": LE.HEALTH, "kind": "added"},
+	14: {"label": "Ward per second per heretical idol", "who": "heretical", "sp": LE.WARD_REGEN, "kind": "added"},
+	15: {"label": "Less bonus damage from crits taken per heretical idol", "who": "heretical", "sp": LE.REDUCED_CRIT_BONUS_TAKEN, "kind": "added"},
+	16: {"label": "Mana regen per Ornate idol", "who": "ornate", "sp": LE.MANA_REGEN, "kind": "increased"},
+	17: {"label": "Health per Huge idol", "who": "huge", "sp": LE.HEALTH, "kind": "increased"},
+	18: {"label": "Haste effect on you per omen idol", "who": "omen", "sp": LE.EFFECT_OF_AILMENT_ON_YOU, "kind": "increased", "haste": true},
+	19: {"label": "Health per omen idol", "who": "omen", "sp": LE.HEALTH, "kind": "added"},
+	22: {"label": "Health per idol in a refracted slot", "who": "refracted", "sp": LE.HEALTH, "kind": "added"},
+	23: {"label": "Mana per idol in a refracted slot", "who": "refracted", "sp": LE.MANA, "kind": "added"},
+	24: {"label": "Armor per idol in a refracted slot", "who": "refracted", "sp": LE.ARMOUR, "kind": "added"},
+	25: {"label": "Ward decay threshold per idol in a refracted slot", "who": "refracted", "sp": LE.WARD_DECAY_THRESHOLD, "kind": "added"},
+	26: {"label": "Strength per heretical idol", "who": "heretical", "sp": LE.STRENGTH, "kind": "added"},
+	27: {"label": "Dexterity per heretical idol", "who": "heretical", "sp": LE.DEXTERITY, "kind": "added"},
+	28: {"label": "Vitality per heretical idol", "who": "heretical", "sp": LE.VITALITY, "kind": "added"},
+	29: {"label": "Healing effectiveness per heretical idol", "who": "heretical", "sp": 44, "kind": "increased"},
+	30: {"label": "Elemental resistance per heretical idol", "who": "heretical", "sp": LE.ELEMENTAL_RES, "kind": "added"},
 }
 
 ## Idol limit properties (notes only): id -> [label, idol kind].
 const LIMITS: Dictionary = {
-	0: ["Лимит идолов-предзнаменований", "omen"],
-	5: ["Лимит Weaver-идолов", "weaver"],
-	6: ["Лимит еретических идолов", "heretical"],
-	7: ["Лимит Adorned-идолов", "adorned"],
-	8: ["Лимит осквернённых идолов", "corrupted"],
+	0: ["Omen idol limit", "omen"],
+	5: ["Weaver idol limit", "weaver"],
+	6: ["Heretical idol limit", "heretical"],
+	7: ["Adorned idol limit", "adorned"],
+	8: ["Corrupted idol limit", "corrupted"],
 }
 
 const KIND_LABELS: Dictionary = {
-	"corrupted": "осквернённых", "heretical": "еретических", "omen": "предзнаменований", "weaver": "Weaver",
-	"adorned": "Adorned", "ornate": "Ornate", "huge": "Huge", "unique": "уникальных/легендарных",
-	"refracted": "в refracted-слотах",
+	"corrupted": "corrupted", "heretical": "heretical", "omen": "omen", "weaver": "Weaver",
+	"adorned": "Adorned", "ornate": "Ornate", "huge": "Huge", "unique": "unique/legendary",
+	"refracted": "in refracted slots",
 }
 
 
@@ -171,14 +171,14 @@ static func apply(build: Node, store: StatStore, notes: Array[String]) -> void:
 	if altar.is_empty():
 		return
 	var altar_name: String = GameData.display_name(GameData.item_sub(IdolGrid.ALTAR_BASE, int(altar.get("sub", 0))))
-	var prefix: String = "Алтарь «%s»" % altar_name
+	var prefix: String = LE.t("Altar \"%s\"") % altar_name
 	var values: Dictionary = altar_values(build.items)
 	var counts: Dictionary = idol_counts(build.items)
 
 	# 1–4: effect of idol affixes / enchants in refracted slots
 	var scale: Dictionary = refracted_scale(values)
 	if not (is_equal_approx(scale["prefix"], 1.0) and is_equal_approx(scale["suffix"], 1.0) and is_equal_approx(scale["enchant"], 1.0)):
-		var label: String = "%s: эффект идолов в refracted-слотах (префиксы ×%s, суффиксы ×%s, зачарования ×%s)" % [
+		var label: String = LE.t("%s: effect of idols in refracted slots (prefixes ×%s, suffixes ×%s, enchants ×%s)") % [
 			prefix, LE.fmt_num(scale["prefix"]), LE.fmt_num(scale["suffix"]), LE.fmt_num(scale["enchant"])]
 		for slot: String in build.items:
 			if not IdolGrid.is_idol_key(slot) or not build.items[slot].has("base"):
@@ -186,14 +186,14 @@ static func apply(build: Node, store: StatStore, notes: Array[String]) -> void:
 			if in_refracted_slot(slot, build.items[slot], build.items):
 				store.add_all(_scale_deltas(slot, build.items[slot], scale, label))
 		if int(counts["refracted"]) == 0:
-			notes.append("%s: усиление идолов в refracted-слотах не действует — идолов в таких слотах нет" % prefix)
+			notes.append(LE.t("%s: refracted-slot idol boost has no effect — no idols in such slots") % prefix)
 
 	# 0, 5–8: idol limits (the planner does not cap idols; shown for reference)
 	for id: int in LIMITS:
 		if not values.has(id):
 			continue
 		var limit: Array = LIMITS[id]
-		notes.append("%s: %s +%s (в сборке: %d)" % [prefix, limit[0], LE.fmt_num(float(values[id])), int(counts[limit[1]])])
+		notes.append(LE.t("%s: %s +%s (in build: %d)") % [prefix, LE.t(limit[0]), LE.fmt_num(float(values[id])), int(counts[limit[1]])])
 
 	# 9–19, 22–30: stat per idol of a kind
 	for id: int in PER_IDOL:
@@ -205,18 +205,18 @@ static func apply(build: Node, store: StatStore, notes: Array[String]) -> void:
 			continue
 		var special: int = int(BuildMods.PLAYER_AILMENTS["haste"]) if model.get("haste", false) else 0
 		store.add(StatMod.make(int(model["sp"]), str(model["kind"]), float(values[id]) * count, 0,
-			"%s: %s ×%d" % [prefix, model["label"], count], special))
+			"%s: %s ×%d" % [prefix, LE.t(model["label"]), count], special))
 
 	# 20: more damage to bosses per unique / legendary idol
 	if values.has(20) and int(counts["unique"]) > 0:
 		var boss: int = GameData.enum_value("ConditionalDamageProperty", "ToBossesButNotRares")
 		store.add(StatMod.make(LE.CONDITIONAL_DAMAGE, "more", float(values[20]) * int(counts["unique"]), 0,
-			"%s: урон по боссам за уникальный/легендарный идол ×%d" % [prefix, int(counts["unique"])], boss))
+			LE.t("%s: damage to bosses per unique/legendary idol ×%d") % [prefix, int(counts["unique"])], boss))
 
 	# 21: cooldown recovery if no larger idols are above smaller ones
 	if values.has(21):
 		if larger_above_smaller(build.items):
-			notes.append("%s: скорость восстановления перезарядки не действует — крупный идол стоит выше мелкого" % prefix)
+			notes.append(LE.t("%s: cooldown recovery speed has no effect — a larger idol is above a smaller one") % prefix)
 		else:
 			store.add(StatMod.make(LE.CDR, "increased", float(values[21]), 0,
-				"%s: скорость перезарядки (крупные идолы не выше мелких)" % prefix))
+				LE.t("%s: cooldown recovery speed (larger idols not above smaller ones)") % prefix))

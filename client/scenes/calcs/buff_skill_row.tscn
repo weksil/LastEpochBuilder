@@ -20,7 +20,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 theme_type_variation = &"CheckBoxPlain"
-text = "Слот 1 · Умение"
+text = "Slot 1 · Skill"
 
 [node name="PlainLabel" type="Label" parent="VBox/Head"]
 unique_name_in_owner = true
@@ -28,7 +28,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Слот 1 · Умение"
+text = "Slot 1 · Skill"
 clip_text = true
 
 [node name="StatusLabel" type="Label" parent="VBox/Head"]
@@ -45,7 +45,7 @@ layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"FlatToggle"
 toggle_mode = true
-text = "▸ моды"
+text = "▸ mods"
 
 [node name="ModsPanel" type="PanelContainer" parent="VBox"]
 unique_name_in_owner = true

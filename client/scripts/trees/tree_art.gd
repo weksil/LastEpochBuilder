@@ -14,7 +14,7 @@ static var _textures: Dictionary = {}
 static func _data() -> Dictionary:
 	if not _loaded:
 		_loaded = true
-		var path: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game/tree_art.json").simplify_path()
+		var path: String = LE.game_data_dir().path_join("tree_art.json")
 		if FileAccess.file_exists(path):
 			var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 			if parsed is Dictionary:

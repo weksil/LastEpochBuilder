@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/skills/skill_slot.tscn" id="2_slot"]
 [ext_resource type="PackedScene" path="res://scenes/trees/tree_canvas.tscn" id="3_canvas"]
 
-[node name="Скиллы" type="HBoxContainer"]
+[node name="Skills" type="HBoxContainer"]
 theme_override_constants/separation = 10
 script = ExtResource("1_script")
 
@@ -50,7 +50,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
-text = "Выберите умение"
+text = "Select a skill"
 
 [node name="TreePoints" type="Label" parent="TreePanel/Header"]
 unique_name_in_owner = true
@@ -60,7 +60,7 @@ text = ""
 [node name="Hint" type="Label" parent="TreePanel"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "ЛКМ — добавить очко, ПКМ — убрать, Ctrl + колесо — масштаб. Очков в дереве не больше уровня умения. Баффы умений на персонажа — во вкладке «Расчёты»."
+text = "LMB — add a point, RMB — remove, Ctrl + wheel — zoom. The points in a tree cannot exceed the skill level. Skill buffs on the character are in the \"Calculations\" tab."
 autowrap_mode = 3
 
 [node name="TreeCanvas" parent="TreePanel" instance=ExtResource("3_canvas")]

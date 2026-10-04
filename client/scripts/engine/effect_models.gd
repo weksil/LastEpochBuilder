@@ -4,30 +4,30 @@ class_name EffectModels
 ## Context: ctx = {build: Node, store: StatStore, slot: int, item_slot: String}
 
 const ATTR_SP: Dictionary = {"str": LE.STRENGTH, "vit": LE.VITALITY, "int": LE.INTELLIGENCE, "dex": LE.DEXTERITY, "att": LE.ATTUNEMENT}
-const ATTR_RU: Dictionary = {"str": "Сила", "vit": "Живучесть", "int": "Интеллект", "dex": "Ловкость", "att": "Настрой"}
+const ATTR_NAMES: Dictionary = {"str": "Strength", "vit": "Vitality", "int": "Intelligence", "dex": "Dexterity", "att": "Attunement"}
 const TWO_HANDED_MELEE_TYPES: Array[int] = [12, 13, 14, 15, 16]  # 2H axes, maces, polearms, staffs, swords
-const PLAYER_FLAGS_RU: Dictionary = {
-	"hit_recently": "Был поражён недавно", "crit_recently": "Критовал недавно", "moving": "Двигаюсь",
-	"leeching": "Вампиризм активен", "low_mana": "Мана ниже 50%", "haste": "Haste на мне", "frenzy": "Frenzy на мне",
+const PLAYER_FLAG_NAMES: Dictionary = {
+	"hit_recently": "Hit recently", "crit_recently": "Crit recently", "moving": "Moving",
+	"leeching": "Leech active", "low_mana": "Mana below 50%", "haste": "Haste on me", "frenzy": "Frenzy on me",
 }
-const PLAYER_VALUES_RU: Dictionary = {
-	"ward": "Текущий ward", "curses": "Проклятий на мне", "ignite_stacks": "Стаков Ignite на мне", "damned_stacks": "Стаков Damned на мне",
+const PLAYER_VALUE_NAMES: Dictionary = {
+	"ward": "Current ward", "curses": "Curses on me", "ignite_stacks": "Ignite stacks on me", "damned_stacks": "Damned stacks on me",
 }
 const STORE_SOURCES: Array[String] = ["attr", "total_attr", "added", "value", "increased", "added_exact", "res", "ele_res",
 	"total_res", "max_health", "max_mana", "endurance_threshold"]
 
 
-## "" if the model applies now, otherwise the unmet condition in Russian.
+## "" if the model applies now, otherwise the unmet condition (translated).
 static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 	ConfigRelevance.note_model(model, ctx)
 	if model.has("at_least"):
 		var v: float = source(str(model["at_least"]["per"]), ctx, model)
 		if v < float(model["at_least"]["value"]):
-			return "%s ≥ %s (сейчас %s)" % [source_name(str(model["at_least"]["per"]), ctx, model), LE.fmt_num(float(model["at_least"]["value"])), LE.fmt_num(v)]
+			return LE.t("%s ≥ %s (now %s)") % [source_name(str(model["at_least"]["per"]), ctx, model), LE.fmt_num(float(model["at_least"]["value"])), LE.fmt_num(v)]
 	if model.has("below"):
 		var w: float = source(str(model["below"]["per"]), ctx, model)
 		if w >= float(model["below"]["value"]):
-			return "%s < %s (сейчас %s)" % [source_name(str(model["below"]["per"]), ctx, model), LE.fmt_num(float(model["below"]["value"])), LE.fmt_num(w)]
+			return LE.t("%s < %s (now %s)") % [source_name(str(model["below"]["per"]), ctx, model), LE.fmt_num(float(model["below"]["value"])), LE.fmt_num(w)]
 	for cond: String in model.get("when", []):
 		if cond.begins_with("input:") and model.has("input") and str(model["input"].get("key", "")) == cond.get_slice(":", 1):
 			# the model's own input: unset means its declared default (the UI shows the default, not "off")
@@ -42,7 +42,7 @@ static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 	return ""
 
 
-## Итоговое значение и пояснение источника.
+## Resulting value and the explanation of its source.
 static func value(model: Dictionary, v: float, ctx: Dictionary) -> Dictionary:
 	var x: float = v * float(model.get("factor", 1.0))
 	var text: String = ""
@@ -70,7 +70,7 @@ static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String
 	if val_dict["text"] != "":
 		source_text = "%s %s" % [label, val_dict["text"]]
 	if model.has("note"):
-		source_text += " — " + str(model["note"])
+		source_text += " — " + LE.t(str(model["note"]))
 	var special: int = 0
 	if model.has("ailment"):
 		special = maxi(0, GameData.enum_value("AilmentID", str(model["ailment"])))
@@ -148,36 +148,36 @@ static func source_name(per: String, ctx: Dictionary, model: Dictionary = {}) ->
 	var arg: String = per.get_slice(":", 1) if per.contains(":") else ""
 	match kind:
 		"attr":
-			return str(ATTR_RU.get(arg, arg))
+			return LE.t(str(ATTR_NAMES.get(arg, arg)))
 		"total_attr":
-			return "сумма атрибутов"
+			return LE.t("sum of attributes")
 		"added", "increased":
 			return "%s %s" % [kind, arg]
 		"value":
 			return arg
 		"added_exact":
-			return "added %s (теги %s)" % [arg, per.get_slice(":", 2)]
+			return LE.t("added %s (tags %s)") % [arg, per.get_slice(":", 2)]
 		"res":
-			return "сопротивление %s без капа" % LE.DT_NAME_RU[int(arg)]
+			return LE.t("%s resistance without cap") % LE.t(LE.DT_NAME[int(arg)])
 		"ele_res":
-			return "сумма стихийных сопротивлений без капа"
+			return LE.t("sum of elemental resistances without cap")
 		"total_res":
-			return "сумма сопротивлений без капа"
+			return LE.t("sum of resistances without cap")
 		"max_health":
-			return "макс. здоровье"
+			return LE.t("max health")
 		"max_mana":
-			return "макс. мана"
+			return LE.t("max mana")
 		"endurance_threshold":
-			return "порог выносливости"
+			return LE.t("endurance threshold")
 		"enemy_stacks":
-			return "стаки %s на противнике" % arg
+			return LE.t("%s stacks on the enemy") % arg
 		"player":
-			return str(PLAYER_VALUES_RU.get(arg, arg))
+			return LE.t(str(PLAYER_VALUE_NAMES.get(arg, arg)))
 		"complete_sets":
-			return "полные сеты"
+			return LE.t("complete sets")
 		"input":
 			if model.has("input") and model["input"].get("key") == arg:
-				return str(model["input"].get("label", arg))
+				return LE.t(str(model["input"].get("label", arg)))
 			return arg
 	return per
 
@@ -228,23 +228,23 @@ static func condition_name(cond: String, ctx: Dictionary) -> String:
 	var arg: String = cond.get_slice(":", 1)
 	match kind:
 		"enemy":
-			return "противник — редкий или босс" if arg == "boss_or_rare" else "на противнике есть %s (вкладка «Условия»)" % arg
+			return LE.t("enemy is rare or a boss") if arg == "boss_or_rare" else LE.t("enemy has %s (Conditions tab)") % arg
 		"enemy_any":
-			return "на противнике есть %s (вкладка «Условия»)" % arg.replace("|", " или ")
+			return LE.t("enemy has %s (Conditions tab)") % arg.replace("|", LE.t(" or "))
 		"enemy_flag":
-			return "противник %s (вкладка «Условия»)" % ("заморожен" if arg == "frozen" else arg)
+			return LE.t("enemy is %s (Conditions tab)") % (LE.t("frozen") if arg == "frozen" else arg)
 		"player":
 			if arg.begins_with("!"):
-				return "выключено «%s» (вкладка «Условия»)" % PLAYER_FLAGS_RU.get(arg.substr(1), arg)
-			return "включено «%s» (вкладка «Условия»)" % PLAYER_FLAGS_RU.get(arg, arg)
+				return LE.t("\"%s\" is off (Conditions tab)") % LE.t(str(PLAYER_FLAG_NAMES.get(arg.substr(1), arg)))
+			return LE.t("\"%s\" is on (Conditions tab)") % LE.t(str(PLAYER_FLAG_NAMES.get(arg, arg)))
 		"gear":
-			return "два оружия в руках" if arg == "dual_wield" else "двуручное оружие ближнего боя"
+			return LE.t("dual wielding") if arg == "dual_wield" else LE.t("two-handed melee weapon")
 		"slot":
-			return "предмет в слоте «%s»" % ItemMods.SLOT_NAMES_RU.get(arg, arg)
+			return LE.t("item in slot \"%s\"") % LE.t(str(ItemMods.SLOT_NAMES.get(arg, arg)))
 		"input":
 			# Get the model to find the label, but we need context info
 			# For now, just use the arg as fallback
-			return "включено «%s» (вкладка «Расчёты»)" % arg
+			return LE.t("\"%s\" is on (Calculations tab)") % arg
 	return cond
 
 

@@ -1,6 +1,6 @@
 class_name SkillInputRow extends HBoxContainer
 
-## One declared input of the selected skill (docs/UI.md «Расчёты»): a number (SpinBox) or a switch (CheckBox).
+## One declared input of the selected skill (docs/UI.md "Calculations"): a number (SpinBox) or a switch (CheckBox).
 ## Values come back in place through update_input(); signals are blocked then, so typing is never interrupted.
 
 var key: String = ""

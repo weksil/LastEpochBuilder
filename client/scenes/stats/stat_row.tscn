@@ -18,7 +18,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 theme_type_variation = &"MutedLabel"
-text = "Стат"
+text = "Stat"
 clip_text = true
 text_overrun_behavior = 3
 

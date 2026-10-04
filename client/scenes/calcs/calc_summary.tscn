@@ -18,7 +18,7 @@ theme_override_constants/separation = 10
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
-text = "Умение"
+text = "Skill"
 
 [node name="TargetLabel" type="Label" parent="VBox/Head"]
 unique_name_in_owner = true
@@ -39,23 +39,23 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.6
-caption = "DPS по врагу"
+caption = "DPS vs enemy"
 main_tile = true
 
 [node name="HitTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-caption = "Средний удар"
+caption = "Average hit"
 
 [node name="UsesTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-caption = "Применений в секунду"
+caption = "Uses per second"
 
 [node name="CritTile" parent="VBox/Tiles" instance=ExtResource("2_tile")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-caption = "Шанс крита"
+caption = "Crit chance"

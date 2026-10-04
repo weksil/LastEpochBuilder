@@ -1,6 +1,6 @@
 class_name IdolsTab extends HBoxContainer
 
-## Idol grid editor (docs/UI.md «Идолы»). Grid cells are pre-defined in idols_tab.tscn.
+## Idol grid editor (docs/UI.md "Idols"). Grid cells are pre-defined in idols_tab.tscn.
 
 const NO_ALTAR: int = -1
 
@@ -14,7 +14,7 @@ func _ready() -> void:
 	for cell: Node in %Grid.get_children():
 		cell.pressed.connect(_on_cell_pressed.bindv([cell.get_meta("row"), cell.get_meta("col")]))
 
-	%AltarSelect.add_item("без алтаря", NO_ALTAR)
+	%AltarSelect.add_item(tr("no altar"), NO_ALTAR)
 	for sub: Dictionary in GameData.item_base(IdolGrid.ALTAR_BASE).get("subItems", []):
 		%AltarSelect.add_item(GameData.display_name(sub), int(sub["subTypeID"]))
 	%AltarSelect.item_selected.connect(_on_altar_selected)
@@ -35,7 +35,7 @@ func _on_cell_pressed(row: int, col: int) -> void:
 		slot = IdolGrid.key(row, col)
 
 	_selected_slot = slot
-	%ItemEditor.edit_slot(slot, "Идол %d:%d" % [row + 1, col + 1])
+	%ItemEditor.edit_slot(slot, tr("Idol %d:%d") % [row + 1, col + 1])
 	_update_grid()
 
 
@@ -56,12 +56,12 @@ func _on_altar_selected(index: int) -> void:
 			"affixes": old.get("affixes", []).duplicate(true)})
 	_drop_misplaced_idols()
 	if _selected_slot == IdolGrid.ALTAR_SLOT:
-		%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, "Алтарь идолов")
+		%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
 
 
 func _on_altar_edit() -> void:
 	_selected_slot = IdolGrid.ALTAR_SLOT
-	%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, "Алтарь идолов")
+	%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
 	_update_grid()
 
 
@@ -155,7 +155,7 @@ func _update_grid() -> void:
 			cell.disabled = false
 			cell.theme_type_variation = &"IdolCellRefracted" if is_refracted else &"IdolCellOpen"
 			cell.text = ""
-			cell.tooltip_text = "Refracted-слот: аффиксы идола усиливаются алтарём" if is_refracted else ""
+			cell.tooltip_text = tr("Refracted slot: idol affixes are boosted by the altar") if is_refracted else ""
 
 		# Set selected state
 		if is_selected:
@@ -185,9 +185,9 @@ func _set_idol_tooltip(cell: Node, slot: String) -> void:
 			lines.append(GameData.display_name(sub))
 
 	if bool(item.get("corrupted", false)):
-		lines.append("Осквернённый")
+		lines.append(tr("Corrupted"))
 	if preload("res://scripts/engine/altar_mods.gd").in_refracted_slot(slot, item, Build.items):
-		lines.append("Refracted-слот")
+		lines.append(tr("Refracted slot"))
 	var affixes: Array = item.get("affixes", [])
 	for affix_data: Dictionary in affixes:
 		var affix_id: int = int(affix_data.get("id", 0))

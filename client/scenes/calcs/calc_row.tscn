@@ -29,7 +29,7 @@ custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Показатель"
+text = "Metric"
 autowrap_mode = 3
 
 [node name="ValueLabel" type="Label" parent="VBox/Line"]

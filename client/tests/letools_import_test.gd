@@ -202,9 +202,9 @@ func _apply(doc: Dictionary) -> void:
 		_check("SkillCalc slot %d title" % slot, r["title"] != "", true)
 		_check("SkillCalc slot %d sections" % slot, r["sections"].size() > 0, true)
 		if slot == 4:
-			# Harvest bleeds: its «Айлмент: Bleed» section has its own «DPS по врагу»; the headline must be the total
+			# Harvest bleeds: its "Ailment: Bleed" section has its own "DPS vs enemy"; the headline must be the total
 			var total: Dictionary = CalcSummary.find_row(r, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
-			var hit_dps: Dictionary = CalcSummary.find_row(r, "DPS удара по врагу", CalcSummary.ENEMY_SECTION)
+			var hit_dps: Dictionary = CalcSummary.find_row(r, "Hit DPS vs enemy", CalcSummary.ENEMY_SECTION)
 			_check("Harvest headline DPS > hit DPS", float(total.get("text", "0")) > float(hit_dps.get("text", "0")), true)
 			_check("Harvest headline DPS > 11000", float(total.get("text", "0")) > 11000.0, true)
 		if slot == 0:
@@ -220,7 +220,7 @@ func _apply(doc: Dictionary) -> void:
 func _altar_idols() -> void:
 	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_ApbrXYvx.json")
 	var doc: Dictionary = ImportScript.to_build(JSON.parse_string(text))
-	var idol_warnings: Array = doc["warnings"].filter(func(w: String) -> bool: return w.begins_with("Идол"))
+	var idol_warnings: Array = doc["warnings"].filter(func(w: String) -> bool: return w.begins_with(LE.t("Idol (%d:%d)").get_slice("%d", 0)))
 	_check("ApbrXYvx idol warnings", idol_warnings, [])
 	var idols: int = 0
 	for slot: String in doc["items"]:
@@ -258,7 +258,7 @@ func _bad_input() -> void:
 		print("  - " + w)
 
 
-## Main scene: the «Импорт…» button opens the dialog, a pasted JSON replaces the build and the top bar follows it.
+## Main scene: the "Import…" button opens the dialog, a pasted JSON replaces the build and the top bar follows it.
 func _main_ui() -> void:
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
@@ -275,7 +275,7 @@ func _main_ui() -> void:
 	await get_tree().process_frame
 	var status: String = dialog.get_node("%StatusLabel").text
 	print(status)
-	_check("status says imported", status.begins_with("Импортировано: Acolyte, Lich, уровень 58"), true)
+	_check("status says imported", status.begins_with(LE.t("Imported: %s, %s, level %d") % ["Acolyte", "Lich", 58]), true)
 	var class_select: OptionButton = main.get_node("%ClassSelect")
 	var mastery_select: OptionButton = main.get_node("%MasterySelect")
 	_check("top bar class", class_select.get_item_id(class_select.selected), 3)
@@ -286,9 +286,9 @@ func _main_ui() -> void:
 
 	dialog.get_node("%LinkEdit").text = "https://example.com/x"
 	dialog.get_node("%LoadButton").pressed.emit()
-	_check("bad link message", dialog.get_node("%StatusLabel").text.begins_with("Некорректная ссылка"), true)
+	_check("bad link message", dialog.get_node("%StatusLabel").text.begins_with(LE.t("Invalid link. Expected https://www.lastepochtools.com/planner/<code>.")), true)
 	dialog.get_node("%LinkEdit").text = "{not json"
 	dialog.get_node("%LoadButton").pressed.emit()
-	_check("bad json message", dialog.get_node("%StatusLabel").text.begins_with("Ответ не является"), true)
+	_check("bad json message", dialog.get_node("%StatusLabel").text.begins_with(LE.t("The response is not valid JSON.")), true)
 	dialog.hide()
 	main.queue_free()

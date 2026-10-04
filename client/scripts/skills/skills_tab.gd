@@ -58,7 +58,7 @@ func _rebuild_tree() -> void:
 
 	if ability_id == "":
 		# No skill selected - show empty state
-		%TreeTitle.text = "Выберите умение"
+		%TreeTitle.text = tr("Select a skill")
 		%TreePoints.text = ""
 		%TreeCanvas.visible = false
 		_tree_signals_connected = false

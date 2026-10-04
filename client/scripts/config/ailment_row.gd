@@ -1,6 +1,6 @@
 class_name AilmentRow extends PanelContainer
 
-## One ailment / shred / curse of the enemy in «Условия» (docs/UI.md): readable name, kind, where it comes from, stacks.
+## One ailment / shred / curse of the enemy in "Conditions" (docs/UI.md): readable name, kind, where it comes from, stacks.
 ## show_state() updates everything in place without emitting signals.
 
 signal stacks_changed(ailment_id: int, stacks: int)
@@ -31,9 +31,9 @@ func setup(data: Dictionary) -> void:
 	_name_label.text = title
 	var kind: String = ""
 	if bool(data.get("isCurse", false)):
-		kind = "проклятие"
+		kind = tr("curse")
 	elif raw_name.contains("Shred") or title.begins_with("Shred"):
-		kind = "шред"
+		kind = tr("shred")
 	_kind_label.text = kind
 	search_text = (title + " " + raw_name + " " + kind).to_lower()
 
@@ -50,7 +50,7 @@ func show_state(stacks: int, reason: String, has_source: bool) -> void:
 	_reason_label.visible = reason != ""
 	if stacks > 0:
 		theme_type_variation = &"RowActive" if has_source else &"RowNoSource"
-		_reason_label.text = reason if has_source else "нет источника в билде — не влияет на расчёт"
+		_reason_label.text = reason if has_source else tr("no source in the build — does not affect the calculation")
 		_reason_label.visible = true
 	else:
 		theme_type_variation = &"RowIdle"
@@ -72,10 +72,10 @@ static func _tooltip(data: Dictionary, max_instances: int) -> String:
 			var increased: float = float((buff as Dictionary).get("increased", 0))
 			var more: Array = (buff as Dictionary).get("more", [])
 			if added != 0.0 or increased != 0.0 or not more.is_empty():
-				parts.append("%s: добавлено %s, увеличено %s" % [str((buff as Dictionary).get("propertyName", "")), LE.fmt_num(added), LE.fmt_pct(increased)])
+				parts.append(LE.t("%s: added %s, increased %s") % [str((buff as Dictionary).get("propertyName", "")), LE.fmt_num(added), LE.fmt_pct(increased)])
 	if max_instances > 0:
-		parts.append("Макс. стаки: %d" % max_instances)
+		parts.append(LE.t("Max stacks: %d") % max_instances)
 	var more_boss: float = float(data.get("moreBuffEffectAgainstBosses", 0))
 	if more_boss != 0.0:
-		parts.append("Против боссов: ×%s" % LE.fmt_num(1.0 + more_boss))
+		parts.append(LE.t("Vs bosses: ×%s") % LE.fmt_num(1.0 + more_boss))
 	return "\n".join(parts)

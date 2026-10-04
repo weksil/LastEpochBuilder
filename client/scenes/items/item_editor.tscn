@@ -21,13 +21,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
-text = "Слот"
+text = "Slot"
 
 [node name="ClearButton" type="Button" parent="VBox/Header"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Убрать предмет"
+text = "Remove item"
 
 [node name="UniqueRow" type="HBoxContainer" parent="VBox"]
 unique_name_in_owner = true
@@ -37,7 +37,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Уникальный"
+text = "Unique"
 
 [node name="UniqueSelect" type="OptionButton" parent="VBox/UniqueRow"]
 unique_name_in_owner = true
@@ -52,7 +52,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "База"
+text = "Base"
 
 [node name="BaseSelect" type="OptionButton" parent="VBox/BaseRow"]
 unique_name_in_owner = true
@@ -68,7 +68,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Предмет"
+text = "Item"
 
 [node name="SubSelect" type="OptionButton" parent="VBox/SubRow"]
 unique_name_in_owner = true
@@ -80,7 +80,7 @@ focus_mode = 0
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Импликиты"
+text = "Implicits"
 
 [node name="Implicits" type="VBoxContainer" parent="VBox"]
 unique_name_in_owner = true
@@ -90,7 +90,7 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Свойства уникального предмета"
+text = "Unique item properties"
 
 [node name="UniqueMods" type="VBoxContainer" parent="VBox"]
 unique_name_in_owner = true
@@ -107,7 +107,7 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Аффиксы (2 префикса, 2 суффикса)"
+text = "Affixes (2 prefixes, 2 suffixes)"
 
 [node name="Affixes" type="VBoxContainer" parent="VBox"]
 unique_name_in_owner = true
@@ -130,4 +130,4 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Выберите базу предмета"
+text = "Pick an item base"

@@ -15998,7 +15998,7 @@
   "affectsNumbers": true,
   "readers": [],
   "confidence": "dead(w4b)",
-  "notes": "Probably consumed through getAddedCharges of base AbilityMutator via a different field; 07c В§1 covers cooldown fields.",
+  "notes": "Probably consumed through getAddedCharges of base AbilityMutator via a different field; 07c Section 1 covers cooldown fields.",
   "declaredIn": "DecoyMutator",
   "trees": [
    "Decoy"
@@ -16008,7 +16008,7 @@
   ],
   "w4b": {
    "semantic": "Added maximum charges (+1) written by the tree; no reader of 0x144 in this slice (readers=[]).",
-   "formula": "Probably consumed through getAddedCharges of base AbilityMutator via a different field; 07c В§1 covers cooldown fields.",
+   "formula": "Probably consumed through getAddedCharges of base AbilityMutator via a different field; 07c Section 1 covers cooldown fields.",
    "quote": "Quote not found",
    "trace": "DecoyMutator__treeAddedCharges.txt",
    "validation": null,
@@ -16087,11 +16087,11 @@
   "offset": "0xc4",
   "type": "float",
   "semantic": "Base AbilityMutator.increasedManaCost of the Detonate Decoy ability: increased (here reduced) mana cost of detonating a decoy",
-  "formula": "cost = (base+added)*(1+f)*... (06e В§3.1); tree f = -0.25 per point (max 4 -> -100%, free detonation)",
+  "formula": "cost = (base+added)*(1+f)*... (06e Section 3.1); tree f = -0.25 per point (max 4 -> -100%, free detonation)",
   "category": "cost_cooldown",
   "affectsNumbers": true,
   "readers": [
-   "AbilityMutator mana cost (base class, 06e В§3.1)"
+   "AbilityMutator mana cost (base class, 06e Section 3.1)"
   ],
   "confidence": "D",
   "notes": "No subclass reader; consumed by the generic AbilityMutator mana cost path.",

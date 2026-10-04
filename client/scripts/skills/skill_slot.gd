@@ -10,9 +10,9 @@ var _options_key: String = ""
 
 
 func _ready() -> void:
-	%SlotLabel.text = "Слот %d" % (slot_index + 1)
+	%SlotLabel.text = tr("Slot %d") % (slot_index + 1)
 
-	%SkillSelect.add_item("— пусто —")
+	%SkillSelect.add_item(tr("— empty —"))
 	%SkillSelect.set_item_metadata(0, "")
 	%LevelSpin.value_changed.connect(_on_level_changed)
 	%SkillSelect.item_selected.connect(_on_skill_selected)
@@ -32,10 +32,10 @@ func _on_build_changed() -> void:
 	_options_key = key
 	var skills_data: Array[String] = GameData.class_skills(Build.class_id, Build.mastery)
 
-	# Clear and rebuild options (keep "— пусто —" at index 0)
+	# Clear and rebuild options (keep "— empty —" at index 0)
 	_block_signals = true
 	%SkillSelect.clear()
-	%SkillSelect.add_item("— пусто —")
+	%SkillSelect.add_item(tr("— empty —"))
 	%SkillSelect.set_item_metadata(0, "")
 
 	for ability_id: String in skills_data:
@@ -121,4 +121,4 @@ func _update_points_label() -> void:
 	var spent: int = Build.skill_points_spent(slot_index)
 	var bonus: int = Build.skill_level_bonus(slot_index)
 
-	%PointsLabel.text = "Уровень %d (+%d от предметов), очков %d / %d" % [skill_level, bonus, spent, skill_level + bonus]
+	%PointsLabel.text = tr("Level %d (+%d from items), points %d / %d") % [skill_level, bonus, spent, skill_level + bonus]

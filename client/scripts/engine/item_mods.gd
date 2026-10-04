@@ -2,29 +2,29 @@
 class_name ItemMods
 
 
-## Map slot names to Russian display names.
-static var SLOT_NAMES_RU: Dictionary = {
-	"helmet": "Шлем",
-	"body": "Нагрудник",
-	"belt": "Пояс",
-	"boots": "Сапоги",
-	"gloves": "Перчатки",
-	"amulet": "Амулет",
-	"ring1": "Кольцо 1",
-	"ring2": "Кольцо 2",
-	"relic": "Реликвия",
-	"weapon": "Оружие",
-	"offhand": "Вторая рука",
-	"altar": "Алтарь идолов",
+## Map slot names to display names (English source text, translated with LE.t where shown).
+static var SLOT_NAMES: Dictionary = {
+	"helmet": "Helmet",
+	"body": "Body armor",
+	"belt": "Belt",
+	"boots": "Boots",
+	"gloves": "Gloves",
+	"amulet": "Amulet",
+	"ring1": "Ring 1",
+	"ring2": "Ring 2",
+	"relic": "Relic",
+	"weapon": "Weapon",
+	"offhand": "Off-hand",
+	"altar": "Idol altar",
 }
 
 
-## Russian label of an equipment slot or idol cell ("Шлем", "Идол Small Idol (2:3)").
+## Translated label of an equipment slot or idol cell ("Helmet", "Idol Small Idol (2:3)").
 static func slot_label(slot: String, item: Dictionary) -> String:
 	if IdolGrid.is_idol_key(slot):
 		var cell: Vector2i = IdolGrid.anchor(slot)
-		return "Идол %s (%d:%d)" % [GameData.display_name(GameData.item_base(int(item.get("base", -1)))), cell.x + 1, cell.y + 1]
-	return str(SLOT_NAMES_RU.get(slot, slot))
+		return LE.t("Idol %s (%d:%d)") % [GameData.display_name(GameData.item_base(int(item.get("base", -1)))), cell.x + 1, cell.y + 1]
+	return LE.t(str(SLOT_NAMES.get(slot, slot)))
 
 
 ## Key of an affix in an effect_scale dictionary: idol enchantments / weaver affixes "enchant", otherwise "prefix"/"suffix".
@@ -53,7 +53,7 @@ static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary =
 	if base_id < 0 or sub_id < 0:
 		return mods
 
-	var slot_ru: String = slot_label(slot, item)
+	var slot_name: String = slot_label(slot, item)
 
 	# Get base and sub data
 	var base: Dictionary = GameData.item_base(base_id)
@@ -106,7 +106,7 @@ static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary =
 				# quotient -> more: 1/(1+x) - 1
 				mod.more.append(1.0 / (1.0 + rolled) - 1.0)
 
-		mod.source = "%s: %s (implicit)" % [slot_ru, implicit.get("propertyName", "Unknown")]
+		mod.source = LE.t("%s: %s (implicit)") % [slot_name, implicit.get("propertyName", "Unknown")]
 		mods.append(mod)
 
 	# Unique / set item mods (special PlayerProperty 98 and AbilityProperty 58 mods are reported by BuildMods)
@@ -121,7 +121,7 @@ static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary =
 			var uroll: int = int(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255
 			var uvalue: float = AffixMath.unique_value(umod, uroll)
 			var um := StatMod.make(prop_id, str(umod.get("modType", "ADDED")).to_lower(), uvalue, int(umod.get("tags", 0)),
-				"%s: %s" % [slot_ru, GameData.display_name(u)], int(umod.get("specialTag", 0)), int(umod.get("extraTag", 0)))
+				"%s: %s" % [slot_name, GameData.display_name(u)], int(umod.get("specialTag", 0)), int(umod.get("extraTag", 0)))
 			mods.append(um)
 
 	# Process affixes
@@ -205,7 +205,7 @@ static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary =
 					mod.more.append(1.0 / (1.0 + rolled) - 1.0)
 
 			var affix_name: String = affix.get("name", "Unknown")
-			mod.source = "%s: %s T%d" % [slot_ru, affix_name, tier]
+			mod.source = "%s: %s T%d" % [slot_name, affix_name, tier]
 			mods.append(mod)
 
 	return mods

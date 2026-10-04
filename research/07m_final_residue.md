@@ -1,51 +1,51 @@
-# 07m. Финальный остаток: 46 значений (33 поля мутаторов + 13 эффектов уников)
+# 07m. Final Residue: 46 Values (33 Mutator Fields + 13 Unique Effects)
 
-Итог: **все 46 переведены в D** (`dump/work_wave4/out_final_residue.json`). Неразрешённых и мёртвых полей не осталось.
-Способ: глубокие трассы (`traces_deep/`), ISIL/Ghidra конкретных методов, `readconst` для констант, поиск потребителей по имени метода и по смещению.
+Result: **all 46 translated to D** (`dump/work_wave4/out_final_residue.json`). No unresolved or dead fields remain.
+Method: deep traces (`traces_deep/`), ISIL/Ghidra of specific methods, `readconst` for constants, consumer search by method name and by offset.
 
-## Что нашли по мутаторам
+## What We Found in Mutators
 
-Прямой эффект (читатель найден до конца):
-- **AssembleAbomination.percentMaxHealthGainedAsTempHealthOnDevour** — при поглощении миньона (`AbominationConsumeMinionsMutator.OnMutatorUpdate`): `MoreStat(Health, f)` на 8 с, лимит `ProcTimeTracker(5, 8.0)`.
-- **ChaosBolts.moreHitDamageToIgnited** — `DamageConditionalEffect(HasAilmentConditional(Ignite=1), DamageEffectMoreDamage(f))`, множитель `(1+f)`.
-- **CharacterMutator.moreHealthRegenWithABear** — MORE HealthRegen `+f`, пока жив медведь (`HasLivingMinionOfType(summonBear=56)`).
-- **ChthonicFissure.spiritFireResShredStacks** — `AilmentChance(Shred, added=f)` у духов; шанс > 1 даёт гарантированные стаки (`AilmentApplication.Apply`). Ailment: Fire 42 / Poison 28 при `poisonConversion` / Physical 73 при `physicalConversion`.
-- **ChthonicFissure.moreDamageToBossAndRareEnemies** — условные MORE: boss/rare `(1+f)`; если актор «cursed» — `2f` и без доп. условия, иначе дополнительно `CursedConditional` (цель проклята) `(1+f)`.
-- **DreadShade.increasedDoomBrandEffect**, **SmokeBomb.increasedSmokeBladesEffectiveness** — аргумент `increasedEffect` в `RepeatedlyApplyAilmentsInRadius.addChance` (Ghidra теряет float-аргументы, брали из ISIL). У SmokeBomb значение = очки−1, то есть эффект = базовый × очки.
-- **Falconry**: ailmentChance…Ratio (копия шансов игрока на 11 ailment-ов × f), extraHitsFromRareBossHit (до f доп. ударов, шанс 10% на удар по rare/boss), manaPerTotal…(мана = сумма атрибутов × f за убийство и за удар по rare/boss, лимит 10 за 3 с), moreShadowFalconDamagePerUmbralBlade (`min(лезвия,25)·f`).
-- **FlameRush**: wardAtEnd (флэт вард при смерти объекта), frenzyAtEndDuration (длительность Frenzy ровно f секунд: `increasedDuration=(f-base)/base`), chanceToGainRuneEmberOnFlameRushKill (шанс +1 Rune Ember за убийство).
-- **GlyphOfDominion.glyphsExplodeAtSameTime** — флаг связывания двух глифов (`DestroyObjectOnDeath`) и расчёта расстояния между ними.
-- **HammerThrow.increasedAttackSpeed** (аддитивный increased, `getIncreasedCastSpeed`), **Javelin.moreAttackSpeed** (`mutateUseSpeed = (1+f)·S`, f=-0.2).
+Direct effect (reader found to end):
+- **AssembleAbomination.percentMaxHealthGainedAsTempHealthOnDevour** — on minion consumption (`AbominationConsumeMinionsMutator.OnMutatorUpdate`): `MoreStat(Health, f)` for 8 s, limit `ProcTimeTracker(5, 8.0)`.
+- **ChaosBolts.moreHitDamageToIgnited** — `DamageConditionalEffect(HasAilmentConditional(Ignite=1), DamageEffectMoreDamage(f))`, multiplier `(1+f)`.
+- **CharacterMutator.moreHealthRegenWithABear** — MORE HealthRegen `+f`, while bear alive (`HasLivingMinionOfType(summonBear=56)`).
+- **ChthonicFissure.spiritFireResShredStacks** — `AilmentChance(Shred, added=f)` on spirits; chance > 1 gives guaranteed stacks (`AilmentApplication.Apply`). Ailment: Fire 42 / Poison 28 on `poisonConversion` / Physical 73 on `physicalConversion`.
+- **ChthonicFissure.moreDamageToBossAndRareEnemies** — conditional MORE: boss/rare `(1+f)`; if actor «cursed» — `2f` without extra condition, else additionally `CursedConditional` (target cursed) `(1+f)`.
+- **DreadShade.increasedDoomBrandEffect**, **SmokeBomb.increasedSmokeBladesEffectiveness** — argument `increasedEffect` in `RepeatedlyApplyAilmentsInRadius.addChance` (Ghidra loses float-args, taken from ISIL). SmokeBomb value = points−1, so effect = base × points.
+- **Falconry**: ailmentChance…Ratio (copy of player chances for 11 ailments × f), extraHitsFromRareBossHit (up to f extra hits, 10% chance on rare/boss hit), manaPerTotal… (mana = sum of attributes × f on kill and on rare/boss hit, limit 10 per 3 s), moreShadowFalconDamagePerUmbralBlade (`min(blades,25)·f`).
+- **FlameRush**: wardAtEnd (flat ward on object death), frenzyAtEndDuration (Frenzy duration exactly f seconds: `increasedDuration=(f-base)/base`), chanceToGainRuneEmberOnFlameRushKill (chance +1 Rune Ember on kill).
+- **GlyphOfDominion.glyphsExplodeAtSameTime** — flag binding two glyphs (`DestroyObjectOnDeath`) and distance calc.
+- **HammerThrow.increasedAttackSpeed** (additive increased, `getIncreasedCastSpeed`), **Javelin.moreAttackSpeed** (`mutateUseSpeed = (1+f)·S`, f=-0.2).
 - **HealingHands.moreDamageToUndeadEnemies** — `ActorConditional(EType=Undead)`.
-- **ManaStrike.leechWhileNotFullMana** — `additionalLeech += f`, если мана < макс. на момент каста.
-- **PrimalistSummonElemental.wellspringIncreasedCastSpeed** — аура: радиус 18 м, интервал 1 с, бафф 2 с, increased CastSpeed `f`.
-- **RadiantLance…Per1PercentIgniteElectrifyChance** — `GetAilmentDamageModifier` для Scathing Light (144): `f·100·(ignite+electrify+…)`, множитель `ActiveAilment.damageModifier`.
-- **Riposte.physPenWithBleedPerOvercappedPhysRes** — на самом деле **AilmentEffectStat** (increased effect), а не пенетрация: `(uncappedRes−0.75)·f`. Подмеченная странность игры: при Fire-конверсии ailment id = 9 (TimeRot), а не Ignite.
-- **ShadowCascade.daggerShadowDaggerChance** — шанс «Shadow Dagger» на попадании Dagger Throw; для UseType=Shadow(6) берётся соседнее поле 0.2/очко.
-- **ShatterStrike.recastChanceWith2h** — при двуручном оружии и оригинальном касте: шанс `f` на +2 бесплатных рекаста.
-- **SprigganForm.maxValeSpirits** — только лимит для проки «Vale Spirit при смерти тотема».
-- **SprigganVines.increasedSize** — `SizeManager.increaseSize(f)` (f=0.88 в дереве) и `addedMeleeRange=f·0.75`.
-- **SummonMage.increasedNecroticMorterRadius** — радиус в «sqrt-пространстве»: `R=sqrt((1+f)²+A)−1`, то есть +20% area за очко аддитивно с area мага.
-- **TeleportReturn.statsAtEnd** — список статов как баффы на `4.0·(1+increasedBuffDuration)` с (`BuffCreatorOnDeath`).
-- **Tornado.increasedBuffDuration** — длительность `2.0·(1+f)` (в Ghidra «дважды» — это база 2 с, а не двойное применение).
-- **DancingStrikes.morePunctureDamageOnNextUse** — только гейт (`f>0` ставит флаг); величина из `PunctureMutator.moreDamageAfterDancingStrikes`.
+- **ManaStrike.leechWhileNotFullMana** — `additionalLeech += f` if mana < max at cast time.
+- **PrimalistSummonElemental.wellspringIncreasedCastSpeed** — aura: 18 m radius, 1 s interval, 2 s buff, increased CastSpeed `f`.
+- **RadiantLance…Per1PercentIgniteElectrifyChance** — `GetAilmentDamageModifier` for Scathing Light (144): `f·100·(ignite+electrify+…)`, multiplier `ActiveAilment.damageModifier`.
+- **Riposte.physPenWithBleedPerOvercappedPhysRes** — actually **AilmentEffectStat** (increased effect), not penetration: `(uncappedRes−0.75)·f`. Odd detail: Fire-conversion ailment id = 9 (TimeRot), not Ignite.
+- **ShadowCascade.daggerShadowDaggerChance** — «Shadow Dagger» chance on Dagger Throw hit; for UseType=Shadow(6) take neighbor field 0.2/point.
+- **ShatterStrike.recastChanceWith2h** — with two-handed weapon on original cast: chance `f` for +2 free recasts.
+- **SprigganForm.maxValeSpirits** — only limit for «Vale Spirit on totem death» procs.
+- **SprigganVines.increasedSize** — `SizeManager.increaseSize(f)` (f=0.88 in tree) and `addedMeleeRange=f·0.75`.
+- **SummonMage.increasedNecroticMorterRadius** — radius in «sqrt-space»: `R=sqrt((1+f)²+A)−1`, so +20% area per point additive with mage's area.
+- **TeleportReturn.statsAtEnd** — list of stats as buffs for `4.0·(1+increasedBuffDuration)` with (`BuffCreatorOnDeath`).
+- **Tornado.increasedBuffDuration** — duration `2.0·(1+f)` (in Ghidra «twice» — this is base 2 s, not double apply).
+- **DancingStrikes.morePunctureDamageOnNextUse** — only gate (`f>0` sets flag); magnitude from `PunctureMutator.moreDamageAfterDancingStrikes`.
 
-Зеркальные поля (planner-only, `affectsNumbers=false`, чтобы не считать дважды):
-- **HolyAura.finalHitDamageMultiplier** (реальный эффект: `HolyFlameBurstMutator.getTempStats`, MORE Damage `f`),
-- **Judgement.eruptionMoreDamage** (реальный: `eruptionStats`),
-- **ShieldRush.delayedEndRushMoreDamage** (реальный: `delayedEndRushStats`).
+Mirror fields (planner-only, `affectsNumbers=false`, not to double-count):
+- **HolyAura.finalHitDamageMultiplier** (real effect: `HolyFlameBurstMutator.getTempStats`, MORE Damage `f`),
+- **Judgement.eruptionMoreDamage** (real: `eruptionStats`),
+- **ShieldRush.delayedEndRushMoreDamage** (real: `delayedEndRushStats`).
 
-## Уники (13)
+## Uniques (13)
 
-- **Через `CharacterMutator.onPotionUse`**: pp248 (мана = `min(метеоры за 4 с · pp, 200)`).
-- **Через `ApplyConditionalDefenses`/`ProtectionClass.ApplyDamage`**: pp525 — слот f8 «extra endurance» при задержанном уроне > 10% макс. HP; важная деталь: в режимах 0/1 блок работает только при базовом endurance > 0. pp590 — `canSuperCrit`: при шансе крита > 100% шанс суперкрита `min(c−1, 0.5)`, +3.0 к crit multi до умножения на (1+moreCritMulti). pp660 — три MORE DamageTaken (Necrotic/Void/Poison), `pp·Attunement/10` («Apathy» = испорченный Attunement; код читает атрибут 4 без проверки порчи).
-- **pp309** — вопреки прежней заметке, **находится в switch**: ставит `enduranceMode=1`; стоимость маны в «mana before health» становится `(1−e)/5` на единицу урона.
-- **HealthPotion** (не `CharacterMutator`): pp190 (heal = потерянное HP · pp · крит), pp507 (флаг, если значение > 0.1; шанс крита зелья = глобальный crit chance + 5%), pp528 (`critMult = 2 + critMultiStat·pp`), pp551 (`min(Σpp, 0.75)` не потратить заряд), pp630 (второй ролл, если зелье восстановило ≥ 20% макс. HP), pp665 (`currentHP −= currentHP·pp·N`, N — зелья за последние 4 с).
-- **Downed** (компаньоны): pp126 (радиус воскрешения `2.5·(1+pp)` м), pp127 (скорость `0.167·(1+pp)`/с).
+- **Via `CharacterMutator.onPotionUse`**: pp248 (mana = `min(meteors in 4 s · pp, 200)`).
+- **Via `ApplyConditionalDefenses`/`ProtectionClass.ApplyDamage`**: pp525 — slot f8 «extra endurance» on delayed damage > 10% max HP; important detail: in modes 0/1 block only works if base endurance > 0. pp590 — `canSuperCrit`: at crit chance > 100% super crit chance `min(c−1, 0.5)`, +3.0 to crit multi before (1+moreCritMulti) multiply. pp660 — three MORE DamageTaken (Necrotic/Void/Poison), `pp·Attunement/10` («Apathy» = corrupted Attunement; code reads attribute 4 without corruption check).
+- **pp309** — contrary to prior note, **in switch**: sets `enduranceMode=1`; mana cost in «mana before health» becomes `(1−e)/5` per damage unit.
+- **HealthPotion** (not `CharacterMutator`): pp190 (heal = lost HP · pp · crit), pp507 (flag if value > 0.1; potion crit chance = global crit chance + 5%), pp528 (`critMult = 2 + critMultiStat·pp`), pp551 (`min(Σpp, 0.75)` don't spend charge), pp630 (second roll if potion restored ≥ 20% max HP), pp665 (`currentHP −= currentHP·pp·N`, N — potions in last 4 s).
+- **Downed** (companions): pp126 (resurrection radius `2.5·(1+pp)` m), pp127 (speed `0.167·(1+pp)` per s).
 
-## Что остаётся неразрешённым и почему
+## What Remains Unresolved and Why
 
-Ничего критичного. Оговорки:
-- Численные эффекты ailment-ассетов (Doom Brand, Smoke Blades, Shadow Dagger, Scathing Light-тик) лежат в ассетах, не в коде; в коде подтверждён только путь значения (`increasedEffect`, шанс).
-- `GetSumOfAttributeValues` (виртуальный слот +0x2d8 в Falconry) определён по имени переопределения `Stats`, а не по прямой метке в Ghidra.
-- Ghidra местами роняет float-аргументы; все такие места перепроверены по ISIL.
+Nothing critical. Caveats:
+- Numeric ailment asset effects (Doom Brand, Smoke Blades, Shadow Dagger, Scathing Light-tick) in assets, not code; code only confirms value path (`increasedEffect`, chance).
+- `GetSumOfAttributeValues` (virtual slot +0x2d8 in Falconry) defined by override name of `Stats`, not direct Ghidra label.
+- Ghidra drops float-args in places; all such places re-checked against ISIL.

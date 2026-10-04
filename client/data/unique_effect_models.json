@@ -36,14 +36,14 @@
    "mod": "added",
    "ailment": "Bleed",
    "per": "added:CriticalMultiplier",
-   "note": "коэффициент конверсии в коде не разрешён, принят 1"
+   "note": "conversion coefficient not allowed in code, taken as 1"
   },
   "142": {
    "stat": "IncreasedAilmentEffect",
    "mod": "added",
    "ailment": "Poison",
    "per": "added:CriticalMultiplier",
-   "note": "коэффициент конверсии в коде не разрешён, принят 1"
+   "note": "conversion coefficient not allowed in code, taken as 1"
   },
   "154": {
    "stat": "Movespeed",
@@ -297,7 +297,7 @@
    "when": [
     "enemy:Chill"
    ],
-   "note": "атакующий — противник из вкладки «Условия»"
+   "note": "attacker - opponent from Conditions tab"
   },
   "455": {
    "stat": "Armour",
@@ -305,7 +305,7 @@
    "when": [
     "enemy:Blind"
    ],
-   "note": "атакующий — противник из вкладки «Условия»"
+   "note": "attacker - opponent from Conditions tab"
   },
   "286": {
    "stat": "Armour",
@@ -313,7 +313,7 @@
    "when": [
     "enemy:Shock"
    ],
-   "note": "атакующий — противник из вкладки «Условия»"
+   "note": "attacker - opponent from Conditions tab"
   },
   "129": {
    "stat": "DamageTaken",
@@ -356,7 +356,7 @@
    "when": [
     "player:!crit_recently"
    ],
-   "note": "кроме поддерживаемых (channelled) умений"
+   "note": "except supported (channelled) abilities"
   },
   "89": {
    "stat": "CriticalChance",
@@ -421,7 +421,7 @@
    "when": [
     "player:haste"
    ],
-   "note": "без учёта увеличенного эффекта Haste"
+   "note": "without accounting for increased Haste effect"
   },
   "282": {
    "stat": "DamageTaken",
@@ -458,7 +458,7 @@
    "mod": "more",
    "tags": "Hit",
    "factor": -1,
-   "note": "шанс получить 0 урона учтён как среднее снижение урона от ударов"
+   "note": "chance to take 0 damage counted as average damage reduction from hits"
   },
   "254": {
    "kind": "overcap_taken",
@@ -526,17 +526,17 @@
   },
   "471": {
    "kind": "flag",
-   "text": "Нет барьера",
+   "text": "No ward",
    "confidence": "D"
   },
   "452": {
    "kind": "flag",
-   "text": "Иммунитет к ослеплению",
+   "text": "Immunity to Blind",
    "confidence": "D"
   },
   "453": {
    "kind": "flag",
-   "text": "Иммунитет к охлаждению",
+   "text": "Immunity to Chill",
    "confidence": "D"
   },
   "70": {
@@ -549,19 +549,19 @@
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер/с = v × недостающее здоровье",
+   "label": "Ward/sec = v × missing health",
    "confidence": "D"
   },
   "451": {
    "kind": "flag",
-   "text": "Иммунитет к кровотечению при низком здоровье",
+   "text": "Immunity to Bleed at low health",
    "confidence": "D"
   },
   "143": {
    "kind": "resource",
    "resource": "ward",
    "on": "dodge",
-   "label": "Барьер при уклонении (плоско, v)",
+   "label": "Ward on dodge (flat, v)",
    "confidence": "D"
   },
   "186": {
@@ -589,55 +589,55 @@
    "chance": 1,
    "count": 4,
    "icd": 3,
-   "note": "при призыве тотема; до 2 раз за 6 с",
+   "note": "on totem summon; up to 2 times per 6 sec",
    "confidence": "D?"
   },
   "233": {
    "kind": "flag",
-   "text": "Шанс получить Ускорение на 2 с при ближней атаке: v за каждые 20 барьера",
+   "text": "Chance to get Haste for 2 sec on melee hit: v per 20 ward",
    "confidence": "D?"
   },
   "117": {
    "kind": "flag",
-   "text": "Шанс v получить стак Гнева Рина на 5 с при крите ближнего боя (до 30 раз за 5 с)",
+   "text": "Chance v to get Rin's Wrath stack for 5 sec on melee crit (up to 30 times per 5 sec)",
    "confidence": "D?"
   },
   "500": {
    "kind": "flag",
-   "text": "Шанс v получить стак Бури при ближней атаке, попавшей по врагу",
+   "text": "Chance v to get Storm stack on melee hit landing vs enemy",
    "confidence": "D"
   },
   "614": {
    "kind": "flag",
-   "text": "Максимальный шанс блока ограничен значением v (75%)",
+   "text": "Max block chance limited to value v (75%)",
    "confidence": "D"
   },
   "118": {
    "kind": "resource",
    "resource": "health",
    "on": "dodge",
-   "label": "Здоровье при уклонении (плоско, v)",
+   "label": "Health on dodge (flat, v)",
    "confidence": "D"
   },
   "130": {
    "kind": "resource",
    "resource": "ward",
    "on": "crit",
-   "label": "Барьер при крите (плоско, v), шанс 30%, до 4 раз/с",
+   "label": "Ward on crit (flat, v), 30% chance, up to 4 times/sec",
    "confidence": "D"
   },
   "232": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер 75 при ударе по шокированному врагу, шанс v (3 раза за 2 с)",
+   "label": "Ward 75 on hit vs shocked enemy, chance v (3 times per 2 sec)",
    "confidence": "D"
   },
   "131": {
    "kind": "resource",
    "resource": "health",
    "on": "kill",
-   "label": "Здоровье за убийство × стаки кровотечения на цели",
+   "label": "Health on kill × Bleed stacks on target",
    "confidence": "D"
   },
   "4": {
@@ -647,7 +647,7 @@
    "chance": 1,
    "count": "v",
    "icd": 10,
-   "note": "v пчёл за 10 с",
+   "note": "v bees per 10 sec",
    "confidence": "D"
   },
   "633": {
@@ -657,7 +657,7 @@
    "per": "input:bees",
    "input": {
     "key": "bees",
-    "label": "Призванных пчёл",
+    "label": "Summoned bees",
     "default": 3
    },
    "confidence": "D"
@@ -679,12 +679,12 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 20,
-   "note": "если после удара здоровье ниже 50%",
+   "note": "if after hit health is below 50%",
    "confidence": "D"
   },
   "24": {
    "kind": "flag",
-   "text": "Зелье снимает оглушение и заморозку",
+   "text": "Potion removes stun and freeze",
    "confidence": "D"
   },
   "514": {
@@ -695,7 +695,7 @@
    "per": "input:forged",
    "input": {
     "key": "forged",
-    "label": "Кованых оружий",
+    "label": "Forged weapons",
     "default": 3
    },
    "confidence": "D"
@@ -710,7 +710,7 @@
   },
   "39": {
    "kind": "flag",
-   "text": "Шанс v наложить Гниение времени на атакующего при получении удара",
+   "text": "Chance v to apply Time Rot on attacker on hit received",
    "confidence": "D"
   },
   "40": {
@@ -719,7 +719,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 3,
-   "note": "в подсказке КД 2 с, в коде 3 с",
+   "note": "tooltip says 2 sec cooldown, code says 3 sec",
    "confidence": "D"
   },
   "42": {
@@ -728,7 +728,7 @@
    "on": "hit_taken",
    "chance": "v",
    "icd": 5,
-   "note": "только при получении крита",
+   "note": "only on crit received",
    "confidence": "D"
   },
   "239": {
@@ -740,10 +740,10 @@
    ],
    "input": {
     "key": "potion_recent",
-    "label": "Использовали зелье недавно",
+    "label": "Recently used potion",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "46": {
@@ -755,15 +755,15 @@
    ],
    "input": {
     "key": "stunned_recently",
-    "label": "Оглушили врага недавно",
+    "label": "Stunned enemy recently",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "48": {
    "kind": "flag",
-   "text": "Шанс v притянуть врагов (таунт на 2 с) при оглушении врага",
+   "text": "Chance v to pull enemies (taunt for 2 sec) on enemy stun",
    "confidence": "D"
   },
   "56": {
@@ -776,15 +776,15 @@
    ],
    "input": {
     "key": "cold_spell_recent",
-    "label": "Недавно колдовали холодное заклинание",
+    "label": "Recently cast cold spell",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "64": {
    "kind": "flag",
-   "text": "Шанс v получить Ускорение при убийстве заклинанием",
+   "text": "Chance v to get Haste on kill with spell",
    "confidence": "D"
   },
   "53": {
@@ -797,10 +797,10 @@
    ],
    "input": {
     "key": "phys_spell_recent",
-    "label": "Недавно колдовали физическое заклинание",
+    "label": "Recently cast physical spell",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "75": {
@@ -810,7 +810,7 @@
    "chance": 1,
    "count": "v",
    "icd": 15,
-   "note": "обновление наёмников каждые 15 с",
+   "note": "merc update every 15 sec",
    "confidence": "D?"
   },
   "77": {
@@ -823,15 +823,15 @@
    ],
    "input": {
     "key": "deicide",
-    "label": "Есть Богоубийство",
+    "label": "Has Godslayer",
     "default": false
    },
-   "note": "15 с после убийства редкого/босса; множитель 0.2 из константы кода, тип модификатора не подтверждён",
+   "note": "15 sec after kill of rare/boss; multiplier 0.2 from code constant, modifier type not confirmed",
    "confidence": "D?"
   },
   "79": {
    "kind": "flag",
-   "text": "Вы охлаждены каждые 3 с (7 с)",
+   "text": "You are chilled every 3 sec (7 sec)",
    "confidence": "D"
   },
   "32": {
@@ -844,7 +844,7 @@
   },
   "80": {
    "kind": "flag",
-   "text": "Каждые 3 с при высоком здоровье: -25% текущего здоровья и Апокалипсис на 3 с",
+   "text": "Every 3 sec at high health: -25% current health and Apocalypse for 3 sec",
    "confidence": "D"
   },
   "81": {
@@ -856,7 +856,7 @@
    "when": [
     "enemy:boss_or_rare"
    ],
-   "note": "также при убийстве в ближнем бою",
+   "note": "also on melee kill",
    "confidence": "D?"
   },
   "76": {
@@ -865,12 +865,12 @@
    "on": "use",
    "chance": "v",
    "icd": 1,
-   "note": "только ближние атаки",
+   "note": "melee hits only",
    "confidence": "D"
   },
   "82": {
    "kind": "flag",
-   "text": "Каждые 3 с барьер расходуется, давая стак Гибели за каждые 13 барьера",
+   "text": "Every 3 sec ward is spent, giving Doom stack per 13 ward",
    "confidence": "D"
   },
   "83": {
@@ -879,28 +879,28 @@
    "on": "use",
    "chance": "v",
    "icd": 0.3333,
-   "note": "при использовании умения миньонов, до 3 раз в секунду",
+   "note": "on minion ability use, up to 3 times per second",
    "confidence": "D"
   },
   "33": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit_taken",
-   "label": "Барьер (плоско, v), когда удар оставляет вас при низком здоровье, КД 5 с",
+   "label": "Ward (flat, v), when hit leaves you at low health, 5 sec cooldown",
    "confidence": "D"
   },
   "90": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер = v × текущая мана при остановке (КД 2 с)",
+   "label": "Ward = v × current mana on stop (2 sec cooldown)",
    "confidence": "D"
   },
   "96": {
    "kind": "resource",
    "resource": "health",
    "on": "hit_taken",
-   "label": "Здоровье при скользящем ударе (плоско, v)",
+   "label": "Health on sliding hit (flat, v)",
    "confidence": "D"
   },
   "133": {
@@ -909,7 +909,7 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 2,
-   "note": "если удар оставляет вас ниже порога выносливости; вы замедлены",
+   "note": "if hit leaves you below endurance threshold; you are slowed",
    "confidence": "D?"
   },
   "134": {
@@ -917,31 +917,31 @@
    "ability": "HeorotUniqueBowIcicle",
    "on": "hit",
    "chance": "v",
-   "note": "только удары луком",
+   "note": "bow hits only",
    "confidence": "D"
   },
   "135": {
    "kind": "resource",
    "resource": "ward",
    "on": "block",
-   "label": "Барьер = v × текущая мана при блоке",
+   "label": "Ward = v × current mana on block",
    "confidence": "D"
   },
   "139": {
    "kind": "flag",
-   "text": "Древний полёт на v с при движении после атаки",
+   "text": "Ancient Flight for v sec on move after attack",
    "confidence": "D"
   },
   "136": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер = v × текущая мана при касте огненного заклинания",
+   "label": "Ward = v × current mana on fire spell cast",
    "confidence": "D"
   },
   "137": {
    "kind": "flag",
-   "text": "Шанс v получить стак Рубинового яда на 12 с при блоке",
+   "text": "Chance v to get Ruby Poison stack for 12 sec on block",
    "confidence": "D"
   },
   "138": {
@@ -950,37 +950,37 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 20,
-   "note": "если удар оставляет здоровье ниже 30%; Ускорение на v с и полное восстановление",
+   "note": "if hit leaves health below 30%; Haste for v sec and full recovery",
    "confidence": "D?"
   },
   "140": {
    "kind": "flag",
-   "text": "Вы получаете Проклятие при касте заклинания",
+   "text": "You get Curse on spell cast",
    "confidence": "D"
   },
   "147": {
    "kind": "flag",
-   "text": "После зелья: Ярость фальшивой воды до исчерпания маны",
+   "text": "After potion: False Water Rage until mana depleted",
    "confidence": "D"
   },
   "148": {
    "kind": "flag",
-   "text": "Стак Раскалённых клинков (+2 огненного урона и 20% шанса поджога) при ближней атаке с попаданием",
+   "text": "Incandescent Blades stack (fire damage: +2, ignite chance 20%) on melee hit",
    "confidence": "D"
   },
   "150": {
    "kind": "flag",
-   "text": "Прямой каст холодного заклинания даёт Холодное насыщение (КД 20 с)",
+   "text": "Direct cast of cold spell gives Cold Saturation (20 sec cooldown)",
    "confidence": "D"
   },
   "151": {
    "kind": "flag",
-   "text": "Прямой каст огненного заклинания даёт Огненное насыщение (КД 20 с)",
+   "text": "Direct cast of fire spell gives Fire Saturation (20 sec cooldown)",
    "confidence": "D"
   },
   "152": {
    "kind": "flag",
-   "text": "Прямой каст заклинания молнии даёт Насыщение молнией (КД 20 с)",
+   "text": "Direct cast of lightning spell gives Lightning Saturation (20 sec cooldown)",
    "confidence": "D"
   },
   "284": {
@@ -993,7 +993,7 @@
    ],
    "input": {
     "key": "enemy_within_4m",
-    "label": "Враг в пределах 4 м",
+    "label": "Enemy within 4 m",
     "default": true
    },
    "confidence": "D"
@@ -1004,7 +1004,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 1.5,
-   "note": "неподвижный огненный торнадо; до 2 раз за 3 с",
+   "note": "stationary fire tornado; up to 2 times per 3 sec",
    "confidence": "D?"
   },
   "155": {
@@ -1012,17 +1012,17 @@
    "ability": "LightningBlast",
    "on": "hit",
    "chance": "v",
-   "note": "после ближней атаки с попаданием; +2 цепи",
+   "note": "after melee hit with hit; +2 chains",
    "confidence": "D?"
   },
   "157": {
    "kind": "flag",
-   "text": "Стак Барьера пустоты каждые 3 с выше порога выносливости",
+   "text": "Void Barrier stack every 3 sec above endurance threshold",
    "confidence": "D"
   },
   "160": {
    "kind": "flag",
-   "text": "Шанс v получить стак Амбиции при ударе по боссу/редкому",
+   "text": "Chance v to get Ambition stack on hit vs boss/rare",
    "confidence": "D"
   },
   "161": {
@@ -1035,7 +1035,7 @@
    ],
    "input": {
     "key": "void_melee_ready",
-    "label": "Следующая атака пустоты в ближнем бою усилена (раз в 2 с)",
+    "label": "Next void melee attack enhanced (every 2 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1050,7 +1050,7 @@
    ],
    "input": {
     "key": "void_melee_ready",
-    "label": "Следующая атака пустоты в ближнем бою усилена (раз в 2 с)",
+    "label": "Next void melee attack enhanced (every 2 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1065,7 +1065,7 @@
    ],
    "input": {
     "key": "fire_melee_ready",
-    "label": "Следующая огненная ближняя атака усилена (раз в 2 с)",
+    "label": "Next fire melee attack enhanced (every 2 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1080,7 +1080,7 @@
    ],
    "input": {
     "key": "fire_melee_ready",
-    "label": "Следующая огненная ближняя атака усилена (раз в 2 с)",
+    "label": "Next fire melee attack enhanced (every 2 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1097,19 +1097,19 @@
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Текущее здоровье (доля v) превращается в барьер при касте некротического заклинания",
+   "label": "Current health (fraction v) converts to ward on necrotic spell cast",
    "confidence": "D"
   },
   "168": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Текущее здоровье (доля v) превращается в барьер при касте стихийного заклинания",
+   "label": "Current health (fraction v) converts to ward on elemental spell cast",
    "confidence": "D"
   },
   "169": {
    "kind": "flag",
-   "text": "Шанс v получить стак Бездонного обряда при крите",
+   "text": "Chance v to get Abyssal Ritual stack on crit",
    "confidence": "D"
   },
   "170": {
@@ -1118,7 +1118,7 @@
    "mod": "added",
    "tags": "Fire|Spell",
    "factor": 0.3333,
-   "note": "каждое 3-е огненное заклинание гарантированно критует; усреднено на 1 из 3",
+   "note": "every 3rd fire spell guaranteed crit; averaged to 1 of 3",
    "confidence": "D?"
   },
   "173": {
@@ -1130,11 +1130,11 @@
    "factor": 0.1,
    "input": {
     "key": "ward_consumed",
-    "label": "Барьера потрачено за атаку",
+    "label": "Ward spent per attack",
     "default": 500,
     "max": 2000
    },
-   "note": "+1 урона ближнего боя за 10 потраченного барьера; максимум v барьера за атаку",
+   "note": "+1 melee damage per 10 ward spent; max v ward per attack",
    "confidence": "D"
   },
   "174": {
@@ -1148,19 +1148,19 @@
    "kind": "resource",
    "resource": "health",
    "on": "minion_hit",
-   "label": "Здоровье 50 при ударе миньона, шанс v",
+   "label": "Health 50 on minion hit, chance v",
    "confidence": "D"
   },
   "179": {
    "kind": "resource",
    "resource": "health",
    "on": "minion_death",
-   "label": "Здоровье 50 при смерти миньона, шанс v",
+   "label": "Health 50 on minion death, chance v",
    "confidence": "D"
   },
   "181": {
    "kind": "flag",
-   "text": "Павший компаньон воскресает через 2 с (КД 6 с)",
+   "text": "Fallen companion resurrects in 2 sec (6 sec cooldown)",
    "confidence": "D"
   },
   "184": {
@@ -1168,14 +1168,14 @@
    "ability": "ThornShield",
    "on": "use",
    "chance": "v",
-   "note": "при прямом использовании физического умения",
+   "note": "on direct use of physical ability",
    "confidence": "D"
   },
   "190": {
    "kind": "resource",
    "resource": "health",
    "on": "potion",
-   "label": "Недостающее здоровье (доля v) восстанавливается при использовании зелья",
+   "label": "Missing health (fraction v) recovered on potion use",
    "confidence": "D"
   },
   "193": {
@@ -1184,22 +1184,22 @@
    "mod": "increased",
    "per": "attr:att",
    "factor": 0.01,
-   "note": "коэффициент SP10/SP11 в коде не разрешён",
+   "note": "SP10/SP11 coefficient not allowed in code",
    "confidence": "D?"
   },
   "197": {
    "kind": "flag",
-   "text": "Характеристики Звёздного диска утраиваются на 4 с при умении движения (КД 12 с)",
+   "text": "Star Disc stats tripled for 4 sec on movement ability (12 sec cooldown)",
    "confidence": "D"
   },
   "198": {
    "kind": "flag",
-   "text": "Убийство оглушённого врага оглушает другого врага рядом на 2 с",
+   "text": "Killing stunned enemy stuns another nearby for 2 sec",
    "confidence": "D"
   },
   "199": {
    "kind": "flag",
-   "text": "Характеристики перчаток действуют и на миньонов",
+   "text": "Glove stats also apply to minions",
    "confidence": "D"
   },
   "203": {
@@ -1213,14 +1213,14 @@
    "kind": "resource",
    "resource": "health",
    "on": "minion_hit",
-   "label": "Здоровье при ударе компаньона (плоско, v)",
+   "label": "Health on companion hit (flat, v)",
    "confidence": "D"
   },
   "126": {
    "kind": "param",
    "param": "revive_range",
    "mod": "increased",
-   "label": "Дальность воскрешения компаньонов",
+   "label": "Companion resurrection range",
    "scope": "global",
    "confidence": "D"
   },
@@ -1228,33 +1228,33 @@
    "kind": "param",
    "param": "revive_speed",
    "mod": "increased",
-   "label": "Скорость воскрешения компаньонов",
+   "label": "Companion resurrection speed",
    "scope": "global",
    "confidence": "D"
   },
   "206": {
    "kind": "flag",
-   "text": "Установлены Сингулярности: больше урона ударами; крит. удары невозможны",
+   "text": "Singularities installed: more melee damage; crits impossible",
    "confidence": "D?"
   },
   "207": {
    "kind": "flag",
-   "text": "Шанс v открыть Блуждающего духа при убийстве (КД 1 с)",
+   "text": "Chance v to open Wandering Spirit on kill (1 sec cooldown)",
    "confidence": "D"
   },
   "208": {
    "kind": "flag",
-   "text": "Здоровье не выше порога выносливости",
+   "text": "Health not above endurance threshold",
    "confidence": "D"
   },
   "209": {
    "kind": "flag",
-   "text": "Стак Внутренностей каждые 2 с (до 3)",
+   "text": "Entrails stack every 2 sec (up to 3)",
    "confidence": "D"
   },
   "210": {
    "kind": "flag",
-   "text": "Шанс v получить стак Внутренностей при убийстве или ударе по боссу/редкому",
+   "text": "Chance v to get Entrails stack on kill or hit vs boss/rare",
    "confidence": "D"
   },
   "229": {
@@ -1267,7 +1267,7 @@
    ],
    "input": {
     "key": "bow_lightning_used",
-    "label": "Недавно использовали атаку молнии луком (2 с)",
+    "label": "Recently used lightning bow attack (2 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1282,14 +1282,14 @@
    ],
    "input": {
     "key": "throw_lightning_used",
-    "label": "Недавно использовали метательную атаку молнии (2 с)",
+    "label": "Recently used thrown lightning attack (2 sec)",
     "default": true
    },
    "confidence": "D"
   },
   "231": {
    "kind": "flag",
-   "text": "Ускорение на v с при срабатывании обоих эффектов за 2 с",
+   "text": "Haste for v sec on both effects trigger within 2 sec",
    "confidence": "D"
   },
   "212": {
@@ -1298,50 +1298,50 @@
    "on": "minion_death",
    "chance": "v",
    "icd": 0.5,
-   "note": "на миньона с наименьшим здоровьем",
+   "note": "on minion with lowest health",
    "confidence": "D"
   },
   "213": {
    "kind": "flag",
-   "text": "Стак Выносливости горы каждую секунду без движения (до 3)",
+   "text": "Mountain Endurance stack every second without move (up to 3)",
    "confidence": "D"
   },
   "217": {
    "kind": "flag",
-   "text": "Неуязвимость на v с после получения удара (КД 15 с)",
+   "text": "Invulnerability for v sec after hit received (15 sec cooldown)",
    "confidence": "D"
   },
   "214": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер при ударе: 2 за Поджог/Проклятие на цели, 30 на вас (до 2000, КД 2 с), шанс v",
+   "label": "Ward on hit: 2 per Ignite/Curse on target, 30 to you (up to 2000, 2 sec cooldown), chance v",
    "confidence": "D"
   },
   "221": {
    "kind": "flag",
-   "text": "Шанс поджечь себя при использовании умения огня или некротики",
+   "text": "Chance to ignite self on fire or necrotic ability use",
    "confidence": "D?"
   },
   "159": {
    "kind": "flag",
-   "text": "Шанс снять все ailments при использовании зелья",
+   "text": "Chance to remove all ailments on potion use",
    "confidence": "D?"
   },
   "223": {
    "kind": "flag",
-   "text": "Шанс получить Frenzy на 2 с при использовании огненного/некротического умения (за стак Ignite на вас, до 40)",
-   "note": "Frenzy не моделируется как число",
+   "text": "Chance to get Frenzy for 2 sec on fire/necrotic ability use (per Ignite stack on you, up to 40)",
+   "note": "Frenzy not modelled as number",
    "confidence": "D?"
   },
   "224": {
    "kind": "flag",
-   "text": "Шанс поджечь себя при убийстве",
+   "text": "Chance to ignite self on kill",
    "confidence": "D?"
   },
   "226": {
    "kind": "flag",
-   "text": "При использовании зелья все тотемы исцеляются и получают неуязвимость на 2 с",
+   "text": "On potion use all totems heal and get invulnerability for 2 sec",
    "confidence": "D?"
   },
   "227": {
@@ -1355,10 +1355,10 @@
    ],
    "input": {
     "key": "storm_totem_cast",
-    "label": "Только что призван Storm Totem (20 с)",
+    "label": "Just summoned Storm Totem (20 sec)",
     "default": true
    },
-   "note": "все существующие тотемы на 20 с",
+   "note": "all existing totems for 20 sec",
    "confidence": "D?"
   },
   "228": {
@@ -1371,19 +1371,19 @@
    ],
    "input": {
     "key": "next_move_skill",
-    "label": "Следующее умение перемещения (раз в 3 с)",
+    "label": "Next movement ability (every 3 sec)",
     "default": true
    },
-   "note": "только умения перемещения, раз в 3 с",
+   "note": "movement abilities only, every 3 sec",
    "confidence": "D?"
   },
   "235": {
    "kind": "param",
    "param": "hits",
    "mod": "added",
-   "label": "Повтор лучного умения (шанс)",
+   "label": "Bow ability repeat (chance)",
    "scope": "global",
-   "note": "перезарядка 1 с, задержка 0.3 с",
+   "note": "1 sec cooldown, 0.3 sec delay",
    "confidence": "D?"
   },
   "236": {
@@ -1395,24 +1395,24 @@
    "src_max": 10,
    "input": {
     "key": "gf_stacks",
-    "label": "Стаки Gathering Fury",
+    "label": "Gathering Fury stacks",
     "default": 10,
     "max": 10
    },
-   "note": "3 с на стак, до 10",
+   "note": "3 sec per stack, up to 10",
    "confidence": "D"
   },
   "211": {
    "kind": "flag",
-   "text": "Удар ближнего боя возвращает долю оставшейся перезарядки Volcanic Orb",
-   "note": "доля 18-30%",
+   "text": "Melee hit returns fraction of remaining Volcanic Orb cooldown",
+   "note": "fraction 18-30%",
    "confidence": "D?"
   },
   "237": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер при трансформации",
+   "label": "Ward on transformation",
    "scope": "global",
    "confidence": "D"
   },
@@ -1426,7 +1426,7 @@
    ],
    "input": {
     "key": "transformed",
-    "label": "После трансформации (6 с)",
+    "label": "After transformation (6 sec)",
     "default": true
    },
    "confidence": "D"
@@ -1435,7 +1435,7 @@
    "kind": "resource",
    "resource": "ward",
    "on": "dodge",
-   "label": "Барьер при уклонении во время каналирования",
+   "label": "Ward on dodge while channelling",
    "scope": "global",
    "confidence": "D?"
   },
@@ -1443,7 +1443,7 @@
    "kind": "resource",
    "resource": "mana",
    "on": "dodge",
-   "label": "Мана при уклонении во время каналирования",
+   "label": "Mana on dodge while channelling",
    "scope": "global",
    "confidence": "D?"
   },
@@ -1456,7 +1456,7 @@
    "src_max": 18,
    "input": {
     "key": "meteors",
-    "label": "Метеоров недавно",
+    "label": "Meteors recently",
     "default": 5,
     "max": 18
    },
@@ -1468,20 +1468,20 @@
    "on": "crit",
    "chance": "v",
    "scope": "global",
-   "note": "только если мана больше 0",
+   "note": "only if mana > 0",
    "confidence": "D"
   },
   "248": {
    "kind": "resource",
    "resource": "mana",
    "on": "potion",
-   "label": "Мана при использовании зелья за метеор",
+   "label": "Mana on potion use per meteor",
    "scope": "global",
    "per": "input:meteors",
    "max": 200,
    "input": {
     "key": "meteors",
-    "label": "Метеоров недавно",
+    "label": "Meteors recently",
     "default": 5,
     "max": 18
    },
@@ -1507,12 +1507,12 @@
   },
   "263": {
    "kind": "flag",
-   "text": "При прямом применении заклинания теряется доля текущего здоровья и барьера",
+   "text": "On direct spell use lose fraction of current health and ward",
    "confidence": "D?"
   },
   "269": {
    "kind": "flag",
-   "text": "После прямого применения заклинания отключается вампиризм здоровья на 4 с",
+   "text": "After direct spell cast health leech disabled for 4 sec",
    "confidence": "D?"
   },
   "264": {
@@ -1532,27 +1532,27 @@
   },
   "266": {
    "kind": "flag",
-   "text": "Шанс получить Frozen Vengeance (8 с) при смерти миньона",
+   "text": "Chance to get Frozen Vengeance (8 sec) on minion death",
    "confidence": "D?"
   },
   "268": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер за удар за 10 недостающей маны",
+   "label": "Ward per hit per 10 missing mana",
    "scope": "global",
    "per": "input:missing_mana_tens",
    "input": {
     "key": "missing_mana_tens",
-    "label": "Недостающая мана (в десятках)",
+    "label": "Missing mana (in tens)",
     "default": 10
    },
-   "note": "только если текущий барьер меньше недостающего здоровья",
+   "note": "only if current ward < missing health",
    "confidence": "D?"
   },
   "270": {
    "kind": "flag",
-   "text": "+1 стак Golden Aegis каждую секунду",
+   "text": "+1 Golden Aegis stack every second",
    "confidence": "D?"
   },
   "271": {
@@ -1563,7 +1563,7 @@
    "per": "input:aegis_stacks",
    "input": {
     "key": "aegis_stacks",
-    "label": "Стаки Golden Aegis",
+    "label": "Golden Aegis stacks",
     "default": 5
    },
    "confidence": "D"
@@ -1572,7 +1572,7 @@
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер при получении/обновлении Haste (не чаще 1 с)",
+   "label": "Ward on get/refresh Haste (not more than 1 sec)",
    "scope": "global",
    "when": [
     "player:haste"
@@ -1581,17 +1581,17 @@
   },
   "273": {
    "kind": "flag",
-   "text": "Шанс получить Haste на 3 с при смерти ближнего врага",
+   "text": "Chance to get Haste for 3 sec on nearby melee enemy death",
    "confidence": "D?"
   },
   "276": {
    "kind": "flag",
-   "text": "При получении/обновлении Haste миньоны получают Haste и Frenzy на 3 с",
+   "text": "On get/refresh Haste minions get Haste and Frenzy for 3 sec",
    "confidence": "D?"
   },
   "277": {
    "kind": "flag",
-   "text": "Шанс при ударе дать миньону Aspect of the Spider (КД 2 с)",
+   "text": "Chance on hit to give minion Aspect of the Spider (2 sec cooldown)",
    "confidence": "D?"
   },
   "278": {
@@ -1601,7 +1601,7 @@
    "per": "input:missing_mana_tens",
    "input": {
     "key": "missing_mana_tens",
-    "label": "Недостающая мана (в десятках)",
+    "label": "Missing mana (in tens)",
     "default": 10
    },
    "confidence": "D"
@@ -1610,18 +1610,18 @@
    "kind": "resource",
    "resource": "health",
    "on": "kill",
-   "label": "Лечение при смерти врага/союзника рядом (минимум)",
+   "label": "Healing on nearby enemy/ally death (minimum)",
    "factor": 0.5,
-   "note": "среднее между минимумом и максимумом; КД 2 с",
+   "note": "average between minimum and maximum; 2 sec cooldown",
    "confidence": "D?"
   },
   "280": {
    "kind": "resource",
    "resource": "health",
    "on": "kill",
-   "label": "Лечение при смерти врага/союзника рядом (максимум)",
+   "label": "Healing on nearby enemy/ally death (maximum)",
    "factor": 0.5,
-   "note": "среднее между минимумом и максимумом; КД 2 с",
+   "note": "average between minimum and maximum; 2 sec cooldown",
    "confidence": "D?"
   },
   "281": {
@@ -1632,20 +1632,20 @@
    "factor": 0.1666667,
    "input": {
     "key": "shadows",
-    "label": "Активных теней (Shadow)",
+    "label": "Active shadows (Shadow)",
     "default": 1
    },
-   "note": "шанс 1 из 6 за удар, учтён как среднее",
+   "note": "Chance 1 in 6 per hit, counted as average",
    "confidence": "D?"
   },
   "283": {
    "kind": "flag",
-   "text": "Шанс при ударе молнией дать волкам доп. урон молнией ближнего боя (Tempest Paws)",
+   "text": "Chance on lightning hit to give wolves additional melee lightning damage (Tempest Paws)",
    "confidence": "D?"
   },
   "329": {
    "kind": "flag",
-   "text": "Шанс вызвать Hydrahedron при убийстве огненным умением (КД 9 с)",
+   "text": "Chance to trigger Hydrahedron on kill with fire ability (9 sec cooldown)",
    "note": "9-18%",
    "confidence": "D?"
   },
@@ -1653,31 +1653,31 @@
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер за удар Hydrahedron (максимум 2000)",
+   "label": "Ward per Hydrahedron hit (max 2000)",
    "confidence": "D?"
   },
   "339": {
    "kind": "flag",
-   "text": "Интеллект равен силе",
+   "text": "Intelligence equals Strength",
    "confidence": "D?"
   },
   "343": {
    "kind": "resource",
    "resource": "mana",
    "on": "potion",
-   "label": "Мана при использовании зелья за 4 интеллекта",
+   "label": "Mana on potion use per 4 Intelligence",
    "per": "attr:int",
    "factor": 0.25,
    "confidence": "D"
   },
   "344": {
    "kind": "flag",
-   "text": "Cuckoo может превратиться в случайный exalted-предмет при смерти врага рядом",
+   "text": "Cuckoo can transform into random exalted item on nearby enemy death",
    "confidence": "D?"
   },
   "382": {
    "kind": "flag",
-   "text": "Множитель характеристик пояса на 1 с при использовании зелья",
+   "text": "Belt characteristic multiplier for 1 sec on potion use",
    "confidence": "D?"
   },
   "383": {
@@ -1687,7 +1687,7 @@
    "per": "input:weaver_items",
    "input": {
     "key": "weaver_items",
-    "label": "Надетых предметов Weaver",
+    "label": "Equipped Weaver items",
     "default": 1
    },
    "confidence": "D"
@@ -1709,25 +1709,25 @@
    "per": "input:falcon_hits",
    "input": {
     "key": "falcon_hits",
-    "label": "Ударов сокола за 6 с",
+    "label": "Hawk hits per 6 sec",
     "default": 3
    },
-   "note": "только без оружия",
+   "note": "barehanded only",
    "confidence": "D?"
   },
   "402": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Cinder Strike за удар сокола",
+   "label": "Area of Cinder Strike per hawk hit",
    "scope": "component:CinderStrike",
    "per": "input:falcon_hits",
    "input": {
     "key": "falcon_hits",
-    "label": "Ударов сокола за 6 с",
+    "label": "Hawk hits per 6 sec",
     "default": 3
    },
-   "note": "только без оружия",
+   "note": "barehanded only",
    "confidence": "D?"
   },
   "403": {
@@ -1741,26 +1741,26 @@
    ],
    "input": {
     "key": "falcon_crit",
-    "label": "Недавно был крит (4 с)",
+    "label": "Recently was crit (4 sec)",
     "default": true
    },
-   "note": "КД 1 с",
+   "note": "1 sec cooldown",
    "confidence": "D?"
   },
   "404": {
    "kind": "flag",
-   "text": "Крит возвращает 25% оставшейся перезарядки умения сокола (КД 1 с)",
+   "text": "Crit returns 25% per remaining hawk cooldown (1 sec cooldown)",
    "confidence": "D?"
   },
   "409": {
    "kind": "flag",
-   "text": "Шанс при метательном ударе вернуть 8% перезарядки Aerial Assault (до 3 раз)",
+   "text": "Chance on thrown hit to return 8% per Aerial Assault cooldown (up to 3 times)",
    "note": "13-20%",
    "confidence": "D?"
   },
   "410": {
    "kind": "flag",
-   "text": "Шанс при парировании полностью исцелить вас и миньона и дать Frenzy на 5 с",
+   "text": "Chance on parry to fully heal you and minion and give Frenzy for 5 sec",
    "confidence": "D?"
   },
   "411": {
@@ -1771,30 +1771,30 @@
    "when": [
     "player:frenzy"
    ],
-   "note": "значение 20-30 принято как плоский добавленный урон",
+   "note": "value 20-30 taken as flat added damage",
    "confidence": "D?"
   },
   "412": {
    "kind": "flag",
-   "text": "Удар ближнего боя возвращает долю перезарядки Lethal Mirage (до 12 раз)",
+   "text": "Melee hit returns fraction of Lethal Mirage cooldown (up to 12 times)",
    "note": "6-24%",
    "confidence": "D?"
   },
   "415": {
    "kind": "flag",
-   "text": "Каждые 6 с при мане выше половины автоматически применяется Sigils of Hope за ману",
+   "text": "Every 6 sec at mana above half automatically use Sigils of Hope for mana",
    "confidence": "D?"
   },
   "416": {
    "kind": "flag",
-   "text": "Через 2 с после призыва миньоны автоматически приносятся в жертву (Sacrifice)",
+   "text": "After 2 sec of minion summon automatically sacrifice (Sacrifice)",
    "confidence": "D?"
   },
   "418": {
    "kind": "stat",
    "stat": "CriticalChance",
    "mod": "added",
-   "note": "только с Traitors Tongue в левой руке; действует на удары Spirit Plague",
+   "note": "only with Traitors Tongue in left hand; applies to Spirit Plague hits",
    "confidence": "D?"
   },
   "444": {
@@ -1803,12 +1803,12 @@
    "on": "hit",
    "chance": "v",
    "icd": 0.25,
-   "note": "ударом Javelin или ближнего боя; до 8 раз за 2 с",
+   "note": "by Javelin or melee hit; up to 8 times per 2 sec",
    "confidence": "D"
   },
   "445": {
    "kind": "flag",
-   "text": "Доля добавленного урона ближнего боя применяется как добавленный урон заклинаний к Cold/Void заклинаниям",
+   "text": "Fraction of added melee damage applied as added spell damage to Cold/Void spells",
    "note": "25-42%",
    "confidence": "D?"
   },
@@ -1818,27 +1818,27 @@
    "on": "hit",
    "chance": "v",
    "icd": 0.3333,
-   "note": "ударом ближнего боя; до 3 раз в секунду",
+   "note": "by melee hit; up to 3 times per second",
    "confidence": "D"
   },
   "450": {
    "kind": "flag",
-   "text": "Иммунитет к Slow и Chill",
+   "text": "Immunity to Slow and Chill",
    "confidence": "D?"
   },
   "330": {
    "kind": "flag",
-   "text": "Haste после использования умения перемещения (1.4-1.9 с)",
+   "text": "Haste after movement ability use (1.4-1.9 sec)",
    "confidence": "D?"
   },
   "449": {
    "kind": "flag",
-   "text": "Haste после использования Evade (1.4-1.9 с)",
+   "text": "Haste after Evade use (1.4-1.9 sec)",
    "confidence": "D?"
   },
   "456": {
    "kind": "flag",
-   "text": "Шанс передать все стаки Shock с вас ближним врагам при использовании Evade",
+   "text": "Chance to transfer all Shock stacks from you to nearby enemies on Evade use",
    "confidence": "D?"
   },
   "457": {
@@ -1846,60 +1846,60 @@
    "ability": "StaticOrb",
    "on": "use",
    "chance": "v",
-   "note": "при использовании Evade, стоит 90% маны умения",
+   "note": "on Evade use, costs 90% ability mana",
    "confidence": "D?"
   },
   "458": {
    "kind": "flag",
-   "text": "При использовании Evade теряется доля текущего здоровья и барьера",
+   "text": "On Evade use lose fraction of current health and ward",
    "confidence": "D?"
   },
   "459": {
    "kind": "flag",
-   "text": "Frenzy после использования Evade (1.2-4 с)",
+   "text": "Frenzy after Evade use (1.2-4 sec)",
    "confidence": "D?"
   },
   "465": {
    "kind": "flag",
-   "text": "Меньше создаваемой угрозы (threat)",
+   "text": "Less threat generation",
    "note": "-30%",
    "confidence": "D?"
   },
   "309": {
    "kind": "flag",
-   "text": "Выносливость (Endurance) применяется ко всему урону по мане",
+   "text": "Endurance applies to all mana damage",
    "note": "40-56%",
    "confidence": "D?"
   },
   "255": {
    "kind": "flag",
-   "text": "Максимум меньше получаемого урона за каждые 2% сопротивления выше обычного лимита",
-   "note": "до 20%",
+   "text": "Max less damage taken per 2% resistance above normal limit",
+   "note": "up to 20%",
    "confidence": "D?"
   },
   "467": {
    "kind": "flag",
-   "text": "Иммунитет к Slow",
+   "text": "Immunity to Slow",
    "confidence": "D?"
   },
   "469": {
    "kind": "flag",
-   "text": "Включается механика Swiftness",
+   "text": "Swiftness mechanic enabled",
    "confidence": "D?"
   },
   "470": {
    "kind": "flag",
-   "text": "Шанс получить Dusk Shroud при уклонении",
+   "text": "Chance to get Dusk Shroud on dodge",
    "confidence": "D?"
   },
   "472": {
    "kind": "flag",
-   "text": "Нет получения барьера в бою",
+   "text": "No ward gain in combat",
    "confidence": "D?"
   },
   "475": {
    "kind": "flag",
-   "text": "Шанс получить Dilation при ударе ближнего боя",
+   "text": "Chance to get Dilation on melee hit",
    "confidence": "D?"
   },
   "476": {
@@ -1909,10 +1909,10 @@
    "per": "input:mana_cost",
    "input": {
     "key": "mana_cost",
-    "label": "Стоимость умения в мане",
+    "label": "Ability cost in mana",
     "default": 10
    },
-   "note": "только умения ближнего боя с областью",
+   "note": "melee abilities with area only",
    "confidence": "D?"
   },
   "477": {
@@ -1923,14 +1923,14 @@
    "per": "input:mana_cost",
    "input": {
     "key": "mana_cost",
-    "label": "Стоимость умения в мане",
+    "label": "Ability cost in mana",
     "default": 10
    },
    "confidence": "D?"
   },
   "479": {
    "kind": "flag",
-   "text": "Создаёт Wandering Spirit при прямом использовании умения огня, некротики или бездны",
+   "text": "Creates Wandering Spirit on direct use of fire, necrotic or void ability",
    "confidence": "D?"
   },
   "480": {
@@ -1938,7 +1938,7 @@
    "ability": "Doom Pulse",
    "on": "cast",
    "chance": 1,
-   "note": "при прямом сотворении заклинания Fire/Cold/Lightning/Necrotic/Void",
+   "note": "on direct casting of Fire/Cold/Lightning/Necrotic/Void spell",
    "confidence": "D"
   },
   "481": {
@@ -1949,15 +1949,15 @@
    "max": 500,
    "input": {
     "key": "mana_spent",
-    "label": "Потрачено маны за 5 с",
+    "label": "Mana spent per 5 sec",
     "default": 300
    },
-   "note": "на 5 с, максимум 500",
+   "note": "for 5 sec, max 500",
    "confidence": "D?"
   },
   "495": {
    "kind": "flag",
-   "text": "Исторические миньоны Tolmat",
+   "text": "Historical minions Tolmat",
    "confidence": "D?"
   },
   "496": {
@@ -1966,38 +1966,38 @@
    "mod": "more",
    "factor": -1,
    "max": 0.75,
-   "note": "доля урона перенаправляется на миньона с наибольшим здоровьем (макс. 75%)",
+   "note": "fraction of damage redirected to minion with highest health (max 75%)",
    "confidence": "D?"
   },
   "498": {
    "kind": "flag",
-   "text": "Удар от босса или редкого врага растягивается на 4 с",
+   "text": "Hit from boss or rare enemy stretched over 4 sec",
    "note": "20-25%",
    "confidence": "D?"
   },
   "499": {
    "kind": "flag",
-   "text": "Потраченная мана возвращается вам уроном",
+   "text": "Spent mana returned to you as damage",
    "confidence": "D?"
   },
   "502": {
    "kind": "flag",
-   "text": "Стаки Crystalwind в секунду при движении",
+   "text": "Crystalwind stacks per second on move",
    "confidence": "D?"
   },
   "503": {
    "kind": "flag",
-   "text": "Стаки Crystalwind при использовании Evade",
+   "text": "Crystalwind stacks on Evade use",
    "confidence": "D?"
   },
   "504": {
    "kind": "flag",
-   "text": "Шанс замедлить боссов и редких врагов за потраченный стак Crystalwind",
+   "text": "Chance to slow bosses and rare enemies per spent Crystalwind stack",
    "confidence": "D?"
   },
   "505": {
    "kind": "flag",
-   "text": "Шанс превратить других врагов в камень за потраченный стак Crystalwind",
+   "text": "Chance to petrify other enemies per spent Crystalwind stack",
    "confidence": "D?"
   },
   "506": {
@@ -2008,21 +2008,21 @@
    "src_max": 4,
    "input": {
     "key": "cw_stacks",
-    "label": "Потрачено стаков Crystalwind",
+    "label": "Spent Crystalwind stacks",
     "default": 4,
     "max": 4
    },
-   "note": "дальнобойные умения",
+   "note": "ranged abilities",
    "confidence": "D"
   },
   "507": {
    "kind": "flag",
-   "text": "Шанс крита применяется к использованию зелья",
+   "text": "Crit chance applies to potion use",
    "confidence": "D?"
   },
   "528": {
    "kind": "flag",
-   "text": "Множитель критического урона применяется к зельям",
+   "text": "Crit damage multiplier applies to potions",
    "confidence": "D?"
   },
   "508": {
@@ -2031,24 +2031,24 @@
    "on": "hit",
    "chance": "v",
    "icd": 1.6667,
-   "note": "до 6 раз за 10 с; сбрасывается при использовании зелья",
+   "note": "up to 6 times per 10 sec; resets on potion use",
    "confidence": "D"
   },
   "336": {
    "kind": "resource",
    "resource": "mana",
    "on": "potion",
-   "label": "Мана при использовании зелья",
+   "label": "Mana on potion use",
    "confidence": "D"
   },
   "509": {
    "kind": "flag",
-   "text": "Использование зелья сбрасывает перезарядку Volatile Reversal",
+   "text": "Potion use resets Volatile Reversal cooldown",
    "confidence": "D?"
   },
   "510": {
    "kind": "flag",
-   "text": "Статы предмета удваиваются на 5 с после удара по боссу/редкому с малым здоровьем",
+   "text": "Item stats doubled for 5 sec after hit vs boss/rare at low health",
    "confidence": "D?"
   },
   "512": {
@@ -2060,14 +2060,14 @@
    "per": "input:weaver_items",
    "input": {
     "key": "weaver_items",
-    "label": "Надетых предметов Weaver's Will",
+    "label": "Equipped Weaver's Will items",
     "default": 1
    },
    "confidence": "D"
   },
   "517": {
    "kind": "flag",
-   "text": "Множитель характеристик оружия для сотворений с Elemental Essence",
+   "text": "Weapon characteristic multiplier for castings with Elemental Essence",
    "confidence": "D?"
   },
   "516": {
@@ -2079,33 +2079,33 @@
    "src_max": 5,
    "input": {
     "key": "weaver_items",
-    "label": "Надетых предметов Weaver's Will",
+    "label": "Equipped Weaver's Will items",
     "default": 1,
     "max": 5
    },
-   "note": "также Poison и Electrify; моделируется как Bleed",
+   "note": "also Poison and Electrify; modelled as Bleed",
    "confidence": "D?"
   },
   "518": {
    "kind": "flag",
-   "text": "Множитель характеристик амулета для выбранного миньона (раз в 10 с)",
+   "text": "Amulet characteristic multiplier for chosen minion (every 10 sec)",
    "confidence": "D?"
   },
   "522": {
    "kind": "flag",
-   "text": "Каждую секунду 20% шанс окаменить каждого врага, смотрящего на вас, на 2 с",
+   "text": "Every second 20% chance to petrify each enemy looking at you for 2 sec",
    "confidence": "D"
   },
   "523": {
    "kind": "flag",
-   "text": "20% шанс окаменить атакующего на 2 с при блоке",
+   "text": "20% chance to petrify attacker on block for 2 sec",
    "confidence": "D"
   },
   "524": {
    "kind": "flag",
-   "text": "Эффективность блока применяется и к урону с течением времени (×v)",
+   "text": "Block effectiveness also applies to damage over time (×v)",
    "confidence": "D?",
-   "note": "Нет стата в калькуляторе; множитель 1-блок×v к DoT"
+   "note": "No stat in calculator; multiplier 1-block×v to DoT"
   },
   "526": {
    "kind": "trigger",
@@ -2113,16 +2113,16 @@
    "on": "cast",
    "chance": "v",
    "confidence": "D?",
-   "note": "Уклонение (Evade) создаёт Glacier вдоль пути"
+   "note": "Evade creates Glacier along path"
   },
   "519": {
    "kind": "flag",
-   "text": "Постоянный Haste",
+   "text": "Permanent Haste",
    "confidence": "D"
   },
   "520": {
    "kind": "flag",
-   "text": "Пока есть Ignite Overload и Damned Overload: Witchfire на врагов в 10 м каждую секунду",
+   "text": "While Ignite Overload and Damned Overload exist: Witchfire to enemies in 10 m every second",
    "confidence": "D"
   },
   "521": {
@@ -2132,7 +2132,7 @@
    "confidence": "D?",
    "tags": "Ailment",
    "per": "increased:Damage",
-   "note": "Witchfire: более урона = v × увеличение урона проклятий; считается от всего увеличения урона (приближение)"
+   "note": "Witchfire: more damage = v × curse damage increase; counted from all damage increase (approximation)"
   },
   "525": {
    "kind": "stat",
@@ -2144,10 +2144,10 @@
    ],
    "input": {
     "key": "delayed_dmg",
-    "label": "Задержанного урона более 10% макс. здоровья",
+    "label": "Delayed damage more than 10% max health",
     "default": true
    },
-   "note": "Снижение урона ниже порога стойкости"
+   "note": "Damage reduction below endurance threshold"
   },
   "527": {
    "kind": "stat",
@@ -2159,10 +2159,10 @@
    ],
    "input": {
     "key": "potion_buff",
-    "label": "Зелье использовано (4 с)",
+    "label": "Potion used (4 sec)",
     "default": true
    },
-   "note": "На 4 с после использования зелья"
+   "note": "For 4 sec after potion use"
   },
   "530": {
    "kind": "stat",
@@ -2174,20 +2174,20 @@
    "src_max": 5,
    "input": {
     "key": "target_dist",
-    "label": "Расстояние до цели, м",
+    "label": "Distance to target, m",
     "default": 5,
     "max": 5
    },
-   "note": "За каждый метр до цели, до 5 м"
+   "note": "Per meter to target, up to 5 m"
   },
   "531": {
    "kind": "flag",
-   "text": "Шанс блока превращается в шанс парирования без щита",
+   "text": "Block chance converts to parry chance without shield",
    "confidence": "D"
   },
   "529": {
    "kind": "flag",
-   "text": "Стак Kismet за ближнюю атаку (потребляется метательной атакой: +8% крита и +8 физ. урона за стак)",
+   "text": "Kismet stack per melee hit (consumed by thrown hit: +8% crit and +8 phys damage per stack)",
    "confidence": "D?"
   },
   "565": {
@@ -2198,29 +2198,29 @@
    "per": "input:spirit_battery",
    "input": {
     "key": "spirit_battery",
-    "label": "Стаков Spirit Battery",
+    "label": "Spirit Battery stacks",
     "default": 3,
     "max": 3
    }
   },
   "615": {
    "kind": "flag",
-   "text": "Стаки Spirit Battery за триггер (убийство / удар по редкому или боссу)",
+   "text": "Spirit Battery stacks per trigger (kill / hit vs rare or boss)",
    "confidence": "D"
   },
   "553": {
    "kind": "flag",
-   "text": "Не более одного компаньона каждого типа",
+   "text": "Not more than one companion of each type",
    "confidence": "D"
   },
   "555": {
    "kind": "flag",
-   "text": "Иммунитет к Shock",
+   "text": "Immunity to Shock",
    "confidence": "D"
   },
   "557": {
    "kind": "flag",
-   "text": "Заряды Уклонения при использовании зелья",
+   "text": "Dodge charges on potion use",
    "confidence": "D"
   },
   "558": {
@@ -2229,7 +2229,7 @@
    "on": "cast",
    "chance": 1,
    "confidence": "D?",
-   "note": "После Уклонения рядом с врагом"
+   "note": "After Dodge near enemy"
   },
   "568": {
    "kind": "stat",
@@ -2240,7 +2240,7 @@
   },
   "616": {
    "kind": "flag",
-   "text": "Призывает Тираннозавра",
+   "text": "Summons Tyrannosaurus",
    "confidence": "D"
   },
   "570": {
@@ -2250,15 +2250,15 @@
    "chance": "v",
    "confidence": "D?",
    "count": 1,
-   "note": "Шанс каждую секунду создать огненного духа рядом с подожжённым врагом"
+   "note": "Chance every second to create fire spirit near burning enemy"
   },
   "571": {
    "kind": "param",
    "param": "hits",
    "mod": "added",
-   "label": "Повтор огненного умения духами",
+   "label": "Fire spirit ability repeat",
    "confidence": "D?",
-   "note": "Шанс повтора непрерывных огненных умений духами в 12 м"
+   "note": "Chance to repeat continuous fire abilities by spirits in 12 m"
   },
   "572": {
    "kind": "stat",
@@ -2272,10 +2272,10 @@
    ],
    "input": {
     "key": "wisp_cast",
-    "label": "Умение применено духом",
+    "label": "Ability used by spirit",
     "default": true
    },
-   "note": "Только умения, применённые огненными духами"
+   "note": "Only abilities used by fire spirits"
   },
   "573": {
    "kind": "stat",
@@ -2288,14 +2288,14 @@
    ],
    "input": {
     "key": "wisp_cast",
-    "label": "Умение применено духом",
+    "label": "Ability used by spirit",
     "default": true
    },
-   "note": "Только повторы умений духами"
+   "note": "Only ability repeats by spirits"
   },
   "574": {
    "kind": "flag",
-   "text": "Каждые 0.5 с урон врагам перед вами = v × урон отражения",
+   "text": "Every 0.5 sec damage to enemies before you = v × reflection damage",
    "confidence": "D?"
   },
   "575": {
@@ -2309,7 +2309,7 @@
   },
   "582": {
    "kind": "flag",
-   "text": "Множитель статов оружия в основной руке за каждый магический предмет (кроме идолов)",
+   "text": "Weapon stat multiplier in main hand per magic item (except idols)",
    "confidence": "D?"
   },
   "577": {
@@ -2320,11 +2320,11 @@
    "confidence": "D?",
    "count": "v",
    "icd": 6,
-   "note": "После навыка передвижения, до 2 раз за 12 с"
+   "note": "After movement skill, up to 2 times per 12 sec"
   },
   "578": {
    "kind": "flag",
-   "text": "Призывает Anurok до лимита компаньонов",
+   "text": "Summons Anurok up to companion limit",
    "confidence": "D"
   },
   "579": {
@@ -2334,7 +2334,7 @@
    "chance": "v",
    "confidence": "D",
    "icd": 0.4,
-   "note": "До 5 раз за 2 с"
+   "note": "Up to 5 times per 2 sec"
   },
   "580": {
    "kind": "stat",
@@ -2345,7 +2345,7 @@
    "scope": "component:PrimordialBloodSplatter",
    "per": "enemy_stacks:Bleed",
    "src_max": 20,
-   "note": "За стак кровотечения на убитом враге"
+   "note": "Per Bleed stack on killed enemy"
   },
   "581": {
    "kind": "trigger",
@@ -2354,26 +2354,26 @@
    "chance": "v",
    "confidence": "D?",
    "icd": 8,
-   "note": "После навыка передвижения в 16 м от босса/редкого, до 2 раз за 16 с"
+   "note": "After movement skill in 16 m from boss/rare, up to 2 times per 16 sec"
   },
   "583": {
    "kind": "flag",
-   "text": "Множитель статов неуникальных идолов",
+   "text": "Non-unique idol stat multiplier",
    "confidence": "D?"
   },
   "584": {
    "kind": "flag",
-   "text": "Иммунитет к Bleed",
+   "text": "Immunity to Bleed",
    "confidence": "D"
   },
   "585": {
    "kind": "flag",
-   "text": "Усиление эффекта модификаторов уровня умений на легендарных аффиксах",
+   "text": "Enhancement of skill level modifier effects on legendary affixes",
    "confidence": "D?"
   },
   "586": {
    "kind": "flag",
-   "text": "Усиление статов неуникальных идолов уникальной формы",
+   "text": "Enhancement of non-unique idol stats with unique form",
    "confidence": "D?"
   },
   "587": {
@@ -2387,63 +2387,63 @@
    ],
    "input": {
     "key": "first_hit",
-    "label": "Первый удар от этого врага",
+    "label": "First hit from this enemy",
     "default": false
    },
-   "note": "Только первый удар от каждого врага"
+   "note": "Only first hit per enemy"
   },
   "588": {
    "kind": "flag",
-   "text": "Избыточный урон (overkill) наносится как прямой урон врагам в 8 м",
+   "text": "Overkill damage dealt as direct damage to enemies in 8 m",
    "confidence": "D?"
   },
   "589": {
    "kind": "flag",
-   "text": "Усиленные статы на экзальтированном оружии в левой руке",
+   "text": "Enhanced stats on exalted weapon in left hand",
    "confidence": "D?"
   },
   "590": {
    "kind": "flag",
-   "text": "Можно наносить суперкритические удары",
+   "text": "Can perform super-crits",
    "confidence": "D"
   },
   "289": {
    "kind": "resource",
    "resource": "mana",
    "on": "use",
-   "label": "Мана за 3 бесплатных умения подряд (КД 3 с)",
+   "label": "Mana per 3 free abilities in a row (3 sec cooldown)",
    "confidence": "D"
   },
   "290": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер за 3 бесплатных умения подряд (КД 3 с)",
+   "label": "Ward per 3 free abilities in a row (3 sec cooldown)",
    "confidence": "D"
   },
   "591": {
    "kind": "flag",
-   "text": "Шанс повторить последнюю атаку луком после Уклонения",
+   "text": "Chance to repeat last bow attack after Dodge",
    "confidence": "D"
   },
   "593": {
    "kind": "flag",
-   "text": "Стак Excoriation при убийстве/ударе Flay по боссу или редкому",
+   "text": "Excoriation stack on kill/Flay hit vs boss or rare",
    "confidence": "D"
   },
   "594": {
    "kind": "flag",
-   "text": "Призыв Rift Beast при ударе, оставляющем босса ниже 40% здоровья (КД 40 с)",
+   "text": "Rift Beast summon on hit leaving boss below 40% health (40 sec cooldown)",
    "confidence": "D"
   },
   "599": {
    "kind": "flag",
-   "text": "Вампиризм также высасывает здоровье ближайшего врага в 6 м (v × вампиризм)",
+   "text": "Leech also drains health of nearest enemy in 6 m (v × leech)",
    "confidence": "D?"
   },
   "600": {
    "kind": "flag",
-   "text": "Вампиризм высасывает здоровье ближайшего врага в 6 м при Frenzy",
+   "text": "Leech drains health of nearest enemy in 6 m on Frenzy",
    "confidence": "D?"
   },
   "601": {
@@ -2455,11 +2455,11 @@
    "when": [
     "player:frenzy"
    ],
-   "note": "Пока есть Frenzy"
+   "note": "While Frenzy is active"
   },
   "604": {
    "kind": "flag",
-   "text": "Frenzy на v секунд при использовании зелья",
+   "text": "Frenzy for v seconds on potion use",
    "confidence": "D"
   },
   "605": {
@@ -2482,19 +2482,19 @@
   },
   "607": {
    "kind": "flag",
-   "text": "Шанс получить Ancestral Pack при ударе миньона (КД 1 с)",
+   "text": "Chance to get Ancestral Pack on minion hit (1 sec cooldown)",
    "confidence": "D"
   },
   "608": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер = порог стойкости × v при получении стака Ancestral Pack",
+   "label": "Ward = endurance threshold × v on Ancestral Pack stack receive",
    "confidence": "D?"
   },
   "609": {
    "kind": "flag",
-   "text": "Лимит барьера = v × макс. здоровье",
+   "text": "Ward limit = v × max health",
    "confidence": "D?"
   },
   "611": {
@@ -2503,28 +2503,28 @@
    "mod": "more",
    "confidence": "D",
    "factor": -1,
-   "note": "Регенерация маны отключена"
+   "note": "Mana regen disabled"
   },
   "612": {
    "kind": "resource",
    "resource": "mana",
    "on": "hit",
-   "label": "Мана (и 12 здоровья) за удар за каждые 12% ускорения регенерации маны",
+   "label": "Mana (and 12 health) per hit per 12% mana regen speed",
    "confidence": "D?"
   },
   "613": {
    "kind": "flag",
-   "text": "Постоянный Frenzy",
+   "text": "Permanent Frenzy",
    "confidence": "D"
   },
   "215": {
    "kind": "flag",
-   "text": "Нельзя оглушить заблокированными ударами",
+   "text": "Cannot stun blocked hits",
    "confidence": "D"
   },
   "626": {
    "kind": "flag",
-   "text": "Шанс получить Haste на 5 с после блока",
+   "text": "Chance to get Haste for 5 sec after block",
    "confidence": "D"
   },
   "621": {
@@ -2534,7 +2534,7 @@
    "confidence": "D?",
    "per": "total_attr",
    "factor": 0.008333333333333333,
-   "note": "За каждые 120 суммарных атрибутов (непрерывно, не округляется)"
+   "note": "Per 120 total attributes (continuous, no rounding)"
   },
   "622": {
    "kind": "stat",
@@ -2554,14 +2554,14 @@
    ],
    "input": {
     "key": "hp_above_80",
-    "label": "Здоровье выше 80%",
+    "label": "Health above 80%",
     "default": true
    },
-   "note": "Теряется v текущего здоровья в секунду"
+   "note": "Lose v current health per second"
   },
   "630": {
    "kind": "flag",
-   "text": "Шанс не потратить зелье, восстанавливающее не менее 20% макс. здоровья",
+   "text": "Chance not to spend potion recovering at least 20% max health",
    "confidence": "D"
   },
   "656": {
@@ -2574,10 +2574,10 @@
    "factor": 0.1,
    "input": {
     "key": "madness",
-    "label": "Madness (скрытый атрибут Exulis)",
+    "label": "Madness (hidden Exulis attribute)",
     "default": 10
    },
-   "note": "За каждые 10 Madness"
+   "note": "Per 10 Madness"
   },
   "657": {
    "kind": "stat",
@@ -2589,10 +2589,10 @@
    "factor": -0.1,
    "input": {
     "key": "guile",
-    "label": "Guile (скрытый атрибут Exulis)",
+    "label": "Guile (hidden Exulis attribute)",
     "default": 10
    },
-   "note": "Шанс получить 0 урона учтён как среднее снижение урона от ударов; за каждые 10 Guile"
+   "note": "Chance to take 0 damage counted as average damage reduction from hits; per 10 Guile"
   },
   "658": {
    "kind": "stat",
@@ -2603,10 +2603,10 @@
    "factor": 0.1,
    "input": {
     "key": "brutality",
-    "label": "Brutality (скрытый атрибут Exulis)",
+    "label": "Brutality (hidden Exulis attribute)",
     "default": 10
    },
-   "note": "За каждые 10 Brutality"
+   "note": "Per 10 Brutality"
   },
   "659": {
    "kind": "stat",
@@ -2618,10 +2618,10 @@
    "factor": 0.1,
    "input": {
     "key": "rampancy",
-    "label": "Rampancy (скрытый атрибут Exulis)",
+    "label": "Rampancy (hidden Exulis attribute)",
     "default": 10
    },
-   "note": "За каждые 10 Rampancy"
+   "note": "Per 10 Rampancy"
   },
   "660": {
    "kind": "stat",
@@ -2633,36 +2633,36 @@
    "factor": 0.1,
    "input": {
     "key": "apathy",
-    "label": "Apathy (скрытый атрибут Exulis)",
+    "label": "Apathy (hidden Exulis attribute)",
     "default": 10
    },
-   "note": "За каждые 10 Apathy"
+   "note": "Per 10 Apathy"
   },
   "666": {
    "kind": "flag",
-   "text": "Нельзя иметь специализируемых миньонов, кроме скелетов",
+   "text": "Cannot have specializable minions except skeletons",
    "confidence": "D"
   },
   "664": {
    "kind": "flag",
-   "text": "Использует зелье каждую секунду, даже без зелий",
+   "text": "Uses potion every second, even without potions",
    "confidence": "D"
   },
   "551": {
    "kind": "flag",
-   "text": "Шанс не потратить зелье при использовании",
+   "text": "Chance not to spend potion on use",
    "confidence": "D"
   },
   "665": {
    "kind": "flag",
-   "text": "Потеря текущего здоровья при использовании зелья за каждое недавно использованное зелье",
+   "text": "Current health loss on potion use per recently used potion",
    "confidence": "D?"
   },
   "345": {
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер = v × текущая мана в секунду",
+   "label": "Ward = v × current mana per second",
    "confidence": "D?"
   },
   "669": {
@@ -2673,7 +2673,7 @@
    "when": [
     "player:frenzy"
    ],
-   "note": "Умножается на (эффект Frenzy + 1)"
+   "note": "Multiplied by (Frenzy effect + 1)"
   },
   "667": {
    "kind": "stat",
@@ -2684,10 +2684,10 @@
    "per": "input:highest_attr",
    "input": {
     "key": "highest_attr",
-    "label": "Наивысший атрибут",
+    "label": "Highest attribute",
     "default": 100
    },
-   "note": "За каждое очко наивысшего атрибута"
+   "note": "Per point of highest attribute"
   },
   "668": {
    "kind": "stat",
@@ -2698,19 +2698,19 @@
    "per": "input:lowest_attr",
    "input": {
     "key": "lowest_attr",
-    "label": "Наименьший атрибут",
+    "label": "Lowest attribute",
     "default": 50
    },
-   "note": "За каждое очко наименьшего атрибута"
+   "note": "Per point of lowest attribute"
   },
   "680": {
    "kind": "flag",
-   "text": "При использовании умения компаньона вы и компаньоны получаете Aspect of the Grole",
+   "text": "On minion ability use you and companions get Aspect of the Grole",
    "confidence": "D"
   },
   "681": {
    "kind": "flag",
-   "text": "Снижение перезарядки всех умений компаньонов на v с при использовании умения компаньона",
+   "text": "Cooldown reduction of all companion abilities v sec on companion ability use",
    "confidence": "D"
   },
   "13": {
@@ -2719,7 +2719,7 @@
    "mod": "increased",
    "confidence": "D?",
    "ailment": "AspectOfTheSharkVisuals",
-   "note": "Усиление эффекта Aspect of the Shark"
+   "note": "Enhancement of Aspect of the Shark effect"
   },
   "17": {
    "kind": "stat",
@@ -2727,7 +2727,7 @@
    "mod": "increased",
    "confidence": "D?",
    "ailment": "AspectOfTheViperVisuals",
-   "note": "Усиление эффекта Aspect of the Viper"
+   "note": "Enhancement of Aspect of the Viper effect"
   },
   "19": {
    "kind": "stat",
@@ -2735,7 +2735,7 @@
    "mod": "increased",
    "confidence": "D?",
    "ailment": "AspectOfTheLynxVisuals",
-   "note": "Усиление эффекта Aspect of the Lynx"
+   "note": "Enhancement of Aspect of the Lynx effect"
   },
   "683": {
    "kind": "stat",
@@ -2746,10 +2746,10 @@
    "per": "input:mana_cost",
    "input": {
     "key": "mana_cost",
-    "label": "Стоимость маны умения",
+    "label": "Skill mana cost",
     "default": 10
    },
-   "note": "За 1 маны; возможен предел 50%"
+   "note": "Per 1 mana; possible limit 50%"
   },
   "686": {
    "kind": "minion_stat",
@@ -2760,17 +2760,17 @@
    "offset": 0.75,
    "factor": 33.333333333333336,
    "min": 0,
-   "note": "За каждые 3% превышения предела сопротивления огню",
+   "note": "Per 3% above fire resistance limit",
    "confidence": "D"
   },
   "685": {
    "kind": "flag",
-   "text": "Весь получаемый урон от ударов обходит барьер",
+   "text": "All hit damage taken bypasses ward",
    "confidence": "D"
   },
   "687": {
    "kind": "flag",
-   "text": "Вампиризм не прекращается при полном здоровье",
+   "text": "Leech does not stop at full health",
    "confidence": "D"
   },
   "688": {
@@ -2781,7 +2781,7 @@
    "tags": "DoT",
    "per": "res:2",
    "factor": 5,
-   "note": "За каждые 20% сопротивления холоду (без предела)"
+   "note": "Per 20% cold resistance (no limit)"
   }
  },
  "ability": {
@@ -2909,7 +2909,7 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Шипового щита",
+   "label": "Area of Thorn Shield",
    "confidence": "D"
   },
   "61:0": {
@@ -2923,19 +2923,19 @@
    "kind": "param",
    "param": "projectiles",
    "mod": "added",
-   "label": "Снаряды Огненного шара",
+   "label": "Projectiles of Fire Ball",
    "confidence": "D"
   },
   "8:3": {
    "kind": "flag",
-   "text": "Можно призывать волков до максимума компаньонов",
+   "text": "Can summon wolves up to companion limit",
    "confidence": "D"
   },
   "120:4": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. скелетов",
+   "label": "Max skeletons",
    "confidence": "D"
   },
   "153:2": {
@@ -2946,7 +2946,7 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Огненной ауры",
+   "label": "Area of Fire Aura",
    "confidence": "D"
   },
   "220:4": {
@@ -2957,7 +2957,7 @@
    "per": "input:forged",
    "input": {
     "key": "forged",
-    "label": "Кованых оружий",
+    "label": "Forged weapons",
     "default": 3
    },
    "confidence": "D"
@@ -2970,7 +2970,7 @@
    "per": "input:forged",
    "input": {
     "key": "forged",
-    "label": "Кованых оружий",
+    "label": "Forged weapons",
     "default": 3
    },
    "confidence": "D"
@@ -2982,7 +2982,7 @@
    "per": "input:forged",
    "input": {
     "key": "forged",
-    "label": "Кованых оружий",
+    "label": "Forged weapons",
     "default": 3
    },
    "scope": "global",
@@ -2995,7 +2995,7 @@
    "per": "input:forged",
    "input": {
     "key": "forged",
-    "label": "Кованых оружий",
+    "label": "Forged weapons",
     "default": 3
    },
    "scope": "global",
@@ -3005,7 +3005,7 @@
    "kind": "resource",
    "resource": "rage",
    "on": "kill",
-   "label": "Ярость за убийство в форме Медведя-оборотня",
+   "label": "Rage on kill in Werebear form",
    "confidence": "D"
   },
   "215:0": {
@@ -3017,26 +3017,26 @@
   },
   "215:2": {
    "kind": "flag",
-   "text": "Белый мех в форме Медведя-оборотня",
+   "text": "White fur in Werebear form",
    "confidence": "D"
   },
   "223:1": {
    "kind": "resource",
    "resource": "rage",
    "on": "second",
-   "label": "Ярость каждые 3 с в форме Сприггана (v за 3 с)",
+   "label": "Rage every 3 sec in Spriggan form (v per 3 sec)",
    "confidence": "D"
   },
   "12:1": {
    "kind": "flag",
-   "text": "Стихийная нова применяется в месте цели",
+   "text": "Elemental nova applied at target location",
    "confidence": "D"
   },
   "185:0": {
    "kind": "resource",
    "resource": "mana",
    "on": "use",
-   "label": "Мана при использовании Жатвы",
+   "label": "Mana on Harvest use",
    "confidence": "D"
   },
   "162:2": {
@@ -3047,7 +3047,7 @@
    "per": "input:fire_auras",
    "input": {
     "key": "fire_auras",
-    "label": "Активных Огненных аур",
+    "label": "Active Fire Auras",
     "default": 1
    },
    "confidence": "D"
@@ -3061,7 +3061,7 @@
   },
   "195:8": {
    "kind": "flag",
-   "text": "Компаньоны впадают в бешенство от попадания Штормового тотема",
+   "text": "Companions go Berserk from Storm Totem hit",
    "confidence": "D"
   },
   "195:9": {
@@ -3074,11 +3074,11 @@
    "scope": "global",
    "input": {
     "key": "totem_stacks",
-    "label": "Стаков урона молнии от тотема",
+    "label": "Stacks of lightning damage from totem",
     "default": 3,
     "max": 3
    },
-   "note": "4 с, до 3 стаков",
+   "note": "4 sec, up to 3 stacks",
    "confidence": "D"
   },
   "195:4": {
@@ -3091,7 +3091,7 @@
    ],
    "input": {
     "key": "near_totem",
-    "label": "Рядом со Штормовым тотемом",
+    "label": "Near Storm Totem",
     "default": true
    },
    "confidence": "D"
@@ -3106,21 +3106,21 @@
    ],
    "input": {
     "key": "near_totem",
-    "label": "Рядом со Штормовым тотемом",
+    "label": "Near Storm Totem",
     "default": true
    },
    "confidence": "D"
   },
   "195:6": {
    "kind": "flag",
-   "text": "Вы получаете Бешенство на 3 с при попадании вашего Штормового тотема",
+   "text": "You get Berserk for 3 sec on your Storm Totem hit",
    "confidence": "D"
   },
   "195:5": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область ауры Штормового тотема",
+   "label": "Area of Storm Totem aura",
    "confidence": "D"
   },
   "195:3": {
@@ -3133,21 +3133,21 @@
    ],
    "input": {
     "key": "near_totem",
-    "label": "Рядом со Штормовым тотемом",
+    "label": "Near Storm Totem",
     "default": true
    },
    "confidence": "D"
   },
   "195:7": {
    "kind": "flag",
-   "text": "Вы получаете Ускорение на 3 с при попадании вашего Штормового тотема",
+   "text": "You get Haste for 3 sec on your Storm Totem hit",
    "confidence": "D"
   },
   "263:0": {
    "kind": "param",
    "param": "projectiles",
    "mod": "added",
-   "label": "Доп. снаряды Сюрикенов",
+   "label": "Additional Shuriken projectiles",
    "confidence": "D"
   },
   "224:0": {
@@ -3155,14 +3155,14 @@
    "stat": "CriticalChance",
    "mod": "added",
    "factor": 0.3333,
-   "note": "только третий удар Вихря; усреднено на 1 из 3 ударов",
+   "note": "only 3rd Whirlwind hit; averaged to 1 of 3 hits",
    "confidence": "D?"
   },
   "340:0": {
    "kind": "param",
    "param": "range",
    "mod": "more",
-   "label": "Дальность Сдвига",
+   "label": "Range of Shift",
    "factor": -1,
    "confidence": "D"
   },
@@ -3175,21 +3175,21 @@
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. баллист",
+   "label": "Max ballistas",
    "confidence": "D"
   },
   "377:0": {
    "kind": "param",
    "param": "projectiles",
    "mod": "added",
-   "label": "Доп. стрелы Мультивыстрела",
+   "label": "Additional Multi-shot arrows",
    "confidence": "D"
   },
   "450:0": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Танцующих ударов",
+   "label": "Area of Dancing Strikes",
    "confidence": "D"
   },
   "450:1": {
@@ -3202,7 +3202,7 @@
    ],
    "input": {
     "key": "in_arena",
-    "label": "Вы на боевой арене Танцующих ударов",
+    "label": "You are on Dancing Strikes arena",
     "default": true
    },
    "confidence": "D"
@@ -3215,7 +3215,7 @@
    "kind": "param",
    "param": "duration",
    "mod": "increased",
-   "label": "Длительность Града стрел",
+   "label": "Duration of Arrow Rain",
    "confidence": "D"
   },
   "440:2": {
@@ -3224,7 +3224,7 @@
   },
   "156:2": {
    "kind": "flag",
-   "text": "Огненная жатва бьёт по кругу вокруг вас",
+   "text": "Fire Harvest hits in circle around you",
    "confidence": "D"
   },
   "137:1": {
@@ -3233,14 +3233,14 @@
    "on": "hit",
    "chance": "v",
    "icd": 2,
-   "note": "только удар ближнего боя; на 5 ближайших целей",
+   "note": "melee hit only; on 5 nearest targets",
    "confidence": "D"
   },
   "137:2": {
    "kind": "resource",
    "resource": "health",
    "on": "use",
-   "label": "Здоровье от Разрыва крови (плоско, v)",
+   "label": "Health from Blood Burst (flat, v)",
    "confidence": "D"
   },
   "318:0": {
@@ -3259,7 +3259,7 @@
    "per": "input:maelstroms",
    "input": {
     "key": "maelstroms",
-    "label": "Активных Мальстремов",
+    "label": "Active Maelstroms",
     "default": 1
    },
    "confidence": "D"
@@ -3270,7 +3270,7 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "при прямом касте огненного заклинания",
+   "note": "on direct fire spell cast",
    "confidence": "D"
   },
   "517:3": {
@@ -3279,7 +3279,7 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "при прямом касте заклинания молнии",
+   "note": "on direct lightning spell cast",
    "confidence": "D"
   },
   "517:2": {
@@ -3288,7 +3288,7 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "при прямом касте холодного заклинания",
+   "note": "on direct cold spell cast",
    "confidence": "D"
   },
   "505:0": {
@@ -3301,7 +3301,7 @@
    "on": "use",
    "chance": "v",
    "icd": 2.5,
-   "note": "после неканалируемого умения движения, до 2 раз за 5 с",
+   "note": "after non-channelled movement ability, up to 2 times per 5 sec",
    "confidence": "D?"
   },
   "339:1": {
@@ -3319,7 +3319,7 @@
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер при касте Огненного оберега (плоско, v)",
+   "label": "Ward on Fire Ward cast (flat, v)",
    "confidence": "D"
   },
   "120:5": {
@@ -3327,7 +3327,7 @@
    "ability": "SummonSkeleton",
    "on": "minion_death",
    "chance": "v",
-   "note": "повторный призыв скелета через 3 с",
+   "note": "skeleton re-summon after 3 sec",
    "confidence": "D?"
   },
   "8:0": {
@@ -3348,7 +3348,7 @@
   },
   "8:2": {
    "kind": "flag",
-   "text": "Призывает 2 белки вместо каждого волка",
+   "text": "Summons 2 squirrels instead of each wolf",
    "confidence": "D"
   },
   "179:0": {
@@ -3380,7 +3380,7 @@
    "src_max": 7,
    "input": {
     "key": "damned",
-    "label": "Стаков Проклятия на вас",
+    "label": "Curse stacks on you",
     "default": 3,
     "max": 7
    },
@@ -3390,7 +3390,7 @@
    "kind": "param",
    "param": "speed",
    "mod": "increased",
-   "label": "Скорость Вулканического шара",
+   "label": "Speed of Volcanic Orb",
    "confidence": "D"
   },
   "78:4": {
@@ -3402,7 +3402,7 @@
    "kind": "param",
    "param": "speed",
    "mod": "increased",
-   "label": "Скорость осколков Вулканического шара",
+   "label": "Speed of Volcanic Orb shrapnel",
    "confidence": "D"
   },
   "185:2": {
@@ -3419,7 +3419,7 @@
    "tags": "Poison",
    "per": "increased:Damage",
    "scope": "minion",
-   "note": "множитель v к вашим модификаторам ядовитого урона для Скелетов-разбойников; учтён весь % увеличения урона",
+   "note": "multiplier v to your poison damage modifiers for Rogue Skeletons; all % increased damage is counted",
    "confidence": "D?"
   },
   "727:17": {
@@ -3429,7 +3429,7 @@
    "tags": "Poison",
    "per": "increased:Damage",
    "scope": "minion",
-   "note": "множитель v к вашим модификаторам ядовитого урона для Сокола; учтён весь % увеличения урона",
+   "note": "multiplier v to your poison damage modifiers for the Falcon; all % increased damage is counted",
    "confidence": "D?"
   },
   "7:0": {
@@ -3448,11 +3448,11 @@
    "factor": 0.5,
    "input": {
     "key": "missing_mana",
-    "label": "Недостающая мана, %",
+    "label": "Missing mana, %",
     "default": 50,
     "max": 100
    },
-   "note": "v за каждые 2% недостающей маны",
+   "note": "v per 2% missing mana",
    "confidence": "D"
   },
   "216:4": {
@@ -3464,10 +3464,10 @@
    "factor": 0.2,
    "input": {
     "key": "missing_mana",
-    "label": "Недостающая мана",
+    "label": "Missing mana",
     "default": 50
    },
-   "note": "v за каждые 5 недостающей маны",
+   "note": "v per 5 missing mana",
    "confidence": "D"
   },
   "468:5": {
@@ -3487,7 +3487,7 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область атак-миражей",
+   "label": "Area of mirage attacks",
    "confidence": "D"
   },
   "22:0": {
@@ -3495,7 +3495,7 @@
    "stat": "AilmentChance",
    "mod": "added",
    "ailment": "FireResShred",
-   "note": "шанс каждую секунду",
+   "note": "chance every second",
    "confidence": "D"
   },
   "19:1": {
@@ -3508,7 +3508,7 @@
    ],
    "input": {
     "key": "swipe_ready",
-    "label": "Удар усилен (раз в 3 с)",
+    "label": "Hit enhanced (every 3 sec)",
     "default": true
    },
    "confidence": "D"
@@ -3524,14 +3524,14 @@
   },
   "153:4": {
    "kind": "flag",
-   "text": "Снаряды Голодных душ летят последовательно и все могут попасть в одну цель",
+   "text": "Projectiles of Hungry Spirits fly sequentially and all can hit one target",
    "confidence": "D"
   },
   "445:1": {
    "kind": "param",
    "param": "duration",
    "mod": "increased",
-   "label": "Длительность Приманки",
+   "label": "Duration of Bait",
    "confidence": "D"
   },
   "445:2": {
@@ -3543,14 +3543,14 @@
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. призраков",
+   "label": "Max ghosts",
    "confidence": "D"
   },
   "253:2": {
    "kind": "param",
    "param": "health_cost",
    "mod": "more",
-   "label": "Расход здоровья заклинаниями",
+   "label": "Health cost of spells",
    "factor": -1,
    "confidence": "D?"
   },
@@ -3579,39 +3579,39 @@
    ],
    "input": {
     "key": "maelstrom_active",
-    "label": "Мальстрём активен",
+    "label": "Maelstrom active",
     "default": true
    },
    "confidence": "D"
   },
   "185:3": {
    "kind": "flag",
-   "text": "Жатва даёт стаки Зловещей хватки; на 2 стаках выполняется Мрачная жатва",
+   "text": "Harvest gives Sinister Grasp stacks; on 2 stacks perform Grim Harvest",
    "confidence": "D"
   },
   "185:4": {
    "kind": "mana",
    "mana": "added",
-   "note": "только Мрачная жатва",
+   "note": "only Grim Harvest",
    "confidence": "D?"
   },
   "185:5": {
    "kind": "param",
    "param": "health_cost",
    "mod": "added",
-   "label": "Расход текущего здоровья Мрачной жатвой",
+   "label": "Current health cost of Grim Harvest",
    "confidence": "D?"
   },
   "154:2": {
    "kind": "flag",
-   "text": "Выпад не требует цели",
+   "text": "Lunge does not require target",
    "confidence": "D"
   },
   "565:0": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. призматических осколков",
+   "label": "Max prismatic shards",
    "confidence": "D"
   },
   "197:1": {
@@ -3632,7 +3632,7 @@
    "when": [
     "enemy:boss_or_rare"
    ],
-   "note": "после Мультиудара",
+   "note": "after Multi-hit",
    "confidence": "D"
   },
   "536:2": {
@@ -3647,10 +3647,10 @@
    "per": "input:thunder_stacks",
    "input": {
     "key": "thunder_stacks",
-    "label": "Стаков Грома Турани",
+    "label": "Turan's Thunder stacks",
     "default": 1
    },
-   "note": "4 с после использования Копья",
+   "note": "4 sec after Spear use",
    "confidence": "D"
   },
   "223:0": {
@@ -3667,7 +3667,7 @@
    "scope": "global",
    "input": {
     "key": "germination",
-    "label": "Стаков Прорастания",
+    "label": "Growth stacks",
     "default": 4,
     "max": 4
    },
@@ -3677,17 +3677,17 @@
    "kind": "param",
    "param": "projectiles",
    "mod": "added",
-   "label": "Снаряды Шипов духа за стак Прорастания",
+   "label": "Spirit Thorns projectiles per Growth stack",
    "confidence": "D"
   },
   "223:11": {
    "kind": "flag",
-   "text": "Стаки Прорастания в форме Сприггана",
+   "text": "Growth stacks in Spriggan form",
    "confidence": "D"
   },
   "440:3": {
    "kind": "flag",
-   "text": "Прокол нельзя уклонить",
+   "text": "Puncture cannot dodge",
    "confidence": "D"
   },
   "440:4": {
@@ -3700,10 +3700,10 @@
    ],
    "input": {
     "key": "distant_enemy",
-    "label": "Цель на максимальной дистанции",
+    "label": "Target at max range",
     "default": true
    },
-   "note": "до v по дальним врагам",
+   "note": "up to v vs distant enemies",
    "confidence": "D"
   },
   "782:2": {
@@ -3716,14 +3716,14 @@
    ],
    "input": {
     "key": "evading",
-    "label": "Вы используете Уклонение",
+    "label": "You use Evade",
     "default": false
    },
    "confidence": "D"
   },
   "227:0": {
    "kind": "flag",
-   "text": "Прямой каст Призыва лиан телепортирует вас в целевую точку",
+   "text": "Direct cast of Summoned Vines teleports you to target point",
    "confidence": "D"
   },
   "227:1": {
@@ -3736,33 +3736,33 @@
    "stat": "AttackSpeed",
    "mod": "increased",
    "scope": "minion",
-   "note": "также скорость сотворения",
+   "note": "also casting speed",
    "confidence": "D?"
   },
   "227:3": {
    "kind": "flag",
-   "text": "Призванные лианы иммунны к яду",
+   "text": "Summoned vines immune to poison",
    "confidence": "D"
   },
   "227:4": {
    "kind": "param",
    "param": "count",
    "mod": "increased",
-   "label": "Число призываемых лиан",
+   "label": "Number of summoned vines",
    "confidence": "D"
   },
   "50:0": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Кислотной колбы",
+   "label": "Area of Acid Flask",
    "confidence": "D"
   },
   "340:2": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер при использовании Сдвига (плоско, v)",
+   "label": "Ward on Shift use (flat, v)",
    "confidence": "D"
   },
   "340:3": {
@@ -3773,14 +3773,14 @@
   "473:1": {
    "kind": "cooldown",
    "cooldown": "charges",
-   "note": "в коде читатель не найден",
+   "note": "in code reader not found",
    "confidence": "D?"
   },
   "473:0": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер при использовании Дымовой бомбы (плоско, v)",
+   "label": "Ward on Smoke Bomb use (flat, v)",
    "confidence": "D"
   },
   "153:5": {
@@ -3791,7 +3791,7 @@
    "per": "input:spirits",
    "input": {
     "key": "spirits",
-    "label": "Активных Блуждающих духов",
+    "label": "Active Wandering Spirits",
     "default": 2
    },
    "confidence": "D"
@@ -3800,12 +3800,12 @@
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер/с за каждого Блуждающего духа",
+   "label": "Ward/sec per Wandering Spirit",
    "confidence": "D"
   },
   "199:0": {
    "kind": "flag",
-   "text": "Удар Раскалывающего удара накладывает на вас кровотечение",
+   "text": "Cleaving Blow hit applies Bleed to you",
    "confidence": "D"
   },
   "199:1": {
@@ -3816,7 +3816,7 @@
    "per": "input:bleed_on_you",
    "input": {
     "key": "bleed_on_you",
-    "label": "Стаков кровотечения на вас",
+    "label": "Bleed stacks on you",
     "default": 3
    },
    "confidence": "D"
@@ -3825,19 +3825,19 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Жертвоприношения",
+   "label": "Area of Sacrifice",
    "confidence": "D"
   },
   "253:3": {
    "kind": "flag",
-   "text": "Transplant преобразует каждый стак Ignite на вас в Damned (+160% длительности)",
+   "text": "Transplant converts each Ignite stack on you into Damned (duration: +160%)",
    "confidence": "D?"
   },
   "253:4": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер при применении Transplant",
+   "label": "Ward on Transplant use",
    "confidence": "D"
   },
   "370:1": {
@@ -3848,7 +3848,7 @@
    "per": "input:dread_shades",
    "input": {
     "key": "dread_shades",
-    "label": "Активных Dread Shade",
+    "label": "Active Dread Shades",
     "default": 1
    },
    "confidence": "D"
@@ -3857,11 +3857,11 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Infernal Shade за каждый Dread Shade",
+   "label": "Area of Infernal Shade per Dread Shade",
    "per": "input:dread_shades",
    "input": {
     "key": "dread_shades",
-    "label": "Активных Dread Shade",
+    "label": "Active Dread Shades",
     "default": 1
    },
    "confidence": "D"
@@ -3875,14 +3875,14 @@
    "stat": "AilmentChance",
    "mod": "added",
    "ailment": "Frostbite",
-   "note": "миньоны под Dread Shade",
+   "note": "minions under Dread Shade",
    "confidence": "D?"
   },
   "411:2": {
    "kind": "minion_stat",
    "stat": "FreezeRateMultiplier",
    "mod": "added",
-   "note": "миньоны под Dread Shade",
+   "note": "minions under Dread Shade",
    "confidence": "D?"
   },
   "411:3": {
@@ -3893,10 +3893,10 @@
    "per": "input:attached_shades",
    "input": {
     "key": "attached_shades",
-    "label": "Прикреплённых Infernal Shade",
+    "label": "Attached Infernal Shades",
     "default": 1
    },
-   "note": "заклинания и атаки",
+   "note": "spells and attacks",
    "confidence": "D?"
   },
   "411:4": {
@@ -3911,7 +3911,7 @@
    "kind": "minion_stat",
    "stat": "Damage",
    "mod": "increased",
-   "note": "умения теней (Shadow)",
+   "note": "shadow abilities (Shadow)",
    "confidence": "D"
   },
   "468:6": {
@@ -3946,12 +3946,12 @@
    "mod": "added",
    "tags": "Physical|DoT",
    "per": "attr:str",
-   "note": "только для кровотечения от пчёл",
+   "note": "only for Bleed from bees",
    "confidence": "D?"
   },
   "353:4": {
    "kind": "flag",
-   "text": "При использовании Thorn Shield две ближайшие пчелы тоже получают Thorn Shield",
+   "text": "On Thorn Shield use two nearest bees also get Thorn Shield",
    "confidence": "D?"
   },
   "353:3": {
@@ -3963,21 +3963,21 @@
   },
   "411:6": {
    "kind": "flag",
-   "text": "Можно контролировать только один Shade",
+   "text": "Can control only one Shade",
    "confidence": "D?"
   },
   "411:7": {
    "kind": "param",
    "param": "buff_effect",
    "mod": "increased",
-   "label": "Эффект аур Dread Shade",
+   "label": "Effect of Dread Shade auras",
    "confidence": "D"
   },
   "411:8": {
    "kind": "param",
    "param": "decay",
    "mod": "increased",
-   "label": "Скорость распада Dread Shade",
+   "label": "Dread Shade decay speed",
    "confidence": "D"
   },
   "370:4": {
@@ -3985,19 +3985,19 @@
    "stat": "AilmentChance",
    "mod": "added",
    "ailment": "Frailty",
-   "note": "также накладывает Slow; раз в секунду по ближайшим врагам",
+   "note": "also applies Slow; every second to nearest enemies",
    "confidence": "D?"
   },
   "370:5": {
    "kind": "flag",
-   "text": "Применение Infernal Shade даёт миньонам временную неуязвимость",
+   "text": "Infernal Shade use gives minions temporary invulnerability",
    "confidence": "D?"
   },
   "445:3": {
    "kind": "param",
    "param": "count",
    "mod": "set",
-   "label": "Пчёл при взрыве Decoy",
+   "label": "Bees on Decoy burst",
    "confidence": "D"
   },
   "445:0": {
@@ -4008,7 +4008,7 @@
   },
   "50:2": {
    "kind": "flag",
-   "text": "Попадание Acid Flask по пчеле даёт ей Toxic Coating",
+   "text": "Acid Flask hit on bee gives it Toxic Coating",
    "confidence": "D?"
   },
   "353:8": {
@@ -4017,33 +4017,33 @@
    "mod": "added",
    "tags": "Elemental",
    "per": "attr:dex",
-   "note": "Poison и Elemental; моделируется как Elemental",
+   "note": "Poison and Elemental; modelled as Elemental",
    "confidence": "D?"
   },
   "157:4": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. костяных големов за каждые 4 макс. скелетов",
+   "label": "Max bone golems per 4 max skeletons",
    "confidence": "D?"
   },
   "120:9": {
    "kind": "flag",
-   "text": "Нельзя призывать скелетов",
+   "text": "Cannot summon skeletons",
    "confidence": "D?"
   },
   "157:5": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
-   "label": "Барьер от недостающего здоровья голема (6% шанс, КД 1 с)",
+   "label": "Ward from golem missing health (6% chance, 1 sec cooldown)",
    "confidence": "D?"
   },
   "157:6": {
    "kind": "cooldown",
    "cooldown": "length_added",
    "scope": "component:BoneShatter",
-   "note": "Bone Shatter получает перезарядку 1 с",
+   "note": "Bone Shatter gets 1 sec cooldown",
    "confidence": "D"
   },
   "78:6": {
@@ -4052,23 +4052,23 @@
   },
   "78:7": {
    "kind": "flag",
-   "text": "Шанс получить Corrupted Heraldry при применении Volcanic Orb",
+   "text": "Chance to get Corrupted Heraldry on Volcanic Orb use",
    "confidence": "D?"
   },
   "78:8": {
    "kind": "flag",
-   "text": "Шанс получить Corrupted Heraldry при попадании шрапнели Volcanic Orb",
+   "text": "Chance to get Corrupted Heraldry on Volcanic Orb shrapnel hit",
    "confidence": "D?"
   },
   "318:4": {
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер в секунду за стак Maelstrom",
+   "label": "Ward per second per Maelstrom stack",
    "per": "input:maelstrom",
    "input": {
     "key": "maelstrom",
-    "label": "Стаки Maelstrom",
+    "label": "Maelstrom stacks",
     "default": 1
    },
    "confidence": "D"
@@ -4077,13 +4077,13 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область шестого каста Elemental Nova",
+   "label": "Area of 6th Elemental Nova cast",
    "when": [
     "input:supernova"
    ],
    "input": {
     "key": "supernova",
-    "label": "Шестой каст (Supernova)",
+    "label": "6th cast (Supernova)",
     "default": false
    },
    "confidence": "D?"
@@ -4098,7 +4098,7 @@
    ],
    "input": {
     "key": "supernova",
-    "label": "Шестой каст (Supernova)",
+    "label": "6th cast (Supernova)",
     "default": false
    },
    "confidence": "D?"
@@ -4122,18 +4122,18 @@
    "kind": "resource",
    "resource": "rage",
    "on": "second",
-   "label": "Ярость в секунду за лозу",
+   "label": "Rage per second per vine",
    "per": "input:vines",
    "input": {
     "key": "vines",
-    "label": "Призванных лоз",
+    "label": "Summoned vines",
     "default": 1
    },
    "confidence": "D"
   },
   "114:0": {
    "kind": "flag",
-   "text": "Шанс перенести Devouring Orbs к цели при использовании Erasing Strike",
+   "text": "Chance to move Devouring Orbs to target on Erasing Strike use",
    "confidence": "D?"
   },
   "97:2": {
@@ -4141,7 +4141,7 @@
    "ability": "AxeThrow",
    "on": "second",
    "chance": 1,
-   "note": "пока канализируется Warpath",
+   "note": "while Warpath is channelled",
    "confidence": "D"
   },
   "97:3": {
@@ -4150,21 +4150,21 @@
    "scope": "component:AxeThrow",
    "per": "increased:Damage",
    "factor": 10,
-   "note": "за 10% увеличенного физического урона",
+   "note": "per 10% more physical",
    "confidence": "D?"
   },
   "146:6": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область ближних атак Wraith",
+   "label": "Area of Wraith melee attacks",
    "confidence": "D"
   },
   "370:8": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Infernal Shade",
+   "label": "Area of Infernal Shade",
    "confidence": "D"
   },
   "146:3": {
@@ -4179,7 +4179,7 @@
    "ability": "SummonWraith",
    "on": "kill",
    "chance": "v",
-   "note": "убийство нанесено Wraith",
+   "note": "kill dealt by Wraith",
    "confidence": "D?"
   },
   "370:6": {
@@ -4194,7 +4194,7 @@
    "ability": "InfernalShade",
    "on": "kill",
    "chance": "v",
-   "note": "убийство нанесено Wraith",
+   "note": "kill dealt by Wraith",
    "confidence": "D?"
   },
   "370:7": {
@@ -4207,7 +4207,7 @@
    "per": "input:wraiths",
    "input": {
     "key": "wraiths",
-    "label": "Активных Wraith",
+    "label": "Active Wraiths",
     "default": 1
    },
    "confidence": "D?"
@@ -4221,19 +4221,19 @@
   },
   "341:2": {
    "kind": "flag",
-   "text": "Detonating Arrow становится атакой ближнего боя",
+   "text": "Detonating Arrow becomes melee attack",
    "confidence": "D"
   },
   "66:0": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область взрыва Spark Charge",
+   "label": "Area of Spark Charge burst",
    "confidence": "D"
   },
   "179:1": {
    "kind": "flag",
-   "text": "Teleport накладывает Spark Charge на всех врагов у точки назначения",
+   "text": "Teleport applies Spark Charge to all enemies at destination",
    "confidence": "D?"
   },
   "197:2": {
@@ -4247,7 +4247,7 @@
    ],
    "input": {
     "key": "unarmed",
-    "label": "Без оружия",
+    "label": "Barehanded",
     "default": true
    },
    "confidence": "D"
@@ -4256,14 +4256,14 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Judgement за Attunement",
+   "label": "Area of Judgement per Attunement",
    "per": "attr:att",
    "when": [
     "input:unarmed"
    ],
    "input": {
     "key": "unarmed",
-    "label": "Без оружия",
+    "label": "Barehanded",
     "default": true
    },
    "confidence": "D"
@@ -4276,7 +4276,7 @@
    ],
    "input": {
     "key": "unarmed",
-    "label": "Без оружия",
+    "label": "Barehanded",
     "default": true
    },
    "confidence": "D"
@@ -4285,14 +4285,14 @@
    "kind": "param",
    "param": "speed",
    "mod": "increased",
-   "label": "Скорость падения метеора",
+   "label": "Speed of meteor fall",
    "confidence": "D"
   },
   "263:4": {
    "kind": "param",
    "param": "chains",
    "mod": "added",
-   "label": "Доп. рикошеты Shurikens (шанс)",
+   "label": "Additional Shurikens ricochet (chance)",
    "factor": 3,
    "confidence": "D?"
   },
@@ -4300,7 +4300,7 @@
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер в секунду за 1% неограниченного физ. сопротивления",
+   "label": "Ward per second per 1% unlimited phys resistance",
    "per": "res:0",
    "factor": 100,
    "confidence": "D?"
@@ -4316,22 +4316,22 @@
   },
   "8:4": {
    "kind": "flag",
-   "text": "Шанс контратаковать Lightning Strike, когда бьют волков",
+   "text": "Chance to counter-attack Lightning Strike when wolves are hit",
    "confidence": "D?"
   },
   "8:5": {
    "kind": "flag",
-   "text": "Волков нельзя оглушить",
+   "text": "Wolves cannot stun",
    "confidence": "D?"
   },
   "408:3": {
    "kind": "flag",
-   "text": "Шанс воскрешения нестабильных зомби через 1 с",
+   "text": "Chance for unstable zombies to resurrect in 1 sec",
    "confidence": "D?"
   },
   "294:1": {
    "kind": "flag",
-   "text": "Шанс получить 15 Static Charges при получении удара",
+   "text": "Chance to get 15 Static Charges on hit received",
    "confidence": "D?"
   },
   "294:2": {
@@ -4349,7 +4349,7 @@
    "per": "input:runes",
    "input": {
     "key": "runes",
-    "label": "Активных рун",
+    "label": "Active runes",
     "default": 3,
     "max": 3
    },
@@ -4362,7 +4362,7 @@
    "per": "input:rah_runes",
    "input": {
     "key": "rah_runes",
-    "label": "Рун Rah",
+    "label": "Runes Rah",
     "default": 1,
     "max": 3
    },
@@ -4375,7 +4375,7 @@
    "per": "input:heo_runes",
    "input": {
     "key": "heo_runes",
-    "label": "Рун Heo",
+    "label": "Runes Heo",
     "default": 1,
     "max": 3
    },
@@ -4385,11 +4385,11 @@
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер в секунду за руну Gon",
+   "label": "Ward per second per Gon rune",
    "per": "input:gon_runes",
    "input": {
     "key": "gon_runes",
-    "label": "Рун Gon",
+    "label": "Runes Gon",
     "default": 1,
     "max": 3
    },
@@ -4403,37 +4403,37 @@
    "per": "input:min_def_tens",
    "input": {
     "key": "min_def_tens",
-    "label": "Наименьшее из брони/уклонения/барьера (в десятках)",
+    "label": "Least of armor/dodge/ward (in tens)",
     "default": 20
    },
-   "note": "минимум из трёх величин вводится вручную",
+   "note": "minimum of three values entered manually",
    "confidence": "D?"
   },
   "12:0": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Elemental Nova",
+   "label": "Area of Elemental Nova",
    "confidence": "D"
   },
   "12:4": {
    "kind": "flag",
-   "text": "Elemental Nova всегда трёхстихийная",
+   "text": "Elemental Nova always tri-element",
    "confidence": "D"
   },
   "690:0": {
    "kind": "flag",
-   "text": "Стихия Runebolt совпадает с последним одностихийным умением",
+   "text": "Runebolt element matches last single-element ability",
    "confidence": "D?"
   },
   "690:1": {
    "kind": "flag",
-   "text": "Runebolt другой стихии даёт стак Numeromancy (до 5)",
+   "text": "Runebolt different element gives Numeromancy stack (up to 5)",
    "confidence": "D?"
   },
   "50:3": {
    "kind": "flag",
-   "text": "Acid Flask тратит зелье для дополнительного броска с повышенным уроном",
+   "text": "Acid Flask spends potion for additional throw with increased damage",
    "confidence": "D?"
   },
   "50:4": {
@@ -4445,26 +4445,26 @@
    ],
    "input": {
     "key": "potion_flask",
-    "label": "Бросок за счёт зелья",
+    "label": "Throw from potion",
     "default": true
    },
-   "note": "только дополнительный бросок",
+   "note": "only additional throw",
    "confidence": "D?"
   },
   "179:2": {
    "kind": "flag",
-   "text": "Wrongwarp при применении Teleport или Transplant",
+   "text": "Wrongwarp on Teleport or Transplant use",
    "confidence": "D?"
   },
   "696:1": {
    "kind": "flag",
-   "text": "Модификаторы скорости Volcanic Orb применяются к скорости и дальности Flame Rush",
-   "note": "коэффициент 60-64%",
+   "text": "Volcanic Orb speed modifiers apply to Flame Rush speed and range",
+   "note": "coefficient 60-64%",
    "confidence": "D?"
   },
   "694:1": {
    "kind": "flag",
-   "text": "Увеличение области Fire Aura действует и на Glyph of Dominion",
+   "text": "Fire Aura area increase also affects Glyph of Dominion",
    "confidence": "D"
   },
   "694:2": {
@@ -4472,7 +4472,7 @@
    "ability": "FireAura",
    "on": "second",
    "chance": "v",
-   "note": "пока вы стоите на Glyph of Dominion",
+   "note": "while you stand on Glyph of Dominion",
    "confidence": "D?"
   },
   "696:2": {
@@ -4483,7 +4483,7 @@
    "per": "input:fire_aura_stacks",
    "input": {
     "key": "fire_aura_stacks",
-    "label": "Стаки Fire Aura",
+    "label": "Fire Aura stacks",
     "default": 1
    },
    "confidence": "D"
@@ -4499,14 +4499,14 @@
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Hydrahedron",
+   "label": "Area of Hydrahedron",
    "confidence": "D?"
   },
   "689:13": {
    "kind": "param",
    "param": "cast_rate",
    "mod": "increased",
-   "label": "Скорость применения Hydrahedron",
+   "label": "Speed of Hydrahedron use",
    "confidence": "D?"
   },
   "689:14": {
@@ -4518,7 +4518,7 @@
    ],
    "input": {
     "key": "wand_heo_first",
-    "label": "Жезл, первая руна Heo",
+    "label": "Staff, first rune Heo",
     "default": true
    },
    "confidence": "D"
@@ -4532,7 +4532,7 @@
    ],
    "input": {
     "key": "staff_gon_first",
-    "label": "Посох, первая руна Gon",
+    "label": "Staff, first rune Gon",
     "default": true
    },
    "confidence": "D"
@@ -4546,7 +4546,7 @@
    ],
    "input": {
     "key": "sceptre_rah_first",
-    "label": "Скипетр, первая руна Rah",
+    "label": "Scepter, first rune Rah",
     "default": true
    },
    "confidence": "D"
@@ -4561,7 +4561,7 @@
    ],
    "input": {
     "key": "heo_second",
-    "label": "Вторая руна Heo",
+    "label": "Second rune Heo",
     "default": true
    },
    "confidence": "D"
@@ -4576,7 +4576,7 @@
    ],
    "input": {
     "key": "gon_second",
-    "label": "Вторая руна Gon",
+    "label": "Second rune Gon",
     "default": true
    },
    "confidence": "D"
@@ -4591,7 +4591,7 @@
    ],
    "input": {
     "key": "rah_second",
-    "label": "Вторая руна Rah",
+    "label": "Second rune Rah",
     "default": true
    },
    "confidence": "D"
@@ -4602,27 +4602,27 @@
    "on": "crit",
    "chance": "v",
    "icd": 0.3333,
-   "note": "не более 3 раз в секунду",
+   "note": "not more than 3 times per second",
    "confidence": "D"
   },
   "708:1": {
    "kind": "resource",
    "resource": "ward",
    "on": "crit",
-   "label": "Барьер при крите Frost Claw",
+   "label": "Ward on Frost Claw crit",
    "confidence": "D"
   },
   "694:0": {
    "kind": "resource",
    "resource": "ward",
    "on": "second",
-   "label": "Барьер в секунду на Glyph of Dominion",
+   "label": "Ward per second on Glyph of Dominion",
    "when": [
     "input:on_glyph"
    ],
    "input": {
     "key": "on_glyph",
-    "label": "Стоите на Glyph of Dominion",
+    "label": "Stand on Glyph of Dominion",
     "default": true
    },
    "confidence": "D"
@@ -4635,41 +4635,41 @@
    "kind": "param",
    "param": "duration",
    "mod": "increased",
-   "label": "Длительность Frost Wall",
+   "label": "Duration of Frost Wall",
    "confidence": "D"
   },
   "703:4": {
    "kind": "flag",
-   "text": "Frost Wall ставится перед вами, вы отпрыгиваете назад и вызываете Blizzard",
+   "text": "Frost Wall is placed before you, you jump back and trigger Blizzard",
    "confidence": "D?"
   },
   "689:20": {
    "kind": "flag",
-   "text": "Runic Invocation даёт Dawn to Dusk и Dusk to Midnight",
+   "text": "Runic Invocation gives Dawn to Dusk and Dusk to Midnight",
    "confidence": "D?"
   },
   "536:4": {
    "kind": "flag",
-   "text": "Javelin делится при попадании на 2 пробивающих копья и по 1 доп. за 12 ловкости",
+   "text": "Javelin splits on hit into 2 piercing spears and 1 additional per 12 Dexterity",
    "confidence": "D?"
   },
   "261:0": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Врагов под Torment за 10 интеллекта",
+   "label": "Enemies under Torment per 10 Intelligence",
    "per": "attr:int",
    "factor": 0.1,
    "confidence": "D"
   },
   "261:1": {
    "kind": "flag",
-   "text": "Вы накладываете на себя Torment при применении Soul Feast",
+   "text": "You apply Torment to yourself on Soul Feast use",
    "confidence": "D?"
   },
   "261:2": {
    "kind": "flag",
-   "text": "Haste на 3 с при применении Soul Feast",
+   "text": "Haste for 3 sec on Soul Feast use",
    "confidence": "D?"
   },
   "261:3": {
@@ -4677,12 +4677,12 @@
    "ability": "Warlock 04 Chthonic Fissure",
    "on": "hit",
    "chance": "v",
-   "note": "по боссу/редкому, если нет активной Fissure",
+   "note": "vs boss/rare, if no active Fissure",
    "confidence": "D?"
   },
   "689:21": {
    "kind": "flag",
-   "text": "Руны Runic Invocation не меняются, пока не израсходованы (одна руна)",
+   "text": "Runic Invocation runes do not change while not consumed (one rune)",
    "confidence": "D?"
   },
   "689:24": {
@@ -4698,15 +4698,15 @@
    ],
    "input": {
     "key": "one_rune",
-    "label": "Invocation с одной руной",
+    "label": "Invocation with one rune",
     "default": true
    },
-   "note": "шанс за интеллект × 11% (среднее)",
+   "note": "chance per Intelligence × 11% (average)",
    "confidence": "D?"
   },
   "689:22": {
    "kind": "flag",
-   "text": "Руны Runic Invocation не меняются, пока не израсходованы (две руны)",
+   "text": "Runic Invocation runes do not change while not consumed (two runes)",
    "confidence": "D?"
   },
   "689:25": {
@@ -4722,15 +4722,15 @@
    ],
    "input": {
     "key": "two_runes",
-    "label": "Invocation с двумя рунами",
+    "label": "Invocation with two runes",
     "default": true
    },
-   "note": "шанс за интеллект × 22% (среднее)",
+   "note": "chance per Intelligence × 22% (average)",
    "confidence": "D?"
   },
   "689:23": {
    "kind": "flag",
-   "text": "Руны Runic Invocation не меняются, пока не израсходованы (три руны)",
+   "text": "Runic Invocation runes do not change while not consumed (three runes)",
    "confidence": "D?"
   },
   "689:26": {
@@ -4746,15 +4746,15 @@
    ],
    "input": {
     "key": "three_runes",
-    "label": "Invocation с тремя рунами",
+    "label": "Invocation with three runes",
     "default": true
    },
-   "note": "шанс за интеллект × 33% (среднее)",
+   "note": "chance per Intelligence × 33% (average)",
    "confidence": "D?"
   },
   "373:0": {
    "kind": "flag",
-   "text": "Drain Life вместо этого применяет Stygian Beam",
+   "text": "Drain Life instead uses Stygian Beam",
    "confidence": "D"
   },
   "373:1": {
@@ -4762,7 +4762,7 @@
    "speed": "increased",
    "scope": "component:Drain Life Stygian Beam",
    "per": "attr:int",
-   "note": "частота Stygian Beam",
+   "note": "Stygian Beam frequency",
    "confidence": "D?"
   },
   "373:2": {
@@ -4772,7 +4772,7 @@
    "scope": "component:Drain Life Stygian Beam",
    "per": "max_mana",
    "factor": 0.1,
-   "note": "за 10 текущей маны; принята полная мана",
+   "note": "per 10 current mana; full mana taken",
    "confidence": "D?"
   },
   "722:0": {
@@ -4780,12 +4780,12 @@
    "ability": "Flame Whip",
    "on": "use",
    "chance": "v",
-   "note": "вместо выпуска духов Fissure",
+   "note": "instead of releasing Fissure spirits",
    "confidence": "D?"
   },
   "722:1": {
    "kind": "flag",
-   "text": "Дерево Chthonic Fissure применяется к Flame Whip",
+   "text": "Chthonic Fissure tree applies to Flame Whip",
    "confidence": "D?"
   },
   "50:5": {
@@ -4798,16 +4798,16 @@
    "mod": "added",
    "ailment": "Bleed",
    "per": "value:AilmentChance",
-   "note": "доля вашего шанса кровотечения",
+   "note": "fraction of your Bleed chance",
    "confidence": "D?"
   },
   "727:5": {
    "kind": "resource",
    "resource": "health",
    "on": "hit",
-   "label": "Здоровье за ловкость при ударе сокола",
+   "label": "Health per Dexterity on falcon hit",
    "per": "attr:dex",
-   "note": "удар сокола",
+   "note": "falcon hit",
    "confidence": "D?"
   },
   "481:3": {
@@ -4818,39 +4818,39 @@
    "per": "input:falconry_level",
    "input": {
     "key": "falconry_level",
-    "label": "Уровень Falconry",
+    "label": "Falconry level",
     "default": 1
    },
-   "note": "только без оружия",
+   "note": "barehanded only",
    "confidence": "D?"
   },
   "481:5": {
    "kind": "param",
    "param": "area",
    "mod": "increased",
-   "label": "Область Cinder Strike за уровень Falconry",
+   "label": "Area of Cinder Strike per Falconry level",
    "per": "input:falconry_level",
    "input": {
     "key": "falconry_level",
-    "label": "Уровень Falconry",
+    "label": "Falconry level",
     "default": 1
    },
-   "note": "только без оружия",
+   "note": "barehanded only",
    "confidence": "D"
   },
   "146:7": {
    "kind": "flag",
-   "text": "Шанс, что Wraith призовёт Wraithlord вместо себя",
+   "text": "Chance Wraith summons Wraithlord instead of itself",
    "confidence": "D?"
   },
   "321:0": {
    "kind": "flag",
-   "text": "Можно призывать Raptors до лимита спутников",
+   "text": "Can summon Raptors up to companion limit",
    "confidence": "D"
   },
   "321:1": {
    "kind": "flag",
-   "text": "Уменьшенный размер Raptor",
+   "text": "Reduced Raptor size",
    "confidence": "D?"
   },
   "321:2": {
@@ -4863,7 +4863,7 @@
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Umbral Blades за 20 ловкости (Aerial Assault)",
+   "label": "Umbral Blades per 20 Dexterity (Aerial Assault)",
    "per": "attr:dex",
    "factor": 0.05,
    "confidence": "D?"
@@ -4878,24 +4878,24 @@
    ],
    "input": {
     "key": "after_aerial",
-    "label": "После Aerial Assault (2 с)",
+    "label": "After Aerial Assault (2 sec)",
     "default": true
    },
    "confidence": "D"
   },
   "731:2": {
    "kind": "flag",
-   "text": "Haste на 2 с после применения Aerial Assault",
+   "text": "Haste for 2 sec after Aerial Assault use",
    "confidence": "D?"
   },
   "468:8": {
    "kind": "flag",
-   "text": "Lethal Mirage — быстрая атака без неуязвимости",
+   "text": "Lethal Mirage - fast attack without invulnerability",
    "confidence": "D"
   },
   "186:3": {
    "kind": "flag",
-   "text": "Увеличенная скорость накопления символов Sigils of Hope",
+   "text": "Increased speed of Sigils of Hope symbol accumulation",
    "confidence": "D?"
   },
   "793:0": {
@@ -4905,10 +4905,10 @@
    "per": "input:chill_chance_tens",
    "input": {
     "key": "chill_chance_tens",
-    "label": "Шанс Chill ближнего боя без лимита (в десятках %)",
+    "label": "Chance for melee Chill without limit (in tens %)",
     "default": 5
    },
-   "note": "за каждые 10% шанса",
+   "note": "per 10% chance",
    "confidence": "D?"
   },
   "793:1": {
@@ -4918,30 +4918,30 @@
    "per": "input:time_rot_tens",
    "input": {
     "key": "time_rot_tens",
-    "label": "Шанс Time Rot ближнего боя без лимита (в десятках %)",
+    "label": "Chance for melee Time Rot without limit (in tens %)",
     "default": 5
    },
-   "note": "за каждые 10% шанса",
+   "note": "per 10% chance",
    "confidence": "D?"
   },
   "216:6": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Доп. цели Smite (шанс на 2 цели)",
+   "label": "Additional Smite targets (chance for 2 targets)",
    "factor": 2,
    "confidence": "D?"
   },
   "114:2": {
    "kind": "flag",
-   "text": "Иммунитет к оглушению во время Erasing Strike",
+   "text": "Stun immunity during Erasing Strike",
    "confidence": "D?"
   },
   "114:3": {
    "kind": "stat",
    "stat": "DamageTaken",
    "mod": "more",
-   "note": "пока используется Erasing Strike",
+   "note": "while using Erasing Strike",
    "confidence": "D"
   },
   "220:7": {
@@ -4953,15 +4953,15 @@
   },
   "220:6": {
    "kind": "flag",
-   "text": "Статы перчаток применяются к Forged Weapons",
-   "note": "доля 64-100%",
+   "text": "Glove stats apply to Forged Weapons",
+   "note": "fraction 64-100%",
    "confidence": "D?"
   },
   "220:5": {
    "kind": "param",
    "param": "duration",
    "mod": "increased",
-   "label": "Длительность Forged Weapon",
+   "label": "Duration of Forged Weapon",
    "confidence": "D"
   },
   "29:0": {
@@ -4986,7 +4986,7 @@
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Щупальца Static Orb",
+   "label": "Tentacles of Static Orb",
    "confidence": "D"
   },
   "61:1": {
@@ -4995,21 +4995,21 @@
    "on": "hit",
    "chance": "v",
    "icd": 0.6667,
-   "note": "не более 3 раз за 2 с",
+   "note": "not more than 3 times per 2 sec",
    "confidence": "D"
   },
   "582:0": {
    "kind": "minion_stat",
    "stat": "AttackSpeed",
    "mod": "increased",
-   "note": "также скорость сотворения и передвижения",
+   "note": "also casting speed and movement speed",
    "confidence": "D?"
   },
   "582:4": {
    "kind": "param",
    "param": "count",
    "mod": "set",
-   "label": "Макс. саранчи",
+   "label": "Max locusts",
    "confidence": "D"
   },
   "582:2": {
@@ -5021,19 +5021,19 @@
   },
   "402:3": {
    "kind": "flag",
-   "text": "Void Cleave применяется мгновенно",
+   "text": "Void Cleave applies instantly",
    "confidence": "D"
   },
   "402:4": {
    "kind": "flag",
-   "text": "Void Cleave без требования к оружию",
+   "text": "Void Cleave without weapon requirement",
    "confidence": "D"
   },
   "402:5": {
    "kind": "param",
    "param": "duration",
    "mod": "added",
-   "label": "Длительность Ravaging Aura (с)",
+   "label": "Duration of Ravaging Aura (sec)",
    "confidence": "D"
   },
   "402:6": {
@@ -5046,24 +5046,24 @@
    ],
    "input": {
     "key": "ravaging_aura",
-    "label": "Ravaging Aura активна",
+    "label": "Ravaging Aura active",
     "default": true
    },
    "confidence": "D"
   },
   "782:3": {
    "kind": "flag",
-   "text": "Evade заменяется на Terrify",
+   "text": "Evade replaced by Terrify",
    "confidence": "D?"
   },
   "782:4": {
    "kind": "flag",
-   "text": "Evade превращается в Crab",
+   "text": "Evade turns into Crab",
    "confidence": "D?"
   },
   "405:2": {
    "kind": "flag",
-   "text": "Шанс получить Black Arrow при уклонении",
+   "text": "Chance to get Black Arrow on dodge",
    "confidence": "D?"
   },
   "405:3": {
@@ -5074,14 +5074,14 @@
    "per": "input:dusk_shroud",
    "input": {
     "key": "dusk_shroud",
-    "label": "Стаки Dusk Shroud",
+    "label": "Stacks of Dusk Shroud",
     "default": 1
    },
    "confidence": "D"
   },
   "782:5": {
    "kind": "flag",
-   "text": "Evade заменяется на Spirit Step",
+   "text": "Evade replaced by Spirit Step",
    "confidence": "D?"
   },
   "152:1": {
@@ -5090,14 +5090,14 @@
   },
   "175:0": {
    "kind": "flag",
-   "text": "Во время каналирования Focus вы движетесь к цели со скоростью 80%",
+   "text": "While channelling Focus you move toward the target at 80% speed",
    "confidence": "D?"
   },
   "107:4": {
    "kind": "param",
    "param": "range",
    "mod": "increased",
-   "label": "Дальность Vengeance",
+   "label": "Range of Vengeance",
    "confidence": "D"
   },
   "108:1": {
@@ -5105,7 +5105,7 @@
    "ability": "Javelin",
    "on": "use",
    "chance": "v",
-   "note": "при Riposte",
+   "note": "on Riposte",
    "confidence": "D"
   },
   "108:2": {
@@ -5117,7 +5117,7 @@
    ],
    "input": {
     "key": "preparing_riposte",
-    "label": "Готовите Riposte",
+    "label": "Preparing Riposte",
     "default": true
    },
    "confidence": "D"
@@ -5131,7 +5131,7 @@
    ],
    "input": {
     "key": "preparing_riposte",
-    "label": "Готовите Riposte",
+    "label": "Preparing Riposte",
     "default": true
    },
    "confidence": "D"
@@ -5140,7 +5140,7 @@
    "kind": "param",
    "param": "recurve",
    "mod": "added",
-   "label": "Шанс возврата Heartseeker",
+   "label": "Chance of Heartseeker return",
    "confidence": "D"
   },
   "807:1": {
@@ -5149,17 +5149,17 @@
   },
   "369:0": {
    "kind": "flag",
-   "text": "Bone Curse также накладывает Decrepify",
+   "text": "Bone Curse also applies Decrepify",
    "confidence": "D"
   },
   "369:1": {
    "kind": "flag",
-   "text": "Bone Curse также накладывает Penance",
+   "text": "Bone Curse also applies Penance",
    "confidence": "D"
   },
   "369:2": {
    "kind": "flag",
-   "text": "Bone Curse также накладывает Acid Skin",
+   "text": "Bone Curse also applies Acid Skin",
    "confidence": "D"
   },
   "689:27": {
@@ -5170,11 +5170,11 @@
    "per": "input:runes",
    "input": {
     "key": "runes",
-    "label": "Рун",
+    "label": "Runes",
     "default": 3,
     "max": 3
    },
-   "note": "Ignite, Shock или Chill; моделируется как Ignite",
+   "note": "Ignite, Shock or Chill; modelled as Ignite",
    "confidence": "D?"
   },
   "689:28": {
@@ -5183,31 +5183,31 @@
   },
   "689:29": {
    "kind": "flag",
-   "text": "Шанс не потратить руны при Invoke за каждую уникальную руну",
+   "text": "Chance not to spend runes on Invoke per unique rune",
    "confidence": "D?"
   },
   "689:30": {
    "kind": "flag",
-   "text": "Invocation с тремя рунами всегда применяет Grand Nova Prism",
+   "text": "Invocation with three runes always applies Grand Nova Prism",
    "confidence": "D"
   },
   "560:1": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. духов Vale за 12 Attunement",
+   "label": "Max Vale spirits per 12 Attunement",
    "per": "attr:att",
    "factor": 0.0833333,
    "confidence": "D"
   },
   "100:0": {
    "kind": "flag",
-   "text": "Volatile Reversal: больше урона Void или конверсия в Fire от Int",
+   "text": "Volatile Reversal: more Void damage or Fire conversion from Int",
    "confidence": "D?"
   },
   "152:2": {
    "kind": "flag",
-   "text": "Wandering Spirits применяется из надгробия",
+   "text": "Wandering Spirits applies from tombstone",
    "confidence": "D?"
   },
   "152:3": {
@@ -5220,7 +5220,7 @@
    ],
    "input": {
     "key": "gravestone_aura",
-    "label": "В ауре надгробия",
+    "label": "In tombstone aura",
     "default": true
    },
    "confidence": "D"
@@ -5229,40 +5229,40 @@
    "kind": "param",
    "param": "reveal_rate",
    "mod": "increased",
-   "label": "Скорость раскрытия Wandering Spirits",
+   "label": "Opening speed of Wandering Spirits",
    "confidence": "D"
   },
   "782:6": {
    "kind": "param",
    "param": "range",
    "mod": "increased",
-   "label": "Дистанция Уклонения",
+   "label": "Evade distance",
    "confidence": "D"
   },
   "428:0": {
    "kind": "param",
    "param": "range",
    "mod": "increased",
-   "label": "Дальность Firebrand",
+   "label": "Firebrand range",
    "confidence": "D"
   },
   "440:6": {
    "kind": "param",
    "param": "range",
    "mod": "increased",
-   "label": "Дальность Puncture",
+   "label": "Puncture range",
    "confidence": "D"
   },
   "291:6": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. скелетов-магов",
+   "label": "Max spell skeletons",
    "confidence": "D"
   },
   "715:1": {
    "kind": "flag",
-   "text": "Chaos Bolts: 50% добавленного урона оружия в ближнем бою как добавленный урон чар",
+   "text": "Chaos Bolts: 50% of added melee weapon damage as added spell damage",
    "confidence": "D?"
   },
   "185:6": {
@@ -5271,27 +5271,27 @@
    "mod": "more",
    "confidence": "D?",
    "factor": 1.5,
-   "note": "Great Harvest при прямом применении: +150% урона; также перезарядка 5 с и +50% области (не учтены)"
+   "note": "Great Harvest on direct use: damage +150%; also 5 sec cooldown and area +50% (not counted)"
   },
   "185:9": {
    "kind": "resource",
    "resource": "mana",
    "on": "kill",
-   "label": "Макс. маны за убийство Great Harvest",
+   "label": "Max mana on Great Harvest kill",
    "confidence": "D"
   },
   "185:10": {
    "kind": "resource",
    "resource": "mana",
    "on": "hit",
-   "label": "Макс. маны за попадание Great Harvest по редкому/боссу",
+   "label": "Max mana on Great Harvest hit vs rare/boss",
    "confidence": "D"
   },
   "469:5": {
    "kind": "param",
    "param": "shadow_recreate_chance",
    "mod": "added",
-   "label": "Шанс создать новую Тень при поглощении",
+   "label": "Chance to create new Shadow on absorption",
    "confidence": "D"
   },
   "469:4": {
@@ -5299,25 +5299,25 @@
    "stat": "CriticalChance",
    "mod": "added",
    "confidence": "D?",
-   "note": "Для умений, используемых Тенями"
+   "note": "For abilities used by Shadows"
   },
   "469:0": {
    "kind": "param",
    "param": "count",
    "mod": "added",
-   "label": "Макс. теней",
+   "label": "Max shadows",
    "confidence": "D"
   },
   "469:1": {
    "kind": "resource",
    "resource": "health",
    "on": "use",
-   "label": "Здоровье при создании Тени",
+   "label": "Health on Shadow creation",
    "confidence": "D"
   },
   "469:6": {
    "kind": "flag",
-   "text": "Шанс получить стак Dusk Shroud при поглощении Тени",
+   "text": "Chance to get Dusk Shroud stack on Shadow absorption",
    "confidence": "D"
   },
   "450:15": {
@@ -5331,7 +5331,7 @@
    "chance": "v",
    "confidence": "D?",
    "icd": 0.25,
-   "note": "При ближней огненной атаке, вдвое чаще для Dancing Strikes, до 4 раз в секунду"
+   "note": "On melee fire hit, doubled for Dancing Strikes, up to 4 times per second"
   },
   "214:14": {
    "kind": "conversion",
@@ -5339,21 +5339,21 @@
   },
   "881:1": {
    "kind": "flag",
-   "text": "Shadow Rend больше не перемещает вас",
+   "text": "Shadow Rend no longer moves you",
    "confidence": "D"
   },
   "881:0": {
    "kind": "param",
    "param": "hits",
    "mod": "added",
-   "label": "Доп. теневая атака другим типом оружия",
+   "label": "Additional shadow attack with different weapon type",
    "confidence": "D?"
   },
   "580:0": {
    "kind": "param",
    "param": "duration",
    "mod": "increased",
-   "label": "Длительность Bladestorm",
+   "label": "Duration of Bladestorm",
    "confidence": "D"
   },
   "580:1": {
@@ -5362,7 +5362,7 @@
    "on": "second",
    "chance": 1,
    "confidence": "D?",
-   "note": "Bladestorm бросает Explosive Trap каждую секунду, тратя 120% его маны"
+   "note": "Bladestorm throws Explosive Trap every second, spending mana at 120%"
   },
   "17:11": {
    "kind": "cooldown",
@@ -5371,12 +5371,12 @@
   },
   "17:12": {
    "kind": "flag",
-   "text": "Прямое применение Fury Leap/Warcry призывает макс. Thorn Totems (+100% скорости на 1 с)",
+   "text": "Direct use of Fury Leap/Warcry summons max Thorn Totems (speed: +100%, 1 sec)",
    "confidence": "D"
   },
   "58:0": {
    "kind": "flag",
-   "text": "Накладывает на вас стаки Bleed за каждый призванный Thorn Totem",
+   "text": "Applies Bleed stacks to you per summoned Thorn Totem",
    "confidence": "D"
   },
   "256:2": {
@@ -5389,13 +5389,13 @@
    "mod": "increased",
    "confidence": "D",
    "ailment": "Haste",
-   "note": "Пока активна Aura of Decay"
+   "note": "While Aura of Decay is active"
   },
   "256:4": {
    "kind": "param",
    "param": "zombie_rez_chance",
    "mod": "added",
-   "label": "Шанс воскрешения Volatile Zombies в ауре",
+   "label": "Chance to resurrect Volatile Zombies in aura",
    "confidence": "D"
   },
   "339:9": {
@@ -5413,7 +5413,7 @@
    "chance": 1,
    "confidence": "D?",
    "icd": 0.5,
-   "note": "При 30+ Storm Stacks: тратит 20 стаков и 50% маны Earthquake"
+   "note": "At 30+ Storm Stacks: spends 20 stacks and 50% Earthquake mana"
   },
   "75:3": {
    "kind": "conversion",
@@ -5427,12 +5427,12 @@
    "kind": "param",
    "param": "projectiles",
    "mod": "added",
-   "label": "Доп. снаряды Thorn Volley за Storm Crow",
+   "label": "Additional Thorn Volley projectiles per Storm Crow",
    "confidence": "D?",
    "per": "input:crows",
    "input": {
     "key": "crows",
-    "label": "Призванных Storm Crows",
+    "label": "Summoned Storm Crows",
     "default": 1
    }
   },
@@ -5444,10 +5444,10 @@
    "per": "input:crows",
    "input": {
     "key": "crows",
-    "label": "Призванных Storm Crows",
+    "label": "Summoned Storm Crows",
     "default": 1
    },
-   "note": "Для Thorn Volley призванного Spriggan"
+   "note": "For Thorn Volley of summoned Spriggan"
   },
   "78:9": {
    "kind": "trigger",
@@ -5456,7 +5456,7 @@
    "chance": "v",
    "confidence": "D?",
    "icd": 3,
-   "note": "Огненный Volcanic Orb при прямой огненной ближней атаке или передвижении"
+   "note": "Fire Volcanic Orb on direct fire melee hit or movement"
   },
   "78:10": {
    "kind": "trigger",
@@ -5465,23 +5465,23 @@
    "chance": "v",
    "confidence": "D?",
    "icd": 3,
-   "note": "Ледяной Volcanic Orb при прямой ледяной ближней атаке или передвижении"
+   "note": "Cold Volcanic Orb on direct cold melee hit or movement"
   },
   "120:21": {
    "kind": "param",
    "param": "count",
    "mod": "more",
-   "label": "Макс. число скелетов (удвоено)",
+   "label": "Max number of skeletons (doubled)",
    "confidence": "D"
   },
   "120:22": {
    "kind": "flag",
-   "text": "Скелеты получают Frenzy и Haste на 4 с при призыве",
+   "text": "Skeletons get Frenzy and Haste for 4 sec on summon",
    "confidence": "D"
   },
   "209:14": {
    "kind": "flag",
-   "text": "Avalanche получает добавленный урон чар, равный добавленному урону оружия в ближнем бою",
+   "text": "Avalanche gets added spell damage equal to added melee weapon damage",
    "confidence": "D?"
   },
   "209:15": {
@@ -5491,7 +5491,7 @@
    "chance": 1,
    "confidence": "D?",
    "icd": 0.2,
-   "note": "Ближние удары вызывают валун Avalanche по цели, до 5 раз в секунду"
+   "note": "Melee hits trigger Avalanche boulder at target, up to 5 times per second"
   },
   "757:6": {
    "kind": "conversion",
@@ -5499,50 +5499,50 @@
   },
   "757:7": {
    "kind": "flag",
-   "text": "Storm Bolt: добавленный урон чар за 1 урона оружия (физ./холод/молния) в ближнем бою",
+   "text": "Storm Bolt: added spell damage per 1 melee weapon damage (phys/cold/lightning)",
    "confidence": "D?"
   },
   "782:10": {
    "kind": "cooldown",
    "cooldown": "length_increased",
    "factor": -1,
-   "note": "Уклонение без перезарядки",
+   "note": "Dodge without cooldown",
    "confidence": "D"
   },
   "782:11": {
    "kind": "flag",
-   "text": "Уклонение применяет самое левое специализированное умение",
+   "text": "Dodge applies leftmost specializable ability",
    "confidence": "D"
   },
   "782:12": {
    "kind": "param",
    "param": "speed",
    "mod": "more",
-   "label": "Скорость движения при Уклонении",
+   "label": "Movement speed on Dodge",
    "confidence": "D"
   },
   "143:12": {
    "kind": "param",
    "param": "health_cost",
    "mod": "added",
-   "label": "Макс. здоровья расходуется для возврата Marrow Shards",
+   "label": "Max health spent for Marrow Shards return",
    "confidence": "D"
   },
   "143:13": {
    "kind": "param",
    "param": "speed",
    "mod": "more",
-   "label": "Скорость снарядов за каждые 2% недостающего здоровья",
+   "label": "Projectile speed per 2% missing health",
    "confidence": "D?",
    "per": "input:missing_hp",
    "factor": 0.5,
    "input": {
     "key": "missing_hp",
-    "label": "Недостающее здоровье, %",
+    "label": "Missing health, %",
     "default": 0,
     "max": 100
    },
-   "note": "Не влияет на скорость возврата"
+   "note": "Does not affect return speed"
   },
   "71:11": {
    "kind": "trigger",
@@ -5550,7 +5550,7 @@
    "on": "use",
    "chance": "v",
    "confidence": "D?",
-   "note": "Только при мане выше половины; тратит 100% маны Upheaval"
+   "note": "Only at mana above half; spends 100% Upheaval mana"
   },
   "71:12": {
    "kind": "stat",
@@ -5559,7 +5559,7 @@
    "confidence": "D",
    "per": "increased:IncreasedAreaForAreaSkills",
    "factor": 50,
-   "note": "За каждые 2% увеличения области"
+   "note": "Per 2% area increase"
   },
   "924:2": {
    "kind": "conversion",
@@ -5573,17 +5573,17 @@
  "component": {
   "0:0": {
    "kind": "flag",
-   "text": "Убийство огненным умением: 1 огненный урон себе за каждое убийство в секунду (≈4 за 2 с)",
+   "text": "Kill with fire ability: 1 fire damage to self per kill per second (≈4 per 2 sec)",
    "confidence": "D"
   },
   "3:0": {
    "kind": "flag",
-   "text": "Лишние компаньоны исчезают при снятии",
+   "text": "Extra companions disappear on removal",
    "confidence": "D"
   },
   "5:0": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "10:0": {
@@ -5593,7 +5593,7 @@
    "per": "res:3",
    "factor": 0.5,
    "scope": "global",
-   "note": "+0.5 к скорости регена маны за 1.0 неограниченного сопротивления молнии",
+   "note": "+0.5 to mana regen speed per 1.0 unlimited lightning resistance",
    "confidence": "D"
   },
   "12:0": {
@@ -5607,7 +5607,7 @@
    ],
    "input": {
     "key": "above65",
-    "label": "Здоровье выше 65%",
+    "label": "Health above 65%",
     "default": true
    },
    "confidence": "D"
@@ -5623,30 +5623,30 @@
    ],
    "input": {
     "key": "above65",
-    "label": "Здоровье выше 65%",
+    "label": "Health above 65%",
     "default": true
    },
-   "note": "+0.3 в единицах игры (в подсказке 3%)",
+   "note": "+0.3 in game units (3% in the tooltip)",
    "confidence": "D"
   },
   "14:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "16:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "17:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "18:0": {
    "kind": "flag",
-   "text": "Нет эффекта в коде",
+   "text": "No effect in code",
    "confidence": "D"
   },
   "19:0": {
@@ -5656,17 +5656,17 @@
    "tags": "Cold",
    "per": "attr:dex",
    "factor": 1,
-   "note": "+1 холодного урона атакам и заклинаниям за Ловкость; также -1% физ. и холодного сопротивления за Ловкость (не учтено)",
+   "note": "+1 cold damage to attacks and spells per Dexterity; also -1% phys and cold resistance per Dexterity (not counted)",
    "confidence": "D?"
   },
   "20:0": {
    "kind": "flag",
-   "text": "Вы шокированы на 4 с, когда перестаёте двигаться",
+   "text": "You are shocked for 4 sec when stop moving",
    "confidence": "D"
   },
   "21:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "22:0": {
@@ -5675,12 +5675,12 @@
    "on": "hit",
    "chance": 0.1,
    "icd": 8,
-   "note": "только удары ближнего боя",
+   "note": "melee hits only",
    "confidence": "D"
   },
   "23:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "26:0": {
@@ -5695,10 +5695,10 @@
    ],
    "input": {
     "key": "killed_recently",
-    "label": "Убили врага недавно",
+    "label": "Killed enemy recently",
     "default": true
    },
-   "note": "4 с после убийства",
+   "note": "4 sec after kill",
    "confidence": "D"
   },
   "28:0": {
@@ -5711,10 +5711,10 @@
    ],
    "input": {
     "key": "minion_killed",
-    "label": "Миньоны недавно убили врага",
+    "label": "Minions killed enemy recently",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "28:1": {
@@ -5727,15 +5727,15 @@
    ],
    "input": {
     "key": "killed_recently",
-    "label": "Вы недавно убили врага",
+    "label": "You killed enemy recently",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "29:0": {
    "kind": "flag",
-   "text": "Удар ближнего боя по кровоточащему врагу удваивает скорость всех стаков кровотечения",
+   "text": "Melee hit vs bleeding enemy doubles speed of all Bleed stacks",
    "confidence": "D"
   },
   "30:0": {
@@ -5751,11 +5751,11 @@
    ],
    "input": {
     "key": "stacks",
-    "label": "Недавние удары ближнего боя по кровоточащему врагу",
+    "label": "Recent melee hits vs bleeding enemy",
     "default": 10,
     "max": 51
    },
-   "note": "Каждый стак 4 с, до 51 стака",
+   "note": "Each stack 4 sec, up to 51 stacks",
    "confidence": "D"
   },
   "32:0": {
@@ -5767,11 +5767,11 @@
    "factor": 0.2,
    "input": {
     "key": "level",
-    "label": "Уровень персонажа",
+    "label": "Character level",
     "default": 100,
     "max": 100
    },
-   "note": "+0.2 холодного урона заклинаниям за уровень; также +2% скорости заморозки и +1% сопр. некроту за уровень (не учтено)",
+   "note": "+0.2 cold damage to spells per level; also +2% chill speed and +1% necrotic resistance per level (not counted)",
    "confidence": "D?"
   },
   "32:1": {
@@ -5779,29 +5779,29 @@
    "ability": "TundraNova",
    "on": "hit",
    "chance": 0.15,
-   "note": "шанс удваивается против нежити; только холодные умения",
+   "note": "chance doubled vs undead; cold abilities only",
    "confidence": "D"
   },
   "33:0": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
-   "label": "Барьер = 100% макс. маны при полной мане",
+   "label": "Ward = 100% max mana at full mana",
    "confidence": "D"
   },
   "34:2": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "35:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "37:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "40:0": {
@@ -5820,11 +5820,11 @@
    "factor": 1,
    "input": {
     "key": "level",
-    "label": "Уровень персонажа",
+    "label": "Character level",
     "default": 100,
     "max": 100
    },
-   "note": "также +1% шанса оглушения в ближнем бою за уровень (не учтено)",
+   "note": "also stun chance +1% when using melee per level (not counted)",
    "confidence": "D"
   },
   "42:0": {
@@ -5839,7 +5839,7 @@
    "ability": "FireShardNova",
    "on": "hit",
    "chance": 0.3,
-   "note": "Magma Shards; только удары ближнего боя",
+   "note": "Magma Shards; melee hits only",
    "confidence": "D?"
   },
   "51:1": {
@@ -5850,10 +5850,10 @@
    "per": "input:blocks",
    "input": {
     "key": "blocks",
-    "label": "Блоков за последние 4 с",
+    "label": "Blocks in last 4 sec",
     "default": 1
    },
-   "note": "4 с, без предела стаков",
+   "note": "4 sec, no stack limit",
    "confidence": "D"
   },
   "52:0": {
@@ -5861,12 +5861,12 @@
    "ability": "SoulEruption",
    "on": "kill",
    "chance": 0.2,
-   "note": "каждое 5-е убийство за 10 с",
+   "note": "every 5th kill per 10 sec",
    "confidence": "D"
   },
   "53:0": {
    "kind": "flag",
-   "text": "Огненный щит обновляется за 80 барьера, когда осталось менее 1 с",
+   "text": "Fire shield refreshes for 80 ward when less than 1 sec remains",
    "confidence": "D"
   },
   "54:0": {
@@ -5886,49 +5886,49 @@
   },
   "55:0": {
    "kind": "flag",
-   "text": "При касте заклинания на вас накладывается кровотечение",
+   "text": "On spell cast Bleed is applied to you",
    "confidence": "D"
   },
   "56:0": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "57:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "58:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "59:0": {
    "kind": "resource",
    "resource": "health",
    "on": "minion_death",
-   "label": "Здоровье при смерти миньона (30)",
+   "label": "Health on minion death (30)",
    "confidence": "D"
   },
   "60:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "62:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "63:0": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "64:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "65:0": {
@@ -5941,7 +5941,7 @@
   },
   "66:1": {
    "kind": "flag",
-   "text": "Маркер без собственного эффекта в коде",
+   "text": "Marker with no own effect in code",
    "confidence": "D"
   },
   "70:2": {
@@ -5955,10 +5955,10 @@
    ],
    "input": {
     "key": "killed_recently",
-    "label": "Недавно убили врага",
+    "label": "Recently killed enemy",
     "default": true
    },
-   "note": "4 с",
+   "note": "4 sec",
    "confidence": "D"
   },
   "70:3": {
@@ -5971,14 +5971,14 @@
    ],
    "input": {
     "key": "ignited",
-    "label": "Вы подожжены",
+    "label": "You are ignited",
     "default": false
    },
    "confidence": "D"
   },
   "73:1": {
    "kind": "flag",
-   "text": "20% шанс ослепить атакующих",
+   "text": "20% chance to blind attackers",
    "confidence": "D"
   },
   "74:1": {
@@ -5992,10 +5992,10 @@
    ],
    "input": {
     "key": "channelling",
-    "label": "Вы направляете умение",
+    "label": "You direct ability",
     "default": true
    },
-   "note": "раз в секунду во время направления, бесплатно",
+   "note": "per second while directing, free",
    "confidence": "D"
   },
   "74:2": {
@@ -6005,12 +6005,12 @@
    "per": "value:CriticalChance",
    "factor": 1,
    "scope": "component:Disintegrate",
-   "note": "равно шансу крита заклинаний (с базовыми 5%), без предела",
+   "note": "equals spell crit chance (with base 5%), no limit",
    "confidence": "D"
   },
   "75:0": {
    "kind": "flag",
-   "text": "Ускорение на 3 с при использовании зелья",
+   "text": "Haste for 3 sec on potion use",
    "confidence": "D"
   }
  }

@@ -3,5 +3,5 @@
 [node name="StatGroup" type="Label"]
 custom_minimum_size = Vector2(0, 28)
 theme_type_variation = &"GroupLabel"
-text = "Группа"
+text = "Group"
 vertical_alignment = 2

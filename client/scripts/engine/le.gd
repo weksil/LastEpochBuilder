@@ -2,6 +2,32 @@
 class_name LE
 
 
+## Translated text: source strings are English, other languages come from client/i18n/*.po (TranslationServer).
+## Engine code is static, so it uses this instead of Object.tr().
+static func t(text: String) -> String:
+	var out: String = String(TranslationServer.translate(text))
+	if out == text and text != "" and TranslationServer.get_locale() != "en":
+		missing[text] = true
+	return out
+
+
+## Source strings that had no translation in the current non-English locale (filled by t(); checked by tests/i18n_test).
+static var missing: Dictionary = {}
+
+
+## Directory of research/data: inside the exported build it is packed as res://data/research
+## (scripts/build_windows.ps1 copies it there); in the editor it is read from the repository next to client/.
+static func research_dir() -> String:
+	if DirAccess.dir_exists_absolute("res://data/research"):
+		return "res://data/research"
+	return ProjectSettings.globalize_path("res://").path_join("../research/data").simplify_path()
+
+
+## research/data/game: extracted game data.
+static func game_data_dir() -> String:
+	return research_dir().path_join("game")
+
+
 # Damage type tags (AT - bitwise masks)
 const PHYSICAL: int = 1
 const LIGHTNING: int = 2
@@ -110,7 +136,7 @@ const CONDITIONAL_CRIT_MULTI: int = 133
 # Damage type data
 # Order: Physical, Fire, Cold, Lightning, Necrotic, Void, Poison
 const DT_TAG: Array[int] = [PHYSICAL, FIRE, COLD, LIGHTNING, NECROTIC, VOID, POISON]
-const DT_NAME_RU: Array[String] = ["Физический", "Огонь", "Холод", "Молния", "Некротика", "Пустота", "Яд"]
+const DT_NAME: Array[String] = ["Physical", "Fire", "Cold", "Lightning", "Necrotic", "Void", "Poison"]
 const RES_SP: Array[int] = [PHYSICAL_RES, FIRE_RES, COLD_RES, LIGHTNING_RES, NECROTIC_RES, VOID_RES, POISON_RES]
 const NEG_RES_SP: Array[int] = [NEG_PHYSICAL_RES, NEG_FIRE_RES, NEG_COLD_RES, NEG_LIGHTNING_RES, NEG_NECROTIC_RES, NEG_VOID_RES, NEG_POISON_RES]
 const RES_GROUP: Array[int] = [2, 1, 1, 1, 4, 2, 4]  # 1 elemental, 2 Phys/Void, 4 Necrotic/Poison

@@ -1,10 +1,10 @@
 class_name CalcTile extends PanelContainer
 
-## One big number of the «Расчёты» headline strip (docs/UI.md).
+## One big number of the "Calculations" headline strip (docs/UI.md).
 
 const FLASH_SECONDS: float = 1.2
 
-@export var caption: String = "Показатель"
+@export var caption: String = "Metric"
 ## The main tile (accent frame, larger number).
 @export var main_tile: bool = false
 
@@ -16,7 +16,7 @@ var _flash_token: int = 0
 
 
 func _ready() -> void:
-	_caption.text = caption
+	_caption.text = tr(caption)
 	theme_type_variation = &"TilePanelMain" if main_tile else &"TilePanel"
 	_value.theme_type_variation = _base_variation()
 

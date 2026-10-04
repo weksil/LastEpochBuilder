@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/passives/passive_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/trees/tree_canvas.tscn" id="2_canvas"]
 
-[node name="Пассивки" type="VBoxContainer"]
+[node name="Passives" type="VBoxContainer"]
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
 
@@ -19,12 +19,12 @@ focus_mode = 0
 [node name="PointsLabel" type="Label" parent="Header"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Потрачено очков: 0"
+text = "Points spent: 0"
 
 [node name="Hint" type="Label" parent="."]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "ЛКМ — добавить очко, ПКМ — убрать, Ctrl + колесо — масштаб"
+text = "LMB — add a point, RMB — remove, Ctrl + wheel — zoom"
 
 [node name="TreeCanvas" parent="." instance=ExtResource("2_canvas")]
 unique_name_in_owner = true

@@ -17,7 +17,7 @@ var passive_cap_override: int = -1
 
 # Skills (5 slots)
 var skills: Array[Dictionary] = []
-## Slot shown in «Скиллы» / «Расчёты» and in the stats summary; changing it emits `changed` so every view follows.
+## Slot shown in "Skills" / "Calculations" and in the stats summary; changing it emits `changed` so every view follows.
 var selected_skill: int = 0:
 	set(value):
 		if value == selected_skill:

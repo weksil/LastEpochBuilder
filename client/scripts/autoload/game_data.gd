@@ -36,8 +36,8 @@ var _blessings_by_id: Dictionary = {}   # id -> blessing data
 
 
 func _ready() -> void:
-	var data_dir: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game").simplify_path()
-	var parent_dir: String = data_dir.path_join("..").simplify_path()
+	var data_dir: String = LE.game_data_dir()
+	var parent_dir: String = LE.research_dir()
 
 	var classes_json: Variant = _load_json(data_dir.path_join("classes.json"))
 	if classes_json is Dictionary:
@@ -136,7 +136,7 @@ func _ready() -> void:
 			_sets[int(st["setID"])] = st
 
 	# hand-written planner models (client/data, not extracted game data)
-	var models_json: Variant = _load_json(ProjectSettings.globalize_path("res://data/unique_effect_models.json"))
+	var models_json: Variant = _load_json("res://data/unique_effect_models.json")
 	if models_json is Dictionary:
 		_unique_models = models_json
 
@@ -477,8 +477,7 @@ static func _grid_rows(matrix: Array) -> Array:
 func altar_grid(sub_id: int) -> Array:
 	if not _altar_grids_loaded:
 		_altar_grids_loaded = true
-		var data_dir: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game").simplify_path()
-		var json: Variant = _load_json(data_dir.path_join("idols.json"))
+		var json: Variant = _load_json(LE.game_data_dir().path_join("idols.json"))
 		if json is Dictionary:
 			for m: Array in json.get("containerGrids", {}).get("data", []):
 				_altar_grids.append(_grid_rows(m))

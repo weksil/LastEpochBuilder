@@ -1,6 +1,6 @@
 class_name ItemEditor extends PanelContainer
 
-## Edits one equipment slot of Build.items (docs/UI.md «Предметы»). Controls live in item_editor.tscn.
+## Edits one equipment slot of Build.items (docs/UI.md "Items"). Controls live in item_editor.tscn.
 
 const EMPTY_ID: int = 99999
 const UNIQUE_EMPTY_ID: int = 99998
@@ -28,7 +28,7 @@ func _ready() -> void:
 	%ClearButton.pressed.connect(_on_clear)
 	for row_name: String in AFFIX_ROWS:
 		var row: Node = %Affixes.get_node(row_name)
-		row.get_node("Top/KindLabel").text = "Префикс" if row_name.begins_with("Prefix") else "Суффикс"
+		row.get_node("Top/KindLabel").text = tr("Prefix") if row_name.begins_with("Prefix") else tr("Suffix")
 		row.get_node("Top/AffixSelect").item_selected.connect(func(_i: int) -> void: _store_affixes(true))
 		row.get_node("Top/TierSpin").value_changed.connect(func(_v: float) -> void: _store_affixes(false))
 		row.get_node("Bottom/RollSlider").value_changed.connect(func(_v: float) -> void: _store_affixes(false))
@@ -62,7 +62,7 @@ func _fill() -> void:
 
 	# Fill unique select
 	%UniqueSelect.clear()
-	%UniqueSelect.add_item("— обычный предмет —", UNIQUE_EMPTY_ID)
+	%UniqueSelect.add_item(tr("— regular item —"), UNIQUE_EMPTY_ID)
 	var uniques: Array = GameData.uniques
 	var unique_items: Array = []
 	for u: Dictionary in uniques:
@@ -75,7 +75,7 @@ func _fill() -> void:
 	%UniqueSelect.select(maxi(0, %UniqueSelect.get_item_index(unique_id)))
 
 	%BaseSelect.clear()
-	%BaseSelect.add_item("— пусто —", EMPTY_ID)
+	%BaseSelect.add_item(tr("— empty —"), EMPTY_ID)
 	for b: Dictionary in GameData.item_bases:
 		if _base_fits_slot(b):
 			%BaseSelect.add_item(GameData.display_name(b), int(b["baseTypeID"]))
@@ -96,11 +96,11 @@ func _fill() -> void:
 
 	var has_item: bool = not base.is_empty() or has_unique
 	var is_idol: bool = IdolGrid.is_idol_key(_slot)
-	%AffixesTitle.text = "Аффиксы (1 префикс, 1 суффикс)" if is_idol else "Аффиксы (2 префикса, 2 суффикса)"
+	%AffixesTitle.text = tr("Affixes (1 prefix, 1 suffix)") if is_idol else tr("Affixes (2 prefixes, 2 suffixes)")
 	if has_unique:
 		var unique: Dictionary = GameData.unique(unique_id)
 		if str(unique.get("legendaryType", "")) == "LegendaryPotential":
-			%AffixesTitle.text = "Легендарные аффиксы"
+			%AffixesTitle.text = tr("Legendary affixes")
 
 	%BaseSelect.disabled = has_unique
 	%SubSelect.disabled = has_unique
@@ -189,7 +189,7 @@ func _fill_unique(item: Dictionary, unique_id: int) -> void:
 		var set_id: int = int(unique.get("setID", -1))
 		var set_data: Dictionary = GameData.set_data(set_id)
 		var set_name: String = set_data.get("setName", "")
-		text_lines.append("Сет «%s»:" % set_name)
+		text_lines.append(tr("Set \"%s\":") % set_name)
 		var set_descriptions: Array = set_data.get("tooltipDescriptions", [])
 		for i in range(set_descriptions.size()):
 			var desc_obj: Dictionary = set_descriptions[i]
@@ -217,7 +217,7 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		var select: OptionButton = row.get_node("Top/AffixSelect")
 		var kind: String = "PREFIX" if AFFIX_ROWS[r].begins_with("Prefix") else "SUFFIX"
 		select.clear()
-		select.add_item("— нет —", EMPTY_ID)
+		select.add_item(tr("— none —"), EMPTY_ID)
 		for aff: Dictionary in options[kind]:
 			select.add_item(str(aff.get("name", "")), int(aff["affixId"]))
 		var entry: Dictionary = {}

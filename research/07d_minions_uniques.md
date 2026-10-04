@@ -1,225 +1,225 @@
-# 07d — Передача статов миньонам и спецэффекты уникальных/сетовых предметов (дамп LE 1.5.0)
+# 07d — Stat Transfer to Minions and Special Effects of Unique/Set Items (LE 1.5.0 Dump)
 
-Метки: **D** — прочитано из декомпилированного кода; **D?** — прочитано, но интерпретация неоднозначна.
-Источники: `dump/decomp/LE.dll/*.c` (Ghidra), `dump/isil/IsilDump/LE/*.txt` (ISIL, где Ghidra не справилась), `dump/cs/DiffableCs/LE/*.cs` (офсеты), ассеты `Resources/UniqueList.asset`, `SetBonusesList.asset`, `PlayerPropertyList.asset`, `AbilityPropertyList.asset`.
+Labels: **D** — read from decompiled code; **D?** — read but interpretation is ambiguous.
+Sources: `dump/decomp/LE.dll/*.c` (Ghidra), `dump/isil/IsilDump/LE/*.txt` (ISIL, where Ghidra failed), `dump/cs/DiffableCs/LE/*.cs` (offsets), assets `Resources/UniqueList.asset`, `SetBonusesList.asset`, `PlayerPropertyList.asset`, `AbilityPropertyList.asset`.
 
-Новые файлы:
-- `tools/extract/pp_switch.py` → `research/data/game/player_property_fields.json` (PlayerProperty → поле CharacterMutator, по таблице переходов в бинарнике);
-- `tools/extract/pp_usage.py` → дополняет тот же файл списком методов-триггеров;
-- `tools/extract/extract_unique_effects.py` (+ `tools/extract/unique_component_mechanics.json`, ручная выжимка из классов-компонентов) → `research/data/game/unique_effects.json`.
+New files:
+- `tools/extract/pp_switch.py` → `research/data/game/player_property_fields.json` (PlayerProperty → CharacterMutator field, by jump table in binary);
+- `tools/extract/pp_usage.py` → supplements the same file with list of trigger methods;
+- `tools/extract/extract_unique_effects.py` (+ `tools/extract/unique_component_mechanics.json`, manual extraction from component classes) → `research/data/game/unique_effects.json`.
 
 ---
 
-## Часть 1. Миньоны
+## Part 1. Minions
 
-### 1.1 Главный вывод — снимок статов игрока в момент призыва (**D**)
+### 1.1 Key Finding — Snapshot of Player Stats at Summon Time (**D**)
 
-Общий путь передачи, который не нашёл 06e, находится в компоненте объекта способности **`SummonEntityOnDeath`** (наследник `RequiresTaggedStats`), а не в `Summoned`/`CharacterMutator`.
+The general path for stat transfer, which 06e did not find, is located in the ability object component **`SummonEntityOnDeath`** (inheritor of `RequiresTaggedStats`), not in `Summoned`/`CharacterMutator`.
 
-Цепочка (игрок кастует призыв):
+Chain (player casts summon):
 1. `AbilityObjectConstructor.constructAbilityObject` @0x18241ce20:
-   - pre-mutation temp stats (`CharacterMutator.ApplyPreMutationTemporaryStats`) и обычные temp stats способности (виртуальный `applyTemporaryStats` @0x18241c320, vtable +0x2A8: `levelScaling × уровень персонажа`, `attributeScaling × атрибут`, статы предметов с `extraTag = ID способности`, статы мутатора/дерева) **добавляются в `Stats.stats` кастера** (`AddRange`, строки ~3644/3724);
-   - для каждого `RequiresTaggedStats` на объекте создаётся/берётся компонент `Stats` объекта способности, в его список копируется **весь** список статов кастера (`AddRange(caster.stats.stats)`, строка ~4302), затем вызывается `SetStats(thatStats)`;
-   - temp stats снимаются с кастера (строки ~4370–4420).
-2. `SummonEntityOnDeath.Summon` @0x181143130 (вызывается при «смерти» объекта способности или на Start при `createOnStartInstead`) спавнит `ActorData` и для **каждого** стата `s` из полученного списка выполняет (ISIL `SummonEntityOnDeath.txt` строки 2436–2600, псевдо-C строки ~2780–2915):
+   - pre-mutation temp stats (`CharacterMutator.ApplyPreMutationTemporaryStats`) and normal ability temp stats (virtual `applyTemporaryStats` @0x18241c320, vtable +0x2A8: `levelScaling × character level`, `attributeScaling × attribute`, item stats with `extraTag = ability ID`, mutator/tree stats) **are added to `Stats.stats` of the caster** (`AddRange`, lines ~3644/3724);
+   - for each `RequiresTaggedStats` on the object, a `Stats` component is created/taken from the object, **entire** caster's stats list is copied into its list (`AddRange(caster.stats.stats)`, line ~4302), then `SetStats(thatStats)` is called;
+   - temp stats are removed from caster (lines ~4370–4420).
+2. `SummonEntityOnDeath.Summon` @0x181143130 (called on ability object "death" or on Start if `createOnStartInstead`) spawns `ActorData` and for **each** stat `s` from the obtained list performs (ISIL `SummonEntityOnDeath.txt` lines 2436–2600, pseudo-C lines ~2780–2915):
 
 ```
-idx = AbilityIDIndex(creationReferences.GetPrimaryAbility())   // ID способности-призыва
+idx = AbilityIDIndex(creationReferences.GetPrimaryAbility())   // ID of summon ability
 isTotem = ability.isTotem() || countsAsTotemEvenIfAbilityIsNotTotemAbility
 if HandledBySummonerEvenIfMinionTaggedOrAbilitySpecific(s.property): skip      // SP 38,39,40,50,126,127
 elif s.extraTag != 0 and s.extraTag != idx:
-        minion.addStat(s)                       // без изменений (vtable-слот 0x24)            D?
+        minion.addStat(s)                       // unchanged (vtable-slot 0x24)            D?
 elif (s.tags & Minion) or (isTotem and s.tags & Totem) or (s.extraTag == idx and idx != 0):
-        if summonIsASummoner:                   // поле +0x1B8 «For Minions That Summon»
+        if summonIsASummoner:                   // field +0x1B8 «For Minions That Summon»
             minion.AddStatModifier(s.property, s.added,   ADDED,     s.tags | Minion, s.specialTag, extraTag 0)
             minion.AddStatModifier(s.property, s.inc,     INCREASED, s.tags | Minion, ...)
             for m in s.moreValues: minion.AddStatModifier(s.property, m, MORE, s.tags | Minion, ...)
         minion.AddStatModifier(s.property, s.added, ADDED,     s.tags & ~(Minion|Totem), s.specialTag, extraTag 0)
         minion.AddStatModifier(s.property, s.inc,   INCREASED, s.tags & ~(Minion|Totem), ...)
         for m in s.moreValues: minion.AddStatModifier(s.property, m, MORE, s.tags & ~(Minion|Totem), ...)
-else: skip                                      // обычные статы без тега Minion НЕ передаются
+else: skip                                      // normal stats without Minion tag are NOT transferred
 ```
-(`minion` = `actor.stats` (+0x50) заспавненного актёра; `AddStatModifier` = интерфейсный вызов `FUN_180186360(0x1c, …)` с аргументами `(SP, value, ModType, AT, specialTag, extraTag)`.)
+(`minion` = `actor.stats` (+0x50) of spawned actor; `AddStatModifier` = interface call `FUN_180186360(0x1c, …)` with arguments `(SP, value, ModType, AT, specialTag, extraTag)`.)
 
-`EpochExtensions.HandledBySummonerEvenIfMinionTaggedOrAbilitySpecific(SP)` @0x1810e0220 возвращает true для **SP 38 HealthGain, 39 WardGain, 40 ManaGain, 50 HasteOnHitChance, 126 ChanceToCastForAbility, 127 ChanceToCastForTags**. Такие статы с тегом Minion обрабатывает сам призыватель (например, «здоровье при попадании миньона»).
+`EpochExtensions.HandledBySummonerEvenIfMinionTaggedOrAbilitySpecific(SP)` @0x1810e0220 returns true for **SP 38 HealthGain, 39 WardGain, 40 ManaGain, 50 HasteOnHitChance, 126 ChanceToCastForAbility, 127 ChanceToCastForTags**. Such stats with Minion tag are handled by the summoner themselves (e.g., "health on minion hit").
 
-После цикла:
-- Добавляются статы **самого компонента** `SummonEntityOnDeath.statList` (+0x148) — **без изменения тегов** (`addStat`). Сюда мутатор призыва (`XxxMutator.Mutate`) кладёт статы из дерева скилла: например `SummonWolfMutator.Mutate` @0x18233a6b0 делает `AddRange(mutator.statList +0x140)` и добавляет `AddedStat(CritChance(4), tags 0, v)`, `AddedStat(SP 56 StunImmunity, 1)` и т. п. Затем `BaseStats.UpdateStats()`, здоровье ставится в максимум (или `maxHealth × healthPercent` создателя при `inheritHealthRatio`).
-- Компаньоны (`ability.companion` и есть создатель): PlayerProperty **132 «Increased Companion Size»** (`tags == 0x84`) суммируется и вместе с `increasedMinionSize` (+0x150) через `Maths.combineModifiers` масштабирует `localScale`. Чисто визуально.
-- `Summoned.attributeScalingWhenSummoned` ← `CreationReferences.attributeScalingOnCast`. Используется только в `Summoned.OnItemChange` (миньоны с предметами, 06e §4.3).
+After the loop:
+- Stats of the **component itself** `SummonEntityOnDeath.statList` (+0x148) are added — **without changing tags** (`addStat`). Here the summon mutator (`XxxMutator.Mutate`) places stats from the skill tree: for example `SummonWolfMutator.Mutate` @0x18233a6b0 does `AddRange(mutator.statList +0x140)` and adds `AddedStat(CritChance(4), tags 0, v)`, `AddedStat(SP 56 StunImmunity, 1)` etc. Then `BaseStats.UpdateStats()`, health is set to maximum (or `maxHealth × healthPercent` of creator if `inheritHealthRatio`).
+- Companions (`ability.companion` is the creator): PlayerProperty **132 «Increased Companion Size»** (`tags == 0x84`) is summed and together with `increasedMinionSize` (+0x150) via `Maths.combineModifiers` scales `localScale`. Purely visual.
+- `Summoned.attributeScalingWhenSummoned` ← `CreationReferences.attributeScalingOnCast`. Used only in `Summoned.OnItemChange` (minions with items, 06e §4.3).
 
-**Снимок, а не живая связь.** У `Stats` миньона нет ссылки на `Stats` игрока. `AbilityObjectConstructor.initialise` @0x1824217D0 берёт `Stats` самого актёра. В `Summoned.OnUpdateTick`/`initialise` пересчёта от игрока нет. Статический список `Summoned.excludedPlayerPropertiesForSnapShotProtection` создаётся пустым в `.cctor` @0x1812814D0 и больше нигде не используется. Миньон получает актуальные статы игрока только при **перепризыве**:
-- дерево скилла: `*Tree.resummonMinions/resummonCompanions`;
-- смена сцены: `SummonPersistenceManager.OnPreSceneLoad` → `ResummonCertainMinions` @0x1812747B0 вызывает те же `resummon*` у деревьев Wolf/Bear/Raptor/Sabertooth/Scorpion/Spriggan/Primalist Elemental/Manifest Armor;
-- новый каст.
+**Snapshot, not live link.** Minion's `Stats` has no reference to player's `Stats`. `AbilityObjectConstructor.initialise` @0x1824217D0 takes `Stats` of the actor itself. In `Summoned.OnUpdateTick`/`initialise` there is no recalculation from the player. Static list `Summoned.excludedPlayerPropertiesForSnapShotProtection` is created empty in `.cctor` @0x1812814D0 and is not used anywhere else. Minion receives actual player stats only on **resummon**:
+- skill tree: `*Tree.resummonMinions/resummonCompanions`;
+- scene change: `SummonPersistenceManager.OnPreSceneLoad` → `ResummonCertainMinions` @0x1812747B0 calls the same `resummon*` for Wolf/Bear/Raptor/Sabertooth/Scorpion/Spriggan/Primalist Elemental/Manifest Armor trees;
+- new cast.
 
-**D** для правила. **D?** — только для ветки «чужой extraTag → addStat без изменений»: аргументы видны в ISIL, но назначение неочевидно; вероятно, это статы под собственные способности миньона.
+**D** for the rule. **D?** — only for the branch "foreign extraTag → addStat unchanged": arguments are visible in ISIL, but purpose is unclear; probably these are stats for minion's own abilities.
 
-### 1.2 Что из статов игрока доходит до миньона (следствия, **D**)
+### 1.2 What Player Stats Reach the Minion (Consequences, **D**)
 
-| Стат игрока | Что получает миньон |
+| Player Stat | What Minion Gets |
 |---|---|
-| `+X% damage` (tags 0), `+X% fire damage` (Fire) | **ничего** |
+| `+X% damage` (tags 0), `+X% fire damage` (Fire) | **nothing** |
 | `+X% minion damage` (Minion) | `Damage INCREASED X`, tags 0 |
-| `+X minion melee physical damage` (Physical\|Melee\|Minion) | `Damage ADDED X`, tags Physical\|Melee → только к melee-физ. способностям миньона |
-| `+X% minion health / armour / resist` (Minion) | Health/Armour/Res без тега → идут в `ApplyExternalStats` миньона (06a §4.1) |
-| статы с `extraTag = ID способности-призыва` (например «+X% урона Summon Skeleton» с предмета) | переносятся с `extraTag 0` и без тега Minion |
-| `levelScaling`/`attributeScaling` способности-призыва (ассет `Ability`) | считаются **на игроке** (уровень персонажа, атрибуты игрока) и переносятся, если стат с тегом Minion (или с extraTag способности) |
-| узлы дерева призыва | (а) temp stats мутатора с тегом Minion → по правилу выше; (б) `SummonEntityOnDeath.statList` → как есть, обычно без тегов |
-| totem-статы (tag Totem) | только если способность — тотем (`Ability.isTotem` или флаг `countsAsTotem…`) |
-| HealthGain/WardGain/ManaGain/Haste on hit/ChanceToCast с тегом Minion | не переносятся (обрабатывает игрок) |
-| скрытая база игрока (`CharacterStats.SetInitialValues`, 06a §5.3): Movespeed MORE 0.10 Minion; DamageTaken MORE −0.6 Minion\|PetResisted; Damage MORE n·k Minion и DamageTaken MORE −n·k Minion от уровня | у миньона: Movespeed MORE +10%; DamageTaken MORE −0.6 с тегом **PetResisted** (тег не снимается, маска снимает только 0x6000); Damage MORE и DamageTaken MORE от уровня — без тега |
+| `+X minion melee physical damage` (Physical\|Melee\|Minion) | `Damage ADDED X`, tags Physical\|Melee → only to minion's melee-phys abilities |
+| `+X% minion health / armour / resist` (Minion) | Health/Armour/Res without tag → go to minion's `ApplyExternalStats` (06a §4.1) |
+| stats with `extraTag = ID of summon ability` (e.g. «+X% Summon Skeleton damage» from item) | transferred with `extraTag 0` and without Minion tag |
+| `levelScaling`/`attributeScaling` of summon ability (asset `Ability`) | calculated **on player** (character level, player attributes) and transferred if stat has Minion tag (or extraTag of ability) |
+| summon tree nodes | (a) mutator temp stats with Minion tag → by rule above; (b) `SummonEntityOnDeath.statList` → as is, usually without tags |
+| totem stats (tag Totem) | only if ability is totem (`Ability.isTotem` or flag `countsAsTotem…`) |
+| HealthGain/WardGain/ManaGain/Haste on hit/ChanceToCast with Minion tag | not transferred (handled by player) |
+| hidden player base (`CharacterStats.SetInitialValues`, 06a §5.3): Movespeed MORE 0.10 Minion; DamageTaken MORE −0.6 Minion\|PetResisted; Damage MORE n·k Minion and DamageTaken MORE −n·k Minion from level | minion has: Movespeed MORE +10%; DamageTaken MORE −0.6 with **PetResisted** tag (tag not removed, mask removes only 0x6000); Damage MORE and DamageTaken MORE from level — without tag |
 
-Почему тег снимается: у способностей миньонов в ассетах **нет** тега Minion (например, `Skeleton Rogue Melee`, `PrimalWolf 01 melee`: `tags 513` = Physical\|Melee; `Summon Skeleton Archer Bow Attack`: `2049` = Physical\|Bow). Тег Minion стоит на способности-призыве игрока (`SummonSKeletonWarrior.asset`: `tags 8192`). `DamageStats.buildDamageStats` @0x18108C090 требует тег Minion у стата, только если он есть у самого урона (`required = damageTags & 0x2000`, через `Tags.Applicable(own, stat, required)` @0x1816A4EF0). Для способностей миньона required = 0, и снятые теги совпадают обычным правилом подмножества.
+Why tag is removed: minion abilities in assets **have no** Minion tag (e.g. `Skeleton Rogue Melee`, `PrimalWolf 01 melee`: `tags 513` = Physical\|Melee; `Summon Skeleton Archer Bow Attack`: `2049` = Physical\|Bow). Minion tag is on player's summon ability (`SummonSKeletonWarrior.asset`: `tags 8192`). `DamageStats.buildDamageStats` @0x18108C090 requires Minion tag in stat only if it's in the damage itself (`required = damageTags & 0x2000`, via `Tags.Applicable(own, stat, required)` @0x1816A4EF0). For minion abilities required = 0, and removed tags match normal subset rule.
 
-### 1.3 Уровень и база миньона (**D**)
-- `ActorData.spawn` @0x18277BD10 не принимает уровень. Уровень актёра берётся из `ActorData.level` в ассете (у `BloodGolem` = 34), но для игровых миньонов **не масштабируется**: `ActorScaler.scaleToLevel/scaleToZoneLevel` из `SummonEntityOnDeath` не вызываются.
-- **`levelScaling` собственных способностей миньона не применяется.** В `applyTemporaryStats` уровень берётся из `CharacterDataTracker` (+0xE0 → +0x20 → +0x88). Если трекера на кастере нет (а у миньонов его нет), блок пропускается целиком. `attributeScaling` способностей миньона использует атрибуты самого миньона (обычно 0, кроме миньонов с предметами).
-- Базовые здоровье/броня/резисты миньона — из его префаба (`UnitHealth`, `ActorStats`/`ProtectionClass` в бандле актёра), не из PermaLoad. Итог: `maxHealth = RoundHalfEven((base + ΣA)·(1 + ΣI)·ΠM)` по 06a §4.1, где A/I/M уже содержат перенесённые статы.
-- Базовые крит 5%/×2 (`Stats.baseCritChance/baseCritMulti`) — общие для всех `Stats`.
+### 1.3 Minion Level and Base (**D**)
+- `ActorData.spawn` @0x18277BD10 does not take level. Actor level is taken from `ActorData.level` in asset (for `BloodGolem` = 34), but for game minions **is not scaled**: `ActorScaler.scaleToLevel/scaleToZoneLevel` from `SummonEntityOnDeath` are not called.
+- **`levelScaling` of minion's own abilities is not applied.** In `applyTemporaryStats` level is taken from `CharacterDataTracker` (+0xE0 → +0x20 → +0x88). If tracker doesn't exist on caster (and minions don't have it), block is skipped entirely. `attributeScaling` of minion abilities uses minion's own attributes (usually 0, except minions with items).
+- Minion's base health/armour/resistances — from its prefab (`UnitHealth`, `ActorStats`/`ProtectionClass` in actor bundle), not from PermaLoad. Result: `maxHealth = RoundHalfEven((base + ΣA)·(1 + ΣI)·ΠM)` per 06a §4.1, where A/I/M already contain transferred stats.
+- Base crit 5%/×2 (`Stats.baseCritChance/baseCritMulti`) — common for all `Stats`.
 
-### 1.4 Компаньоны (**D**)
-- `CharacterStats.getMaximumCompanions` @0x181698270 = `Round(GetStatValue(SP61 MaximumCompanions, added = 2.0))`, то есть база **2** + added, × (1+inc) × more. Если в `CharacterMutator` (+0x130) выставлен флаг +0xB5C, лимит = **1**.
-- `Stats.maxContributionToCompanionLimit` @0x1816A4CD0 = `maxCompanions × 60`. Вклад компаньона по умолчанию `Summoned.defaultContributionToCompanionLimit = 60`, мутаторы могут его менять (`SummonWolfMutator.getContributionModifier`, `setContributionToCompanionLimit`).
-- Отдельных множителей силы у компаньонов нет. Отличия: размер (PP 132) и лимит.
+### 1.4 Companions (**D**)
+- `CharacterStats.getMaximumCompanions` @0x181698270 = `Round(GetStatValue(SP61 MaximumCompanions, added = 2.0))`, i.e. base **2** + added, × (1+inc) × more. If flag +0xB5C in `CharacterMutator` (+0x130) is set, limit = **1**.
+- `Stats.maxContributionToCompanionLimit` @0x1816A4CD0 = `maxCompanions × 60`. Companion's default contribution `Summoned.defaultContributionToCompanionLimit = 60`, mutators can change it (`SummonWolfMutator.getContributionModifier`, `setContributionToCompanionLimit`).
+- Companions have no separate power multipliers. Differences: size (PP 132) and limit.
 
-### 1.5 Тест-векторы (передача)
-Призыв `idx = 50` (не тотем), `summonIsASummoner = false`.
-1. Игрок: `Damage INC 0.4 tags 0`, `Damage INC 0.5 Minion`, `Damage INC 0.3 Minion|Melee`, `Health ADD 20 Minion`.
-   → Миньон: `Damage INC 0.5 (0)`, `Damage INC 0.3 (Melee)`, `Health ADD 20 (0)`.
-   Melee-атака миньона (Physical\|Melee): ΣI = 0.8. Спелл миньона: ΣI = 0.5. Здоровье `(base+20)·…`.
-2. Игрок L100 (`first = 26`, `k = 0.008`): `Damage MORE 0.6 Minion`, `DamageTaken MORE −0.6 Minion`, `DamageTaken MORE −0.6 Minion|PetResisted`.
-   → Миньон: урон ×1.6; входящий урон ×0.4, урон с тегом PetResisted ×0.4·0.4 = ×0.16.
-3. `Damage INC 0.25 Totem`: у тотема (isTotem) → `Damage INC 0.25 (0)`; у не-тотемного миньона → ничего.
-4. `Damage INC 0.2 extraTag=50 tags 0` → миньону `Damage INC 0.2 (0)`. `extraTag = 77` (другая способность) → миньону как есть, `extraTag 77` (**D?**).
-5. `HealthGain ADD 5 Minion` (SP 38) → не переносится.
-6. `summonIsASummoner = true`, стат `Damage INC 0.5 Minion` → миньону две записи: `INC 0.5 (Minion)` (для его призывов) и `INC 0.5 (0)`.
+### 1.5 Test Vectors (Transfer)
+Summon `idx = 50` (not totem), `summonIsASummoner = false`.
+1. Player: `Damage INC 0.4 tags 0`, `Damage INC 0.5 Minion`, `Damage INC 0.3 Minion|Melee`, `Health ADD 20 Minion`.
+   → Minion: `Damage INC 0.5 (0)`, `Damage INC 0.3 (Melee)`, `Health ADD 20 (0)`.
+   Minion's melee attack (Physical\|Melee): ΣI = 0.8. Minion spell: ΣI = 0.5. Health `(base+20)·…`.
+2. Player L100 (`first = 26`, `k = 0.008`): `Damage MORE 0.6 Minion`, `DamageTaken MORE −0.6 Minion`, `DamageTaken MORE −0.6 Minion|PetResisted`.
+   → Minion: damage ×1.6; incoming damage ×0.4, damage with PetResisted tag ×0.4·0.4 = ×0.16.
+3. `Damage INC 0.25 Totem`: for totem (isTotem) → `Damage INC 0.25 (0)`; for non-totem minion → nothing.
+4. `Damage INC 0.2 extraTag=50 tags 0` → minion gets `Damage INC 0.2 (0)`. `extraTag = 77` (other ability) → minion gets as is, `extraTag 77` (**D?**).
+5. `HealthGain ADD 5 Minion` (SP 38) → not transferred.
+6. `summonIsASummoner = true`, stat `Damage INC 0.5 Minion` → minion gets two records: `INC 0.5 (Minion)` (for its summons) and `INC 0.5 (0)`.
 
-### 1.6 Не удалось установить (миньоны)
-- Точная семантика интерфейсных слотов `0x1C` (AddStatModifier или ChangeStatModifier) и `0x24` (addStat) у `Stats` миньона: имена восстановлены по аргументам, а не по символам.
-- Базовые значения миньонов (health, armour, резисты, базовый урон их способностей) лежат в префабах актёров в отдельных бандлах. Нужен экстрактор UnityPy по `ActorData.ActorSoftRef`.
-- Пересобирает ли смена экипировки снимок у уже живых миньонов. Найдены только перепризыв по дереву скилла, при смене сцены и при новом касте. Константа `AbilityManager.falconAgeToSetAfterGearChange = 115` намекает на отдельную логику для сокола.
-- Конкретные статы, которые каждый `*SkillTree.updateMutator` кладёт в `statList` мутатора призыва. Это задача на ~25 деревьев призыва, по образцу `SummonWolfMutator.Mutate`.
+### 1.6 Could Not Determine (Minions)
+- Exact semantics of interface slots `0x1C` (AddStatModifier or ChangeStatModifier) and `0x24` (addStat) for minion's `Stats`: names recovered from arguments, not symbols.
+- Minion base values (health, armour, resistances, base damage of their abilities) lie in actor prefabs in separate bundles. Need UnityPy extractor via `ActorData.ActorSoftRef`.
+- Whether equipment change rebuilds snapshot for already-living minions. Found only resummon by skill tree, scene change and new cast. Constant `AbilityManager.falconAgeToSetAfterGearChange = 115` hints at separate falcon logic.
+- Specific stats that each `*SkillTree.updateMutator` puts into `statList` of summon mutator. Task for ~25 summon trees, per pattern of `SummonWolfMutator.Mutate`.
 
 ---
 
-## Часть 2. Спецэффекты уникальных и сетовых предметов
+## Part 2. Special Effects of Unique and Set Items
 
-### 2.1 Как устроены «особые» свойства уникальных предметов (**D**)
+### 2.1 How «Special» Properties of Unique Items Are Implemented (**D**)
 
-Уникальный предмет = список `UniqueItemMod` в `UniqueList.uniques[i].mods` + необязательный класс-компонент. «Спецэффекты» (то, что в тултипе описано текстом) реализованы четырьмя способами:
+Unique item = list `UniqueItemMod` in `UniqueList.uniques[i].mods` + optional component class. «Special effects» (described as text in tooltip) are implemented four ways:
 
-| Способ | Модов (489 уник.) | Где логика |
+| Method | Mods (489 unique) | Logic Location |
 |---|---|---|
-| **PlayerProperty** (SP 98, `tags` = индекс в `PlayerPropertyList`; 371 разный индекс) | 399 | `CharacterMutator`: поле, заполняемое в `applyModifiersBeforeExternalStatsCalculation` @0x182601FE0; его читают обработчики событий |
-| **AbilityProperty** (SP 58, `tags` = индекс способности в `Ability Manager.abilities`, `specialTag` = индекс (0-based) в `AbilityPropertyList[ability].properties`) | 385 | мутатор конкретной способности (`Stats.GetAbilityStat(abilityID, idx)`) |
-| Условные/особые SP: 117/131/132/133 GlobalConditional*, 115 DamagePerStackOfAilment, 100 AilmentConversion, 130 IdolAltarProperty | ~35 | общий движок урона (06a §6.4) |
-| **Класс-компонент** `UniqueItemComponent` (42 шт.; 14 из них пустые маркеры) и `SetItemComponent<T>` (6 сетовых предметов, все без логики) | — | собственный код класса (§2.4) |
+| **PlayerProperty** (SP 98, `tags` = index in `PlayerPropertyList`; 371 different indices) | 399 | `CharacterMutator`: field filled in `applyModifiersBeforeExternalStatsCalculation` @0x182601FE0; event handlers read it |
+| **AbilityProperty** (SP 58, `tags` = ability index in `AbilityManager.abilities`, `specialTag` = index (0-based) in `AbilityPropertyList[ability].properties`) | 385 | specific ability mutator (`Stats.GetAbilityStat(abilityID, idx)`) |
+| Conditional/special SP: 117/131/132/133 GlobalConditional*, 115 DamagePerStackOfAilment, 100 AilmentConversion, 130 IdolAltarProperty | ~35 | general damage engine (06a §6.4) |
+| **Component class** `UniqueItemComponent` (42 total; 14 are empty markers) and `SetItemComponent<T>` (6 set items, all without logic) | — | class's own code (§2.4) |
 
-Остальные моды — обычные статы (06a), с роллами.
+Remaining mods — normal stats (06a), with rolls.
 
-**Значение мода** (`ItemEquipManager.UpdateStats` @0x181436460 → `UniqueItemMod.getValue(byte roll)` @0x18126B510):
+**Mod value** (`ItemEquipManager.UpdateStats` @0x181436460 → `UniqueItemMod.getValue(byte roll)` @0x18126B510):
 ```
-roll = item.getUniqueRoll(mod.rollID)                 // байт 0..255
+roll = item.getUniqueRoll(mod.rollID)                 // byte 0..255
 if !canRoll || maxValue <= value || roll == 0:  v = GetFixedValueAfterRounding(prop, tags, special, type, value)
 else:                                            v = GetValueAfterRounding(prop, tags, special, type, value, maxValue, roll)
-v *= 1 + equipEffectModifier                         // параметр UpdateStats, по умолчанию 0          (D?)
-ModType: 0 ADDED, 1 INCREASED, 2 MORE (QUOTIENT = снять more)
+v *= 1 + equipEffectModifier                         // UpdateStats parameter, default 0          (D?)
+ModType: 0 ADDED, 1 INCREASED, 2 MORE (QUOTIENT = remove more)
 ```
-- Квантование такое же, как у аффиксов (06a §7.1): `a = RHE(lo·s)`, `b = RHE(hi·s)`, `v = min(floor((b−a+1)·roll/255 + a), b)/s`. Шаг s — из `PropertyRounding` свойства; для SP 98/58 — из записи PlayerPropertyList/AbilityPropertyList.
-- При `maxValue < value` (например, у Snowblind `AilmentChance 0.4/0.2`) мод **не роллится** и всегда даёт `value`. В JSON это поля `rolls`/`rollMax`.
-- Несколько модов могут делить один rollID: у Snowblind это PP 454 и PP 455.
+- Quantization same as affixes (06a §7.1): `a = RHE(lo·s)`, `b = RHE(hi·s)`, `v = min(floor((b−a+1)·roll/255 + a), b)/s`. Step s — from `PropertyRounding` of property; for SP 98/58 — from PlayerPropertyList/AbilityPropertyList record.
+- If `maxValue < value` (e.g. Snowblind `AilmentChance 0.4/0.2`), mod **does not roll** and always gives `value`. In JSON these are `rolls`/`rollMax` fields.
+- Multiple mods can share one rollID: for Snowblind these are PP 454 and PP 455.
 
-**Привязка компонента:**
-- `GetComponent(uniqueName.Replace(" ", "_"))` на шаблонном объекте → `AddComponent` этого типа игроку → `EquipUnique()` (vtable +0x268).
-- При снятии предмета вызывается `RemoveUnique()` (+0x278).
-- Для легендарных и сетовых предметов дополнительно вызывается `CharacterMutator.UniqueSetOrLegendaryEquipped` @0x18266D9A0.
+**Component binding:**
+- `GetComponent(uniqueName.Replace(" ", "_"))` on template object → `AddComponent` of this type to player → `EquipUnique()` (vtable +0x268).
+- When item is removed, `RemoveUnique()` (+0x278) is called.
+- For legendaries and set items additionally `CharacterMutator.UniqueSetOrLegendaryEquipped` @0x18266D9A0 is called.
 - **D**
 
-### 2.2 PlayerProperty → поле CharacterMutator (**D**, автоматически)
-В `applyModifiersBeforeExternalStatsCalculation` (Ghidra упала по таймауту, логика прочитана по ISIL):
+### 2.2 PlayerProperty → CharacterMutator Field (**D**, Automatically)
+In `applyModifiersBeforeExternalStatsCalculation` (Ghidra timed out, logic read from ISIL):
 ```
 foreach s in stats.stats:
-    if s.property == 98 and (uint)s.tags <= 999:  goto jumptable[s.tags]   // таблица @0x182616398, 1000 int32 RVA
+    if s.property == 98 and (uint)s.tags <= 999:  goto jumptable[s.tags]   // table @0x182616398, 1000 int32 RVA
 ```
-`pp_switch.py` читает таблицу из GameAssembly.dll и распознаёт тело каждого case по байтам. Всего 692 case:
+`pp_switch.py` reads the table from GameAssembly.dll and recognizes each case body by bytes. Total 692 cases:
 
-| op | Кол-во | Смысл |
+| op | Count | Meaning |
 |---|---|---|
-| `add` | 534 | `field += s.added` (все источники суммируются) |
-| `flag=(added>eps)` / `flag\|=(added>eps)` | 45 / 33 | bool-поле включается, если added > ε (иммунитеты, «You have Haste» и т. п.) |
-| `more-combine` | 42 | `field = (1+field)·Π(1+mᵢ) − 1`, через `Stat.ApplyMoreModifier` @0x18169DB90 или инлайн `getMoreMultiplier`. Это все «X% less/more damage taken from …» |
+| `add` | 534 | `field += s.added` (all sources summed) |
+| `flag=(added>eps)` / `flag\|=(added>eps)` | 45 / 33 | bool-field enabled if added > ε (immunities, «You have Haste» etc) |
+| `more-combine` | 42 | `field = (1+field)·Π(1+mᵢ) − 1`, via `Stat.ApplyMoreModifier` @0x18169DB90 or inline `getMoreMultiplier`. These are all «X% less/more damage taken from …» |
 | `assign` | 2 | `field = s.added` |
-| `complex` / `unknown` / `local` | 32 / 3 / 1 | нестандартные тела. Поле угадано по первому `[rdi+disp]` (**D?**); в нескольких случаях имя поля явно не совпадает с именем свойства |
+| `complex` / `unknown` / `local` | 32 / 3 / 1 | non-standard bodies. Field guessed from first `[rdi+disp]` (**D?**); in several cases field name doesn't explicitly match property name |
 
-Затем `pp_usage.py` находит методы, обращающиеся к этому полю:
-- где ищет: `CharacterMutator`, а для офсетов ≥ 0x1000 и другие классы;
-- в чём ищет: в псевдо-C, а если там не нашлось — в ISIL.
+Then `pp_usage.py` finds methods accessing this field:
+- where it searches: `CharacterMutator`, and for offsets ≥ 0x1000 other classes;
+- what it searches in: pseudo-C, and if not found there — in ISIL.
 
-Имя метода и есть триггер. Примеры:
-- `ApplyConditionalDefenses` — входящий урон;
-- `ApplyConditionalTemporaryStats` — статы на каст;
-- `OnHit`, `OnKill`, `HitDamageTaken`, `OnUpdateTick`, `onPotionUse`, `IsImmuneToAilment` и т. д.
+Method name is the trigger. Examples:
+- `ApplyConditionalDefenses` — incoming damage;
+- `ApplyConditionalTemporaryStats` — cast stats;
+- `OnHit`, `OnKill`, `HitDamageTaken`, `OnUpdateTick`, `onPotionUse`, `IsImmuneToAilment` etc.
 
-Покрытие для 399 PlayerProperty-модов уникальных предметов:
-- триггер найден у 356;
-- у 43 обращение к полю текстом не найдено;
-- 8 свойств вне этого switch (126, 127, 190, 507, 528, 551, 630, 665 — зелья и компаньоны).
+Coverage for 399 PlayerProperty mods of unique items:
+- trigger found for 356;
+- for 43 field access not found textually;
+- 8 properties outside this switch (126, 127, 190, 507, 528, 551, 630, 665 — potions and companions).
 
-Пример цепочки: Snowblind, PP 454 «Armor against Chilled Enemies», MORE 0.16–0.24, rollID 2.
+Example chain: Snowblind, PP 454 «Armor against Chilled Enemies», MORE 0.16–0.24, rollID 2.
 - Switch: `moreArmourAgainstChilledAttackers = (1+f)(1+m) − 1`.
-- Читает поле `ApplyConditionalDefenses`.
+- Field read in `ApplyConditionalDefenses`.
 
-Пример чтения: PP 250 «Damage Taken from Chilled Enemies». В `ApplyConditionalDefenses` @0x18261D5C0 `mult *= (1 + moreDamageTakenFromChilledEnemies)`, если у атакующего есть Chill (AilmentID 3). **D**
+Example read: PP 250 «Damage Taken from Chilled Enemies». In `ApplyConditionalDefenses` @0x18261D5C0 `mult *= (1 + moreDamageTakenFromChilledEnemies)`, if attacker has Chill (AilmentID 3). **D**
 
-### 2.3 Сетовые бонусы (**D**, `ItemEquipManager.UpdateStats`, строки ~4190–4470)
+### 2.3 Set Bonuses (**D**, `ItemEquipManager.UpdateStats`, lines ~4190–4470)
 ```
-count[setID] = число РАЗНЫХ uniqueID предметов этого сета в экипировке (RecyclingListList.addUnique)
-             + число надетых uniqueID 423 «Legends Entwined» («Counts as a part of every equipped item set»)
-для каждого mod сета: если mod.setRequirement <= count → Stat(property, specialTag, tags, extraTag, value по type) в статы игрока
+count[setID] = number of DIFFERENT uniqueID items of this set in equipment (RecyclingListList.addUnique)
+             + number of equipped uniqueID 423 «Legends Entwined» («Counts as a part of every equipped item set»)
+for each set mod: if mod.setRequirement <= count → Stat(property, specialTag, tags, extraTag, value by type) into player's stats
 ```
-- Учитываются и «сет-ифицированные» уникальные предметы (`ItemData.grantsSetBonus` / `getSetItemUniqueId`).
-- Значения сетовых модов фиксированные, роллов нет.
-- `SetItemComponent<T>` только добавляет `IsadoraSetBuffs`/`ElementalistSetBuffs`; колбэки `OnSetItemEquipped/Unequipped` пустые. Логика «N предметов» живёт только в `SetBonusesList`.
+- Accounts for «set-ified» unique items (`ItemData.grantsSetBonus` / `getSetItemUniqueId`).
+- Set mod values are fixed, no rolls.
+- `SetItemComponent<T>` only adds `IsadoraSetBuffs`/`ElementalistSetBuffs`; callbacks `OnSetItemEquipped/Unequipped` are empty. Logic of «N items» lives only in `SetBonusesList`.
 
-Тест: Isadora (setID 1) — `+100% Damned chance` (req 2), `+30% mana efficiency` (req 3), `+30% Damned effect` (req 3).
-- 2 разных предмета → активен 1 мод.
-- 2 предмета + Legends Entwined → count = 3 → активны все три.
-- Два одинаковых предмета → count = 1.
+Test: Isadora (setID 1) — `+100% Damned chance` (req 2), `+30% mana efficiency` (req 3), `+30% Damned effect` (req 3).
+- 2 different items → 1 mod active.
+- 2 items + Legends Entwined → count = 3 → all three active.
+- Two identical items → count = 1.
 
-### 2.4 Классы-компоненты (полные детали и адреса — в `unique_effects.json` → `effects[source = Component:*]`)
-Ни один компонент не читает роллы уникального предмета или PlayerProperty: все константы зашиты в код. Роллящиеся строки тултипа — это обычные моды.
+### 2.4 Component Classes (Full Details and Addresses — in `unique_effects.json` → `effects[source = Component:*]`)
+No component reads unique item rolls or PlayerProperty: all constants are hardcoded. Rolling tooltip strings — these are normal mods.
 
-| Класс | Триггер | Механика (константы) |
+| Class | Trigger | Mechanics (Constants) |
 |---|---|---|
-| Calamity | kill огненным скиллом; тик 0.5 с | каждые 0.5 с урон огнём себе `1.0 × (число огненных убийств за последние 2 с)` через ApplyDamage (≈4 за убийство) |
-| Frozen_Ire | смена уровня; on hit | за уровень персонажа +0.2 added Cold dmg (только тег Cold, не Spell), +0.02 FreezeRateMultiplier, +0.01 NecroticRes; Tundra Nova с шансом 0.15, против нежити второй ролл 0.176471 → 0.30 |
-| Mourningfrost | пересчёт статов | за единицу Dex: +1 added Cold (Melee/Spell/Throwing/Bow), −1% Physical res и др. |
-| Hammer_Of_Lorent | смена уровня | +1 added Physical\|Melee dmg и +0.01 increased Melee stun chance за уровень |
-| Strong_Mind | пересчёт статов; Stunned.enter | StunAvoidance += 2 × maxMana; при оглушении каст Lightning Explosion (ID 67) |
-| Urzils_Pride | пересчёт статов | ManaRegen INCREASED += 0.5 × min(uncapped LightningRes, 40). Кап 40 не действует: резист хранится долей |
-| Preparation | поздний тик | HP ≥ 65%: +30 added Cold\|Melee dmg; иначе +0.3 HealthLeech (Melee) |
-| Undisputed | on hit | +0.08 inc Physical на 4 с; именованные стаки 0..50 → до 51 стака (4.08) |
-| Taste_of_Blood | on hit | у всех текущих Bleed на цели speed = (speed+1)·2 − 1, без капа |
-| Close_Call | block | безымянный бафф +0.4 inc Dodge на 4 с; каждый блок — отдельный стак, без капа |
-| Ignivar_Head | тик (ченнелинг); equip | Fire Aura (ID 162) раз в 1 с при ченнелинге; Disintegrate MORE dmg = spell crit chance (+0.05 база), без капа |
-| IsadoraGravechill | kill | бафф +1.0 Chill chance (Necrotic) на **4 с** (в тултипе 5), с обновлением |
-| Death_Rattle | смерть миньона | +30 HP плоско, healing effectiveness не учитывается |
-| Bleeding_Heart | каст спелла | 1 стак Bleed на себя (D?) |
-| Stormtide | смена состояния (остановка) | Shock на себя, ICD 0.5 с (D?) |
-| The_Scavenger | зелье | Haste 3 с |
-| Beast_King | kill миньона / kill игрока | игроку DamageTaken MORE −0.08 на 4 с; миньонам −0.25 на 4 с (обновляется, не стакается) |
-| Soulfire | kill; опрос 0.5 с | +0.6 inc Fire на 4 с; при Ignite на себе +1.0 inc Armour |
-| Soul_Bastion | kill | заряды по 10 с; при 5 зарядах каст Soul Eruption и сброс |
-| Culnivars_Claim | тик | при полной мане: мана → 0, Ward += maxMana |
-| Rahyehs_Light | тик | Flame Ward с остатком < 1 с при ward > 80: длительность сбрасывается, −80 ward |
-| Keepers_Gloves / Arboreal_Circuit | melee hit / when hit | шанс 0.1 (поле summonChance не используется), ICD 8 с / 15 с |
-| Volcanus / Bone_Harvester / Torch_Of_The_Pontifex | melee hit / kill / kill | каст способности с шансом 0.3 / 0.2 / 1.0 |
-| Plague_Bearer_Staff | when hit | Blind атакующего с шансом 0.2 |
+| Calamity | kill with fire skill; tick 0.5 s | every 0.5 s fire damage to self `1.0 × (number of fire kills in last 2 s)` via ApplyDamage (≈4 per kill) |
+| Frozen_Ire | level change; on hit | per character level +0.2 added Cold dmg (Cold tag only, not Spell), +0.02 FreezeRateMultiplier, +0.01 NecroticRes; Tundra Nova with 0.15 chance, against undead second roll 0.176471 → 0.30 |
+| Mourningfrost | stat recalc | per unit Dex: +1 added Cold (Melee/Spell/Throwing/Bow), −1% Physical res etc |
+| Hammer_Of_Lorent | level change | +1 added Physical\|Melee dmg and +0.01 increased Melee stun chance per level |
+| Strong_Mind | stat recalc; Stunned.enter | StunAvoidance += 2 × maxMana; on stun cast Lightning Explosion (ID 67) |
+| Urzils_Pride | stat recalc | ManaRegen INCREASED += 0.5 × min(uncapped LightningRes, 40). Cap 40 does not apply: resistance stored as fraction |
+| Preparation | late tick | HP ≥ 65%: +30 added Cold\|Melee dmg; else +0.3 HealthLeech (Melee) |
+| Undisputed | on hit | +0.08 inc Physical for 4 s; named stacks 0..50 → up to 51 stacks (4.08) |
+| Taste_of_Blood | on hit | for all current Bleed on target speed = (speed+1)·2 − 1, no cap |
+| Close_Call | block | unnamed buff +0.4 inc Dodge for 4 s; each block — separate stack, no cap |
+| Ignivar_Head | tick (channelling); equip | Fire Aura (ID 162) once per 1 s during channelling; Disintegrate MORE dmg = spell crit chance (+0.05 base), no cap |
+| IsadoraGravechill | kill | buff +1.0 Chill chance (Necrotic) for **4 s** (tooltip says 5), with refresh |
+| Death_Rattle | minion death | +30 HP flat, healing effectiveness not accounted |
+| Bleeding_Heart | spell cast | 1 stack of Bleed on self (D?) |
+| Stormtide | state change (stop) | Shock on self, ICD 0.5 s (D?) |
+| The_Scavenger | potion | Haste 3 s |
+| Beast_King | minion kill / player kill | player DamageTaken MORE −0.08 for 4 s; minions −0.25 for 4 s (refreshes, not stacks) |
+| Soulfire | kill; poll 0.5 s | +0.6 inc Fire for 4 s; on Ignite on self +1.0 inc Armour |
+| Soul_Bastion | kill | charges per 10 s; at 5 charges cast Soul Eruption and reset |
+| Culnivars_Claim | tick | at full mana: mana → 0, Ward += maxMana |
+| Rahyehs_Light | tick | Flame Ward with remainder < 1 s at ward > 80: duration reset, −80 ward |
+| Keepers_Gloves / Arboreal_Circuit | melee hit / when hit | chance 0.1 (summonChance field not used), ICD 8 s / 15 s |
+| Volcanus / Bone_Harvester / Torch_Of_The_Pontifex | melee hit / kill / kill | cast ability with chance 0.3 / 0.2 / 1.0 |
+| Plague_Bearer_Staff | when hit | Blind attacker with 0.2 chance |
 | Artor_Legacy | unequip | unsummonExtraCompanions |
-| маркеры без кода | — | Chains_of_Uleros, Chimaeras_Essence, Cinder_Song, Eterras_Path, Eye_of_Reen, Hollow_Finger, Humming_Bee, Ring_of_the_Third_Eye, Riverbend_Grasp, The_Claw, The_Fang, The_Falcon, Valeroot, Ward_Trail, IsadoraRevenge, IsadoraTombbinding, Elementalist* — эффект целиком в модах (PP/AbilityProperty) |
+| markers without code | — | Chains_of_Uleros, Chimaeras_Essence, Cinder_Song, Eterras_Path, Eye_of_Reen, Hollow_Finger, Humming_Bee, Ring_of_the_Third_Eye, Riverbend_Grasp, The_Claw, The_Fang, The_Falcon, Valeroot, Ward_Trail, IsadoraRevenge, IsadoraTombbinding, Elementalist* — effect entirely in mods (PP/AbilityProperty) |
 
-### 2.5 Схема `research/data/game/unique_effects.json`
+### 2.5 Schema of `research/data/game/unique_effects.json`
 ```
 {gameVersion, source, schema, setCountRule,
  data: [ {uniqueName, displayName, uniqueID, isSetItem, setID, legendaryType, baseType, subTypes[], levelRequirement,
@@ -235,31 +235,31 @@ count[setID] = число РАЗНЫХ uniqueID предметов этого с
           componentMethods?: [{name,address}] } ],
  sets: [ {setID, setName, items[{uniqueName, uniqueID}], tooltip[{setRequirement, description}], mods[... + setRequirement], effects[]} ] }
 ```
-Вспомогательный файл `player_property_fields.json`: `[{index, propertyName, caseVA, op, fieldOffset, field, fieldType, usedIn[{method, address|null, fromIsil?, outsideCharacterMutator?}]}]`.
+Helper file `player_property_fields.json`: `[{index, propertyName, caseVA, op, fieldOffset, field, fieldType, usedIn[{method, address|null, fromIsil?, outsideCharacterMutator?}]}]`.
 
-Перезапуск после патча (адрес таблицы switch захардкожен и изменится):
+Restart after patch (switch table address is hardcoded and will change):
 ```
 pp_switch.py → pp_usage.py → extract_unique_effects.py
 ```
 
-**Сверка с Maxroll** (`data.json`): у всех 486 общих уникальных предметов `mods` совпадают полностью (rollID, property, specialTag, tags, value, maxValue, type). У нас есть ещё 3 скрытых предмета: 46 Sharktooth Saw, 69 Heirloom of Light, 248 FleshofStone.
+**Verification with Maxroll** (`data.json`): for all 486 common unique items `mods` match completely (rollID, property, specialTag, tags, value, maxValue, type). We have 3 more hidden items: 46 Sharktooth Saw, 69 Heirloom of Light, 248 FleshofStone.
 
-### 2.6 Тест-векторы (уникальные предметы)
-1. Calamity, rollID 1 (`Damage INC Fire 0.2–0.8`, шаг Hundredth): roll 0 → 0.20; roll 255 → 0.80; roll 128 → `floor(61·128/255 + 20)/100` = 0.50.
-2. Calamity, 3 огненных убийства за 1 с: в ближайший тик 3 урона огнём до митигации, дальше по 1 за каждое убийство, которое ещё в 2-секундном окне.
-3. Frozen Ire, L80: +16 added Cold, +1.6 FreezeRateMultiplier, +0.8 Necrotic res. Tundra Nova против нежити: 0.15 + 0.85·0.176471 = 0.30.
+### 2.6 Test Vectors (Unique Items)
+1. Calamity, rollID 1 (`Damage INC Fire 0.2–0.8`, step Hundredth): roll 0 → 0.20; roll 255 → 0.80; roll 128 → `floor(61·128/255 + 20)/100` = 0.50.
+2. Calamity, 3 fire kills in 1 s: in next tick 3 fire damage before mitigation, then 1 per kill still in 2-second window.
+3. Frozen Ire, L80: +16 added Cold, +1.6 FreezeRateMultiplier, +0.8 Necrotic res. Tundra Nova against undead: 0.15 + 0.85·0.176471 = 0.30.
 4. Hammer of Lorent, L100: +100 added Physical\|Melee, +1.0 increased Melee stun chance.
 5. Strong Mind, maxMana 600: StunAvoidance +1200.
-6. Undisputed, 60 попаданий за 4 с: 51 стак → +4.08 increased Physical.
-7. Taste of Blood: стак Bleed со speed 0 после 3 melee-попаданий имеет speed 7 (×8).
-8. Snowblind, ролл PP 454 = 0.2 MORE: `moreArmourAgainstChilledAttackers = 0.2` (тот же rollID 2 задаёт и PP 455).
+6. Undisputed, 60 hits in 4 s: 51 stacks → +4.08 increased Physical.
+7. Taste of Blood: Bleed stack with speed 0 after 3 melee hits has speed 7 (×8).
+8. Snowblind, roll PP 454 = 0.2 MORE: `moreArmourAgainstChilledAttackers = 0.2` (same rollID 2 sets PP 455).
 
-### 2.7 Не удалось установить (уникальные предметы)
-- **Формулы внутри обработчиков большинства PlayerProperty.** Известны поле, агрегация и метод-триггер, но не шанс, ICD или урон прока. Ручной разбор нужен примерно для 350 полей.
-  - Приоритет — поля, которые читают `ApplyConditionalDefenses`/`ApplyConditionalTemporaryStats`: они влияют на DPS и EHP.
-  - Где искать: `CharacterMutator.c` по `fieldOffset` (учитывать индексацию вида `param_1[off/8]`) и ISIL `CharacterMutator.txt`.
-- **AbilityProperty (385 модов):** как мутаторы способностей используют индекс свойства, не трассировалось. Есть только имя свойства и способность.
-- **32 `complex` + 3 `unknown` case** (D?): поле угадано эвристикой. Например, у PP 494 «Haste gives block chance…» показано `maxTolmatMinions` — это ошибка эвристики.
-- **`equipEffectModifier`** (параметр `UpdateStats`): источник ненулевого значения не найден.
-- **PlayerProperty вне switch:** 190, 507, 528, 551, 630, 665 (зелья), 126, 127 (компаньоны). Предположительно `HealthPotion`/`Downed`, не разбирались.
-- **Компонент `The_Falcon`:** имени «The Falcon» в UniqueList нет, привязка не подтверждена.
+### 2.7 Could Not Determine (Unique Items)
+- **Formulas inside handlers of most PlayerProperty.** Field, aggregation and trigger method are known, but not chance, ICD or proc damage. Manual analysis needed for ~350 fields.
+  - Priority — fields that read `ApplyConditionalDefenses`/`ApplyConditionalTemporaryStats`: they affect DPS and EHP.
+  - Where to look: `CharacterMutator.c` by `fieldOffset` (account for indexing like `param_1[off/8]`) and ISIL `CharacterMutator.txt`.
+- **AbilityProperty (385 mods):** how ability mutators use property index was not traced. Only property name and ability known.
+- **32 `complex` + 3 `unknown` cases** (D?): field guessed by heuristic. E.g. PP 494 «Haste gives block chance…» shows `maxTolmatMinions` — this is heuristic error.
+- **`equipEffectModifier`** (UpdateStats parameter): source of non-zero value not found.
+- **PlayerProperty outside switch:** 190, 507, 528, 551, 630, 665 (potions), 126, 127 (companions). Presumably `HealthPotion`/`Downed`, not analyzed.
+- **Component `The_Falcon`:** no «The Falcon» name in UniqueList, binding unconfirmed.

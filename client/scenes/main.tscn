@@ -65,7 +65,7 @@ layout_mode = 2
 [node name="ClassLabel" type="Label" parent="Margin/Layout/TopBar/Row"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Класс"
+text = "Class"
 
 [node name="ClassSelect" type="OptionButton" parent="Margin/Layout/TopBar/Row"]
 unique_name_in_owner = true
@@ -76,7 +76,7 @@ focus_mode = 0
 [node name="MasteryLabel" type="Label" parent="Margin/Layout/TopBar/Row"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Мастерство"
+text = "Mastery"
 
 [node name="MasterySelect" type="OptionButton" parent="Margin/Layout/TopBar/Row"]
 unique_name_in_owner = true
@@ -87,7 +87,7 @@ focus_mode = 0
 [node name="LevelLabel" type="Label" parent="Margin/Layout/TopBar/Row"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Уровень"
+text = "Level"
 
 [node name="LevelSpin" type="SpinBox" parent="Margin/Layout/TopBar/Row"]
 unique_name_in_owner = true
@@ -100,7 +100,28 @@ update_on_text_changed = true
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Импорт…"
+text = "Import…"
+
+[node name="Spacer" type="Control" parent="Margin/Layout/TopBar/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="LanguageLabel" type="Label" parent="Margin/Layout/TopBar/Row"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Language"
+
+[node name="LanguageSelect" type="OptionButton" parent="Margin/Layout/TopBar/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+selected = 0
+item_count = 2
+popup/item_0/text = "English"
+popup/item_0/id = 0
+popup/item_1/text = "Russian"
+popup/item_1/id = 1
 
 [node name="Split" type="HSplitContainer" parent="Margin/Layout"]
 layout_mode = 2
@@ -112,37 +133,37 @@ layout_mode = 2
 size_flags_horizontal = 3
 current_tab = 0
 
-[node name="Пассивки" parent="Margin/Layout/Split/Tabs" instance=ExtResource("3_passives")]
+[node name="Passives" parent="Margin/Layout/Split/Tabs" instance=ExtResource("3_passives")]
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="Скиллы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("6_skills")]
+[node name="Skills" parent="Margin/Layout/Split/Tabs" instance=ExtResource("6_skills")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Предметы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("7_items")]
+[node name="Items" parent="Margin/Layout/Split/Tabs" instance=ExtResource("7_items")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
-[node name="Идолы" parent="Margin/Layout/Split/Tabs" instance=ExtResource("10_idols")]
+[node name="Idols" parent="Margin/Layout/Split/Tabs" instance=ExtResource("10_idols")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 3
 
-[node name="Благословения" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_blessings")]
+[node name="Blessings" parent="Margin/Layout/Split/Tabs" instance=ExtResource("4_blessings")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 4
 row_scene = ExtResource("5_blessing_row")
 
-[node name="Расчёты" parent="Margin/Layout/Split/Tabs" instance=ExtResource("8_calcs")]
+[node name="Calculations" parent="Margin/Layout/Split/Tabs" instance=ExtResource("8_calcs")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 5
 
-[node name="Условия" parent="Margin/Layout/Split/Tabs" instance=ExtResource("9_config")]
+[node name="Conditions" parent="Margin/Layout/Split/Tabs" instance=ExtResource("9_config")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 6

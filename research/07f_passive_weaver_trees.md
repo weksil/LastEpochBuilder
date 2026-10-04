@@ -1,26 +1,26 @@
-# 07f. Пассивные деревья классов, дерево Weaver и урон способностей, заданный кодом (клиент 1.5.0)
+# 07f. Passive Trees of Classes, Weaver Tree and Code-Defined Ability Damage (Client 1.5.0)
 
-Результаты: `research/data/game/passive_node_effects.json`, `weaver_node_effects.json`, `abilities_code_damage.json`. Инструмент: `tools/extract/passive_tree_effects.py` (поверх `mutator_coeffs.py` и `isil_sym.py`, время работы ~8 с, перезапускается без правок).
+Results: `research/data/game/passive_node_effects.json`, `weaver_node_effects.json`, `abilities_code_damage.json`. Tool: `tools/extract/passive_tree_effects.py` (on top of `mutator_coeffs.py` and `isil_sym.py`, runtime ~8 s, restarts without edits).
 
-## 1. Кратко
+## 1. Brief
 
-- Все 5 деревьев классов (Knight, Acolyte, Mage, Primalist, Rogue) разобраны: **541 узел, 0 узлов без эффекта**. Из них `auto` 312, `auto_threshold` 226 (бонус при `p >= N`), `auto_formula` 2 (нелинейная функция от p), `auto_after_loop_rule` 1. Ручного разбора не осталось.
-- Weaver: 79 узлов с очками (80-й, `Node_None`, корень). У каждого есть эффект. Weaver не влияет на персонажа, он задаёт параметры эхо-контента (шансы дропа, спавна и т. п.).
-- Найден и разобран ещё один слой: **базовые бонусы мастерств** (`switch(chosenMastery)` после цикла по узлам), поле `mastery_bonuses` в JSON.
-- Попутно исправлены два дефекта символьного исполнителя (затронули и скилловые деревья, см. §6).
+- All 5 class trees (Knight, Acolyte, Mage, Primalist, Rogue) analyzed: **541 nodes, 0 nodes without effect**. Of them `auto` 312, `auto_threshold` 226 (bonus at `p >= N`), `auto_formula` 2 (non-linear function of p), `auto_after_loop_rule` 1. No manual analysis left.
+- Weaver: 79 nodes with points (80th, `Node_None`, root). Each has effect. Weaver doesn't affect character, it sets echo content parameters (drop chances, spawn etc).
+- Found and analyzed another layer: **mastery base bonuses** (`switch(chosenMastery)` after node loop), field `mastery_bonuses` in JSON.
+- Fixed two defects of symbol executor along the way (affected skill trees too, see §6).
 
-## 2. Как применяются узлы пассивок (D)
+## 2. How Passive Nodes Are Applied (D)
 
-`LocalTreeData.updateMutator` вызывает `<Class>Tree.updateMutator(localTreeData, tree)`. Отличия от скилловых деревьев:
-- Это не `switch` по хешу, а цепочка `if (gnode.name == "...")` (String.op_Equality). Очки берутся из `NodeData.points`.
-- Стат создаётся прямо в нужном списке: `CharacterMutator.stats`, `statsWithWeaponRequirements`, `totemStats`, `statsPerMastery1Level`; для миньонов и скиллов это `ManifestArmorMutator.statListFromPassiveTree` и т. п. Поля `CharacterMutator.*` читаются позже самим игроком (условные эффекты, триггеры).
-- Бонусы «при N очках»: `if (p >= N)` внутри блока узла. В JSON у такого эффекта есть `minPoints` и `when`.
-- `AcolyteTree.updateMutator` обрезан Cpp2IL (нет `Return`, ~2.6 КБ); недостающий хвост декодируется из `GameAssembly.dll` (`mini_x64`) и дописывается к методу.
-- `dump/decomp_extra/{Knight,Acolyte,Mage,Primalist}Tree__updateMutator.c` использовались только для сверки. `RogueTree.c` в обычной декомпиляции есть.
-- Мастерство читается из `LocalTreeData+0xB0` (`chosenMastery`, byte). Индекс 0 — без мастерства, 1..3 — три мастерства класса, как в `masteries[1..3]`.
+`LocalTreeData.updateMutator` calls `<Class>Tree.updateMutator(localTreeData, tree)`. Differences from skill trees:
+- Not `switch` by hash, but chain `if (gnode.name == "...")` (String.op_Equality). Points taken from `NodeData.points`.
+- Stat created directly in needed list: `CharacterMutator.stats`, `statsWithWeaponRequirements`, `totemStats`, `statsPerMastery1Level`; for minions and skills this is `ManifestArmorMutator.statListFromPassiveTree` etc. Fields `CharacterMutator.*` read later by player itself (conditional effects, triggers).
+- «At N points» bonuses: `if (p >= N)` inside node block. In JSON such effect has `minPoints` and `when`.
+- `AcolyteTree.updateMutator` truncated by Cpp2IL (no `Return`, ~2.6 KB); missing tail decoded from `GameAssembly.dll` (`mini_x64`) and appended to method.
+- `dump/decomp_extra/{Knight,Acolyte,Mage,Primalist}Tree__updateMutator.c` used only for verification. `RogueTree.c` in normal decompilation exists.
+- Mastery read from `LocalTreeData+0xB0` (`chosenMastery`, byte). Index 0 — no mastery, 1..3 — three masteries of class, as in `masteries[1..3]`.
 
-### Схема `passive_node_effects.json`
-Массив из 5 деревьев:
+### Schema of `passive_node_effects.json`
+Array of 5 trees:
 ```
 { tree, treeID, class, kind:"passive", masteries[], mutators[], errors[],
   mastery_bonuses: { "1"|"2"|"3": { mastery, fields{target: value}, stats[{target, stat}], calls[] } },
@@ -30,110 +30,110 @@
            effects[], asset_noScaling{type, pointThreshold},
            tooltip_stats[], effects_without_tooltip[], tooltip[], tooltip_check{} } ] }
 ```
-Эффект узла:
-- `{target:"CharacterMutator.stats", op:"add_stat", stat:{...}, when?, minPoints?}`. Поле `stat.kind`: `added`, `increased`, `more`, `ailment_chance`, `ailment_duration`, `ailment_effect`, `ailment_effect_on_you`, `conditional_more_damage` (`condition`, например `ToBossesAndRareEnemies`), `player_property` / `more_player_property`, `ability_property` / `more_ability_property`, `ailment_conversion`.
-- Значение: `added|increased|more|value: {per_point, flat}` или `{expr}` (`per_point` умножается на p).
+Node effect:
+- `{target:"CharacterMutator.stats", op:"add_stat", stat:{...}, when?, minPoints?}`. Field `stat.kind`: `added`, `increased`, `more`, `ailment_chance`, `ailment_duration`, `ailment_effect`, `ailment_effect_on_you`, `conditional_more_damage` (`condition`, e.g. `ToBossesAndRareEnemies`), `player_property` / `more_player_property`, `ability_property` / `more_ability_property`, `ailment_conversion`.
+- Value: `added|increased|more|value: {per_point, flat}` or `{expr}` (`per_point` multiplied by p).
 - `stat.property`, `stat.tags`, `stat.ailment`, `stat.specialTag`.
-- Обёртка `StatWithWeaponRequirement` (поля `wrapper`, `other`: тип оружия, `WeaponRequirementType`) для статов, которые работают только с оружием.
-- `player_property`: `playerPropertyIndex`, `playerPropertyName`, `playerPropertyField`, `playerPropertyOp` (таблица `player_property_fields.json`, названо 169 из 169 вхождений).
-- `ability_property`: `abilityID`, `abilityPropertyIndex`, `abilityPropertyField`, `abilityPropertyOp` из `ability_property_fields.json`, названо только 7 из 67 (остальных пар нет в таблице).
-- Прямые записи в поля мутаторов: `{target:"CharacterMutator.<field>", type, value:{per_point, flat}}` (триггеры, шансы, стеки). Вызовы кулдаунов: `op:"cooldown"`.
-- Статусы:
-  - `auto`: эффект линейный по p;
-  - `auto_threshold`: часть эффектов только при `p >= minPoints`;
-  - `auto_formula`: нелинейная функция от p (например, `1/(1-0.05p)-1`);
-  - `auto_after_loop_rule`: правило из хвоста метода, узел Rogue Marksman Concentration, см. `manual_note`.
+- `StatWithWeaponRequirement` wrapper (fields `wrapper`, `other`: weapon type, `WeaponRequirementType`) for stats working only with weapon.
+- `player_property`: `playerPropertyIndex`, `playerPropertyName`, `playerPropertyField`, `playerPropertyOp` (from `player_property_fields.json` table, 169 of 169 occurrences named).
+- `ability_property`: `abilityID`, `abilityPropertyIndex`, `abilityPropertyField`, `abilityPropertyOp` from `ability_property_fields.json`, named only 7 of 67 (rest of pairs not in table).
+- Direct field writes in mutators: `{target:"CharacterMutator.<field>", type, value:{per_point, flat}}` (triggers, chances, stacks). Cooldown calls: `op:"cooldown"`.
+- Statuses:
+  - `auto`: effect linear in p;
+  - `auto_threshold`: part of effects only at `p >= minPoints`;
+  - `auto_formula`: non-linear function of p (e.g. `1/(1-0.05p)-1`);
+  - `auto_after_loop_rule`: rule from method tail, node Rogue Marksman Concentration, see `manual_note`.
 
-### Базовые бонусы мастерств (`mastery_bonuses`, D)
-Результат прогона хвоста метода с `chosenMastery = 1,2,3` минус результат для 0. Примеры:
-- Void Knight: поле `chanceToRepeatMeleeThrowingAttacksAndVoidSpells = 0.1` и PlayerProperty 440 +0.01.
-- Forge Guard: `stalwartWhenHitAndOnHit`, +35% Fire и Physical Resistance.
+### Base Mastery Bonuses (`mastery_bonuses`, D)
+Result of running method tail with `chosenMastery = 1,2,3` minus result for 0. Examples:
+- Void Knight: field `chanceToRepeatMeleeThrowingAttacksAndVoidSpells = 0.1` and PlayerProperty 440 +0.01.
+- Forge Guard: `stalwartWhenHitAndOnHit`, +35% Fire and Physical Resistance.
 - Paladin: `moreDamagePerPercentHealth 0.15`, `increasedHealingPerAttunement 0.01`.
 - Bladedancer: `createShadow` +1, +15 Physical Melee Damage, DodgeRating more 0.15.
 - Falconer: +12 Dexterity, `falconry` property +1.
-Остальные мастерства смотреть в JSON.
+Rest of masteries see in JSON.
 
-## 3. Гипотеза «increased-строки = INC, +N = ADDED» (проверена по коду)
+## 3. Hypothesis «Increased-strings = INC, +N = ADDED» (Verified by Code)
 
-Сопоставлено 1259 строк подсказок с эффектами кода (из них 628 надёжных: совпадение по свойству SP и тегам).
+Matched 1259 tooltip lines with code effects (628 of them reliable: match by SP property and tags).
 
-| Подсказка | Тип в коде | Строк |
+| Tooltip | Type in Code | Lines |
 |---|---|---|
-| «Increased X», «Reduced X» | `increased`, либо `added` в специальный SP `Increased*` (IncreasedStunChance, IncreasedHealing, IncreasedLeechRate, IncreasedCooldownRecoverySpeed, IncreasedAreaForAreaSkills, ReducedBonusDamageTakenFromCrits), то есть INC-пул | 179 из 180 |
-| «More / Less X» | `more` | 15 из 15 |
-| «+N» (число со знаком) | `added` | 284 |
-| «+N%» у скоростей и расхода (AttackSpeed, CastSpeed, Movespeed, Health миньонов, ManaCost, ReceivedStunDuration) | `increased` | 21 |
-| «±N%» «Damage Taken ...» (от ближних врагов, в движении, при двух оружиях, DoT) | `more` | 11 |
-| «N%» без знака (резисты, крит-множитель, шанс блока) | почти всегда `added` (38), редко `increased` (4: AttackSpeed, ManaRegen) | 42 |
-| шансы «+N%» к ailment (Bleed, Chill, ...) | `ailment_chance` (аддитивный шанс, отдельный вид) | 49 |
+| «Increased X», «Reduced X» | `increased`, or `added` in special SP `Increased*` (IncreasedStunChance, IncreasedHealing, IncreasedLeechRate, IncreasedCooldownRecoverySpeed, IncreasedAreaForAreaSkills, ReducedBonusDamageTakenFromCrits), i.e. INC-pool | 179 of 180 |
+| «More / Less X» | `more` | 15 of 15 |
+| «+N» (signed number) | `added` | 284 |
+| «+N%» for speeds and costs (AttackSpeed, CastSpeed, Movespeed, Minion Health, ManaCost, ReceivedStunDuration) | `increased` | 21 |
+| «±N%» «Damage Taken ...» (from melee enemies, while moving, with dual wield, DoT) | `more` | 11 |
+| «N%» without sign (resistances, crit multiplier, block chance) | mostly `added` (38), rarely `increased` (4: AttackSpeed, ManaRegen) | 42 |
+| ailment chances «+N%» (Bleed, Chill, ...) | `ailment_chance` (additive chance, separate type) | 49 |
 
-**Вывод.** Для строк «Increased/Reduced» гипотеза верна. Единственное исключение, FG Strength and Damage: «Increased Melee Attack Speed With Sword» закодирован как `added` в AttackSpeed Melee; у AttackSpeed/CastSpeed база added = 1, поэтому это прибавка к базе, а не INC. Для «+N» гипотеза **неверна**: тип нельзя определять по тексту, нужно брать `stat.kind` из JSON. Damage Taken всегда `more`. У пассивных узлов урона `increased` встречается намного чаще, чем в скилловых деревьях (там почти везде `more`, 07c).
+**Conclusion.** Hypothesis true for «Increased/Reduced» strings. Only exception, FG Strength and Damage: «Increased Melee Attack Speed With Sword» coded as `added` in AttackSpeed Melee; base added for AttackSpeed/CastSpeed is 1, so this is base addition, not INC. For «+N» hypothesis **incorrect**: type cannot be determined from text, must take `stat.kind` from JSON. Damage Taken always `more`. Passive node damage has `increased` much more often than skill trees (which are mostly `more`, 07c).
 
-## 4. Сверка с `tree_node_stats.json` (tooltipStats)
+## 4. Verification Against `tree_node_stats.json` (tooltipStats)
 
-- Совпали по числу и типу 1259 строк (`match: matched`), у 81 строки нет эффекта (`display_only`: строка только для отображения, `property = None`), у 100 строк нет «своего» эффекта (`no_code_effect`).
-- `no_code_effect` — это не потерянные эффекты: в основном условные триггеры и поля `CharacterMutator.*` («per 5 Strength», «Cast Holy Symbol On Block», «Can Equip Swords in Offhand», лимиты и длительности). Они есть в `effects`, но автоматически не сопоставлены по значению.
-- Расхождение числа (`value_ok: false`) осталось в **9** строках. Лечение (leech): процент в подсказке = значение стата ×10 (стат `HealthLeech` весит 0.1, 06c §5.2). Это подтверждено на 14 строках и учтено (`value_note`).
-  Реальные расхождения код и подсказка (авторитетен код):
-  - Knight VK Health And Void Protection: Health подсказка +8, код 10 на очко;
-  - Mage SB Armor And Ward Per Second: Ward/s подсказка +3, код 4;
-  - Primalist Shaman Totem Stun Immunity: Armor подсказка +10, код 30 на очко (у тотемов тоже 30);
-  - Rogue BD Parry And Crit: Increased Crit подсказка 8%, код 10%;
-  - Rogue BD Poison And Bleed: Increased DoT подсказка 7%, код 8%;
-  - Rogue Falconer Throwing Damage And Speed: подсказка 7%, код 5%;
-  - Rogue Falconer Spear Buffs: подсказка 6%, код 5%;
-  - Rogue Falconer Damage And Slow Duration: подсказка 6%, код 5%.
-  Девятая строка (BD Leech, DoT) — ложное сопоставление эффекта (подсказка 0.5% = 0.05×10, код корректен).
-- `scaling_ok: false` (10 строк): подсказка без `noScaling`, а в коде константа не от p (например, «+1 Intelligence» с `flat 1`); это эффекты порога или триггера, смотреть `flat` и `minPoints`.
-- `tooltip_check.unmatched` непуст у 110 узлов: числа лимитов, длительностей и «per N», а не стат на очко. Ни одно число не совпало у 5 узлов (Mage Sorc Ward On High Mana Use, Primalist BM Slow Melee и BM Shark Stacks, Rogue BD Dodge to Glancing Blow Conversion и BD Leech).
-- `code_node_names_not_in_tree`: мёртвые ветки старых узлов (например, `FG Melee Physical And Fire Damage`, `BD Temp Node`). Узлов дерева без кода нет (`tree_nodes_without_code` пуст).
+- Matched by count and type 1259 lines (`match: matched`), 81 lines have no effect (`display_only`: line for display only, `property = None`), 100 lines no «own» effect (`no_code_effect`).
+- `no_code_effect` — not lost effects: mostly conditional triggers and `CharacterMutator.*` fields («per 5 Strength», «Cast Holy Symbol On Block», «Can Equip Swords in Offhand», limits and durations). They are in `effects`, but not auto-matched by value.
+- Value count mismatch (`value_ok: false`) remained in **9** lines. Leech (leech): percent in tooltip = stat value ×10 (stat `HealthLeech` weighs 0.1, 06c §5.2). Confirmed on 14 lines and accounted (`value_note`).
+  Real code/tooltip divergences (code authoritative):
+  - Knight VK Health And Void Protection: Health tooltip +8, code 10 per point;
+  - Mage SB Armor And Ward Per Second: Ward/s tooltip +3, code 4;
+  - Primalist Shaman Totem Stun Immunity: Armor tooltip +10, code 30 per point (totem also 30);
+  - Rogue BD Parry And Crit: Increased Crit tooltip 8%, code 10%;
+  - Rogue BD Poison And Bleed: Increased DoT tooltip 7%, code 8%;
+  - Rogue Falconer Throwing Damage And Speed: tooltip 7%, code 5%;
+  - Rogue Falconer Spear Buffs: tooltip 6%, code 5%;
+  - Rogue Falconer Damage And Slow Duration: tooltip 6%, code 5%.
+  Ninth line (BD Leech, DoT) — false effect match (tooltip 0.5% = 0.05×10, code correct).
+- `scaling_ok: false` (10 lines): tooltip without `noScaling`, code has constant not of p (e.g. «+1 Intelligence» with `flat 1`); these are threshold or trigger effects, see `flat` and `minPoints`.
+- `tooltip_check.unmatched` not empty for 110 nodes: limit numbers, durations and «per N», not stat per point. No single number matched 5 nodes (Mage Sorc Ward On High Mana Use, Primalist BM Slow Melee and BM Shark Stacks, Rogue BD Dodge to Glancing Blow Conversion and BD Leech).
+- `code_node_names_not_in_tree`: dead branches of old nodes (e.g. `FG Melee Physical And Fire Damage`, `BD Temp Node`). Tree nodes without code: none (`tree_nodes_without_code` empty).
 
 ## 5. Weaver
 
-`TheWeaver.UpdateWeaverTreeNode(effect, points)` @0x1820DDE40 — три jump-таблицы (эффекты 0..64, 101..131, 151..191). Cpp2IL обрезает метод, поэтому он декодируется из бинарника целиком, каждый кейс выполнен символьно.
-- Результат: 79 узлов `auto` (флаги `p > 0`, целочисленные ранги, поля `p * k`), 0 ошибок.
-- Схема `weaver_node_effects.json`: массив из одного объекта с `nodes[]` (`id, name, maxPoints, nodeEffect, nodeEffectName, effects[{target:"TheWeaver.<поле>", type, value, when?}], tooltip, tooltip_check`) и `effects_by_enum[]`.
-- Три узла используют `p * TheWeaver.<X>PerPointAllocated`: поле `+0x80` инициализирует конструктор (`0x3e19999a` = 0.15, D), поля `+0x90` и `+0x94` сериализуются в ассете (не найден), значения взяты из подсказки (0.10 и 0.02, **D?**, поле `per_point_value`).
-- Узлы 6/7/8 (`...RewardWeightRank`) хранят только ранг, веса групп наград читаются в другом месте (не разобрано). Подсказка (80%, 50%, 50%) совпадает со смыслом.
-- Узел 42: константа кода 0.029, подсказка 6% (вероятно, накапливается по таблице `OnCacheOpenedChanceForSimilarItemsAmountWeights`, не разбиралось).
+`TheWeaver.UpdateWeaverTreeNode(effect, points)` @0x1820DDE40 — three jump-tables (effects 0..64, 101..131, 151..191). Cpp2IL truncates method, so decoded from binary fully, each case executed symbolically.
+- Result: 79 nodes `auto` (flags `p > 0`, integer ranks, fields `p * k`), 0 errors.
+- Schema `weaver_node_effects.json`: array of one object with `nodes[]` (`id, name, maxPoints, nodeEffect, nodeEffectName, effects[{target:"TheWeaver.<field>", type, value, when?}], tooltip, tooltip_check`) and `effects_by_enum[]`.
+- Three nodes use `p * TheWeaver.<X>PerPointAllocated`: field `+0x80` initialized by constructor (`0x3e19999a` = 0.15, D), fields `+0x90` and `+0x94` serialized in asset (not found), values taken from tooltip (0.10 and 0.02, **D?**, field `per_point_value`).
+- Nodes 6/7/8 (`...RewardWeightRank`) store only rank, group weights read elsewhere (not analyzed). Tooltip (80%, 50%, 50%) matches meaning.
+- Node 42: code constant 0.029, tooltip 6% (probably accumulates by `OnCacheOpenedChanceForSimilarItemsAmountWeights` table, not analyzed).
 
-## 6. Исправления инструмента (затронули skill_node_effects.json)
+## 6. Tool Fixes (Affected skill_node_effects.json)
 
-1. `isil_sym.py`: `xorps xmm,[0x80000000-маска]` теперь даёт отрицание (раньше выражение `x ^ -0.0`). Это был дефект в 9 выражениях (3 в пассивках, 6 в скиллах).
-2. `isil_sym.py`: арифметика `Subtract/Add/And/Or/Xor` теперь выставляет флаги (раньше `sub rcx,1; je` брал устаревшие флаги). Это дало корректный `switch(chosenMastery)` и поправило 7 скилловых узлов: Acid Flask Poison Pool (базовый кулдаун 6.0 стал 2.0, как в подсказке), Flay Cold/Necrotic/Poison Conversion (добавилась конверсия Bleed) и др.
-3. `passive_tree_effects.py`: `typeof(C)` (float 2.0 @0x184561C38, коллизия имён Cpp2IL) заменяется на константу там, где выравнивание по asm не сработало (3 узла Knight, 1 узел Rogue). `EpochExtensions.safeQuotient(x)` = x (или 0.0001 при x == 0) сворачивается в выражение.
-`skill_node_effects.json` пересчитан, 07c обновлён: auto 3568, auto_combined 212, auto_formula 29, conditional 2, manual 5, none 4.
+1. `isil_sym.py`: `xorps xmm,[0x80000000-mask]` now gives negation (previously `x ^ -0.0`). Defect in 9 expressions (3 in passives, 6 in skills).
+2. `isil_sym.py`: `Subtract/Add/And/Or/Xor` now set flags (previously `sub rcx,1; je` took stale flags). Gave correct `switch(chosenMastery)` and fixed 7 skill nodes: Acid Flask Poison Pool (base cooldown 6.0 became 2.0, like tooltip), Flay Cold/Necrotic/Poison Conversion (added Bleed conversion) etc.
+3. `passive_tree_effects.py`: `typeof(C)` (float 2.0 @0x184561C38, Cpp2IL name collision) replaced by constant where asm alignment didn't work (3 Knight nodes, 1 Rogue node). `EpochExtensions.safeQuotient(x)` = x (or 0.0001 at x == 0) collapsed to expression.
+`skill_node_effects.json` recalculated, 07c updated: auto 3568, auto_combined 212, auto_formula 29, conditional 2, manual 5, none 4.
 
-## 7. Урон способностей, заданный кодом (`abilities_code_damage.json`)
+## 7. Ability Damage Code-Defined (`abilities_code_damage.json`)
 
-Из 182 способностей игрока 54 без `damage[]`. «Урона нет в ассете» бывает трёх видов: урон ailment-а (в `ailments.json`), хит, собираемый в мутаторе, и урон под-способности.
+Of 182 player abilities 54 have no `damage[]`. «Damage not in asset» is three kinds: ailment damage (in `ailments.json`), hit collected in mutator, and sub-ability damage.
 
-| Способность | Откуда урон | База | ADE |
+| Ability | Damage Source | Base | ADE |
 |---|---|---|---|
-| Snap Freeze | `DamageEnemyOnHit` создаётся в `Mutate`, только если `addedColdDamage > 0` | Cold = 5 (узел) + 6 за очко (узел, до 5 очков), без узлов урона нет; крит 5%, множитель 2.0, Spell | 1.0 (константа) |
-| Abyssal Echoes | ailment `AbyssalDecay` (id 12) и при узле `addedVoidSpellDamage = 60` хит | DoT Void 100 (Spell DoT, 5 с, макс. 1); хит Void 60 (Fire при конверсии) | DoT 5.0; хит 0.05·урон |
-| Bone Curse | ailment `BoneCurse` (id 58): удар по проклятому врагу | Physical 4, крит 5% ×2, Spell Curse, 8 с; ×(1+2), если бьёт создатель (D?) | 0.2 |
-| Spirit Plague | ailment `SpiritPlague` (id 59) | Necrotic 90, 3 с, Spell DoT Curse, спред 9 м; Intelligence × (узел) как added Spell Necrotic; `moreSpiritPlagueDamage` — множитель ailment | 4.5 |
-| Aura of Decay | `Poison` (id 7) каждые 0.25 с в радиусе 4 | Poison 28 за стак, 3 с, added-урон не действует | 0 |
-| Anomaly | `TimeWave` (AbilityID 368) и ailments `TimeRot` (id 9), `FutureAttack` (id 10) | Void 100 / Void 60 за стак / Void 60 | 2.5 / 0 / 0 |
-| Focus | `FocusMutator` и `FocusEndMutator` | Lightning = 12% макс. маны за очко; в конце: мана × 0.25 за очко | 0.05·урон |
-| Warcry | `addedPhysicalSpellDamage` | Physical 40 за очко (Cold при конверсии) | 0.05·урон |
-| Shift | урон по пути рывка | Physical `addedTravelDamage = 2` при милли-оружии | 1.0 |
-| Healing Hands | `setBaseDamage` при `dealsDamage` | Fire 40 (D?) плюс added за 20% healing | 0.05·урон = 2.0 |
+| Snap Freeze | `DamageEnemyOnHit` created in `Mutate`, only if `addedColdDamage > 0` | Cold = 5 (node) + 6 per point (node, up to 5 points), no node = no damage; crit 5%, multiplier 2.0, Spell | 1.0 (constant) |
+| Abyssal Echoes | ailment `AbyssalDecay` (id 12) and hit when node `addedVoidSpellDamage = 60` | DoT Void 100 (Spell DoT, 5 s, max 1); hit Void 60 (Fire on conversion) | DoT 5.0; hit 0.05·damage |
+| Bone Curse | ailment `BoneCurse` (id 58): hit cursed enemy | Physical 4, crit 5% ×2, Spell Curse, 8 s; ×(1+2) if caster hits (D?) | 0.2 |
+| Spirit Plague | ailment `SpiritPlague` (id 59) | Necrotic 90, 3 s, Spell DoT Curse, spread 9 m; Intelligence × (node) as added Spell Necrotic; `moreSpiritPlagueDamage` — ailment multiplier | 4.5 |
+| Aura of Decay | `Poison` (id 7) every 0.25 s in 4 m radius | Poison 28 per stack, 3 s, added damage ineffective | 0 |
+| Anomaly | `TimeWave` (AbilityID 368) and ailments `TimeRot` (id 9), `FutureAttack` (id 10) | Void 100 / Void 60 per stack / Void 60 | 2.5 / 0 / 0 |
+| Focus | `FocusMutator` and `FocusEndMutator` | Lightning = 12% max mana per point; end: mana × 0.25 per point | 0.05·damage |
+| Warcry | `addedPhysicalSpellDamage` | Physical 40 per point (Cold on conversion) | 0.05·damage |
+| Shift | damage along rush path | Physical `addedTravelDamage = 2` with melee weapon | 1.0 |
+| Healing Hands | `setBaseDamage` when `dealsDamage` | Fire 40 (D?) plus added from 20% healing | 0.05·damage = 2.0 |
 
-Формулы `addBaseDamage`, `setStandardVariables`, `calculateAddedDamageScaling` (06b §1.7) подтверждены: ADE = `isWeapon ? 1.0 : 0.05 × Σ базового урона`; хит получает крит 5% и ×2.0, не-хит получает тег DoT. Остальные способности без урона — бафы, перемещения и призыв (урон у миньонов, 07d); список в JSON (`noDirectDamage`).
+Formulas `addBaseDamage`, `setStandardVariables`, `calculateAddedDamageScaling` (06b §1.7) confirmed: ADE = `isWeapon ? 1.0 : 0.05 × Σ base damage`; hit gets crit 5% and ×2.0, non-hit gets DoT tag. Other no-damage abilities — buffs, traversals and summon (minion damage, 07d); list in JSON (`noDirectDamage`).
 
-## 8. Значение `AbilityRef` по умолчанию (D)
+## 8. Default Value of `AbilityRef` (D)
 
-`AbilityRef` — структура `{long key @0x0; Ability ability @0x8}` без инициализаторов полей. Для `default(AbilityRef)` ключ равен 0, а `GetAbility()` вызывает `AbilityManager.GetAbilityFromKey(0)`: `Dictionary.TryGetValue` не находит ключ и возвращается null. Среди 1044 способностей нет ни одной с ключом 0. Конструкторы: `AbilityRef(long)` и `AbilityRef(Ability)` (ключ берётся через `GetKeyForAbility`). **Ключ Fireball (−648846322) в сериализованных данных не следует из кода**: это значение, записанное в префаб при авторинге. Поэтому вывод 07b (считать ключ Fireball у компонента, не связанного с Fireball, пустым) верен, но причина не кодовый дефолт.
+`AbilityRef` — struct `{long key @0x0; Ability ability @0x8}` without field initializers. For `default(AbilityRef)` key is 0, and `GetAbility()` calls `AbilityManager.GetAbilityFromKey(0)`: `Dictionary.TryGetValue` doesn't find key, returns null. Among 1044 abilities none has key 0. Constructors: `AbilityRef(long)` and `AbilityRef(Ability)` (key from `GetKeyForAbility`). **Fireball key (−648846322) in serialized data doesn't follow from code**: this is value written to prefab at authoring. So 07b conclusion (treat Fireball key in unrelated component as empty) correct, but reason not code default.
 
-## 9. Не удалось установить
+## 9. Could Not Determine
 
-1. Поля `TheWeaver.WeaversWillLuckyRollChancePerPointAllocated` (+0x90) и `RareEnemiesChanceToWeaversWillItemPerPointAllocated` (+0x94): сериализуются в ассете (не найден), значения из подсказки.
-2. Веса рангов наград Weaver (узлы 6/7/8) и таблица узла 42.
-3. 60 из 67 `ability_property`-эффектов пассивок не имеют имени поля в `ability_property_fields.json` (в таблице нет этих пар).
-4. Условные и триггерные эффекты в полях `CharacterMutator.*` (шансы, пороги, «per N attribute»): значения есть, но семантика срабатывания в методах `CharacterMutator` (`usedIn` в `player_property_fields.json`).
-5. Snap Freeze: «Lightning Damage Per Second Of Freeze» требует длительность заморозки из префаба `FreezeEnemyOnHit` (не извлекалась); у Focus не уточнён интервал применителя (`increasedChannellingLightningDamageFrequency`).
-6. Healing Hands: константа 40.0 (@0x184561E0C) принята без повторного чтения, условия moreDamage не прослежены.
-7. Дополнительный урон, который код добавляет способностям с уроном в префабе (Meteor, Flay, Disintegrate, Black Hole и др.): не извлекался (список в JSON).
-8. Для 8 узлов (§4) подсказка и код расходятся; код авторитетен для движка, но что показывает игра при этом, не проверено.
+1. Fields `TheWeaver.WeaversWillLuckyRollChancePerPointAllocated` (+0x90) and `RareEnemiesChanceToWeaversWillItemPerPointAllocated` (+0x94): serialized in asset (not found), values from tooltip.
+2. Weaver reward rank weights (nodes 6/7/8) and node 42 table.
+3. 60 of 67 `ability_property`-effects of passives have no field name in `ability_property_fields.json` (pairs not in table).
+4. Conditional and trigger effects in `CharacterMutator.*` fields (chances, thresholds, «per N attribute»): values present, semantics in `CharacterMutator` methods (`usedIn` in `player_property_fields.json`).
+5. Snap Freeze: «Lightning Damage Per Second Of Freeze» requires Freeze duration from `FreezeEnemyOnHit` prefab (not extracted); Focus interval unspecified (`increasedChannellingLightningDamageFrequency`).
+6. Healing Hands: constant 40.0 (@0x184561E0C) taken without re-read, moreDamage conditions not traced.
+7. Extra damage code adds to damage-having abilities (Meteor, Flay, Disintegrate, Black Hole etc): not extracted (list in JSON).
+8. For 8 nodes (§4) tooltip and code diverge; code authoritative for engine, but what game shows at this, not verified.

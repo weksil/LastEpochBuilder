@@ -12,7 +12,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Префикс"
+text = "Prefix"
 
 [node name="AffixSelect" type="OptionButton" parent="Top"]
 unique_name_in_owner = true
@@ -25,7 +25,7 @@ fit_to_longest_item = false
 [node name="TierLabel" type="Label" parent="Top"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Тир"
+text = "Tier"
 
 [node name="TierSpin" type="SpinBox" parent="Top"]
 unique_name_in_owner = true

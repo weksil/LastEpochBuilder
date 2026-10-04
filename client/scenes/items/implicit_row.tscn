@@ -7,7 +7,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
-text = "Импликит"
+text = "Implicit"
 clip_text = true
 
 [node name="RollSlider" type="HSlider" parent="."]

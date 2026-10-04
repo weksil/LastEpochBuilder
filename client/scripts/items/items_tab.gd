@@ -24,7 +24,7 @@ func _ready() -> void:
 
 func _on_slot_pressed(button: Button) -> void:
 	var slot: String = str(button.get_meta("slot", ""))
-	var slot_name: String = str(button.get_meta("slot_name", ""))
+	var slot_name: String = tr(str(button.get_meta("slot_name", "")))
 
 	if slot != "":
 		_current_slot = slot
@@ -39,7 +39,7 @@ func _on_build_changed() -> void:
 			var btn: Button = button
 			if btn.has_meta("slot"):
 				var slot: String = str(btn.get_meta("slot", ""))
-				var slot_name: String = str(btn.get_meta("slot_name", ""))
+				var slot_name: String = tr(str(btn.get_meta("slot_name", "")))
 
 				# Get item from Build
 				var item_text: String = "—"

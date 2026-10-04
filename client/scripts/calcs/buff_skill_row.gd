@@ -1,6 +1,6 @@
 class_name BuffSkillRow extends PanelContainer
 
-## One equipped skill in the «Баффы умений на персонажа» panel: switch (input `buff_active`) and the buff mods it gives.
+## One equipped skill in the "Skill buffs on the character" panel: switch (input `buff_active`) and the buff mods it gives.
 
 signal active_toggled(slot: int, on: bool)
 
@@ -24,7 +24,7 @@ func _ready() -> void:
 ## entry: one element of BuildMods.skill_buffs.
 func show_entry(entry: Dictionary) -> void:
 	slot = int(entry.get("slot", -1))
-	var title: String = "Слот %d · %s" % [slot + 1, str(entry.get("ability_name", ""))]
+	var title: String = tr("Slot %d · %s") % [slot + 1, str(entry.get("ability_name", ""))]
 	var mods: Array = entry.get("mods", [])
 	var active: bool = bool(entry.get("active", true))
 	var has_buff: bool = not mods.is_empty()
@@ -34,11 +34,11 @@ func show_entry(entry: Dictionary) -> void:
 	_plain.text = title
 	_check.set_pressed_no_signal(active)
 	if not has_buff:
-		_status.text = "нет баффов на персонажа"
+		_status.text = tr("no buffs on the character")
 	elif active:
-		_status.text = "действует · модов: %d" % mods.size()
+		_status.text = tr("active · mods: %d") % mods.size()
 	else:
-		_status.text = "выключен — не действует"
+		_status.text = tr("off — no effect")
 	var lines: PackedStringArray = []
 	for mod: StatMod in mods:
 		lines.append(BuildMods.describe_mod(mod))
@@ -51,4 +51,4 @@ func show_entry(entry: Dictionary) -> void:
 
 func _sync_mods_visibility() -> void:
 	_mods_panel.visible = _toggle.visible and _toggle.button_pressed
-	_toggle.text = "%s моды (%d)" % ["▾" if _toggle.button_pressed else "▸", _mod_count]
+	_toggle.text = tr("%s mods (%d)") % ["▾" if _toggle.button_pressed else "▸", _mod_count]

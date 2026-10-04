@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/idols/idol_cell.tscn" id="2_cell"]
 [ext_resource type="PackedScene" path="res://scenes/items/item_editor.tscn" id="3_editor"]
 
-[node name="Идолы" type="HBoxContainer"]
+[node name="Idols" type="HBoxContainer"]
 theme_override_constants/separation = 12
 script = ExtResource("1_script")
 
@@ -15,13 +15,13 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="Left"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
-text = "Сетка идолов"
+text = "Idol grid"
 
 [node name="Hint" type="Label" parent="Left"]
 custom_minimum_size = Vector2(410, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Клик по свободной клетке — поставить идол (левый верхний угол), клик по идолу — редактировать. Выберите алтарь — он задаёт открытые клетки и refracted-слоты (фиолетовая рамка), где аффиксы идолов усиливаются."
+text = "Click a free cell to place an idol (top-left corner), click an idol to edit it. Pick an altar: it defines the open cells and the refracted slots (purple frame) where idol affixes are boosted."
 autowrap_mode = 3
 
 [node name="AltarRow" type="HBoxContainer" parent="Left"]
@@ -30,7 +30,7 @@ theme_override_constants/separation = 8
 
 [node name="AltarLabel" type="Label" parent="Left/AltarRow"]
 layout_mode = 2
-text = "Алтарь"
+text = "Altar"
 
 [node name="AltarSelect" type="OptionButton" parent="Left/AltarRow"]
 unique_name_in_owner = true
@@ -41,13 +41,13 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 disabled = true
-text = "Изменить алтарь"
+text = "Edit altar"
 
 [node name="CorruptedCheck" type="CheckBox" parent="Left"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-text = "Осквернённый идол (для свойств алтаря)"
+text = "Corrupted idol (for altar properties)"
 
 [node name="Grid" type="GridContainer" parent="Left"]
 unique_name_in_owner = true

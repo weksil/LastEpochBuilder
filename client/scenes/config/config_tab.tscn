@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/config/config_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/config/ailment_row.tscn" id="2_row"]
 
-[node name="Условия" type="ScrollContainer"]
+[node name="Conditions" type="ScrollContainer"]
 horizontal_scroll_mode = 0
 script = ExtResource("1_script")
 ailment_row_scene = ExtResource("2_row")
@@ -21,14 +21,14 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Показать все условия"
-tooltip_text = "Выключено: показаны только условия, от которых зависит ваш билд (и уже включённые)."
+text = "Show all conditions"
+tooltip_text = "Off: only the conditions your build depends on (and already enabled ones) are shown."
 
 [node name="Hint" type="Label" parent="Root/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Показаны только условия, у которых есть источник в билде: умения, предметы, пассивки. Включённые условия видны всегда."
+text = "Only conditions with a source in the build are shown: skills, items, passives. Enabled conditions are always visible."
 autowrap_mode = 3
 
 [node name="EmptyHint" type="Label" parent="Root"]
@@ -36,7 +36,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"SummaryOff"
-text = "Нет условий, от которых зависит билд: ни одно умение, предмет или пассивка не используют состояния игрока и айлменты противника. «Показать все условия» открывает полный список."
+text = "No conditions that the build depends on: no skill, item or passive uses player states or enemy ailments. \"Show all conditions\" opens the full list."
 autowrap_mode = 3
 
 [node name="Columns" type="HBoxContainer" parent="Root"]
@@ -65,14 +65,14 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SectionTitle"
-text = "Игрок"
+text = "Player"
 
 [node name="ResetPlayerButton" type="Button" parent="Root/Columns/Left/PlayerCard/VBox/Head"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Сбросить"
-tooltip_text = "Выключить все условия игрока и обнулить числа"
+text = "Reset"
+tooltip_text = "Turn off all player conditions and zero the numbers"
 
 [node name="PlayerSummary" type="Label" parent="Root/Columns/Left/PlayerCard/VBox"]
 unique_name_in_owner = true
@@ -89,7 +89,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Здоровье"
+text = "Health"
 
 [node name="HealthSelect" type="OptionButton" parent="Root/Columns/Left/PlayerCard/VBox/HealthRow"]
 unique_name_in_owner = true
@@ -97,13 +97,13 @@ layout_mode = 2
 focus_mode = 0
 selected = 0
 item_count = 4
-popup/item_0/text = "Полное (≥99%)"
+popup/item_0/text = "Full (≥99%)"
 popup/item_0/id = 0
-popup/item_1/text = "Высокое (>65%)"
+popup/item_1/text = "High (>65%)"
 popup/item_1/id = 1
-popup/item_2/text = "Обычное"
+popup/item_2/text = "Normal"
 popup/item_2/id = 2
-popup/item_3/text = "Низкое (<35%)"
+popup/item_3/text = "Low (<35%)"
 popup/item_3/id = 3
 
 [node name="PlayerFlags" type="GridContainer" parent="Root/Columns/Left/PlayerCard/VBox"]
@@ -118,7 +118,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Был поражён недавно"
+text = "Was hit recently"
 autowrap_mode = 3
 metadata/player_flag = "hit_recently"
 
@@ -127,7 +127,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Критовал недавно"
+text = "Crit recently"
 autowrap_mode = 3
 metadata/player_flag = "crit_recently"
 
@@ -136,7 +136,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Двигаюсь"
+text = "Moving"
 autowrap_mode = 3
 metadata/player_flag = "moving"
 
@@ -145,7 +145,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Вампиризм активен"
+text = "Leech active"
 autowrap_mode = 3
 metadata/player_flag = "leeching"
 
@@ -154,7 +154,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Мана ниже 50%"
+text = "Mana below 50%"
 autowrap_mode = 3
 metadata/player_flag = "low_mana"
 
@@ -163,7 +163,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Haste на мне"
+text = "Haste on me"
 autowrap_mode = 3
 metadata/player_flag = "haste"
 
@@ -172,7 +172,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Frenzy на мне"
+text = "Frenzy on me"
 autowrap_mode = 3
 metadata/player_flag = "frenzy"
 
@@ -192,7 +192,7 @@ theme_override_constants/separation = 8
 [node name="WardLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/WardRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Текущий ward"
+text = "Current ward"
 
 [node name="WardSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/WardRow/HBox"]
 layout_mode = 2
@@ -213,7 +213,7 @@ theme_override_constants/separation = 8
 [node name="CursesLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CursesRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Проклятий на мне"
+text = "Curses on me"
 
 [node name="CursesSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CursesRow/HBox"]
 layout_mode = 2
@@ -233,7 +233,7 @@ theme_override_constants/separation = 8
 [node name="IgniteStacksLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/IgniteStacksRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Стаков Ignite на мне"
+text = "Ignite stacks on me"
 
 [node name="IgniteStacksSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/IgniteStacksRow/HBox"]
 layout_mode = 2
@@ -253,7 +253,7 @@ theme_override_constants/separation = 8
 [node name="DamnedStacksLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/DamnedStacksRow/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Стаков Damned на мне"
+text = "Damned stacks on me"
 
 [node name="DamnedStacksSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/DamnedStacksRow/HBox"]
 layout_mode = 2
@@ -273,7 +273,7 @@ theme_override_constants/separation = 8
 [node name="EnemyTitle" type="Label" parent="Root/Columns/Left/EnemyCard/VBox"]
 layout_mode = 2
 theme_type_variation = &"SectionTitle"
-text = "Противник"
+text = "Enemy"
 
 [node name="EnemySummary" type="Label" parent="Root/Columns/Left/EnemyCard/VBox"]
 unique_name_in_owner = true
@@ -293,7 +293,7 @@ columns = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Тип"
+text = "Type"
 
 [node name="KindSelect" type="OptionButton" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 unique_name_in_owner = true
@@ -301,24 +301,24 @@ layout_mode = 2
 focus_mode = 0
 selected = 0
 item_count = 6
-popup/item_0/text = "Манекен"
+popup/item_0/text = "Training dummy"
 popup/item_0/id = 0
-popup/item_1/text = "Обычный"
+popup/item_1/text = "Regular"
 popup/item_1/id = 1
-popup/item_2/text = "Магический"
+popup/item_2/text = "Magic"
 popup/item_2/id = 2
-popup/item_3/text = "Редкий"
+popup/item_3/text = "Rare"
 popup/item_3/id = 3
-popup/item_4/text = "Мини-босс"
+popup/item_4/text = "Mini-boss"
 popup/item_4/id = 4
-popup/item_5/text = "Босс"
+popup/item_5/text = "Boss"
 popup/item_5/id = 5
 
 [node name="LevelLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Уровень (он же уровень зоны)"
+text = "Level (also the zone level)"
 autowrap_mode = 3
 
 [node name="LevelSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -333,7 +333,7 @@ update_on_text_changed = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Броня"
+text = "Armor"
 
 [node name="ArmourSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 unique_name_in_owner = true
@@ -346,7 +346,7 @@ update_on_text_changed = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: физическое, %"
+text = "Resistance: physical, %"
 autowrap_mode = 3
 
 [node name="Res0Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -360,7 +360,7 @@ metadata/res_index = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: огонь, %"
+text = "Resistance: fire, %"
 autowrap_mode = 3
 
 [node name="Res1Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -374,7 +374,7 @@ metadata/res_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: холод, %"
+text = "Resistance: cold, %"
 autowrap_mode = 3
 
 [node name="Res2Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -388,7 +388,7 @@ metadata/res_index = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: молния, %"
+text = "Resistance: lightning, %"
 autowrap_mode = 3
 
 [node name="Res3Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -402,7 +402,7 @@ metadata/res_index = 3
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: некротика, %"
+text = "Resistance: necrotic, %"
 autowrap_mode = 3
 
 [node name="Res4Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -416,7 +416,7 @@ metadata/res_index = 4
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: пустота, %"
+text = "Resistance: void, %"
 autowrap_mode = 3
 
 [node name="Res5Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -430,7 +430,7 @@ metadata/res_index = 5
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Сопротивление: яд, %"
+text = "Resistance: poison, %"
 autowrap_mode = 3
 
 [node name="Res6Spin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -444,7 +444,7 @@ metadata/res_index = 6
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Состояние противника"
+text = "Enemy state"
 
 [node name="EnemyFlags" type="GridContainer" parent="Root/Columns/Left/EnemyCard/VBox"]
 unique_name_in_owner = true
@@ -458,7 +458,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Двигается"
+text = "Is moving"
 autowrap_mode = 3
 metadata/flag = "moving"
 
@@ -467,7 +467,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Оглушён"
+text = "Stunned"
 autowrap_mode = 3
 metadata/flag = "stunned"
 
@@ -476,9 +476,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Полное здоровье"
+text = "Full health"
 autowrap_mode = 3
-tooltip_text = "Здоровье цели не ниже 99% (тогда оно и высокое)"
+tooltip_text = "Target health is at least 99% (then it is also high)"
 metadata/flag = "full_health"
 
 [node name="HighHealthCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
@@ -486,9 +486,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Высокое здоровье (≥ 65%)"
+text = "High health (≥ 65%)"
 autowrap_mode = 3
-tooltip_text = "Условие «High Health»: здоровье цели не ниже 65%"
+tooltip_text = "Condition \"High Health\": target health is at least 65%"
 metadata/flag = "high_health"
 
 [node name="LowHealthCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
@@ -496,9 +496,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Низкое здоровье"
+text = "Low health"
 autowrap_mode = 3
-tooltip_text = "Условие «Low Health»: здоровье цели не выше 35%"
+tooltip_text = "Condition \"Low Health\": target health is at most 35%"
 metadata/flag = "low_health"
 
 [node name="FrozenCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
@@ -506,7 +506,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(150, 0)
 focus_mode = 0
-text = "Заморожен"
+text = "Frozen"
 autowrap_mode = 3
 metadata/flag = "frozen"
 
@@ -530,15 +530,15 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SectionTitle"
-text = "Айлменты, шреды и проклятия на противнике (стаки)"
+text = "Ailments, shreds and curses on the enemy (stacks)"
 autowrap_mode = 3
 
 [node name="ResetAilmentsButton" type="Button" parent="Root/Columns/Right/AilmentCard/VBox/Head"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Сбросить"
-tooltip_text = "Обнулить стаки всех айлментов, шредов и проклятий"
+text = "Reset"
+tooltip_text = "Zero the stacks of all ailments, shreds and curses"
 
 [node name="AilmentSummary" type="Label" parent="Root/Columns/Right/AilmentCard/VBox"]
 unique_name_in_owner = true
@@ -550,7 +550,7 @@ autowrap_mode = 3
 [node name="Filter" type="LineEdit" parent="Root/Columns/Right/AilmentCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Поиск по названию…"
+placeholder_text = "Search by name…"
 clear_button_enabled = true
 
 [node name="AilmentList" type="VBoxContainer" parent="Root/Columns/Right/AilmentCard/VBox"]

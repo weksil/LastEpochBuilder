@@ -1,232 +1,232 @@
-# Last Epoch Builder — вердикт и план реализации
+# Last Epoch Builder — verdict and implementation plan
 
-Дата: 2026-10-03. Актуальная версия игры на момент исследования: **1.5.0 (Season 5)**.
-Исходные исследования:
-- [research/01_pob_architecture.md](research/01_pob_architecture.md) — как устроены PoB / PoB-PoE2
-- [research/02_le_formulas.md](research/02_le_formulas.md) — формулы LE с метками достоверности (+ `research/02_assets/` — картинки формул из игрового гайда и выгрузки данных)
-- [research/03_le_data_sources.md](research/03_le_data_sources.md) — откуда брать игровые данные
-- [research/04_le_character_import.md](research/04_le_character_import.md) — импорт персонажа
-- [research/05_dump_verification.md](research/05_dump_verification.md) — дамп клиента, проверка метода на броне
-- `research/06a…06e_dump_*.md` — формулы из декомпилированного кода: статы, урон, защита, ailments, скорость/миньоны
-- `research/data/` — enum'ы статов и тегов, таблица DR по уровню
-- [research/dump_agent_brief.md](research/dump_agent_brief.md) — как работать с дампом
+Date: 2026-10-03. Current game version at the time of the research: **1.5.0 (Season 5)**.
+Source research:
+- [research/01_pob_architecture.md](research/01_pob_architecture.md) — how PoB / PoB-PoE2 are built
+- [research/02_le_formulas.md](research/02_le_formulas.md) — LE formulas with confidence labels (+ `research/02_assets/` — images of the formulas from the in-game guide and data dumps)
+- [research/03_le_data_sources.md](research/03_le_data_sources.md) — where to get game data
+- [research/04_le_character_import.md](research/04_le_character_import.md) — character import
+- [research/05_dump_verification.md](research/05_dump_verification.md) — client dump, checking the method on armor
+- `research/06a…06e_dump_*.md` — formulas from the decompiled code: stats, damage, defense, ailments, speed/minions
+- `research/data/` — stat and tag enums, the DR-by-level table
+- [research/dump_agent_brief.md](research/dump_agent_brief.md) — how to work with the dump
 
 ---
 
-## 1. Вердикт
+## 1. Verdict
 
-**Сделать можно, и формулы теперь известны из самого кода игры.** Клиент удалось декомпилировать (Cpp2IL → Il2CppInspector → Ghidra, см. `research/05`, `06a–06e`). Формулы брони и уклонения совпали с официальным игровым гайдом до последней константы, значит метод надёжен. Все пробелы из `02_le_formulas.md`, кроме чисел, которые лежат в ассетах, закрыты чтением кода (метка **D**).
+**It can be done, and the formulas are now known from the game code itself.** The client was decompiled (Cpp2IL → Il2CppInspector → Ghidra, see `research/05`, `06a–06e`). The armor and dodge formulas matched the official in-game guide down to the last constant, so the method is reliable. All the gaps from `02_le_formulas.md`, except for numbers that live in the assets, have been closed by reading the code (label **D**).
 
-| Слой | Статус | Источник |
+| Layer | Status | Source |
 |---|---|---|
-| Модель статов: `(Σadded)·(1+Σinc)·Π(1+more_i)`, теги-подмножество (Elemental = Fire∨Cold∨Lightning), health-состояния как теги | ✅ D | 06a |
-| Урон от удара: база, added×ADE (по умолчанию 1.0; у скиллов с базой из кода 0.05·Σbase), inc/more по типу урона, атрибуты линейно | ✅ D | 06b |
-| Узлы дерева скилла → **more** (код дерева вручную создаёт more-стат; очки в узле суммируются, узлы перемножаются) | ✅ D (проверено на Fireball) | 06a |
-| Крит: шанс → +«chance to be crit» цели после inc/more; NoCritMulti; super crit и Deadly Strikes (+3.0 к множителю) | ✅ D | 06b |
-| Разброс урона ×U(0.8; 1.2), один бросок на удар после крита, только hit | ✅ D | 06b |
-| Сопротивление цели: `1 − min(res,0.75) + pen`, нижней границы нет; shred до капа | ✅ D | 06b/06c |
-| Скрытое снижение урона по уровню монстра: таблица 101 значения, босс/минибосс +0.05·(1−DR), действует на hit и DoT, у манекенов нет | ✅ D | `research/data/monster_level_damage_reduction.json` |
-| Защита игрока: полный порядок из 18 шагов (dodge → парирование → glancing → блок → крит → разброс → резист → броня → … → ward → мана → endurance) | ✅ D | 06c |
-| Ailments: шанс→стаки, снимок урона при наложении, тик 0.5 с по врагам, «increased effect» у дамажащих ailments = **пенетрация**, а не урон | ✅ D (групповые ailments — D?, проверить в игре) | 06d |
-| Скорость: `use/(S·mult·1.1)`, оружие умножает только Melee (и Bow с луком), dual wield = среднее; кулдауны; мана `cost/efficiency` | ✅ D | 06e |
-| Миньоны: сила `(L−25)·0.8%`, правило тега Minion | ✅ D; общий перенос статов игрока на миньонов — ❓ | 06e |
-| Монстры: здоровье, урон, редкость, порча | ✅ формулы D, коэффициенты в ассетах | 06c/06e |
-| Предметы, идолы, благословения, сеты: обычные статы; **значения аффиксов квантуются** по сетке `PropertyRounding` от roll 0..255 | ✅ D | 06a |
-| Числа классов (здоровье за уровень и т.д.), атрибутов, MonsterRarity, коэффициенты узлов ~150 деревьев | ⚠️ лежат в ассетах или теряются декомпилятором → AssetRipper/UnityPy + скрипт по ISIL | — |
+| Stat model: `(Σadded)·(1+Σinc)·Π(1+more_i)`, tag-subset matching (Elemental = Fire∨Cold∨Lightning), health states as tags | ✅ D | 06a |
+| Hit damage: base, added×ADE (1.0 by default; for skills with a base from code 0.05·Σbase), inc/more by damage type, attributes linearly | ✅ D | 06b |
+| Skill tree nodes → **more** (the tree code creates a more stat by hand; points in a node add up, nodes multiply) | ✅ D (verified on Fireball) | 06a |
+| Crit: chance → +"chance to be crit" of the target after inc/more; NoCritMulti; super crit and Deadly Strikes (+3.0 to the multiplier) | ✅ D | 06b |
+| Damage spread ×U(0.8; 1.2), one roll per hit after the crit, hit only | ✅ D | 06b |
+| Target resistance: `1 − min(res,0.75) + pen`, no lower bound; shred down to the cap | ✅ D | 06b/06c |
+| Hidden damage reduction by monster level: a table of 101 values, boss/miniboss +0.05·(1−DR), applies to hit and DoT, training dummies have none | ✅ D | `research/data/monster_level_damage_reduction.json` |
+| Player defense: the full order of 18 steps (dodge → parry → glancing → block → crit → spread → resist → armor → … → ward → mana → endurance) | ✅ D | 06c |
+| Ailments: chance → stacks, damage snapshot on application, 0.5 s tick on enemies, "increased effect" of damaging ailments = **penetration**, not damage | ✅ D (group ailments — D?, check in game) | 06d |
+| Speed: `use/(S·mult·1.1)`, a weapon multiplies only Melee (and Bow with a bow), dual wield = average; cooldowns; mana `cost/efficiency` | ✅ D | 06e |
+| Minions: strength `(L−25)·0.8%`, the Minion tag rule | ✅ D; the general transfer of player stats to minions — ❓ | 06e |
+| Monsters: health, damage, rarity, corruption | ✅ formulas D, coefficients in the assets | 06c/06e |
+| Items, idols, blessings, sets: ordinary stats; **affix values are quantized** on the `PropertyRounding` grid from roll 0..255 | ✅ D | 06a |
+| Class numbers (health per level, etc.), attributes, MonsterRarity, node coefficients of ~150 trees | ⚠️ live in the assets or are lost by the decompiler → AssetRipper/UnityPy + an ISIL script | — |
 
-**Итог:** все механики общего слоя известны точно. Осталась инженерная работа:
-1. **Выгрузить ассеты** (числа классов, атрибутов, редкостей, AilmentList, деревья) через AssetRipper/UnityPy.
-2. **Механики деревьев скиллов.** Логика каждого дерева лежит в коде `<Skill>Mutator` и теперь читается. Коэффициенты узлов надо достать скриптом по ISIL, потому что Ghidra теряет float-аргументы.
-3. **Найти перенос статов игрока на миньонов** (xref-поиск в Ghidra).
+**Summary:** all mechanics of the shared layer are known exactly. What remains is engineering work:
+1. **Extract the assets** (class, attribute and rarity numbers, AilmentList, trees) via AssetRipper/UnityPy.
+2. **Skill tree mechanics.** The logic of each tree lives in the `<Skill>Mutator` code and can now be read. The node coefficients have to be pulled out with an ISIL script, because Ghidra loses float arguments.
+3. **Find the transfer of player stats to minions** (xref search in Ghidra).
 
-Тестирование в игре нужно только для финальной сверки, а не для поиска формул.
+Testing in the game is needed only for the final cross-check, not for finding formulas.
 
-**Импорт в пару кликов:**
-- **Офлайн-персонажи — да.** Сохранение — это префикс `EPOCH` и обычный JSON. Предметы, идолы и благословения лежат внутри в двоичном виде, и их нужно декодировать.
-- **Онлайн-персонажи — только через партнёрский API разработчика (EHG).** Публичного API нет; LE Tools и Maxroll, судя по всему, имеют партнёрский доступ. До его получения запасной путь — импорт ссылки на билд LE Tools или Maxroll.
+**Import in a couple of clicks:**
+- **Offline characters — yes.** A save is the prefix `EPOCH` and plain JSON. Items, idols and blessings are stored inside in binary form and need to be decoded.
+- **Online characters — only through the developer's (EHG) partner API.** There is no public API; LE Tools and Maxroll apparently have partner access. Until we get it, the fallback is importing an LE Tools or Maxroll build link.
 
 ---
 
-## 2. Архитектура (по урокам PoB, но современная)
+## 2. Architecture (following PoB's lessons, but modern)
 
 ```
 le-builder/                      (monorepo, pnpm + TypeScript)
 ├─ packages/
-│  ├─ data-schema/     Zod-схемы нормализованных данных (Skill, SkillTreeNode, PassiveNode, Affix, BaseItem, Unique, Set, Idol, Blessing, Ailment, StatDef)
-│  ├─ data-pipeline/   экстракторы → нормализация → data/<gameVersion>/*.json
-│  │   ├─ adapters/letools.ts, adapters/maxroll.ts   (для разработки и перекрёстной сверки, НЕ для поставки без разрешения)
-│  │   └─ extractor/   собственная выгрузка из клиента (Cpp2IL + UnityPy / MelonLoader-дампер)
-│  ├─ engine/          чистый расчётный движок, без UI и глобального состояния, работает в Web Worker
-│  │   ├─ mods/        Mod, ModStore (parent chain), теги/условия, запросы
-│  │   ├─ setup/       сбор модов: классовое/мастерское дерево, предметы, идолы, благословения, деревья скиллов, конфиг
-│  │   ├─ calc/        фазы: attributes → resources → buffs/auras → defence → offence (hit, crit, speed, DoT/ailments, minions)
-│  │   ├─ trace/       Traced<number> — каждое число хранит дерево своего вывода (breakdown)
-│  │   ├─ skills/      ручные реализации механик деревьев скиллов (по файлу на скилл)
-│  │   └─ uniques/     ручные реализации спецэффектов уникальных и сетовых предметов
-│  ├─ import/          save-file парсер, декодер предметов, адаптеры ссылок LE Tools / Maxroll, build codes
-│  └─ app/             React UI (+ PixiJS для деревьев), опционально Tauri для десктопа
-└─ data/<gameVersion>/  версионированные JSON-данные + ручные таблицы (skill-node-effects.yaml)
+│  ├─ data-schema/     Zod schemas of normalized data (Skill, SkillTreeNode, PassiveNode, Affix, BaseItem, Unique, Set, Idol, Blessing, Ailment, StatDef)
+│  ├─ data-pipeline/   extractors → normalization → data/<gameVersion>/*.json
+│  │   ├─ adapters/letools.ts, adapters/maxroll.ts   (for development and cross-checking, NOT for shipping without permission)
+│  │   └─ extractor/   our own extraction from the client (Cpp2IL + UnityPy / MelonLoader dumper)
+│  ├─ engine/          pure calculation engine, no UI and no global state, runs in a Web Worker
+│  │   ├─ mods/        Mod, ModStore (parent chain), tags/conditions, queries
+│  │   ├─ setup/       mod collection: class/mastery tree, items, idols, blessings, skill trees, config
+│  │   ├─ calc/        phases: attributes → resources → buffs/auras → defence → offence (hit, crit, speed, DoT/ailments, minions)
+│  │   ├─ trace/       Traced<number> — every number keeps the tree of its derivation (breakdown)
+│  │   ├─ skills/      hand-written implementations of skill tree mechanics (one file per skill)
+│  │   └─ uniques/     hand-written implementations of special effects of unique and set items
+│  ├─ import/          save-file parser, item decoder, adapters for LE Tools / Maxroll links, build codes
+│  └─ app/             React UI (+ PixiJS for trees), optionally Tauri for desktop
+└─ data/<gameVersion>/  versioned JSON data + hand-written tables (skill-node-effects.yaml)
 ```
 
-### 2.1 Система модов (берём у PoB с улучшениями)
+### 2.1 The mod system (taken from PoB with improvements)
 
 ```ts
 type ModType = 'BASE' | 'INC' | 'MORE' | 'FLAG' | 'OVERRIDE' | 'LIST';
 interface Mod {
-  stat: StatId;                // типизированный enum, а не строка
+  stat: StatId;                // a typed enum, not a string
   type: ModType;
   value: number;
-  tags: Set<Tag>;              // damage types, Spell/Melee/Bow/Throwing/Minion/DoT/Hit, ailment ids — множество вместо битовых масок
+  tags: Set<Tag>;              // damage types, Spell/Melee/Bow/Throwing/Minion/DoT/Hit, ailment ids — a set instead of bit masks
   conditions: Condition[];     // { kind: 'Condition', name: 'LowLife' } | { kind: 'Multiplier', var: 'ShredStacks', per: 1 } |
                                // { kind: 'PerStat', stat: 'Strength', per: 1 } | { kind: 'SkillId', id } | { kind: 'Actor', actor: 'enemy', name: 'Chilled' }
   source: SourceRef;           // { kind: 'item', slot, affixId, tier } | { kind: 'passive', nodeId, points } | { kind: 'skillNode', skillId, nodeId } | { kind: 'config', optionId } ...
 }
 ```
-- Отдельные хранилища для игрока, противника и каждого миньона. У каждого скилла своё хранилище поверх хранилища игрока (parent chain). Деревья скиллов меняют теги скилла (например, превращают огонь в холод или удар в DoT), поэтому теги задаются **в контексте скилла**.
-- Правило LE для деревьев: модификатор урона в дереве скилла — это `MORE`, даже если он подписан «increased». Исключения — скорость атаки и крит. Это делается при нормализации данных, а не в движке.
-- Условия проверяются в момент запроса против контекста скилла (как `ModStore:EvalMod` в PoB).
+- Separate stores for the player, the enemy and each minion. Each skill has its own store on top of the player's store (parent chain). Skill trees change the skill's tags (for example, turn fire into cold or a hit into DoT), so tags are defined **in the skill's context**.
+- The LE rule for trees: a damage modifier in a skill tree is `MORE`, even if it is labeled "increased". The exceptions are attack speed and crit. This is done during data normalization, not in the engine.
+- Conditions are checked at query time against the skill context (like `ModStore:EvalMod` in PoB).
 
-**Уточнения по коду игры (06a–06e), обязательные для движка:**
-- Ключ стата повторяет игровой: `SP` (134 свойства) + `AT`-теги (битовая маска) + `specialTag` + `extraTag` (обычно ID скилла). Мод подходит, если его теги — **подмножество** тегов скилла (логика «И»). Единственное исключение — `Elemental` (подходит к Fire, Cold и Lightning). LowLife/HighLife/FullLife — это биты тегов, а не отдельные условия.
-- Агрегация во **float32**: `(Σadded)·(1+Σinc)·Π(1+m_i)`. AttackSpeed дополнительно умножается на скорость оружия, только для Melee (и Bow с луком). `QUOTIENT` → more `1/(1+x)−1` при нормализации.
-- «За каждые X» (атрибуты и т.п.) масштабируется линейно, **включая more** (`1+N·m`).
-- В `Mod` добавить поле `group`: несколько узлов дерева, пишущих в одно поле мутатора, дают один общий more.
-- Условные статы урона (SP 117, 48 условий `ConditionalDamageProperty`) — это more, и именно они становятся галочками состояния врага.
-- Значения аффиксов квантуются по сетке `PropertyRounding` (roll 0..255) **до** превращения в статы. Max health, mana и атрибуты округляются банковским округлением, всё остальное без округления.
-- «Increased effect» у дамажащих ailments = +пенетрация своего типа (кроме Witchfire и Penance). У групповых ailments effect не читается (D?, проверить в игре).
-- Порядок защиты — пайплайн из 18 шагов (06c), DPS в подсказке игры — по формуле `getApproximateDPS` (06b), чтобы наш режим «манекен» совпадал с числом в игре.
+**Clarifications from the game code (06a–06e), mandatory for the engine:**
+- The stat key mirrors the game's: `SP` (134 properties) + `AT` tags (bit mask) + `specialTag` + `extraTag` (usually the skill ID). A mod matches if its tags are a **subset** of the skill's tags (AND logic). The only exception is `Elemental` (matches Fire, Cold and Lightning). LowLife/HighLife/FullLife are tag bits, not separate conditions.
+- Aggregation in **float32**: `(Σadded)·(1+Σinc)·Π(1+m_i)`. AttackSpeed is additionally multiplied by weapon speed, only for Melee (and Bow with a bow). `QUOTIENT` → more `1/(1+x)−1` during normalization.
+- "Per X" (attributes, etc.) scales linearly, **including more** (`1+N·m`).
+- Add a `group` field to `Mod`: several tree nodes writing to the same mutator field give one shared more.
+- Conditional damage stats (SP 117, 48 `ConditionalDamageProperty` conditions) are more, and they are exactly what become the enemy-state checkboxes.
+- Affix values are quantized on the `PropertyRounding` grid (roll 0..255) **before** being turned into stats. Max health, mana and attributes use banker's rounding, everything else is not rounded.
+- "Increased effect" of damaging ailments = + penetration of its own type (except Witchfire and Penance). For group ailments the effect is not read (D?, check in game).
+- The defense order is an 18-step pipeline (06c); the DPS in the game tooltip follows the `getApproximateDPS` formula (06b), so that our "dummy" mode matches the number in the game.
 
-### 2.2 Расшифровка каждого числа (главная ценность продукта)
+### 2.2 A breakdown of every number (the main value of the product)
 
-В PoB тексты расшифровки пишутся вручную рядом с формулами и расходятся с реальной математикой. У нас:
+In PoB the breakdown texts are written by hand next to the formulas and drift away from the real math. Here:
 ```ts
-const hit = T.mul('Урон от удара (огонь)',
-  T.add('База', skillBase, T.mul('Добавленный × эффективность', addedFlat, effectiveness)),
-  T.inc('Increased', modsInc),      // сумма → (1 + Σ)
-  T.more('More', modsMore));        // каждый отдельно
+const hit = T.mul('Hit damage (fire)',
+  T.add('Base', skillBase, T.mul('Added × effectiveness', addedFlat, effectiveness)),
+  T.inc('Increased', modsInc),      // sum → (1 + Σ)
+  T.more('More', modsMore));        // each separately
 ```
-Каждое значение `Traced` хранит операцию, операнды и список модов с источниками. UI («Calcs»-вкладка) строит из этого раскрывающееся дерево: **число → формула → вклады → конкретный предмет / узел / галочка**. Расшифровки не могут разойтись с расчётом, потому что генерируются им самим.
+Every `Traced` value stores the operation, the operands and the list of mods with their sources. The UI (the "Calcs" tab) builds an expandable tree from it: **number → formula → contributions → the specific item / node / checkbox**. Breakdowns cannot diverge from the calculation, because they are generated by it.
 
-### 2.3 Конфиг: галочки «как в PoB»
+### 2.3 Config: checkboxes "like in PoB"
 
-Декларативные опции: `{ id, label, type: 'check'|'count'|'list'|'number', actor: 'player'|'enemy', apply(value, env) }`. Опция показывается, только если какой-то мод в билде ссылается на её условие (так же, как в PoB).
+Declarative options: `{ id, label, type: 'check'|'count'|'list'|'number', actor: 'player'|'enemy', apply(value, env) }`. An option is shown only if some mod in the build refers to its condition (the same as in PoB).
 
-**Игрок** (стартовый набор): Low Life / Full Health, ward > 0 / значение ward, «был ударен недавно», «убил недавно», «критовал недавно», «использовал зелье недавно», «двигается / стоит на месте», «ченнелит N сек», число активных миньонов, стаки баффов (Haste, Frenzy, Lightning Aegis…), активные ауры и тотемы, «использовал движение недавно», процент маны.
+**Player** (starter set): Low Life / Full Health, ward > 0 / ward value, "was hit recently", "killed recently", "crit recently", "used a potion recently", "moving / standing still", "channelling for N sec", number of active minions, buff stacks (Haste, Frenzy, Lightning Aegis…), active auras and totems, "used a movement skill recently", mana percentage.
 
-**Противник:** тип (обычный / магический / редкий / босс / манекен), уровень области, сопротивления и броня (с пресетами), Chilled / Frozen / Shocked (стаки), Slowed, Blinded, Frailty, Stunned, Shred по каждому типу и броне (стаки, с учётом ограничения против боссов), Critical Vulnerability (стаки), Marked for Death, Ignite / Bleed / Poison / Electrify / Damned / Time Rot / Doom (стаки), «рядом / далеко», «на низком здоровье», уровень порчи (Corruption).
+**Enemy:** type (normal / magic / rare / boss / dummy), area level, resistances and armor (with presets), Chilled / Frozen / Shocked (stacks), Slowed, Blinded, Frailty, Stunned, Shred per type and armor (stacks, accounting for the limit against bosses), Critical Vulnerability (stacks), Marked for Death, Ignite / Bleed / Poison / Electrify / Damned / Time Rot / Doom (stacks), "near / far", "on low health", corruption level.
 
-### 2.4 Что учитывает расчёт (требования пользователя)
+### 2.4 What the calculation accounts for (user requirements)
 
-| Требование | Реализация |
+| Requirement | Implementation |
 |---|---|
-| Предметы | базовый тип и импликиты; аффиксы по ID и тиру с точным значением ролла (ползунок min–max); уникальные с LP и Weaver's Will; сеты с бонусами за число предметов; экспериментальные, персональные и запечатанные аффиксы. Все статы аффиксов глобальные (по гайду) |
-| Идолы | сетка идолов (размеры, класс-специфичные, «Enchanted / Omen / Grand / Large» в зависимости от сезона), аффиксы по ID |
-| Благословения | слоты таймлайнов Monolith (из endgame-данных) → список допустимых благословений → значение в диапазоне (обычное / Grand) |
-| Прокачанные скилы | 5 слотов специализации, уровень скилла (с +уровнями от предметов), дерево специализации с очками на узел |
-| Прокачанные навыки (пассивки) | дерево класса и мастерства с очками на узел, ограничения по мастерству; Weaver tree, если применимо |
-| Статусы на персонаже и противнике | раздел 2.3 |
+| Items | base type and implicits; affixes by ID and tier with the exact roll value (a min–max slider); uniques with LP and Weaver's Will; sets with bonuses by item count; experimental, personal and sealed affixes. All affix stats are global (per the guide) |
+| Idols | the idol grid (sizes, class-specific, "Enchanted / Omen / Grand / Large" depending on the season), affixes by ID |
+| Blessings | Monolith timeline slots (from endgame data) → list of allowed blessings → a value in the range (normal / Grand) |
+| Leveled skills | 5 specialization slots, skill level (with + levels from items), the specialization tree with points per node |
+| Leveled passives | the class and mastery tree with points per node, mastery restrictions; the Weaver tree, if applicable |
+| Statuses on the character and the enemy | section 2.3 |
 
 ---
 
-## 3. Данные
+## 3. Data
 
-1. **Первая неделя:** адаптеры к JSON LE Tools (`/data/version150/planner/js/*.js`, `/data/version150/db/js/*.js`, i18n) и Maxroll (`assets-ng.maxroll.gg/leplanner/game/data.json`) → нормализация в нашу схему по ID игры. Только для внутренней разработки и сверки. Распространять их файлы без письменного разрешения нельзя.
-2. **Основной путь для релиза:** собственный экстрактор из установленного клиента. **Код уже разобран** (`tools/`, `dump/`): Cpp2IL поддерживает metadata v39, Il2CppInspector даёт адреса, типы и статические массивы, Ghidra декомпилирует всю LE.dll примерно за 10 минут. Пайплайн после патча: `Cpp2IL (cs + isil) → Il2CppInspector (metadata.json) → Ghidra import + ApplySymbols → DecompileMethods`, около 40 минут вместе с импортом. Осталось сделать:
-   - **ассеты** (числа классов, атрибутов, MonsterRarity, AilmentList, деревья, аффиксы, уникальные): AssetRipper или UnityPy, структуры типов берём из дампа;
-   - **коэффициенты узлов деревьев**: скрипт по ISIL `<Skill>Mutator` (Ghidra теряет float-аргументы);
-   - **статические таблицы** (DR по уровню, ActorScaler и т.п.): из секции `fields` в `metadata.json`.
-3. **Ручные таблицы в git:** `skill-node-effects.yaml` (смысл кастомных статов узлов скиллов), `unique-effects/*.ts`. При каждом патче CI сравнивает данные и подсвечивает изменённые узлы и предметы.
-4. **Версии:** `data/<gameVersion>/`, у сборки сохраняется версия игры (LE часто ребалансит). Сезоны выходят раз в 4–6 месяцев, изменения данных — примерно раз в 2 месяца.
-5. **Юридически:** пользовательское соглашение EHG (§3) формально запрещает датамайнинг. Сообщество это делает открыто, и EHG терпит. Снижаем риск: только числа и ID без арта и звуков, указываем авторство EHG, параллельно запрашиваем у EHG партнёрский статус (он же нужен для API онлайн-персонажей).
+1. **First week:** adapters for the LE Tools JSON (`/data/version150/planner/js/*.js`, `/data/version150/db/js/*.js`, i18n) and Maxroll (`assets-ng.maxroll.gg/leplanner/game/data.json`) → normalization into our schema by game ID. For internal development and cross-checking only. Distributing their files without written permission is not allowed.
+2. **Main path for release:** our own extractor from the installed client. **The code is already parsed** (`tools/`, `dump/`): Cpp2IL supports metadata v39, Il2CppInspector provides addresses, types and static arrays, Ghidra decompiles the whole LE.dll in about 10 minutes. The pipeline after a patch: `Cpp2IL (cs + isil) → Il2CppInspector (metadata.json) → Ghidra import + ApplySymbols → DecompileMethods`, about 40 minutes including the import. What remains to be done:
+   - **assets** (class, attribute, MonsterRarity numbers, AilmentList, trees, affixes, uniques): AssetRipper or UnityPy, the type structures are taken from the dump;
+   - **tree node coefficients**: an ISIL script over `<Skill>Mutator` (Ghidra loses float arguments);
+   - **static tables** (DR by level, ActorScaler, etc.): from the `fields` section of `metadata.json`.
+3. **Hand-written tables in git:** `skill-node-effects.yaml` (the meaning of custom skill node stats), `unique-effects/*.ts`. On every patch, CI compares the data and highlights changed nodes and items.
+4. **Versions:** `data/<gameVersion>/`, a build keeps the game version (LE is often rebalanced). Seasons come out every 4–6 months, data changes — roughly every 2 months.
+5. **Legal:** the EHG user agreement (§3) formally forbids datamining. The community does it openly and EHG tolerates it. We reduce the risk: only numbers and IDs without art and sounds, credit EHG, and in parallel ask EHG for partner status (it is also needed for the online character API).
 
 ---
 
-### 3.1 Статус извлечения из клиента (2026-10-03)
-Данные извлечены в `research/data/game/` скриптами `tools/extract/` (перезапуск после патча занимает минуты). Сверка с Maxroll и LE Tools: **0 расхождений в значениях** по всем пересекающимся записям.
+### 3.1 Extraction status (2026-10-03)
+The data is extracted into `research/data/game/` by the `tools/extract/` scripts (rerunning after a patch takes minutes). Cross-check with Maxroll and LE Tools: **0 value mismatches** across all overlapping records.
 
-| Сущность | Файл | Источник |
+| Entity | File | Source |
 |---|---|---|
-| Классы, атрибуты, глобальные константы, редкость и моды монстров, ActorScaler | classes, attributes, global_player_properties, monster_rarity, monster_mods, actor_scaler | 07a |
-| Ailments (149), аффиксы (1156), базы (781), уникальные (489), сеты, идолы, благословения | ailments, affixes, items, uniques, sets, idols, blessings | 07a |
-| Абилки (1044, с базовым уроном из префабов), деревья (150), статы узлов (4725) | abilities, trees, tree_node_stats | 07b |
-| Эффекты узлов деревьев скиллов из кода: 99.7% узлов покрыты (93.5% полностью автоматически) | skill_node_effects | 07c |
-| Перенос статов на миньонов, спецэффекты уникальных (поля CharacterMutator) | unique_effects, player_property_fields | 07d |
-| Формат сейва v6 + эталонный парсер | tools/extract/save_parser.py | 07e |
-| Узлы пассивок (541) и Weaver (79), базовые бонусы мастерств, урон абилок, заданный кодом (10) | passive_node_effects, weaver_node_effects, abilities_code_damage | 07f |
-| Семантика полей мутаторов при касте: 218 мутаторов, 4818 полей, 4360 D / 458 D? | mutator_field_semantics_AL, mutator_field_semantics_MZ | 07g, 07h |
-| Формулы спецэффектов уникальных: 399 эффектов (174 проверены по коду, 225 D?), свойства абилок 374/385, проки предметов | unique_effects, item_procs, ability_property_fields_c | 07i |
-| Базовые статы миньонов (59), ward боссов, мёртвые узлы, RoundToInt, активный путь редкости | minion_base_stats, boss_ward | 07j |
+| Classes, attributes, global constants, monster rarity and mods, ActorScaler | classes, attributes, global_player_properties, monster_rarity, monster_mods, actor_scaler | 07a |
+| Ailments (149), affixes (1156), bases (781), uniques (489), sets, idols, blessings | ailments, affixes, items, uniques, sets, idols, blessings | 07a |
+| Abilities (1044, with base damage from prefabs), trees (150), node stats (4725) | abilities, trees, tree_node_stats | 07b |
+| Skill tree node effects from code: 99.7% of nodes covered (93.5% fully automatically) | skill_node_effects | 07c |
+| Transfer of stats to minions, special effects of uniques (CharacterMutator fields) | unique_effects, player_property_fields | 07d |
+| Save format v6 + a reference parser | tools/extract/save_parser.py | 07e |
+| Passive nodes (541) and Weaver (79), base mastery bonuses, ability damage set by code (10) | passive_node_effects, weaver_node_effects, abilities_code_damage | 07f |
+| Semantics of mutator fields on cast: 218 mutators, 4818 fields, 4360 D / 458 D? | mutator_field_semantics_AL, mutator_field_semantics_MZ | 07g, 07h |
+| Formulas of unique special effects: 399 effects (174 checked against code, 225 D?), ability properties 374/385, item procs | unique_effects, item_procs, ability_property_fields_c | 07i |
+| Base minion stats (59), boss ward, dead nodes, RoundToInt, the active rarity path | minion_base_stats, boss_ward | 07j |
 
-**Статус после 07k–07m:** все поля мутаторов (4795 подтверждено + 23 мёртвых из 4818) и все 359 формул уникальных закрыты; Holy Aura разобрана (07l). Открыто только: проверка парсера сейва на свежих сейвах 1.5 (отложено), ward от Faith's Reward, источники части бонусов Holy Aura-менеджера.
+**Status after 07k–07m:** all mutator fields (4795 confirmed + 23 dead out of 4818) and all 359 unique formulas are closed; Holy Aura is worked out (07l). Only these remain open: checking the save parser on fresh 1.5 saves (deferred), ward from Faith's Reward, the sources of some Holy Aura manager bonuses.
 
-## 4. Импорт персонажа
+## 4. Character import
 
-| Путь | Клики | Покрытие | Когда |
+| Path | Clicks | Coverage | When |
 |---|---|---|---|
-| **A. Офлайн-сейв** (`%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves`): «Импорт» → выбрать папку (File System Access API запоминает её) → выбрать персонажа | 2–3 в первый раз, потом 1–2 | класс, мастерство, пассивки, деревья скиллов, панель скиллов — сразу (JSON); предметы, идолы, благословения — после декодирования байтов `savedItems` | фаза 1 (JSON), фаза 3 (предметы) |
-| **B. Ссылка на билд LE Tools или Maxroll** → вставить в поле | 1 | всё, кроме точных роллов (LE Tools хранит только тиры; ролл по умолчанию — максимум или середина, правится ползунком) | фаза 2; после разговора с автором LE Tools (Dammitt) |
-| **C. Онлайн-персонаж по имени аккаунта и персонажа** | 1–2 | полное | только после получения партнёрского API EHG |
-| **D. Свой build code** (сжатый JSON + base64url) и ссылки | 1 | полное | фаза 1 |
+| **A. Offline save** (`%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves`): "Import" → pick the folder (the File System Access API remembers it) → pick a character | 2–3 the first time, then 1–2 | class, mastery, passives, skill trees, skill bar — right away (JSON); items, idols, blessings — after decoding the `savedItems` bytes | phase 1 (JSON), phase 3 (items) |
+| **B. An LE Tools or Maxroll build link** → paste into a field | 1 | everything except exact rolls (LE Tools stores only tiers; the default roll is the maximum or the middle, adjustable with a slider) | phase 2; after talking to the LE Tools author (Dammitt) |
+| **C. An online character by account and character name** | 1–2 | full | only after getting the EHG partner API |
+| **D. Our own build code** (compressed JSON + base64url) and links | 1 | full | phase 1 |
 
-**Запрещено и не делаем:** токен сессии игрока, чтение памяти, перехват пакетов. Это нарушение пользовательского соглашения и риск бана.
+**Forbidden and not done:** the player's session token, memory reading, packet interception. This violates the user agreement and risks a ban.
 
-**Нужно от пользователя:** свежий офлайн-сейв текущей версии. На машине есть только сейвы беты от февраля 2024 года, а формат байтов предметов (format v2) нужно реверсить на актуальных данных.
+**Needed from the user:** a fresh offline save of the current version. The machine has only beta saves from February 2024, and the item byte format (format v2) has to be reverse-engineered on current data.
 
 ---
 
-## 5. Фазы
+## 5. Phases
 
-| Фаза | Содержание | Критерий готовности | Оценка (1 разработчик) |
+| Phase | Content | Done criterion | Estimate (1 developer) |
 |---|---|---|---|
-| **0. Фундамент** | monorepo, Zod-схема, адаптер данных LE Tools/Maxroll → нормализованный JSON 1.5.0, просмотр данных | все сущности загружаются и валидируются | 1 нед |
-| **0.5 Экстрактор из клиента** | выгрузка ассетов (AssetRipper/UnityPy), скрипт коэффициентов узлов по ISIL, xref-поиск переноса статов на миньонов, автоматизация пайплайна дампа | данные из клиента совпадают с LE Tools/Maxroll по сущностям; числа классов и атрибутов получены | 1–2 нед |
-| **1. Движок-ядро** | Mod/ModStore/теги-подмножество, `Traced`, фазы расчёта, атрибуты, базовые статы класса, защита по пайплайну 06c, удар/крит/разброс/пенетрация/DR по уровню (06b), скорость/кулдауны/мана (06e), ailments (06d), конфиг-галочки из `ConditionalDamageProperty`, build code, импорт пассивок и скиллов из сейва (JSON-часть) | unit-тесты на все тест-векторы из 05/06a–06e; character sheet совпадает с игрой на 3 эталонных персонажах | 3–4 нед |
-| **2. UI MVP** | деревья класса и скиллов (PixiJS), предметы (выбор базы и аффиксов, ползунки роллов), идолы, благословения, панель статов, вкладка Calcs с деревом расшифровки, вкладка Config, импорт ссылки LE Tools/Maxroll | полный билд собирается руками и импортом | 3–4 нед |
-| **3. Декодер предметов из сейва** | формат `savedItems` читаем из кода сериализации предметов в дампе (а не угадываем), затем сверяем на свежих сейвах; сопоставление ID аффиксов и роллов (байт roll 0..255 → `PropertyRounding`) | импорт офлайн-персонажа в 2–3 клика с предметами, идолами и благословениями | 1–2 нед |
-| **4. Механики скиллов (длинный хвост)** | перенос логики `<Skill>Mutator` из декомпилированного кода (а не угадывание по тексту узлов): сначала 1 класс полностью (5 мастерств ~ 25–30 скиллов), затем остальные; спецэффекты уникальных | для каждого скилла DPS-подсказка в игре совпадает с нашим числом на манекене (±0.5%) | ~0.3–0.5 дня на скилл (код известен) → 1.5–3 мес на все деревья, параллелится агентами |
-| **5. Сверка в игре** | только открытые D?-пункты: групповые ailments и increased effect, wardGainModifier (возможный баг), масштаб leech, тики канала, округление в UI | задокументированные тест-кейсы в `calibration/` | 2–3 дня, параллельно с 4 |
-| **6. Свой экстрактор и релиз** | экстрактор из клиента, diff данных при патче, «что если» (подсветка узлов, сравнение предметов), Tauri-сборка | обновление данных после патча < 1 дня | 2–3 нед |
+| **0. Foundation** | monorepo, Zod schema, an adapter LE Tools/Maxroll data → normalized 1.5.0 JSON, a data viewer | all entities load and validate | 1 wk |
+| **0.5 Client extractor** | asset extraction (AssetRipper/UnityPy), an ISIL script for node coefficients, xref search for the transfer of stats to minions, automation of the dump pipeline | data from the client matches LE Tools/Maxroll by entity; class and attribute numbers obtained | 1–2 wk |
+| **1. Engine core** | Mod/ModStore/tag-subset, `Traced`, calculation phases, attributes, base class stats, defense by the 06c pipeline, hit/crit/spread/penetration/DR by level (06b), speed/cooldowns/mana (06e), ailments (06d), config checkboxes from `ConditionalDamageProperty`, build code, import of passives and skills from a save (the JSON part) | unit tests on all test vectors from 05/06a–06e; the character sheet matches the game on 3 reference characters | 3–4 wk |
+| **2. UI MVP** | class and skill trees (PixiJS), items (choosing a base and affixes, roll sliders), idols, blessings, stats panel, a Calcs tab with a breakdown tree, a Config tab, LE Tools/Maxroll link import | a full build is assembled by hand and by import | 3–4 wk |
+| **3. Save item decoder** | the `savedItems` format is read from the item serialization code in the dump (not guessed), then checked on fresh saves; mapping of affix IDs and rolls (roll byte 0..255 → `PropertyRounding`) | import of an offline character in 2–3 clicks with items, idols and blessings | 1–2 wk |
+| **4. Skill mechanics (the long tail)** | porting the `<Skill>Mutator` logic from the decompiled code (not guessing from node text): first 1 class fully (5 masteries ~ 25–30 skills), then the rest; special effects of uniques | for every skill, the in-game DPS tooltip matches our number on the dummy (±0.5%) | ~0.3–0.5 day per skill (the code is known) → 1.5–3 months for all trees, parallelized by agents |
+| **5. In-game cross-check** | only the open D? items: group ailments and increased effect, wardGainModifier (a possible bug), leech scale, channel ticks, rounding in the UI | documented test cases in `calibration/` | 2–3 days, in parallel with 4 |
+| **6. Own extractor and release** | the client extractor, data diff on patch, "what if" (node highlighting, item comparison), a Tauri build | data update after a patch < 1 day | 2–3 wk |
 
-**MVP** (фазы 0–3, один класс полностью): примерно 2–2.5 месяца. Полное покрытие всех скиллов: ещё 1.5–3 месяца, сильно ускоряется параллельной работой сабагентов над разными скиллами.
+**MVP** (phases 0–3, one class fully): about 2–2.5 months. Full coverage of all skills: another 1.5–3 months, greatly sped up by parallel work of subagents on different skills.
 
-> ⛔ **Перед фазой 2 (UI) — остановка и согласование с пользователем.**
+> ⛔ **Before phase 2 (UI) — stop and agree with the user.**
 
-### Распараллеливание (оркестрация агентами)
-- Opus: движок (mods, trace, calc), декодер сейвов, сложные скиллы (миньоны, триггеры, трансформации).
-- Sonnet: реализация узлов деревьев по шаблону (по скиллу на агента, в изолированном worktree), UI-компоненты, адаптеры данных.
-- Haiku: генерация тест-фикстур, сверка текстов узлов с реализованными модами, i18n.
-- Тест-гейт для каждого скилла: таблица «узлы → ожидаемые числа подсказки», которые пользователь снимает в игре (скриншот), и автотест.
-
----
-
-## 6. Проверка точности
-
-1. **Unit-тесты** на каждую формулу: тест-векторы из `research/05`, `06a–06e` (выведены из кода игры) и числа гайда из `02_assets`.
-2. **Эталонные персонажи:** снимок character sheet из игры (здоровье, броня, резисты, крит, скорость) → snapshot-тест. Тесты обязательны в CI (в PoB они выключены по умолчанию — не повторяем).
-3. **DPS по скиллам:** подсказка скилла в игре и замер на манекене → тест на каждый скилл.
-4. **Перекрёстная сверка** с калькулятором LE Tools и форком Musholic/LastEpochPlanner, чтобы найти расхождения.
-5. **UI честно показывает, где расчёт неточный:** если механика узла не реализована или формула имеет уровень B/C, рядом с числом стоит значок и подсказка с объяснением.
+### Parallelization (agent orchestration)
+- Opus: the engine (mods, trace, calc), the save decoder, complex skills (minions, triggers, transformations).
+- Sonnet: implementing tree nodes from a template (one skill per agent, in an isolated worktree), UI components, data adapters.
+- Haiku: generating test fixtures, checking node texts against implemented mods, i18n.
+- A test gate for each skill: a table "nodes → expected tooltip numbers" that the user captures in the game (screenshot), and an automated test.
 
 ---
 
-## 7. Риски
+## 6. Accuracy checks
 
-| Риск | Митигация |
+1. **Unit tests** for every formula: test vectors from `research/05`, `06a–06e` (derived from the game code) and the guide numbers from `02_assets`.
+2. **Reference characters:** a character sheet snapshot from the game (health, armor, resists, crit, speed) → a snapshot test. Tests are mandatory in CI (in PoB they are off by default — we do not repeat that).
+3. **DPS per skill:** the in-game skill tooltip and a measurement on the dummy → a test for each skill.
+4. **Cross-checking** with the LE Tools calculator and the Musholic/LastEpochPlanner fork, to find discrepancies.
+5. **The UI honestly shows where the calculation is inexact:** if a node's mechanic is not implemented or a formula has level B/C, there is an icon next to the number with an explanatory tooltip.
+
+---
+
+## 7. Risks
+
+| Risk | Mitigation |
 |---|---|
-| Узлы деревьев скиллов с логикой в коде (43%) | логика читается из `<Skill>Mutator` в дампе; приоритет популярным скиллам, явная маркировка «не реализовано», параллелизация |
-| Патч меняет код/формулы | пайплайн дампа ~40 мин + diff декомпиляции между версиями подсвечивает изменённые функции |
-| Распространение декомпилированного кода | `dump/` и `tools/` не публикуются (только локально); в продукт идут лишь формулы и числа |
-| Юридическое (ToS EHG, условия LE Tools и Maxroll) | свой экстрактор, без арта, письма в EHG и автору LE Tools заранее |
-| Апдейт Unity ломает экстрактор | запасной вариант — сверка и адаптеры LE Tools/Maxroll |
-| Формат байтов предметов в сейве меняется | версионированный декодер, тесты на сейвах каждого патча |
-| Нет API для онлайн-персонажей | ссылки LE Tools/Maxroll как запасной путь, заявка на партнёрский доступ |
-| Неточный DPS против реальных врагов | DR по уровню, флаги боссов и формула сопротивлений теперь известны из кода (D); режимы «манекен» и «реальный враг» оба точные |
+| Skill tree nodes with logic in code (43%) | the logic is read from `<Skill>Mutator` in the dump; priority to popular skills, explicit "not implemented" marking, parallelization |
+| A patch changes code/formulas | the dump pipeline is ~40 min + a decompilation diff between versions highlights changed functions |
+| Distribution of decompiled code | `dump/` and `tools/` are not published (local only); only formulas and numbers go into the product |
+| Legal (EHG ToS, LE Tools and Maxroll terms) | our own extractor, no art, letters to EHG and the LE Tools author in advance |
+| A Unity update breaks the extractor | fallback: cross-checking and the LE Tools/Maxroll adapters |
+| The item byte format in the save changes | a versioned decoder, tests on the saves of every patch |
+| No API for online characters | LE Tools/Maxroll links as a fallback, an application for partner access |
+| Inexact DPS against real enemies | DR by level, boss flags and the resistance formula are now known from code (D); both the "dummy" and "real enemy" modes are exact |
 
 ---
 
-## 8. Что нужно от тебя, чтобы начать
+## 8. What I need from you to start
 
-1. Подтвердить стек: TypeScript + React + Web Worker, опционально Tauri. Или указать другой (например, десктоп на C#/Godot).
-2. Свежий офлайн-сейв текущей версии (для декодера предметов) и 2–3 эталонных персонажа со скриншотами character sheet.
-3. Решение по юридической стороне: писать ли в EHG и автору LE Tools (Dammitt) до публичного релиза.
-4. Какой класс делать первым для полного покрытия скиллов.
+1. Confirm the stack: TypeScript + React + Web Worker, optionally Tauri. Or name another (for example, a desktop app in C#/Godot).
+2. A fresh offline save of the current version (for the item decoder) and 2–3 reference characters with character sheet screenshots.
+3. A decision on the legal side: whether to write to EHG and the LE Tools author (Dammitt) before the public release.
+4. Which class to do first for full skill coverage.

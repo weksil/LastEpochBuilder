@@ -25,11 +25,11 @@ func _check(label: String, got: float, want: float, eps: float = 0.0005) -> void
 func _wolf() -> void:
 	var summon: Dictionary = {"name": "SummonWolf", "tags": 0, "abilityIDEnum": {"value": 8, "name": "summonWolf"}}
 	var player := StatStore.new()
-	player.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.MINION, "тест"))
-	player.add(StatMod.make(LE.DAMAGE, "increased", 0.4, 0, "тест"))
-	player.add(StatMod.make(LE.HEALTH, "added", 20, LE.MINION, "тест"))
-	player.add(StatMod.make(38, "added", 5, LE.MINION, "тест HealthGain"))
-	player.add(StatMod.make(LE.DAMAGE, "increased", 0.2, 0, "тест extra", 0, 8))
+	player.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.MINION, "test"))
+	player.add(StatMod.make(LE.DAMAGE, "increased", 0.4, 0, "test"))
+	player.add(StatMod.make(LE.HEALTH, "added", 20, LE.MINION, "test"))
+	player.add(StatMod.make(38, "added", 5, LE.MINION, "test HealthGain"))
+	player.add(StatMod.make(LE.DAMAGE, "increased", 0.2, 0, "test extra", 0, 8))
 
 	var minions: Array[Dictionary] = MinionCalcScript.minions_for("SummonWolf")
 	_check("minions_for SummonWolf", minions.size(), 1)
@@ -52,7 +52,7 @@ func _wolf() -> void:
 
 	var totem: Dictionary = {"name": "SummonThornTotem", "tags": LE.TOTEM}
 	var tstore := StatStore.new()
-	tstore.add(StatMod.make(LE.DAMAGE, "increased", 0.25, LE.TOTEM, "тест"))
+	tstore.add(StatMod.make(LE.DAMAGE, "increased", 0.25, LE.TOTEM, "test"))
 	var plain: StatStore = MinionCalcScript.minion_store(tstore, summon, wolf, [])
 	var tot: StatStore = MinionCalcScript.minion_store(tstore, totem, wolf, [])
 	_check("totem stat not for non-totem", plain.query(LE.DAMAGE).increased, 0.0)

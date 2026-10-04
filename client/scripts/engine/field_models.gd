@@ -10,7 +10,7 @@ static var _loaded: bool = false
 static func find(key: String) -> Dictionary:
 	if not _loaded:
 		_loaded = true
-		var path: String = ProjectSettings.globalize_path("res://data/field_models.json")
+		var path: String = "res://data/field_models.json"
 		if FileAccess.file_exists(path):
 			var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 			if parsed is Dictionary:

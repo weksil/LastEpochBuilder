@@ -44,5 +44,5 @@ func _show_mastery(mastery_index: int) -> void:
 
 func refresh() -> void:
 	%TreeCanvas.refresh(Build.get_points, Build.can_add)
-	%PointsLabel.text = "Потрачено очков: %d / %d (уровень %d − 2 + квесты %d)" % [
+	%PointsLabel.text = tr("Points spent: %d / %d (level %d − 2 + quests %d)") % [
 		Build.spent_points(), Build.passive_point_cap(), Build.level, mini(Build.quest_passive_points, Build.QUEST_PASSIVE_POINTS_MAX)]

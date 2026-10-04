@@ -17,9 +17,9 @@ func setup(timeline: Dictionary) -> void:
 
 	%TimelineLabel.text = display_name
 
-	# Fill blessing select with "— нет —" + blessings
+	# Fill blessing select with "— none —" + blessings
 	%BlessingSelect.clear()
-	%BlessingSelect.add_item("— нет —", -1)
+	%BlessingSelect.add_item(tr("— none —"), -1)
 
 	var blessing_ids: Array[int] = GameData.blessings_for_timeline(timeline_id)
 	for blessing_id: int in blessing_ids:

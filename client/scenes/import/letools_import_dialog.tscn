@@ -4,7 +4,7 @@
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
 
 [node name="LEToolsImportDialog" type="Window"]
-title = "Импорт из Last Epoch Tools"
+title = "Import from Last Epoch Tools"
 initial_position = 1
 size = Vector2i(720, 460)
 visible = false
@@ -35,12 +35,12 @@ theme_override_constants/separation = 8
 [node name="Title" type="Label" parent="Panel/Margin/Layout"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
-text = "Импорт билда с lastepochtools.com"
+text = "Import a build from lastepochtools.com"
 
 [node name="Hint" type="Label" parent="Panel/Margin/Layout"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Вставьте ссылку на планировщик (или только её код). Можно вставить и готовый JSON ответа planner_data — тогда запрос в сеть не делается. Текущий билд будет заменён."
+text = "Paste the planner link (or just its code). You can also paste a ready planner_data JSON response, then no network request is made. The current build will be replaced."
 autowrap_mode = 3
 
 [node name="SiteRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
@@ -51,14 +51,14 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Открыть планировщик LE Tools"
+text = "Open the LE Tools planner"
 tooltip_text = "https://www.lastepochtools.com/planner/"
 
 [node name="SiteHint" type="Label" parent="Panel/Margin/Layout/SiteRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Там: Import → имя аккаунта и персонажа → скопируйте адрес страницы сюда."
+text = "There: Import → account and character name → copy the page address here."
 autowrap_mode = 3
 
 [node name="LinkRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
@@ -76,7 +76,7 @@ clear_button_enabled = true
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Загрузить"
+text = "Load"
 
 [node name="StatusScroll" type="ScrollContainer" parent="Panel/Margin/Layout"]
 layout_mode = 2
@@ -97,7 +97,7 @@ alignment = 2
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Закрыть"
+text = "Close"
 
 [node name="Http" type="HTTPRequest" parent="."]
 unique_name_in_owner = true

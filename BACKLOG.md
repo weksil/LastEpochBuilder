@@ -1,18 +1,18 @@
-# Бэклог
+# Backlog
 
-Задачи, отложенные на потом. Берём в работу по согласованию.
+Tasks deferred for later. We take them on by agreement.
 
-## Клиент — визуал
+## Client — visuals
 
-- [x] **Визуал деревьев из клиента игры** (иконки и рамки узлов, фоны, орнаменты, связи) — `tools/extract/extract_tree_art.py`,
+- [x] **Tree visuals from the game client** (node icons and frames, backgrounds, ornaments, connections) — `tools/extract/extract_tree_art.py`,
   `client/assets/trees/`.
-- [ ] **Остальные иконки из клиента игры:** иконки умений в слотах и списках, предметы, идолы, благословения, классы,
-  иконки строк подсказок (`tree_node_stats.json` → `tooltipStats[].icon`). Тот же способ: UnityPy, `m_SpriteSoftRef`.
-- [ ] Фоны, логотипы, портреты классов — с официального сайта / lastepochtools, если в клиенте нет.
+- [ ] **The remaining icons from the game client:** skill icons in slots and lists, items, idols, blessings, classes,
+  icons of tooltip rows (`tree_node_stats.json` → `tooltipStats[].icon`). The same method: UnityPy, `m_SpriteSoftRef`.
+- [ ] Backgrounds, logos, class portraits — from the official site / lastepochtools, if the client does not have them.
 
-## Расчёт
+## Calculation
 
-- [ ] **Сверить правила конверсий в игре.** `skill_conversions.json` размечен по текстовым описаниям кода мутаторов (D?).
-  Проверить несколько скиллов (Fireball 50%/100% в молнию, Rive в пустоту, Maelstrom в физику) по подсказке в игре.
-- [ ] Алтари идолов (`idols.json` `containerGrids.data`, refracted-слоты +100), неоткрытые награды слотов 1..8,
-  энчанты и порченые аффиксы идолов (`IdolEnchantment`, `Corrupted`).
+- [ ] **Verify the conversion rules in the game.** `skill_conversions.json` was annotated from the text descriptions in the mutator code (D?).
+  Check several skills (Fireball 50%/100% to lightning, Rive to void, Maelstrom to physical) against the in-game tooltip.
+- [ ] Idol altars (`idols.json` `containerGrids.data`, refracted slots +100), unopened slot rewards 1..8,
+  enchants and corrupted idol affixes (`IdolEnchantment`, `Corrupted`).

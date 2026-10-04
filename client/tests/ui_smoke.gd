@@ -54,7 +54,7 @@ func _ready() -> void:
 		Build.add_skill_point(0, int(node["id"]))
 	await _frames(2)
 	print("skill points: %d" % Build.skill_points_spent(0))
-	# switching the shown tree: «Дерево» of slot 2 (another skill) and back to slot 1
+	# switching the shown tree: "Tree" of slot 2 (another skill) and back to slot 1
 	var skills_tab: Node = tabs.get_child(1)
 	var slot2: Node = skills_tab.get_node("%Slots").get_child(1)
 	var select2: OptionButton = slot2.get_node("%SkillSelect")
@@ -66,7 +66,7 @@ func _ready() -> void:
 	slot.get_node("%SelectButton").toggled.emit(true)
 	await _frames(2)
 	var title1: String = skills_tab.get_node("%TreeTitle").text
-	print("tree titles: slot 2 «%s», slot 1 «%s»" % [title2, title1])
+	print("tree titles: slot 2 \"%s\", slot 1 \"%s\"" % [title2, title1])
 	if title2 == title1 or title1 != str(GameData.get_ability("fi9").get("abilityName", "")):
 		tree_switch_failed = true
 		print("FAIL: skill tree does not follow the selected slot")
@@ -211,6 +211,18 @@ func _ready() -> void:
 		failed = true
 		print("FAIL: reset_player_conditions")
 	failed = failed or tree_switch_failed
+	# interface language: the Russian catalogue (res://i18n/ru.po) is loaded and switching the locale works
+	var saved_locale: String = TranslationServer.get_locale()
+	TranslationServer.set_locale("ru")
+	# the Russian text is spelled with escapes: no Cyrillic in the sources
+	if LE.t("DPS vs enemy") != "DPS \u043f\u043e \u0432\u0440\u0430\u0433\u0443":
+		failed = true
+		print("FAIL: ru locale does not translate \"DPS vs enemy\" (is ru.po loaded?): %s" % LE.t("DPS vs enemy"))
+	TranslationServer.set_locale("en")
+	if LE.t("DPS vs enemy") != "DPS vs enemy":
+		failed = true
+		print("FAIL: en locale changes \"DPS vs enemy\"")
+	TranslationServer.set_locale(saved_locale)
 	print("UI SMOKE %s" % ("FAIL" if failed else "DONE"))
 	get_tree().quit(1 if failed else 0)
 
