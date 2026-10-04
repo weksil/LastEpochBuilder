@@ -9,6 +9,7 @@ const TWO_HANDED_MELEE_TYPES: Array[int] = [12, 13, 14, 15, 16]  # 2H axes, mace
 const PLAYER_FLAG_NAMES: Dictionary = {
 	"hit_recently": "Hit recently", "crit_recently": "Crit recently", "moving": "Moving",
 	"leeching": "Leech active", "low_mana": "Mana below 50%", "haste": "Haste on me", "frenzy": "Frenzy on me",
+	"low_life": "Low health",
 }
 const PLAYER_VALUE_NAMES: Dictionary = {
 	"ward": "Current ward", "curses": "Curses on me", "ignite_stacks": "Ignite stacks on me", "damned_stacks": "Damned stacks on me",
@@ -203,8 +204,8 @@ static func holds(cond: String, ctx: Dictionary) -> bool:
 			return bool(build.enemy.get("flags", {}).get(arg, false))
 		"player":
 			if arg.begins_with("!"):
-				return not bool(build.player_state.get(arg.substr(1), false))
-			return bool(build.player_state.get(arg, false))
+				return not _player_flag(build, arg.substr(1))
+			return _player_flag(build, arg)
 		"gear":
 			if arg == "dual_wield":
 				return _is_weapon(build.items.get("weapon", {})) and _is_weapon(build.items.get("offhand", {}))
@@ -219,6 +220,13 @@ static func holds(cond: String, ctx: Dictionary) -> bool:
 				return bool(build.skills[slot].get("inputs", {}).get(arg, false))
 			return false
 	return false
+
+
+## Player flag of a condition; "low_life" is the "low" choice of the Health select, not a checkbox.
+static func _player_flag(build: Node, flag: String) -> bool:
+	if flag == "low_life":
+		return str(build.player_state.get("health", "full")) == "low"
+	return bool(build.player_state.get(flag, false))
 
 
 ## Display name of the condition.

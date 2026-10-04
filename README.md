@@ -169,13 +169,13 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/i18n_te
 (including a run of all uniques with conditions enabled) and prints an example build with a breakdown;
 `ui_smoke` runs through all tabs and prints script errors to the console (watchdog timer 180 s), checks typing into a `SpinBox` without Enter,
 in-place updates of the Calculations rows, the totals strip and the "Reset" buttons;
-`i18n_test` imports both saved builds, shows every tab in Russian and fails on every string that went through `LE.t()` without a
+`i18n_test` imports the saved builds, shows every tab in Russian and fails on every string that went through `LE.t()` without a
 translation in `client/i18n/ru.po` (`LE.missing`);
 `relevance_test` checks the Conditions filter (`ConfigRelevance`: which flags, numbers and ailments have a source in the build);
 `minion_test` checks the transfer of player stats to a minion (07d §1.1);
 `layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
 `letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,
-applying to `Build`, the button in the top bar); `letools_live` (not part of the suite, needs network) loads a live link through the dialog;
+skills taken from the specialized trees rather than the skill bar (`letools_Q0V58LLX.json`), applying to `Build`, the button in the top bar); `letools_live` (not part of the suite, needs network) loads a live link through the dialog;
 `trees_test` checks that tree nodes have icons from the game client and that every node of all 136 current skill trees and 5 passive trees can be taken
 (obsolete version 0 trees — Fire Shield, Ice Ward, etc. — are skipped).
 

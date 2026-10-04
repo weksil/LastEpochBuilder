@@ -191,54 +191,112 @@ static func _passives(class_id: int, tree: Variant, warnings: Array[String]) -> 
 	return result
 
 
+## Skills come from the specialized trees (`skillTrees`), not from the skill bar (`hud`): the bar may hold a skill
+## without a tree while a specialized skill is off the bar. A specialized skill keeps its bar slot; the others fill
+## the free slots in `slotNumber` order; bar skills without a tree take the slots that are still free.
 static func _skills(data: Dictionary, warnings: Array[String]) -> Array:
 	var skills: Array = []
-	var hud: Variant = data.get("hud")
-	var trees_by_id: Dictionary = {}
+	for i in range(SKILL_SLOTS):
+		skills.append({"ability": "", "level": SKILL_LEVEL_MAX, "tree": {}})
+
+	var specialized: Array = []  # [{ability, entry}] in slotNumber order
 	var trees: Variant = data.get("skillTrees")
 	if trees is Array:
+		var entries: Array = []
 		for entry: Variant in trees:
 			if entry is Dictionary:
-				trees_by_id[str(entry.get("treeID", ""))] = entry
+				entries.append(entry)
+		entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.get("slotNumber", 0)) < int(b.get("slotNumber", 0)))
+		for entry: Dictionary in entries:
+			var tree_id: String = str(entry.get("treeID", ""))
+			var ability_id: String = str(GameData.get_skill_tree(tree_id).get("ability", {}).get("playerAbilityID", ""))
+			if ability_id == "" or GameData.get_ability(ability_id).is_empty():
+				warnings.append(LE.t("Specialized skill: unknown tree \"%s\", skipped.") % tree_id)
+				continue
+			specialized.append({"ability": ability_id, "entry": entry})
 
+	var bar: Array = []  # ability id per bar slot, "" when empty or unknown
+	var hud: Variant = data.get("hud")
 	for i in range(SKILL_SLOTS):
-		var slot: Dictionary = {"ability": "", "level": SKILL_LEVEL_MAX, "tree": {}}
-		skills.append(slot)
 		var raw: Variant = hud[i] if hud is Array and i < hud.size() else null
 		var ability_id: String = "" if raw == null else str(raw)
-		if ability_id == "" or ability_id == "-1" or ability_id == "<null>":
-			continue
-		var ability: Dictionary = GameData.get_ability(ability_id)
-		if ability.is_empty():
+		if ability_id == "-1" or ability_id == "<null>":
+			ability_id = ""
+		if ability_id != "" and GameData.get_ability(ability_id).is_empty():
 			warnings.append(LE.t("Skill %d: unknown id \"%s\", skipped.") % [i + 1, ability_id])
-			continue
-		slot["ability"] = ability_id
+			ability_id = ""
+		bar.append(ability_id)
 
-		var tree_id: String = str(ability.get("skillTree", ability_id))
-		var entry: Variant = trees_by_id.get(tree_id)
-		if not entry is Dictionary:
+	var placed: Dictionary = {}  # ability id -> slot
+	for spec: Dictionary in specialized:
+		var slot: int = bar.find(spec["ability"])
+		if slot >= 0:
+			_set_skill(skills[slot], spec["ability"], spec["entry"], slot, warnings)
+			placed[spec["ability"]] = slot
+	for spec: Dictionary in specialized:
+		if placed.has(spec["ability"]):
 			continue
-		slot["level"] = clampi(int(entry.get("level", SKILL_LEVEL_MAX)), 1, SKILL_LEVEL_MAX)
-		var known: Dictionary = {}
-		for node: Variant in GameData.get_skill_tree(tree_id).get("nodes", []):
-			if node is Dictionary:
-				known[int(node.get("id", -1))] = true
-		var selected: Variant = entry.get("selected")
-		var unknown: int = 0
-		var tree: Dictionary = {}
-		if selected is Dictionary:
-			for key: Variant in selected:
-				var points: int = int(selected[key])
-				if points <= 0:
-					continue
-				if not known.has(int(key)):
-					unknown += 1
-					continue
-				tree[int(key)] = points
-		slot["tree"] = tree
-		if unknown > 0:
-			warnings.append(LE.t("Skill %d (%s): %d unknown nodes skipped.") % [i + 1, ability_id, unknown])
+		var slot: int = _free_slot(skills, bar, true)
+		if slot < 0:
+			warnings.append(LE.t("Specialized skill %s: no free skill slot, skipped.") % _skill_name(spec["ability"]))
+			continue
+		_set_skill(skills[slot], spec["ability"], spec["entry"], slot, warnings)
+		placed[spec["ability"]] = slot
+	for i in range(SKILL_SLOTS):
+		var ability_id: String = bar[i]
+		if ability_id == "" or placed.has(ability_id):
+			continue
+		var slot: int = i if str(skills[i]["ability"]) == "" else _free_slot(skills, bar, false)
+		if slot < 0:
+			warnings.append(LE.t("Skill %s is on the skill bar without a specialized tree and there is no free slot, skipped.") % _skill_name(ability_id))
+			continue
+		skills[slot]["ability"] = ability_id
+		placed[ability_id] = slot
 	return skills
+
+
+## First empty client slot; with `prefer_free_bar` slots whose bar entry is empty come first.
+static func _free_slot(skills: Array, bar: Array, prefer_free_bar: bool) -> int:
+	if prefer_free_bar:
+		for i in range(SKILL_SLOTS):
+			if str(skills[i]["ability"]) == "" and bar[i] == "":
+				return i
+	for i in range(SKILL_SLOTS):
+		if str(skills[i]["ability"]) == "":
+			return i
+	return -1
+
+
+static func _skill_name(ability_id: String) -> String:
+	var tree: Dictionary = GameData.get_skill_tree(str(GameData.get_ability(ability_id).get("skillTree", ability_id)))
+	var display: String = str(tree.get("name", ""))
+	return display if display != "" else ability_id
+
+
+## Fills a client skill slot from a skillTrees entry: level and the known allocated nodes.
+static func _set_skill(slot: Dictionary, ability_id: String, entry: Dictionary, index: int, warnings: Array[String]) -> void:
+	slot["ability"] = ability_id
+	slot["level"] = clampi(int(entry.get("level", SKILL_LEVEL_MAX)), 1, SKILL_LEVEL_MAX)
+	var tree_id: String = str(entry.get("treeID", ""))
+	var known: Dictionary = {}
+	for node: Variant in GameData.get_skill_tree(tree_id).get("nodes", []):
+		if node is Dictionary:
+			known[int(node.get("id", -1))] = true
+	var selected: Variant = entry.get("selected")
+	var unknown: int = 0
+	var tree: Dictionary = {}
+	if selected is Dictionary:
+		for key: Variant in selected:
+			var points: int = int(selected[key])
+			if points <= 0:
+				continue
+			if not known.has(int(key)):
+				unknown += 1
+				continue
+			tree[int(key)] = points
+	slot["tree"] = tree
+	if unknown > 0:
+		warnings.append(LE.t("Skill %d (%s): %d unknown nodes skipped.") % [index + 1, ability_id, unknown])
 
 
 static func _equipment(equipment: Variant, items: Dictionary, warnings: Array[String]) -> void:

@@ -24,6 +24,7 @@ func _ready() -> void:
 	_apply(doc)
 	_bad_input()
 	_altar_idols()
+	_specialized_skills()
 	await _main_ui()
 	print("LETOOLS IMPORT TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -250,12 +251,37 @@ func _bad_input() -> void:
 	broken["idols"][1]["y"] = 1
 	var doc: Dictionary = ImportScript.to_build(broken)
 	_check("broken: helmet skipped", doc["items"].has("helmet"), false)
-	_check("broken: skill 1 skipped", doc["skills"][0]["ability"], "")
+	_check("broken: specialized bc53 takes the slot of the unknown bar id", doc["skills"][0]["ability"], "bc53")
 	_check("broken: unknown passive skipped", doc["passives"].has(99999), false)
 	_check("broken: overlapping idol skipped", doc["items"].size(), 19)
 	_check("broken: warnings", doc["warnings"].size() >= 4, true)
 	for w: String in doc["warnings"]:
 		print("  - " + w)
+
+
+## Build Q0V58LLX (tests/fixtures): the skill bar holds Flurry without a tree, while the specialized Ballista is off the bar.
+## Skills follow the specialized trees: Ballista takes the bar slot of Flurry, Flurry is skipped with a warning.
+func _specialized_skills() -> void:
+	var doc: Dictionary = ImportScript.to_build(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/letools_Q0V58LLX.json")))
+	var abilities: Array = []
+	var tree_sums: Array = []
+	for skill: Dictionary in doc["skills"]:
+		abilities.append(skill["ability"])
+		var sum: int = 0
+		for points: Variant in skill["tree"].values():
+			sum += int(points)
+		tree_sums.append(sum)
+	_check("Q0V58LLX abilities", abilities, ["aa989", "ba1574", "smbmb", "ex4tp", "falc0"])
+	_check("Q0V58LLX tree sums", tree_sums, [20, 20, 20, 20, 20])
+	var flurry_warnings: Array = doc["warnings"].filter(func(w: String) -> bool: return w.contains("Flurry"))
+	_check("Q0V58LLX Flurry skipped with a warning", flurry_warnings.size(), 1)
+
+	# fewer trees than slots: a bar skill without a tree keeps its slot, unspecialized
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/letools_Q0V58LLX.json"))["data"]
+	data["skillTrees"] = data["skillTrees"].filter(func(t: Dictionary) -> bool: return t["treeID"] != "ba1574")
+	doc = ImportScript.to_build(data)
+	_check("Q0V58LLX without Ballista: Flurry on its bar slot", doc["skills"][1]["ability"], "flur3")
+	_check("Q0V58LLX without Ballista: Flurry has no tree", doc["skills"][1]["tree"].size(), 0)
 
 
 ## Main scene: the "Import…" button opens the dialog, a pasted JSON replaces the build and the top bar follows it.

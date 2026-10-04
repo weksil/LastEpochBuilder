@@ -198,6 +198,10 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
   to a Chrome UA with a non-Chrome TLS fingerprint, while the engine's UA gets through.
 - `to_build` accepts the full response `{data: {...}}` or just `data`; it returns `{class_id, mastery, level, passives, skills[5], items, blessings, warnings}`.
   Unknown ids/nodes are skipped with an English warning, no crashes.
+- Skills come from the specialized trees `skillTrees` (`treeID`, `slotNumber`, `level`, `selected`), not from the skill bar `hud`:
+  the bar may hold a skill without a tree while a specialized skill is off the bar. A specialized skill keeps its bar slot,
+  the other specialized skills fill free slots in `slotNumber` order, bar skills without a tree take the slots that are still free
+  (unspecialized, level 20); whatever does not fit is skipped with a warning.
 - Id encoding (`LZString.decompress_from_encoded_uri` → a string of digits): `I` — `1` + base(3) + subtype(3) + rarity(1) + uniqueId (≥ 2 digits);
   `U` — subtype(3) + uniqueId; `A` — affixId. An idol `(x, y)` → `IdolGrid.key(y - 1, x - 1)`; sealed and corrupted affixes are appended
   to `affixes`, a corrupted idol gets `corrupted: true`. Slots: head→helmet, chest→body, waist→belt, feet→boots, hands→gloves,

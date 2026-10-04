@@ -4,7 +4,7 @@ extends Node
 ## went through LE.t() without a translation in client/i18n/ru.po. Headless: prints «I18N TEST: OK» or the missing strings.
 
 const LEToolsImportScript: GDScript = preload("res://scripts/engine/letools_import.gd")
-const FIXTURES: Array[String] = ["res://tests/fixtures/letools_A83KxJq5.json", "res://tests/fixtures/letools_ApbrXYvx.json"]
+const FIXTURES: Array[String] = ["res://tests/fixtures/letools_A83KxJq5.json", "res://tests/fixtures/letools_ApbrXYvx.json", "res://tests/fixtures/letools_Q0V58LLX.json"]
 
 
 func _ready() -> void:

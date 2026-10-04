@@ -10809,6 +10809,9 @@ msgstr "Умение %d (%s): %d неизвестных узлов пропущ�
 msgid "Skill %d: unknown id \"%s\", skipped."
 msgstr "Умение %d: неизвестный id «%s», пропущено."
 
+msgid "Skill %s is on the skill bar without a specialized tree and there is no free slot, skipped."
+msgstr "Умение %s стоит на панели без специализации, свободного слота нет — пропущено."
+
 msgid "Skill activated by trigger"
 msgstr "Умение запущено триггером"
 
@@ -11009,6 +11012,12 @@ msgstr "Только с копьём"
 
 msgid "Spears instead of swords"
 msgstr "Копья вместо мечей"
+
+msgid "Specialized skill %s: no free skill slot, skipped."
+msgstr "Специализированное умение %s: нет свободного слота, пропущено."
+
+msgid "Specialized skill: unknown tree \"%s\", skipped."
+msgstr "Специализированное умение: неизвестное дерево «%s», пропущено."
 
 msgid "Spectral Flay on nearby rare/boss"
 msgstr "Spectral Flay по ближнему редкому/боссу"
