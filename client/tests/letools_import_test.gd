@@ -334,5 +334,17 @@ func _main_ui() -> void:
 	dialog.get_node("%LinkEdit").text = "{not json"
 	dialog.get_node("%LoadButton").pressed.emit()
 	_check("bad json message", dialog.get_node("%StatusLabel").text.begins_with(LE.t("The response is not valid JSON.")), true)
+	# blessings: the imported ones are selected in the dropdowns
+	dialog.get_node("%LinkEdit").text = FileAccess.get_file_as_string("res://tests/fixtures/letools_ApbrXYvx.json")
+	dialog.get_node("%LoadButton").pressed.emit()
+	await get_tree().process_frame
+	var rows: Array = main.find_child("Rows", true, false).get_children()
+	var chosen: Array = []
+	for row: Node in rows:
+		var select: OptionButton = row.get_node("%BlessingSelect")
+		chosen.append(select.get_item_text(select.selected))
+	_check("blessing dropdowns", chosen.slice(0, 2), ["Sight of the Outcasts", tr("— none —")])
+	var first: OptionButton = rows[0].get_node("%BlessingSelect")
+	_check("blessing tooltip", first.get_item_tooltip(first.selected).begins_with("Sight of the Outcasts"), true)
 	dialog.hide()
 	main.queue_free()

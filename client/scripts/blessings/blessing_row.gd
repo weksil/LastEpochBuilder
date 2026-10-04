@@ -28,9 +28,25 @@ func setup(timeline: Dictionary) -> void:
 			continue
 		var blessing_name: String = str(blessing.get("displayName", str(blessing_id)))
 		%BlessingSelect.add_item(blessing_name, blessing_id)
+		%BlessingSelect.set_item_tooltip(%BlessingSelect.item_count - 1, _tooltip(blessing))
 
 	# Restore current selection from Build
 	_on_build_changed()
+
+
+## Effect of a blessing: every implicit with its roll range (the drop rate one is not a stat).
+func _tooltip(blessing: Dictionary) -> String:
+	var lines: Array[String] = [str(blessing.get("displayName", ""))]
+	for implicit: Dictionary in blessing.get("implicits", []):
+		if int(implicit.get("property", 0)) == 104:  # IncreasedDropRate
+			continue
+		var value: float = float(implicit.get("value", 0.0))
+		var max_value: float = float(implicit.get("maxValue", value))
+		lines.append("%s %s" % [ItemCompare.format_range(implicit, value, max_value), ItemCompare.prop_title(implicit)])
+	if lines.size() == 1:
+		lines.append(tr("No effect on the build stats"))
+	return "
+".join(lines)
 
 
 func _on_blessing_selected(index: int) -> void:
@@ -69,6 +85,7 @@ func _on_build_changed() -> void:
 	# Update select
 	var index: int = %BlessingSelect.get_item_index(selected_id)
 	%BlessingSelect.select(maxi(index, 0))
+	%BlessingSelect.tooltip_text = %BlessingSelect.get_item_tooltip(maxi(index, 0))
 
 	_update_value_label()
 

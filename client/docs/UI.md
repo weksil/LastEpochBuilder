@@ -205,8 +205,8 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
 - Id encoding (`LZString.decompress_from_encoded_uri` → a string of digits): `I` — `1` + base(3) + subtype(3) + rarity(1) + uniqueId (≥ 2 digits);
   `U` — subtype(3) + uniqueId; `A` — affixId. An idol `(x, y)` → `IdolGrid.key(y - 1, x - 1)`; sealed and corrupted affixes are appended
   to `affixes`, a corrupted idol gets `corrupted: true`. Slots: head→helmet, chest→body, waist→belt, feet→boots, hands→gloves,
-  weapon1→weapon, weapon2→offhand, idol_altar→altar. Not supported: the Weaver tree and idols, set ids (`S`); blessing blocks
-  (`I` base 34, subtype = the blessing id, roll = `ir[0]`) are implemented by guesswork and not verified on a live example.
+  weapon1→weapon, weapon2→offhand, idol_altar→altar. Not supported: the Weaver tree and idols, set ids (`S`); blessings come as `{timelineID: {id, ir}}`
+  (`I` base 34, subtype = the blessing id, roll = `ir[0]`), checked on `letools_ApbrXYvx.json`.
 
 ## Builds: saves and the build code — `scripts/builds/builds_dialog.gd` (`class_name BuildsDialog extends Window`), `scripts/engine/build_codec.gd` (`BuildCodec`)
 The button `%BuildsButton` ("Builds…", top bar) opens `%BuildsDialog`; on its `loaded` signal `main.gd` syncs the top bar like after an import.

@@ -14005,3 +14005,6 @@ msgstr "Отбросить несохранённые изменения и ве
 
 msgid "%s: %s (no change)"
 msgstr "%s: %s (без изменений)"
+
+msgid "No effect on the build stats"
+msgstr "Не влияет на характеристики билда"
