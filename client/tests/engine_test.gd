@@ -676,11 +676,11 @@ func _idol_altar() -> void:
 	for slot: String in Build.items.keys():
 		if IdolGrid.is_idol_key(slot) or slot == IdolGrid.ALTAR_SLOT:
 			Build.items.erase(slot)
-	_check("no altar: cell (1,0) not refracted", 1.0 if IdolGrid.is_refracted(1, 0, Build.items) else 0.0, 0.0)
-	# Twisted Altar (sub 0): (1,0) is refracted (108), (1,1) open (4), (0,0) blocked (99)
+	_check("no altar: cell (0,1) not refracted", 1.0 if IdolGrid.is_refracted(0, 1, Build.items) else 0.0, 0.0)
+	# Twisted Altar (sub 0): (0,1) is refracted (108: unlockMatrix[x=1][y=0]), (1,1) open (4), (0,0) blocked (99)
 	var affixes: Array = [{"id": 1089, "tier": 1, "roll": 255, "index": 0}, {"id": 1100, "tier": 1, "roll": 255, "index": 2}]
 	Build.set_item(IdolGrid.ALTAR_SLOT, {"base": 41, "sub": 0, "implicit_rolls": [], "affixes": affixes})
-	_check("altar grid: (1,0) refracted", 1.0 if IdolGrid.is_refracted(1, 0, Build.items) else 0.0, 1.0)
+	_check("altar grid: (0,1) refracted", 1.0 if IdolGrid.is_refracted(0, 1, Build.items) else 0.0, 1.0)
 	_check("altar grid: (1,1) open, not refracted", 1.0 if IdolGrid.is_open(1, 1, Build.items) and not IdolGrid.is_refracted(1, 1, Build.items) else 0.0, 1.0)
 	_check("altar grid: (0,0) blocked", 0.0 if IdolGrid.is_open(0, 0, Build.items) else 1.0, 1.0)
 	# an idol affix with a big ADDED value, on a Small Eterran Idol in the refracted slot and one beside it
@@ -696,7 +696,7 @@ func _idol_altar() -> void:
 		Build.items = saved
 		return
 	var entry: Dictionary = {"id": int(idol_aff["affixId"]), "tier": idol_aff["tiers"].size(), "roll": 255, "index": 0 if idol_aff["type"] == "PREFIX" else 2}
-	Build.set_item(IdolGrid.key(1, 0), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [entry]})
+	Build.set_item(IdolGrid.key(0, 1), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [entry]})
 	var rolls: Array = idol_aff["tiers"][-1]["rolls"][0]
 	var prop_id: int = int(idol_aff["properties"][0]["property"])
 	var rounding: String = str(idol_aff["properties"][0].get("rounding", "Integer"))
@@ -709,7 +709,7 @@ func _idol_altar() -> void:
 		if mod.property == prop_id and mod.source.contains(idol_aff["name"]):
 			idol_total += mod.added
 	_check("refracted idol affix scaled by 1+8%% (%s: %s -> %s)" % [idol_aff["name"], plain, scaled], idol_total, scaled)
-	# Health per idol in a refracted slot: one idol in (1,0), another at (1,1) does not count
+	# Health per idol in a refracted slot: one idol in (0,1), another at (1,1) does not count
 	Build.set_item(IdolGrid.key(1, 1), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": []})
 	g = BuildMods.global_store(Build)
 	var per_refracted: float = 0.0
@@ -718,7 +718,7 @@ func _idol_altar() -> void:
 			per_refracted += mod.added
 	_check("altar: +2 health per idol in a refracted slot (1 idol)", per_refracted, 2.0)
 	# the same idol outside the altar's refracted slot is not scaled
-	Build.clear_item(IdolGrid.key(1, 0))
+	Build.clear_item(IdolGrid.key(0, 1))
 	Build.set_item(IdolGrid.key(1, 1), {"base": 25, "sub": 0, "implicit_rolls": [], "affixes": [entry]})
 	g = BuildMods.global_store(Build)
 	idol_total = 0.0

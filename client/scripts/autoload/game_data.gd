@@ -110,7 +110,7 @@ func _ready() -> void:
 
 	var idols_json: Variant = _load_json(data_dir.path_join("idols.json"))
 	if idols_json is Dictionary:
-		_idol_grid = idols_json.get("containerGrids", {}).get("defaultData", [])
+		_idol_grid = _grid_rows(idols_json.get("containerGrids", {}).get("defaultData", []))
 
 	var conv_json: Variant = _load_json(data_dir.path_join("skill_conversions.json"))
 	if conv_json is Dictionary:
@@ -460,13 +460,28 @@ var _altar_grids_loaded: bool = false
 
 ## 5×5 unlockMatrix of an idol altar subtype (idols.json containerGrids.data[sub]); 99 blocked, 1..8 open,
 ## +100 = refracted slot. Falls back to the grid without an altar for an unknown subtype.
+## unlockMatrix is int[x, y] (IdolsContainerGridData.get_BlockedCellsPositions builds (x: i, y: j) from [i, j]):
+## transposed into rows [y][x] so that grid[row][col] matches the idol inventory on screen.
+static func _grid_rows(matrix: Array) -> Array:
+	var rows: Array = []
+	if matrix.is_empty():
+		return rows
+	for y in range((matrix[0] as Array).size()):
+		var row: Array = []
+		for x in range(matrix.size()):
+			row.append(matrix[x][y])
+		rows.append(row)
+	return rows
+
+
 func altar_grid(sub_id: int) -> Array:
 	if not _altar_grids_loaded:
 		_altar_grids_loaded = true
 		var data_dir: String = ProjectSettings.globalize_path("res://").path_join("../research/data/game").simplify_path()
 		var json: Variant = _load_json(data_dir.path_join("idols.json"))
 		if json is Dictionary:
-			_altar_grids = json.get("containerGrids", {}).get("data", [])
+			for m: Array in json.get("containerGrids", {}).get("data", []):
+				_altar_grids.append(_grid_rows(m))
 	if sub_id < 0 or sub_id >= _altar_grids.size():
 		return _idol_grid
 	return _altar_grids[sub_id]

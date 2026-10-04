@@ -139,6 +139,7 @@ margin := 60.0, min_zoom, max_zoom, zoom_step`.
 Сцена `scenes/idols/idols_tab.tscn`: `%Grid` содержит 25 готовых кнопок `IdolCell` с `metadata/row`, `metadata/col`;
 справа `%ItemEditor` (тот же `ItemEditor`, он сам понимает ключи идолов). Помощник — `IdolGrid` (`scripts/engine/idol_grid.gd`):
 `key(row, col)`, `anchor(slot)`, `is_open(row, col)`, `occupancy(Build.items) -> {Vector2i(row, col): slot}`, `size_of(base_id)`.
+Сетки `GameData.idol_grid()` / `altar_grid(sub)` уже в строках `[row][col]`: `unlockMatrix` игры хранится как `[x][y]` и транспонируется при загрузке.
 - Клик по клетке: если клетка занята идолом → `slot = occupancy[cell]`; иначе (открытая клетка) → `slot = IdolGrid.key(row, col)`.
   Затем `%ItemEditor.edit_slot(slot, "Идол %d:%d" % [row + 1, col + 1])`, запомнить выбранный slot.
 - Обновление клеток (в `_ready`, на `Build.changed` и после клика): заблокированная (`not is_open`) → `disabled = true`,

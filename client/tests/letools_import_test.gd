@@ -23,6 +23,7 @@ func _ready() -> void:
 	var doc: Dictionary = _convert()
 	_apply(doc)
 	_bad_input()
+	_altar_idols()
 	await _main_ui()
 	print("LETOOLS IMPORT TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -212,6 +213,25 @@ func _apply(doc: Dictionary) -> void:
 				print("  [%s]" % section["title"])
 				for row: Dictionary in section["rows"]:
 					print("    %s: %s" % [row["label"], row["text"]])
+
+
+## Build ApbrXYvx (tests/fixtures): altar subtype 4 with 12 idols. unlockMatrix is [x][y]; read as [row][col] the grid was
+## transposed and 5 idols did not fit. Refracted cells of this altar are (row 3, col 2) and (row 3, col 4) as in the game.
+func _altar_idols() -> void:
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_ApbrXYvx.json")
+	var doc: Dictionary = ImportScript.to_build(JSON.parse_string(text))
+	var idol_warnings: Array = doc["warnings"].filter(func(w: String) -> bool: return w.begins_with("Идол"))
+	_check("ApbrXYvx idol warnings", idol_warnings, [])
+	var idols: int = 0
+	for slot: String in doc["items"]:
+		if IdolGrid.is_idol_key(slot):
+			idols += 1
+	_check("ApbrXYvx idols placed", idols, 12)
+	_check("ApbrXYvx altar subtype", int(doc["items"].get(IdolGrid.ALTAR_SLOT, {}).get("sub", -1)), 4)
+	_check("ApbrXYvx refracted (3,2)", IdolGrid.is_refracted(2, 1, doc["items"]), true)
+	_check("ApbrXYvx refracted (3,4)", IdolGrid.is_refracted(2, 3, doc["items"]), true)
+	_check("ApbrXYvx blocked (1,3)", IdolGrid.is_open(0, 2, doc["items"]), false)
+	_check("ApbrXYvx open (1,5)", IdolGrid.is_open(0, 4, doc["items"]), true)
 
 
 func _bad_input() -> void:
