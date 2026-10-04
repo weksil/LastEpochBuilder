@@ -3,6 +3,9 @@ extends Node
 ## Headless engine check: test vectors from research/06a–06c, 07a and a sample build.
 ## Run: Godot_console.exe --headless --path client res://tests/engine_test.tscn
 
+const LEToolsImportScript: GDScript = preload("res://scripts/engine/letools_import.gd")
+const CURSE_SECTION: String = "Урон за попадание по проклятой цели (до врага)"
+
 var _failed: int = 0
 
 
@@ -14,6 +17,7 @@ func _ready() -> void:
 	_buff_skills()
 	_buff_skill_base_models()
 	_sustain()
+	_curse_hits()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -706,3 +710,68 @@ func _idol_altar() -> void:
 			idol_total += mod.added
 	_check("non-refracted idol affix unscaled", idol_total, plain)
 	Build.items = saved
+
+
+## Curse that deals damage when the cursed enemy is hit (Bone Curse, docs/ENGINE.md §9.3): the event rate is own hits × 3 +
+## other hits, generic on-hit ailment chances do not apply, the tree's «when the cursed enemy is hit» ailments follow the
+## plain hit rate, and the default of «your hits» is the sum of uses per second of the other hitting skills on the bar.
+func _curse_hits() -> void:
+	print("--- Bone Curse (curse hits) on the sample build")
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
+	_check("curse test: slot 0 is Bone Curse", 1.0 if str(Build.skills[0]["ability"]) == "bc53" else 0.0, 1.0)
+
+	# defaults: estimate = sum of uses/s of the other skills that deal hit damage
+	Build.skills[0]["inputs"].erase("curse_own_hits")
+	Build.skills[0]["inputs"].erase("curse_other_hits")
+	var expected: float = 0.0
+	var contributors: PackedStringArray = []
+	for slot: int in range(1, Build.skills.size()):
+		var ab: Dictionary = GameData.get_ability(str(Build.skills[slot]["ability"]))
+		if SkillComponents.deals_hit_damage(ab):
+			var other: Dictionary = SkillCalc.compute(Build, slot)
+			var uses: float = _section_value(other, "Скорость и мана", "Применений в секунду")
+			expected += uses
+			contributors.append("%s %s" % [ab.get("name"), uses])
+	print("  expected own hits/s = %s (%s)" % [expected, ", ".join(contributors)])
+	var r: Dictionary = SkillCalc.compute(Build, 0)
+	var own_default: float = -1.0
+	for inp: Dictionary in r["inputs"]:
+		if inp["key"] == "curse_own_hits":
+			own_default = float(inp["value"])
+	_check("curse default estimate > 0", 1.0 if own_default > 0.0 else 0.0, 1.0)
+	_check("curse default estimate = Σ uses/s of the other hitting skills", own_default, expected, 0.02)
+	_check("curse events with defaults = estimate × 3", _section_value(r, CURSE_SECTION, "Событий урона в секунду"), own_default * 3.0, 0.01)
+	_check("curse inputs are declared", 1.0 if _has_input(r, "curse_own_hits") and _has_input(r, "curse_other_hits") else 0.0, 1.0)
+
+	# explicit inputs: 2 own hits (×3) + 1 other hit = 7 weighted hits per second
+	Build.skills[0]["inputs"]["curse_own_hits"] = 2.0
+	Build.skills[0]["inputs"]["curse_other_hits"] = 1.0
+	r = SkillCalc.compute(Build, 0)
+	_print_sections(r)
+	_check("curse events = 2×3 + 1", _section_value(r, CURSE_SECTION, "Событий урона в секунду"), 7.0)
+	var per_use: float = _section_value(r, "DPS как в подсказке игры", "Урон за применение")
+	_check("curse tooltip DPS = per hit × 7", _section_value(r, "DPS как в подсказке игры", "DPS удара"), per_use * 7.0, 0.1)
+	var avg_hit: float = _section_value(r, "Против врага", "Средний удар по врагу")
+	_check("curse DPS vs enemy = average hit × 7", _section_value(r, "Против врага", "DPS удара по врагу"), avg_hit * 7.0, 0.1)
+	_check("curse: no Poison section from generic on-hit chances", _count_sections(r, "Айлмент: Poison"), 0.0)
+	# the tree's «when the cursed enemy is hit» ArmourShred: 100% × (2 + 1) hits/s × 4 s
+	_check("curse ArmourShred stacks = curse hits 3/s × 100% × 4 s", _section_value(r, "Наложение айлментов без урона", "ArmourShred: стаков на цели"), 12.0, 0.01)
+	# the per-cast hits input does not matter
+	Build.skills[0]["hits"] = 5.0
+	var r5: Dictionary = SkillCalc.compute(Build, 0)
+	_check("curse events ignore hits per cast", _section_value(r5, CURSE_SECTION, "Событий урона в секунду"), 7.0)
+	Build.skills[0]["hits"] = 1.0
+	# another skill of the bar is still calculated per cast
+	var plague: Dictionary = SkillCalc.compute(Build, 2)
+	_check("other skill (Spirit Plague) still has a DPS", 1.0 if _section_value(plague, "Против врага", "DPS по врагу") > 0.0 else 0.0, 1.0)
+	Build.skills[0]["inputs"].erase("curse_own_hits")
+	Build.skills[0]["inputs"].erase("curse_other_hits")
+
+
+func _count_sections(r: Dictionary, title: String) -> float:
+	var n: int = 0
+	for s: Dictionary in r["sections"]:
+		if s["title"] == title:
+			n += 1
+	return float(n)

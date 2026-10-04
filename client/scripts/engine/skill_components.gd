@@ -2,12 +2,18 @@ class_name SkillComponents
 
 ## Damage components of a skill: the primary hit, sub-abilities spawned by the prefab, damage computed in code,
 ## tree/unique components and triggers (docs/ENGINE.md §9.3).
-## component = {name, kind: primary|sub|trigger|minion, ab, base, per_use, rate, note}.
+## component = {name, kind: primary|sub|trigger|minion|curse_hit, ab, base, per_use, rate, note}.
+## `curse_hit` (Bone Curse): damage dealt to the cursed enemy whenever it is hit, not per cast. `rate` is the weighted
+## hit rate (own hits × (1 + moreDamageWhenHitByCreator) + other hits), `hit_rate` the plain hits per second.
 
 const SUB_REASONS: Array[String] = [
 	"prefab:CreateAbilityObjectOnDeath", "prefab:CreateAbilityObjectOnStart", "prefab:CastAfterDuration",
 ]
 const TYPE_ORDER: Array[String] = ["Physical", "Fire", "Cold", "Lightning", "Necrotic", "Void", "Poison"]
+## Skill inputs of the curse-hit component: your hits on the cursed target per second (default: estimate from the bar),
+## hits of minions and allies per second.
+const CURSE_OWN_KEY: String = "curse_own_hits"
+const CURSE_OTHER_KEY: String = "curse_other_hits"
 
 
 static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_notes: Array[String] = []) -> Array[Dictionary]:
@@ -26,7 +32,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		result.append(_component(str(sub.get("name", "")), "sub", sub, entry, 1.0, 0.0, str(sub.get("spawn_reason", "")).trim_prefix("prefab:")))
 
 	if primary.is_empty():
-		_add_code_damage(result, ab_name, ab, out_notes)
+		_add_code_damage(result, build, slot, s, ab_name, ab, out_notes)
 
 	for extra: Variant in s.get("components", []):
 		if not extra is Dictionary:
@@ -88,7 +94,8 @@ static func _skip_note(out_notes: Array[String], text: String) -> void:
 
 
 ## Components of abilities_code_damage.json with plain numbers; the rest are only reported in the notes.
-static func _add_code_damage(result: Array[Dictionary], ab_name: String, ab: Dictionary, out_notes: Array[String]) -> void:
+static func _add_code_damage(result: Array[Dictionary], build: Node, slot: int, s: Dictionary, ab_name: String, ab: Dictionary,
+		out_notes: Array[String]) -> void:
 	var code: Dictionary = GameData.code_damage(ab_name)
 	for comp: Dictionary in code.get("components", []):
 		var id: String = str(comp.get("id", "")) if comp.get("id") != null else ""
@@ -120,4 +127,68 @@ static func _add_code_damage(result: Array[Dictionary], ab_name: String, ab: Dic
 			base["critChance"] = float(crit_v.get("chance", 0.0))
 			base["critMultiplier"] = float(crit_v.get("multiplier", 1.0))
 			base["critType"] = 0
+		var creator_more: Variant = comp.get("moreDamageWhenHitByCreator")
+		if creator_more is float or creator_more is int:
+			result.append(_curse_hit_component(build, slot, s, label, ab, base, 1.0 + float(creator_more), out_notes))
+			continue
 		result.append(_component(label, "sub", ab, base, 1.0, 0.0, "урон кодом (abilities_code_damage.json)"))
+
+
+## True if the skill deals hit damage by itself: a primary hit, a sub-ability spawned by the prefab or a code hit that is not
+## a curse hit. Used for the estimate of your hits on a cursed target (SkillCalc.curse_own_hits_estimate).
+static func deals_hit_damage(ab: Dictionary) -> bool:
+	var primary: Variant = ab.get("primaryDamage")
+	if primary is Dictionary and not (primary as Dictionary).is_empty():
+		return int(primary.get("isHit", 1)) == 1
+	for sub: Dictionary in GameData.sub_abilities(str(ab.get("name", ""))):
+		if not _is_spawned(str(sub.get("spawn_reason", ""))):
+			continue
+		var entry: Dictionary = _first_damage(sub)
+		if not entry.is_empty() and int(entry.get("isHit", 1)) == 1:
+			return true
+	for comp: Dictionary in GameData.code_damage(str(ab.get("name", ""))).get("components", []):
+		if comp.get("moreDamageWhenHitByCreator") == null and comp.get("damage") is Dictionary and bool(comp.get("isHit", false)):
+			return true
+	return false
+
+
+## Curse component: damage dealt to the cursed enemy on every hit it takes (ailment dealsDamageWhenHit). Declares the inputs
+## «your hits» and «hits of minions and allies»; the rate is own × (1 + moreDamageWhenHitByCreator) + other (docs/ENGINE.md §9.3).
+static func _curse_hit_component(build: Node, slot: int, s: Dictionary, label: String, ab: Dictionary, base: Dictionary,
+		own_mult: float, out_notes: Array[String]) -> Dictionary:
+	var inputs: Dictionary = {}
+	if slot >= 0 and slot < build.skills.size():
+		inputs = build.skills[slot].get("inputs", {})
+	var global: StatStore = (s["store"] as StatStore).parent if s.get("store") is StatStore else null
+	var estimate: Dictionary = SkillCalc.curse_own_hits_estimate(build, slot, global)
+	var own: float = float(inputs.get(CURSE_OWN_KEY, estimate["rate"]))
+	var other: float = float(inputs.get(CURSE_OTHER_KEY, 0.0))
+	if s.get("inputs") is Array:
+		_declare_input(s["inputs"], {"key": CURSE_OWN_KEY, "label": "Ваших попаданий по проклятой цели в секунду (другими умениями)", "default": float(estimate["rate"])})
+		_declare_input(s["inputs"], {"key": CURSE_OTHER_KEY, "label": "Попаданий миньонов и союзников по проклятой цели в секунду", "default": 0.0})
+	var weighted: float = own * own_mult + other
+	var hits: float = own + other
+	var b: PackedStringArray = []
+	b.append("Проклятие бьёт цель каждый раз, когда по ней попадают (любым источником); само применение урона не наносит, повторное применение только обновляет проклятие.")
+	if inputs.has(CURSE_OWN_KEY):
+		b.append("Ваших попаданий по проклятой цели: %s/с (задано во вкладке «Расчёты»)." % LE.fmt_num(own))
+	else:
+		b.append("Ваших попаданий по проклятой цели: %s/с (оценка по панели умений: %s)." % [LE.fmt_num(own), "; ".join(estimate["lines"]) if not estimate["lines"].is_empty() else "других умений с уроном удара нет"])
+	b.append("Попаданий миньонов и союзников: %s/с." % LE.fmt_num(other))
+	b.append("Ваши попадания бьют в ×%s сильнее (moreDamageWhenHitByCreator %s + 1): событий урона = %s × %s + %s = %s в секунду." % [
+		LE.fmt_num(own_mult), LE.fmt_num(own_mult - 1.0), LE.fmt_num(own), LE.fmt_num(own_mult), LE.fmt_num(other), LE.fmt_num(weighted)])
+	b.append("Попаданий по цели в секунду (для шансов айлментов): %s + %s = %s." % [LE.fmt_num(own), LE.fmt_num(other), LE.fmt_num(hits)])
+	b.append("Число попаданий за применение не используется. Подсказка игры частоты попаданий не знает: «DPS как в подсказке» считается с теми же событиями.")
+	if weighted <= 0.0:
+		_skip_note(out_notes, "Проклятие «%s»: 0 попаданий по цели в секунду — задайте частоту попаданий во вкладке «Расчёты»." % label)
+	var comp: Dictionary = _component(label, "curse_hit", ab, base, 1.0, weighted, "урон проклятия при попадании по цели (abilities_code_damage.json)")
+	comp["hit_rate"] = hits
+	comp["event_text"] = "\n".join(b)
+	return comp
+
+
+static func _declare_input(inputs: Array, inp: Dictionary) -> void:
+	for existing: Variant in inputs:
+		if existing is Dictionary and existing.get("key") == inp["key"]:
+			return
+	inputs.append(inp)

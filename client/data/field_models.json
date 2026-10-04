@@ -2539,6 +2539,7 @@
 "kind": "stat",
 "mod": "added",
 "note": "Когда проклятого бьют",
+"on_curse_hit": true,
 "stat": "AilmentChance"
 },
 "BoneCurseMutator.chanceToBleedWhenHit": {
@@ -2547,6 +2548,7 @@
 "kind": "stat",
 "mod": "added",
 "note": "Когда проклятого бьют",
+"on_curse_hit": true,
 "stat": "AilmentChance"
 },
 "BoneCurseMutator.chanceToChillWhenHit": {
@@ -2555,6 +2557,7 @@
 "kind": "stat",
 "mod": "added",
 "note": "Когда проклятого бьют",
+"on_curse_hit": true,
 "stat": "AilmentChance"
 },
 "BoneCurseMutator.cullPercent": {

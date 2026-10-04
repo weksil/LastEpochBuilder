@@ -9,10 +9,14 @@ const ENEMY_TICK_K: float = 0.4
 
 
 ## {sections: Array, tooltip_dps: float, enemy_dps: float}
-static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[String]) -> Dictionary:
+## `uses` is the number of hits per second that roll the chances. `curse_hit`: the hits are hits on a cursed enemy
+## (docs/ENGINE.md §9.3): only chances that the skill tree attaches to «when the cursed enemy is hit» apply to them
+## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
+static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[String], curse_hit: bool = false) -> Dictionary:
 	var health: int = SkillCalc._health_tags(build)
 	var ability_tags: int = int(ctx["tags"]) | health
-	var chances: Dictionary = _chances(ctx, ability_tags)
+	var chances: Dictionary = _chances(ctx, ability_tags, curse_hit)
+	var unit: String = "попаданий по проклятой цели" if curse_hit else "применений"
 	var sections: Array = []
 	var applied_rows: Array = []
 	var tooltip_total: float = 0.0
@@ -31,14 +35,17 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		var stacks: float = rate * duration if max_inst <= 0 else minf(rate * duration, float(max_inst))
 		var chance_text: PackedStringArray = ["Шанс за попадание: %s (ожидание числа стаков = шанс, 06d §1.1)" % LE.fmt_pct(c["chance"])]
 		chance_text.append_array(c["lines"])
-		chance_text.append("Считается одно попадание по цели за применение умения.")
+		if curse_hit:
+			chance_text.append("Считается каждое попадание по проклятой цели (ваше и чужое); общий «шанс при ударе» с предметов и пассивок на них не действует.")
+		else:
+			chance_text.append("Считается одно попадание по цели за применение умения.")
 		if not _deals_periodic_damage(ail):
 			applied_rows.append({"label": "%s: стаков на цели" % name, "text": LE.fmt_num(stacks),
 				"breakdown": "\n".join(chance_text) + "\nНаложений в секунду: %s × %s = %s; длительность %s с%s → в среднем %s стаков.\nЭффект на враге задаётся во вкладке «Условия» числом стаков." % [
 					LE.fmt_num(uses), LE.fmt_pct(c["chance"]), LE.fmt_num(rate), LE.fmt_num(duration),
 					"" if max_inst <= 0 else ", максимум %d" % max_inst, LE.fmt_num(stacks)]})
 			continue
-		var r: Dictionary = _damaging_ailment(build, ctx, ail, c, health, rate, duration, stacks, chance_text)
+		var r: Dictionary = _damaging_ailment(build, ctx, ail, c, health, rate, duration, stacks, chance_text, unit)
 		sections.append({"title": "Айлмент: %s" % name, "rows": r["rows"]})
 		tooltip_total += float(r["dps"])
 		enemy_total += float(r["enemy_dps"])
@@ -51,11 +58,11 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 
 
 ## AilmentID -> {name, chance, lines, inc_dur, inc_eff, more}: prefab chances + AilmentChance stats + conversions.
-static func _chances(ctx: Dictionary, ability_tags: int) -> Dictionary:
+static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false) -> Dictionary:
 	var out: Dictionary = {}
 	var base: Dictionary = ctx["base"]
 	for entry: Dictionary in ctx["ab"].get("ailmentsOnHit", []):
-		if str(entry.get("class", "")) != "ChanceToApplyAilmentsOnHit":
+		if curse_hit or str(entry.get("class", "")) != "ChanceToApplyAilmentsOnHit":
 			continue
 		if not base.is_empty() and str(entry.get("go", "")) != str(base.get("go", "")):
 			continue
@@ -72,7 +79,8 @@ static func _chances(ctx: Dictionary, ability_tags: int) -> Dictionary:
 	for mod: StatMod in ctx["mods"]:
 		if mod.special <= 0 or mod.added == 0.0 or not LE.tags_match(mod.tags, ability_tags):
 			continue
-		if mod.property == LE.AILMENT_CHANCE:
+		# chances of the «when the cursed enemy is hit» nodes belong to the curse hits only; generic ones to ordinary hits only
+		if mod.property == LE.AILMENT_CHANCE and mod.on_curse_hit == curse_hit:
 			var c: Dictionary = _entry(out, mod.special)
 			c["chance"] += mod.added
 			c["lines"].append("  +%s  (%s)" % [LE.fmt_pct(mod.added), mod.source])
@@ -129,7 +137,7 @@ static func _deals_periodic_damage(ail: Dictionary) -> bool:
 
 ## Damage of one stack, DPS without enemy (Little's law, cap handling) and against the configured enemy.
 static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: Dictionary, health: int,
-		rate: float, duration: float, stacks: float, chance_text: PackedStringArray) -> Dictionary:
+		rate: float, duration: float, stacks: float, chance_text: PackedStringArray, unit: String = "применений") -> Dictionary:
 	var bd: Dictionary = ail.get("baseDamage", {})
 	var atags: int = ((int(ail.get("tags", 0)) | LE.AILMENT | LE.DOT) & ~LE.HIT) | health
 	var dmg: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -170,7 +178,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	var rows: Array = []
 	rows.append({"label": "Шанс наложения", "text": LE.fmt_pct(c["chance"]), "breakdown": "\n".join(chance_text)})
 	rows.append({"label": "Наложений в секунду", "text": LE.fmt_num(rate), "breakdown":
-		"%s применений/с × шанс %s = %s" % [LE.fmt_num(rate / maxf(float(c["chance"]), 0.000001)), LE.fmt_pct(c["chance"]), LE.fmt_num(rate)]})
+		"%s %s/с × шанс %s = %s" % [LE.fmt_num(rate / maxf(float(c["chance"]), 0.000001)), unit, LE.fmt_pct(c["chance"]), LE.fmt_num(rate)]})
 	var dur_text: PackedStringArray = ["%s с × (1 + %s) = %s с" % [LE.fmt_num(float(ail.get("duration", 0.0))), LE.fmt_pct(c["inc_dur"]), LE.fmt_num(duration)]]
 	dur_text.append_array(c["dur_lines"])
 	rows.append({"label": "Длительность, с", "text": LE.fmt_num(duration), "breakdown": "\n".join(dur_text)})

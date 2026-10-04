@@ -69,15 +69,16 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
 		var comp_store: StatStore = _component_store(store, s, comp)
 		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, s["conversions"], notes, comp["base"])
+		var is_curse: bool = comp["kind"] == "curse_hit"
 		var events: float = float(comp["rate"])
-		if events <= 0.0:
+		if events <= 0.0 and not is_curse:
 			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else hits)
-		var comp_speed: Dictionary = {"uses": events, "rows": []}
+		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": "событий урона" if is_curse else "применений"}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
-		if idx > 0 or not is_equal_approx(events, uses):
+		if idx > 0 or is_curse or not is_equal_approx(events, uses):
 			damage_rows = [_events_row(comp, events, uses, hits)] + damage_rows
-		sections.append({"title": prefix + "Урон за применение (до врага)", "rows": damage_rows})
+		sections.append({"title": prefix + ("Урон за попадание по проклятой цели (до врага)" if is_curse else "Урон за применение (до врага)"), "rows": damage_rows})
 		if not ctx["conversion_rows"].is_empty():
 			sections.append({"title": prefix + "Конверсии и теги", "rows": ctx["conversion_rows"]})
 		sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
@@ -85,8 +86,10 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 		var comp_tooltip: Array = _tooltip(ds, comp_speed)
 		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
-		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed})
-		var ail: Dictionary = AilmentCalc.compute(build, ctx, events, ail_notes)
+		# curse hits: damage (and leech) follow the weighted rate, per-hit gains and ailment chances the plain hit count
+		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else events
+		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed, "gain_events": hit_events})
+		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse)
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
 		if idx == 0:
@@ -125,6 +128,9 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	tooltip_rows.append({"label": "DPS", "text": LE.fmt_num(total_tooltip), "breakdown":
 		"\n".join(tooltip_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
 			LE.fmt_num(main["hit_tooltip"]), LE.fmt_num(main["ail"]["tooltip_dps"]), LE.fmt_num(total_tooltip)]})
+	enemy_rows.push_front({"label": "Цель", "text": Enemy.describe(build.enemy), "breakdown":
+		"Скрытое снижение урона по уровню цели: %s (таблица из кода игры; у босса и мини-босса + 5%% остатка).
+Подсказка игры его не учитывает. Тип и уровень цели — во вкладке «Условия»." % LE.fmt_pct(Enemy.level_dr(build.enemy))})
 	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(total_enemy), "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
@@ -287,7 +293,9 @@ static func _param_rows(s: Dictionary) -> Array:
 
 static func _events_row(comp: Dictionary, events: float, uses: float, hits: float) -> Dictionary:
 	var b: PackedStringArray = []
-	if float(comp["rate"]) > 0.0:
+	if comp["kind"] == "curse_hit":
+		b.append(str(comp["event_text"]))
+	elif float(comp["rate"]) > 0.0:
 		b.append("Частота события (триггер): %s в секунду." % LE.fmt_num(events))
 	else:
 		var hits_text: String = " × попаданий %s" % LE.fmt_num(hits) if comp["kind"] != "trigger" and hits != 1.0 else ""
@@ -648,6 +656,42 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	return {"uses": uses, "rows": rows, "mana": mana}
 
 
+## Uses per second of the skill in `slot` from its speed pipeline only (no damage, no components: cheap and never recursive).
+## `global` is the character store the skill store hangs on.
+static func uses_per_second(build: Node, slot: int, global: StatStore) -> float:
+	if slot < 0 or slot >= build.skills.size():
+		return 0.0
+	var ab: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
+	if ab.is_empty():
+		return 0.0
+	var s: Dictionary = BuildMods.skill_store(build, slot, global)
+	var primary: Dictionary = ab.get("primaryDamage", {}) if ab.get("primaryDamage") is Dictionary else {}
+	var scratch: Array[String] = []
+	var ctx: Dictionary = _context(build, ab, s["store"], s["conversions"], scratch, primary)
+	return float(_speed(build, ab, ctx, s)["uses"])
+
+
+## Default of the input «your hits on the cursed target per second» (docs/ENGINE.md §9.3): the sum of uses per second of the
+## other skills on the bar that deal hit damage. Returns {rate, lines: [«Skill N/с»]}.
+static func curse_own_hits_estimate(build: Node, slot: int, global: StatStore) -> Dictionary:
+	var rate: float = 0.0
+	var lines: Array[String] = []
+	if global == null:
+		return {"rate": 1.0, "lines": ["нет статов персонажа — принято 1/с"]}
+	for other: int in range(build.skills.size()):
+		if other == slot:
+			continue
+		var ab: Dictionary = GameData.get_ability(str(build.skills[other].get("ability", "")))
+		if ab.is_empty() or not SkillComponents.deals_hit_damage(ab):
+			continue
+		var u: float = uses_per_second(build, other, global)
+		if u <= 0.0:
+			continue
+		rate += u
+		lines.append("%s %s/с" % [GameData.display_name(ab), LE.fmt_num(u)])
+	return {"rate": rate, "lines": lines}
+
+
 ## Cooldown of the skill (docs/ENGINE.md §9.6). Returns {has, cd, charges, text}.
 static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictionary) -> Dictionary:
 	var cdm: Dictionary = s.get("cooldown", {})
@@ -717,7 +761,7 @@ static func _tooltip(ds: Dictionary, speed: Dictionary) -> Array:
 	return [
 		{"label": "Урон за применение", "text": LE.fmt_num(per_use), "breakdown": "\n".join(b) +
 			"\nПодсказка игры не учитывает сопротивления, броню, скрытое снижение урона и условные модификаторы."},
-		{"label": "DPS удара", "text": LE.fmt_num(dps), "breakdown": "%s × %s применений/с = %s" % [LE.fmt_num(per_use), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]},
+		{"label": "DPS удара", "text": LE.fmt_num(dps), "breakdown": "%s × %s %s/с = %s" % [LE.fmt_num(per_use), LE.fmt_num(speed["uses"]), speed.get("unit", "применений"), LE.fmt_num(dps)]},
 	]
 
 
@@ -793,7 +837,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	speed["enemy_types"] = by_type
 	speed["enemy_crit"] = e_crit
 	rows.append({"label": "DPS удара по врагу", "text": LE.fmt_num(dps), "breakdown":
-		"%s × %s применений/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), LE.fmt_num(dps)]})
+		"%s × %s %s/с = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), speed.get("unit", "применений"), LE.fmt_num(dps)]})
 	return rows
 
 
@@ -862,6 +906,7 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 			continue
 		var prefix: String = "" if str(hs["name"]) == "" else "%s: " % hs["name"]
 		var events: float = float(sp["uses"])
+		var gain_events: float = float(hs.get("gain_events", events))
 		var e_crit: float = float(sp["enemy_crit"])
 		var store: StatStore = ctx["store"]
 		var ability_index: int = _ability_index(ctx)
@@ -887,8 +932,8 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 				var qg: StatQuery = store.query(prop, int(ctx["src"]), 0, ability_index)
 				if qg.added == 0.0:
 					continue
-				gain_total[prop] += qg.added * events
-				gain_lines[prop].append("%s%s за удар × %s ударов/с = %s/с" % [prefix, LE.fmt_num(qg.added), LE.fmt_num(events), LE.fmt_num(qg.added * events)])
+				gain_total[prop] += qg.added * gain_events
+				gain_lines[prop].append("%s%s за удар × %s ударов/с = %s/с" % [prefix, LE.fmt_num(qg.added), LE.fmt_num(gain_events), LE.fmt_num(qg.added * gain_events)])
 				for mod: StatMod in qg.mods:
 					gain_lines[prop].append("    " + mod.describe())
 	if leech_total > 0.0:

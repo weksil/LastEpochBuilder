@@ -142,6 +142,19 @@ static func armour_mitigation(x: float, area_level: int, non_phys: bool) -> floa
 	return f
 
 
+const KIND_RU: Dictionary = {"dummy": "манекен", "normal": "обычный", "magic": "магический", "rare": "редкий",
+	"miniboss": "мини-босс", "boss": "босс"}
+
+
+## Short description of the target for summaries: «босс 100 ур.», «манекен».
+static func describe(enemy: Dictionary) -> String:
+	var kind: String = str(enemy.get("kind", "dummy"))
+	var kind_ru: String = str(KIND_RU.get(kind, kind))
+	if kind == "dummy":
+		return kind_ru
+	return "%s %d ур." % [kind_ru, int(enemy.get("level", 100))]
+
+
 ## Calculate level-based damage reduction.
 ## dummy enemies have no DR; others use GameData; boss/miniboss get bonus.
 static func level_dr(enemy: Dictionary) -> float:

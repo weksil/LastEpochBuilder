@@ -347,6 +347,9 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 - **Шанс** по AilmentID: базовый шанс префаба (`ailmentsOnHit[]`, класс `ChanceToApplyAilmentsOnHit`, тот же `go`, что у
   `primaryDamage`) + моды SP 1 (`special` = AilmentID, added, теги ⊆ теги умения + health). Конверсии айлментов из правил
   `skill_conversions.json` переносят весь шанс. Одно попадание по цели за применение.
+  Для попаданий проклятия (компонент `curse_hit`, §9.3) — только моды с `StatMod.on_curse_hit` («когда проклятого бьют»,
+  модель с `"on_curse_hit": true`), событий/с = попаданий по цели в секунду; общие шансы «при ударе» и `ailmentsOnHit`
+  к ним не применяются, а моды `on_curse_hit` не действуют на обычные удары.
 - **Длительность** `T = duration·(1 + Σ SP42)`, **эффект** `Σ SP43` (только added, `special` = AilmentID).
 - **Урон стака**: `SkillCalc._build_damage` по `baseDamage` айлмента с тегами `(ailment.tags | Ailment | DoT) & ~Hit` + health
   (Spell/Melee/Hit-моды не подходят), ADE айлмента; затем `× (1+effMore)(1+durMore)(1+damageModifier)`, где
@@ -363,7 +366,7 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 (по типам, итог; у не-первых и при событиях ≠ применений — строка «Событий урона в секунду»), «Конверсии и теги»,
 «Крит», «Айлмент: …». Один раз после крита первого компонента — «Скорость и мана» (применений/с, мана, CD).
 События/с компонента: `rate`, если задан, иначе применений/с × `per_use` × `hits` (`hits` — `Build.skills[slot].hits`,
-только для primary и sub). Затем «Параметры умения» (по строке на `s.params`), «DPS как в подсказке игры» (удар, айлменты,
+только для primary и sub; у `curse_hit` — всегда `rate`, `hits` не используется, §9.3). Затем «Параметры умения» (по строке на `s.params`), «DPS как в подсказке игры» (удар, айлменты,
 при >1 компонента «DPS: <имя>», итог «DPS» = Σ всех компонентов), «Против врага» (то же, итог «DPS по врагу»; детали
 остальных компонентов — разделы «<имя>: Против врага»), «Не учтено» (notes). Если урона нет ни у одного компонента —
 только скорость, мана и айлменты умения.
@@ -405,7 +408,7 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 - `scope`: `skill` (по умолчанию) | `component:<имя подумения>` | `global` (на персонажа) | `minion`.
 
 Общие поля: `per` (источник, §5.4.3, плюс `input:<ключ>`), `when` (условия, §5.4.3, плюс `input:<ключ>` —
-логический вход), `at_least`/`below`, `offset`, `factor`, `min`, `max`, `src_max`, `note`, `confidence` (D / D?).
+логический вход), `at_least`/`below`, `offset`, `factor`, `min`, `max`, `src_max`, `note`, `on_curse_hit` (шанс айлмента только при попадании по проклятой цели, §9.3), `confidence` (D / D?).
 `input`: `{key, label, default, max, bool}` — объявление входного параметра умения (стаки, число тотемов,
 «пока канализирует» …); значения — `Build.skills[slot].inputs[key]`, по умолчанию `default`.
 
@@ -418,12 +421,24 @@ full → `HIGH_LIFE|FULL_LIFE`, high → `HIGH_LIFE`, low → `LOW_LIFE`.
 - `inputs(model) -> Array[Dictionary]` — объявленные входы модели.
 
 ### 9.3 Компоненты урона — `engine/skill_components.gd` (`class_name SkillComponents`)
-`collect(build, slot, ab, s) -> Array[Dictionary]`: `{name, kind: primary|sub|trigger|minion, ab, base (запись урона),
+`collect(build, slot, ab, s) -> Array[Dictionary]`: `{name, kind: primary|sub|trigger|minion|curse_hit, ab, base (запись урона),
 per_use (раз за применение), rate (событий/с, если не от применений), chance, icd, mods: Array[StatMod]}`.
 - `primary`: `ab.primaryDamage`; если пусто — подумения с причиной `prefab:CreateAbilityObjectOnDeath|OnStart|
   CastAfterDuration` (связь через `parents`), иначе урон из `abilities_code_damage.json`.
 - `sub`: подумения префаба (те же причины) у умений с собственным уроном; `component`-модели узлов.
 - `trigger`: модели `trigger` (узлы, уникальные, пассивки): частота = частота события × шанс, не чаще 1/icd.
+- `curse_hit` (Bone Curse): компонент кода с `moreDamageWhenHitByCreator` (проклятие бьёт цель при каждом попадании по ней;
+  само применение урона не наносит, повторное применение лишь обновляет единственное проклятие, аптайм 100%). Урон одного
+  попадания считается обычным конвейером (ADE, крит, increased/more умения; попадание, поэтому броня и уровень цели
+  действуют). Частота не от применений, а от двух входов умения (`Build.skills[slot].inputs`, объявляются в `s["inputs"]`):
+  `curse_own_hits` — ваши попадания по проклятой цели в секунду (по умолчанию оценка: сумма применений/с остальных умений
+  панели, у которых есть урон удара — `SkillComponents.deals_hit_damage`, скорость из `SkillCalc.uses_per_second`; это
+  только скоростной конвейер без рекурсии в `compute`; число попаданий за применение не учитывается; задано вручную — берётся
+  оно) и `curse_other_hits` — попадания миньонов и союзников (по умолчанию 0). События урона/с
+  `rate = own·(1 + moreDamageWhenHitByCreator) + other` (ваши попадания ×3), попаданий/с `hit_rate = own + other`. Множитель `hits`
+  умения не используется. «DPS как в подсказке» берёт те же события (игра частоту попаданий не знает). Шансы айлментов не от
+  применения: общие шансы «при ударе» не действуют, узлы «когда проклятого бьют» (`on_curse_hit`) идут со `hit_rate`.
+  Per-hit вознаграждения (SP 38/39/40) считаются по `hit_rate`, вампиризм — по взвешенным событиям.
 - `minion`: §9.4.
 `SkillCalc.compute` считает каждый компонент тем же конвейером (§8.2–8.6) и складывает DPS в раздел «Итог».
 

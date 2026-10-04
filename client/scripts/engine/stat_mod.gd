@@ -10,6 +10,7 @@ var added: float = 0.0  # Added value
 var increased: float = 0.0  # Increased percentage (as 0-1 decimal)
 var more: Array[float] = []  # Array of multiplicative modifiers
 var source: String = ""  # Human-readable source (Russian)
+var on_curse_hit: bool = false  # Ailment chance that applies only when the cursed enemy is hit (curse tree nodes)
 
 
 ## Create a StatMod with the given parameters.
@@ -47,6 +48,7 @@ func scaled(n: float) -> StatMod:
 	copy.tags = tags
 	copy.extra = extra
 	copy.source = source
+	copy.on_curse_hit = on_curse_hit
 	copy.added = added * n
 	copy.increased = increased * n
 	copy.more = more.duplicate()

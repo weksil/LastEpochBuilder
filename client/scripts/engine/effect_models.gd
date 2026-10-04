@@ -73,7 +73,9 @@ static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String
 	var special: int = 0
 	if model.has("ailment"):
 		special = maxi(0, GameData.enum_value("AilmentID", str(model["ailment"])))
-	return StatMod.make(property, str(model.get("mod", "added")), x, LE.tag_mask(str(model.get("tags", ""))), source_text, special)
+	var mod: StatMod = StatMod.make(property, str(model.get("mod", "added")), x, LE.tag_mask(str(model.get("tags", ""))), source_text, special)
+	mod.on_curse_hit = bool(model.get("on_curse_hit", false))
+	return mod
 
 
 ## Source value (attributes, stats, conditions, etc).

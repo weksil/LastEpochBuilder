@@ -136,5 +136,5 @@ func _update_skill_summary() -> void:
 	dps_value = enemy_dps
 
 	if dps_value != "":
-		skill_summary_label.text = "%s: DPS по врагу %s (подсказка игры %s)" % [str(result.get("title", "")), enemy_dps, tooltip_dps]
+		skill_summary_label.text = "%s: DPS по врагу (%s) %s, подсказка игры %s" % [str(result.get("title", "")), Enemy.describe(Build.enemy), enemy_dps, tooltip_dps]
 		skill_summary_label.tooltip_text = tooltip
