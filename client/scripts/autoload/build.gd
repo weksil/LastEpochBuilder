@@ -52,26 +52,26 @@ func _on_self_changed() -> void:
 
 
 func _init_defaults() -> void:
-	# Initialize 5 empty skill slots
 	skills.clear()
-	for i in range(5):
-		skills.append({
-			"ability": "",
-			"level": 20,
-			"tree": {},
-			"inputs": {},
-			"hits": 1.0
-		})
-
-	# Initialize skill nodes array
 	_skill_nodes.clear()
 	for i in range(5):
+		skills.append(default_skill())
 		_skill_nodes.append({})
+	enemy = default_enemy()
+	player_state = default_player_state()
+	items = {}
 
-	# Initialize enemy with defaults
-	enemy = {
+
+## Empty skill slot.
+static func default_skill() -> Dictionary:
+	return {"ability": "", "level": 20, "tree": {}, "inputs": {}, "hits": 1.0}
+
+
+## Enemy config by default: the training dummy, so the numbers match in-game dummy hits.
+static func default_enemy() -> Dictionary:
+	return {
 		"level": 100,
-		"kind": "dummy",  # training dummy: numbers match in-game dummy hits
+		"kind": "dummy",
 		"res": [0, 0, 0, 0, 0, 0, 0],
 		"armour": 0,
 		"ailments": {},
@@ -85,8 +85,10 @@ func _init_defaults() -> void:
 		}
 	}
 
-	# Initialize player state (flags and numbers used by unique special effects, docs/ENGINE.md §5.4.3)
-	player_state = {
+
+## Player state by default (flags and numbers used by unique special effects, docs/ENGINE.md §5.4.3).
+static func default_player_state() -> Dictionary:
+	return {
 		"health": "full",
 		"hit_recently": false,
 		"crit_recently": false,
@@ -101,9 +103,6 @@ func _init_defaults() -> void:
 		"damned_stacks": 0
 	}
 
-	# Initialize items (empty)
-	items = {}
-
 
 func set_class(id: int) -> void:
 	class_id = id
@@ -113,13 +112,7 @@ func set_class(id: int) -> void:
 
 	# Reset skills and items
 	for i in range(skills.size()):
-		skills[i] = {
-			"ability": "",
-			"level": 20,
-			"tree": {},
-			"inputs": {},
-			"hits": 1.0
-		}
+		skills[i] = default_skill()
 	for i in range(_skill_nodes.size()):
 		_skill_nodes[i] = {}
 	items.clear()
@@ -310,13 +303,8 @@ func set_skill(slot: int, ability_id: String) -> void:
 	if slot < 0 or slot >= skills.size():
 		return
 
-	skills[slot] = {
-		"ability": ability_id,
-		"level": 20,
-		"tree": {},
-		"inputs": {},
-		"hits": 1.0
-	}
+	skills[slot] = default_skill()
+	skills[slot]["ability"] = ability_id
 	_skill_nodes[slot] = {}
 
 	# Load skill tree nodes if ability is valid

@@ -52,6 +52,15 @@ Node `scenes/passives/passive_node.tscn` (`PassiveNode extends Button`): the gam
 The script takes the texture, size, offset and tint (`self_modulate` — the layer's color from the game data) of each layer from `TreeArt.layer(art, part)`;
 the button gets the variant `TreeNodeArt` (no background). Without art (no icon) — the old circle with the `PassiveNode*` variants and the `%NameLabel` caption.
 States with art: taken — `%BorderBright`; can be taken — `%FadeAvailable`; unavailable — `%FadeLocked`.
+Node tooltip `scenes/trees/node_tooltip.tscn` (`NodeTooltip extends VBoxContainer`, `@export stat_scene` — one stat line, `node_tooltip_stat.tscn`).
+`PassiveNode` (`@export tooltip_scene`) keeps a plain-text `tooltip_text` (`NodeTooltip.to_text`) and returns the scene from `_make_custom_tooltip`
+(`NodeTooltip.model(stats, title, max_points, points)` → `show_model`). Sections: title, `Points: n/max`, description (`description`, else the older
+`nodeDescription`; `{keyword}` braces are dropped), **Per point** (stats with `noScaling = 0`; from 2 points the line also shows the total), **Fixed**
+(`noScaling = 1` in a node with `noScalingType = 0` SinglePoint: the value is given once from the first point), **Bonus at N points**
+(`noScalingType = 1` PointThreshold, N = `noScalingPointThreshold`: `pointBonusDescription` and the `noScaling = 1` stats, with an Active / Inactive n/N
+state; bonus lines are muted while inactive), and `altText` at the bottom. With `noScalingType = 0` the `pointBonusDescription` is not shown: in those nodes
+it is stale text with no threshold in the game code (e.g. Skiasynthesis). Nodes with `maxPoints ≤ 1` merge per-point and fixed lines into **Effect**.
+Downside stats use the `NodeTooltipDownside` variant, section headers `NodeTooltipHeader`.
 Link `scenes/passives/passive_link.tscn` (`PassiveLink extends Node2D`): `%Art` rotated along the segment, `%Rail` (`NinePatchRect`, the game's rail) and
 `%Fill` (glow, visible when both sides are taken); without art — `%Plain` (`Line2D`, colors in the scene).
 
@@ -194,3 +203,18 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
   to `affixes`, a corrupted idol gets `corrupted: true`. Slots: head→helmet, chest→body, waist→belt, feet→boots, hands→gloves,
   weapon1→weapon, weapon2→offhand, idol_altar→altar. Not supported: the Weaver tree and idols, set ids (`S`); blessing blocks
   (`I` base 34, subtype = the blessing id, roll = `ir[0]`) are implemented by guesswork and not verified on a live example.
+
+## Builds: saves and the build code — `scripts/builds/builds_dialog.gd` (`class_name BuildsDialog extends Window`), `scripts/engine/build_codec.gd` (`BuildCodec`)
+The button `%BuildsButton` ("Builds…", top bar) opens `%BuildsDialog`; on its `loaded` signal `main.gd` syncs the top bar like after an import.
+The dialog: `%NameEdit` + `%SaveButton` (save under a name, the same name overwrites), `%BuildList` (newest first; double click loads),
+`%LoadButton`, `%DeleteButton` (asks `%DeleteConfirm` first), `%OpenFolderButton`, `%CodeEdit`, `%CopyCodeButton` (encodes the current build,
+puts the code into the field and the clipboard), `%LoadCodeButton` (decodes the field, or the clipboard when the field is empty), `%StatusLabel`, `%CloseButton`.
+- `BuildCodec.to_dict(Build)` — a JSON-safe snapshot `{format: "le-builder", version: 1, class, mastery, level, quest_points, passives, skills[5]
+  {ability, level, tree, inputs, hits}, selected_skill, items, blessings, enemy, player}`; dictionary keys that are ids are written as strings.
+- `from_dict(data)` validates and restores the types (JSON numbers are floats, keys are strings): unknown class → error; unknown passive / skill nodes,
+  skills and item bases are skipped with English warnings; enemy and player state are merged over `Build.default_enemy()` / `default_player_state()`,
+  so older saves get new keys with defaults. A newer `version` is refused. `apply(Build, doc)` replaces the build and emits `changed`.
+- Build code (as in Path of Building): `JSON → zlib (FileAccess.COMPRESSION_DEFLATE) → base64` with the URL-safe alphabet (`-`, `_`) and no `=` padding.
+  `decode` ignores whitespace and also accepts the plain JSON text.
+- Save files: `user://builds/<name>.json` = `{name, saved (unix time), build: to_dict}`; characters not allowed in file names become `_`.
+  In the exported build `user://` is `%APPDATA%/Godot/app_userdata/<project name>/`. `tests/build_codec_test` checks the round trip.

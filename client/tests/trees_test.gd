@@ -13,6 +13,7 @@ func _ready() -> void:
 	Build.passive_cap_override = -1
 	_caps()
 	_art()
+	await _tooltips()
 	print("TREES TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -141,3 +142,30 @@ func _fill(add: Callable, nodes: Array) -> void:
 		for node: Dictionary in nodes:
 			while add.call(int(node["id"])):
 				progress = true
+
+
+## Node tooltip parts: Handler (Falconer) has 7% minion damage per point and a crit bonus from 5 points;
+## Skiasynthesis has a stale pointBonusDescription with noScalingType 0, which must not show up as a bonus.
+func _tooltips() -> void:
+	var handler: Dictionary = GameData.get_node_stats("rg-1", 48)
+	var m: Dictionary = NodeTooltip.model(handler, "Handler", 8, 3)
+	var ok: bool = m["per_point"].size() == 1 and str(m["per_point"][0]["text"]).begins_with("7% Increased Minion Damage") 		and str(m["per_point"][0]["text"]).contains("21%") and m["fixed"].is_empty() and int(m["bonus"].get("threshold", 0)) == 5 		and m["bonus"]["stats"].size() == 1 and not m["bonus"]["active"] and str(m["bonus"]["description"]).contains("Falcon")
+	ok = ok and NodeTooltip.model(handler, "Handler", 8, 5)["bonus"]["active"]
+	ok = ok and NodeTooltip.model(GameData.get_node_stats("rg-1", 53), "Skiasynthesis", 6, 6)["bonus"].is_empty()
+	var fixed: Dictionary = NodeTooltip.model(GameData.get_node_stats("kn-1", 29), "Rallying Block", 8, 1)
+	ok = ok and fixed["per_point"].size() == 2 and fixed["fixed"].size() == 1
+	if not ok:
+		_failed += 1
+		print("FAIL tooltip model: %s" % str(m))
+	var tip: NodeTooltip = load("res://scenes/trees/node_tooltip.tscn").instantiate()
+	tip.show_model(m)
+	add_child(tip)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var height: float = tip.get_combined_minimum_size().y
+	if height < 150.0:
+		_failed += 1
+		print("FAIL tooltip scene height %.0f: the wrapped labels collapsed" % height)
+	print("tooltip: Handler scene %s" % str(tip.get_combined_minimum_size()))
+	print(NodeTooltip.to_text(m))
+	tip.queue_free()

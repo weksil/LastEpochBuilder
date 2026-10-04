@@ -4,9 +4,14 @@ extends Button
 signal add_requested(node_id: int)
 signal remove_requested(node_id: int)
 
+@export var tooltip_scene: PackedScene
+
 var node_id: int
 var max_points: int
 var _has_art: bool = false
+var _stats: Dictionary = {}
+var _title: String = ""
+var _points: int = 0
 
 
 ## art: TreeArt.node_art(...) — the node's game layers; empty → plain round button with the name under it.
@@ -18,21 +23,9 @@ func setup(node: Dictionary, stats: Dictionary, art: Dictionary = {}) -> void:
 	var name_label: Label = %NameLabel
 	name_label.text = title
 
-	var tooltip_parts: PackedStringArray = []
-
-	tooltip_parts.append(title)
-
-	if stats.get("nodeDescription") is String and stats["nodeDescription"] != "":
-		tooltip_parts.append(stats["nodeDescription"])
-
-	if stats.has("tooltipStats"):
-		for stat in stats["tooltipStats"]:
-			if stat.has("statName") and stat.has("value"):
-				tooltip_parts.append("%s %s" % [str(stat["statName"]), str(stat["value"])])
-
-	tooltip_parts.append(tr("Max points: %d") % max_points)
-
-	tooltip_text = "\n".join(tooltip_parts)
+	_stats = stats
+	_title = title
+	_update_tooltip()
 	_apply_art(art)
 
 
@@ -90,6 +83,10 @@ func _place(target: Control, l: Dictionary, center: Vector2) -> void:
 
 
 func set_state(points: int, can_add: bool) -> void:
+	if points != _points:
+		_points = points
+		_update_tooltip()
+
 	var points_label: Label = %PointsLabel
 	points_label.text = "%d/%d" % [points, max_points]
 
@@ -106,6 +103,19 @@ func set_state(points: int, can_add: bool) -> void:
 		theme_type_variation = &"PassiveNodeAvailable"
 	else:
 		theme_type_variation = &"PassiveNodeLocked"
+
+
+## Plain-text copy of the tooltip; it must stay non-empty, Godot calls _make_custom_tooltip only then.
+func _update_tooltip() -> void:
+	tooltip_text = NodeTooltip.to_text(NodeTooltip.model(_stats, _title, max_points, _points))
+
+
+func _make_custom_tooltip(_for_text: String) -> Object:
+	if tooltip_scene == null:
+		return null
+	var tip: NodeTooltip = tooltip_scene.instantiate()
+	tip.show_model(NodeTooltip.model(_stats, _title, max_points, _points))
+	return tip
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

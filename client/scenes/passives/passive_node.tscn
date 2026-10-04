@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/passives/passive_node.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/trees/node_tooltip.tscn" id="2_tooltip"]
 
 [node name="PassiveNode" type="Button"]
 custom_minimum_size = Vector2(52, 52)
@@ -11,6 +12,7 @@ mouse_default_cursor_shape = 2
 theme_type_variation = &"PassiveNodeLocked"
 button_mask = 3
 script = ExtResource("1_script")
+tooltip_scene = ExtResource("2_tooltip")
 
 [node name="Art" type="Control" parent="."]
 unique_name_in_owner = true

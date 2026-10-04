@@ -14,8 +14,8 @@ Full plan, architecture and risks: [PLAN.md](PLAN.md).
 | Formula and data research | done (`research/`) |
 | Extracted game data | ready (`research/data/game/`) |
 | Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers, minions), damage conversions and skill tag changes from tree nodes, character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy. The test vectors from the research pass |
-| Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, Conditions with a filter by source, a stats panel with highlighting of changes |
-| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), saving/loading a build, import from an offline character save file (import by Last Epoch Tools link exists; Weaver and set ids are not imported, blessings have not been verified on an example). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
+| Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, Conditions with a filter by source, a stats panel with highlighting of changes, saved builds and a shareable build code (as in Path of Building) |
+| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), import from an offline character save file (import by Last Epoch Tools link exists; Weaver and set ids are not imported, blessings have not been verified on an example). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
 
 Deferred tasks are in [BACKLOG.md](BACKLOG.md).
 
@@ -69,10 +69,10 @@ client/          Godot project
   data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
   docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
-  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, common/
+  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, builds/, common/
   scripts/       logic (.gd): autoload/ (Settings, GameData, Build), engine/ (calculations), UI scripts in folders matching the scenes
   tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test,
-                 layout_test, relevance_test, i18n_test
+                 layout_test, relevance_test, i18n_test, build_codec_test
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations
   addons/        the godot_ai plugin
@@ -118,6 +118,8 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
 - **Trees** (passives and skills) look like in the game: node icons under a mask, frames (a light one for taken nodes), a points badge, background,
   runes and ornaments, connection rails with a glow between taken nodes — all from the game's UI prefabs (`research/data/game/tree_art.json`,
   `client/assets/trees/`). The tree fits the window, Ctrl + mouse wheel zooms. 5 passive nodes without a UI node in the game prefabs are shown as a circle.
+  The node tooltip is split into parts: description, "Per point" stats (with the total for the allocated points), "Fixed" stats (given once from
+  the first point), "Bonus at N points" (the threshold bonus: its description and stats, active or not yet) and the extra explanation (`altText`).
 - **Passives** — the class tree and three masteries; LMB adds a point, RMB removes one. A node's requirements
   (`requirements`) work as "OR": any neighbor with the required number of points is enough
   (`LocalTreeData.ArePassiveNodeRequirementsMet`); a point cannot be removed if the node would be cut off from the root. The
@@ -146,6 +148,8 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for). As in Path of Building, only the conditions
   that have a source in the build (skill, item, passive; `ConfigRelevance`) are shown, labeled with the source; the "Show all conditions" checkbox opens the full list,
   and enabled conditions without a source are highlighted in red. Each group has an "Active: …" line and a "Reset" button; ailments are shown with readable names.
+- **Builds** (the "Builds…" button in the top bar) — save the current build under a name (`user://builds/<name>.json`), load or delete a saved one,
+  copy the build code (the whole build as one line: JSON → zlib → URL-safe base64, as in Path of Building) and load a build from someone's code.
 - **Import** (the "Import…" button in the top bar) — a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data
   JSON): class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings.
   The current build is replaced; unsupported things (Weaver, set items) and unrecognized ids are listed as warnings.

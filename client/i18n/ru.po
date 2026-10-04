@@ -13736,3 +13736,111 @@ msgstr "▸ Не учтено"
 
 msgid "▸ mods"
 msgstr "▸ моды"
+
+msgid "Per point"
+msgstr "За очко"
+
+msgid "Fixed: from the first point, does not grow with points"
+msgstr "Постоянно: с первого очка, не растёт с очками"
+
+msgid "Effect"
+msgstr "Эффект"
+
+msgid "Bonus at %d points"
+msgstr "Бонус при %d очках"
+
+msgid "Active"
+msgstr "Активен"
+
+msgid "Inactive: %d/%d points"
+msgstr "Не активен: %d/%d очков"
+
+msgid "Points: %d/%d"
+msgstr "Очки: %d/%d"
+
+msgid "(%d points: %s)"
+msgstr "(итого за %d: %s)"
+
+msgid "Builds…"
+msgstr "Сборки…"
+
+msgid "Builds"
+msgstr "Сборки"
+
+msgid "Saved builds"
+msgstr "Сохранённые сборки"
+
+msgid "Build name"
+msgstr "Название сборки"
+
+msgid "Save the current build"
+msgstr "Сохранить текущую сборку"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Open the saves folder"
+msgstr "Открыть папку сохранений"
+
+msgid "Build code"
+msgstr "Код сборки"
+
+msgid "A build code is the whole build packed into one line of text, like in Path of Building. Copy it to share the build; paste someone's code and press \"Load from code\". The current build will be replaced."
+msgstr "Код сборки — вся сборка, упакованная в одну строку текста, как в Path of Building. Скопируйте его, чтобы поделиться сборкой; вставьте чужой код и нажмите «Загрузить из кода». Текущая сборка будет заменена."
+
+msgid "Copy the code of the current build"
+msgstr "Скопировать код текущей сборки"
+
+msgid "Load from code"
+msgstr "Загрузить из кода"
+
+msgid "Delete the build"
+msgstr "Удаление сборки"
+
+msgid "This is not a Last Epoch Builder build."
+msgstr "Это не сборка Last Epoch Builder."
+
+msgid "The build was saved by a newer version of the planner (format %d)."
+msgstr "Сборка сохранена более новой версией планировщика (формат %d)."
+
+msgid "Could not read the build code: it is damaged or incomplete."
+msgstr "Не удалось прочитать код сборки: он повреждён или неполный."
+
+msgid "Could not read the save file."
+msgstr "Не удалось прочитать файл сохранения."
+
+msgid "Enter a build name."
+msgstr "Введите название сборки."
+
+msgid "Build \"%s\" saved (the previous version was replaced)."
+msgstr "Сборка «%s» сохранена (прежняя версия заменена)."
+
+msgid "Build \"%s\" saved."
+msgstr "Сборка «%s» сохранена."
+
+msgid "Could not save the build."
+msgstr "Не удалось сохранить сборку."
+
+msgid "%s — %s, %s, level %d · %s"
+msgstr "%s — %s, %s, уровень %d · %s"
+
+msgid "No saved builds yet."
+msgstr "Сохранённых сборок пока нет."
+
+msgid "Build \"%s\" loaded."
+msgstr "Сборка «%s» загружена."
+
+msgid "Delete the build \"%s\"? The file is removed for good."
+msgstr "Удалить сборку «%s»? Файл будет удалён безвозвратно."
+
+msgid "Build \"%s\" deleted."
+msgstr "Сборка «%s» удалена."
+
+msgid "The build code is copied to the clipboard (%d characters)."
+msgstr "Код сборки скопирован в буфер обмена (%d символов)."
+
+msgid "Paste a build code first."
+msgstr "Сначала вставьте код сборки."
+
+msgid "Build loaded from the code."
+msgstr "Сборка загружена из кода."

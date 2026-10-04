@@ -5,6 +5,8 @@ extends Control
 @onready var level_spin: SpinBox = %LevelSpin
 @onready var import_button: Button = %ImportButton
 @onready var import_dialog: Window = %ImportDialog
+@onready var builds_button: Button = %BuildsButton
+@onready var builds_dialog: Window = %BuildsDialog
 @onready var language_select: OptionButton = %LanguageSelect
 
 func _ready() -> void:
@@ -24,6 +26,10 @@ func _ready() -> void:
 	# Import from Last Epoch Tools
 	import_button.pressed.connect(_on_import_pressed)
 	import_dialog.imported.connect(_on_imported)
+
+	# Saved builds and build codes
+	builds_button.pressed.connect(func() -> void: builds_dialog.popup_centered())
+	builds_dialog.loaded.connect(_on_imported)
 
 	# Interface language (Settings autoload): item index = index in Settings.LOCALES
 	language_select.select(Settings.LOCALES.find(Settings.locale))
