@@ -34,10 +34,7 @@ func setup(timeline: Dictionary) -> void:
 
 
 func _on_blessing_selected(index: int) -> void:
-	var meta: Variant = %BlessingSelect.get_item_metadata(index)
-	if meta == null:
-		return
-	var blessing_id: int = int(meta)
+	var blessing_id: int = %BlessingSelect.get_item_id(index)
 	var timeline_id: int = int(_timeline.get("timelineID", -1))
 	if blessing_id < 0:
 		Build.set_blessing(timeline_id, -1, 0)
@@ -70,11 +67,8 @@ func _on_build_changed() -> void:
 	%RollSlider.value = roll
 
 	# Update select
-	for i in range(%BlessingSelect.item_count):
-		var meta: Variant = %BlessingSelect.get_item_metadata(i)
-		if meta != null and int(meta) == selected_id:
-			%BlessingSelect.select(i)
-			break
+	var index: int = %BlessingSelect.get_item_index(selected_id)
+	%BlessingSelect.select(maxi(index, 0))
 
 	_update_value_label()
 
