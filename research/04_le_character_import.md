@@ -54,7 +54,7 @@ Confidence tags: [verified] = observed directly here, [sourced] = from a cited p
 ## 3. Local save files
 
 ### Location and files [verified on this machine]
-`C:\Users\Admin\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves` contains only stale Feb-2024 beta files:
+`%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves` contains only stale Feb-2024 beta files:
 
 ```
 1CHARACTERSLOT_BETA_0 (+ .bak)         10,226 B  one hardcore level-12 offline char (2024-02-23)
@@ -185,4 +185,4 @@ No. Forum: online saves "are fully online, on EHG servers". Verified here: no on
 * https://fearlessrevolution.com/viewtopic.php?t=17089 (save editor thread)
 * https://github.com/Musholic/PathOfBuildingForLastEpoch ; https://github.com/JLC827/last-epoch-build-as-plaintext
 * https://lastepoch.com/policy/tos/
-* Local inspection: `C:\Users\Admin\AppData\LocalLow\Eleventh Hour Games\Last Epoch\` (Saves, Player.log) and lastepochtools.com `planner.js` (read-only).
+* Local inspection: `%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\` (Saves, Player.log) and lastepochtools.com `planner.js` (read-only).

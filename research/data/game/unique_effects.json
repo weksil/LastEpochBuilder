@@ -79939,7 +79939,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH (potion/companion property): Droughts Release\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -80097,7 +80097,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH (companion property read outside CharacterMutator): Harthenon Vow companion bonus\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -80124,7 +80124,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH (companion property read outside CharacterMutator): Harthenon Vow companion bonus\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -81919,7 +81919,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: Endurance applies to all damage dealt to mana (not in CharacterMutator switch; Seed of Ekkidrasil): Mana takes damage with endurance mitigation\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -82349,7 +82349,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH: Elecoes Innovation\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -82376,7 +82376,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH: Elecoes Innovation\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -84075,7 +84075,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH: Jormuns Thirst\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -84296,7 +84296,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH: Eternal Font\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {
@@ -84323,7 +84323,7 @@
     "plannerModel": null,
     "useQuote": null,
     "quote": "Formula: NOT IN SWITCH: Eternal Font\nCodeField: None\nMethods: []",
-    "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/unique_effects.before_w4c.json",
+    "quoteFile": "dump/work_wave4/unique_effects.before_w4c.json",
     "confidence": "D?"
    },
    "final": {

@@ -76,11 +76,11 @@ client/          Godot project
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations
   addons/        the godot_ai plugin
-.mcp.json        the project's MCP servers (Serena)
 ```
 
 Not part of the repository (kept locally, see `.gitignore`):
-`dump/` and `tools/` (client decompilation, Ghidra, Cpp2IL, scripts), `build/` (release output), notes
+`dump/` and `tools/` (client decompilation, Ghidra, Cpp2IL, scripts), `build/` (release output), machine-specific files
+(`.mcp.json`, `.serena/project.local.yml`, IDE folders, Godot `override.cfg` / `export_credentials.cfg`), notes
 derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
 `abilities_code_damage.json`), agent briefs, `client/.godot/`, logs.
 
@@ -192,8 +192,22 @@ An editor in which the autoloads were added without a restart shows false errors
 | Tool | What it does | How it is connected |
 |---|---|---|
 | godot-ai | controls the Godot editor from Claude Code | the plugin in `client/addons/godot_ai` + the user-scope MCP server `godot-ai` |
-| Serena | semantic code navigation and editing | `.mcp.json` (launched via `uvx` from `oraios/serena`) |
+| Serena | semantic code navigation and editing | local `.mcp.json` (launched via `uvx` from `oraios/serena`), project settings in `.serena/project.yml` |
 
+`.mcp.json` is machine-specific (it holds the absolute project path) and is not committed. To use Serena, create it in the repository root:
+```json
+{
+  "mcpServers": {
+    "serena": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server",
+               "--context", "claude-code", "--project", "<absolute path to the repository>"],
+      "env": {}
+    }
+  }
+}
+```
 On first launch, Claude Code will ask for permission to use the project MCP server `serena`.
 
 ### Release build
@@ -201,7 +215,8 @@ On first launch, Claude Code will ask for permission to use the project MCP serv
 ```
 .uild_windows.ps1 -Version 0.1.0
 ```
-Needs Godot 4.7 with the 4.7 export templates (`-Godot <console exe>` or the `GODOT` environment variable). The script copies
+Needs Godot 4.7 with the 4.7 export templates: the console exe is taken from `-Godot <path>`, else the `GODOT` environment variable,
+else `godot` on `PATH`. The script copies
 `research/data` into `client/data/research`, imports and exports the preset "Windows Desktop" (`client/export_presets.cfg`, x86_64,
 data and assets embedded in the exe), deletes the copy and packs `build/LastEpochBuilder-<version>-windows-x64.zip`
 (exe, LICENSE, `release/README.txt`). The version is also set in `client/project.godot` (`application/config/version`).

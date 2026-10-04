@@ -209,7 +209,7 @@ Response shape:
 
 ## 4. Datamining the game client directly
 
-**What I verified on the local install** (`D:\SteamLibrary\steamapps\common\Last Epoch\`). I only read files; I ran no tools.
+**What I verified on the local install** (`<Last Epoch install dir>\`). I only read files; I ran no tools.
 
 - **IL2CPP:** `GameAssembly.dll` (97 MB) and `Last Epoch_Data/il2cpp_data/Metadata/global-metadata.dat` (36 MB).
   - The header is `AF 1B B1 FA`, so it is not encrypted.
@@ -354,8 +354,8 @@ https://assets-ng.maxroll.gg/leplanner/game/data.json?<hash>              # full
 https://planners.maxroll.gg/profiles/le/<id>                              # build JSON
 
 # Local client
-D:\SteamLibrary\steamapps\common\Last Epoch\GameAssembly.dll
-D:\SteamLibrary\steamapps\common\Last Epoch\Last Epoch_Data\il2cpp_data\Metadata\global-metadata.dat   (v39)
-D:\SteamLibrary\steamapps\common\Last Epoch\Last Epoch_Data\resources.assets      (UniqueList, AffixList, PropertyList)
-D:\SteamLibrary\steamapps\common\Last Epoch\Last Epoch_Data\StreamingAssets\aa\ and \LEAssetBundles\ (26,667 bundles)
+<Last Epoch install dir>\GameAssembly.dll
+<Last Epoch install dir>\Last Epoch_Data\il2cpp_data\Metadata\global-metadata.dat   (v39)
+<Last Epoch install dir>\Last Epoch_Data\resources.assets      (UniqueList, AffixList, PropertyList)
+<Last Epoch install dir>\Last Epoch_Data\StreamingAssets\aa\ and \LEAssetBundles\ (26,667 bundles)
 ```

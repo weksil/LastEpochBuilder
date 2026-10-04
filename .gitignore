@@ -27,3 +27,14 @@ venv/
 # Serena local state
 /.serena/cache/
 /.serena/project.local.yml
+
+# Machine-specific files (each developer keeps their own copy)
+.mcp.json
+.vscode/
+.idea/
+*.code-workspace
+Thumbs.db
+desktop.ini
+.DS_Store
+/client/override.cfg
+/client/export_credentials.cfg

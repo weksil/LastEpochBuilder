@@ -17541,7 +17541,7 @@
    "formula": "acc[stk:0x84] on RuneboltMutator field offset=0x17c",
    "useQuote": null,
    "quote": "RAW ISIL SCAN: 0 candidate non-store accesses of +0x17C -> field is probably DEAD/UNUSED (written by tree only)\nstatus=dead",
-   "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/cards/RuneboltLightningMutator__consumeCooldownReducedPerRuneInvocated.txt.card.txt",
+   "quoteFile": "dump/work_wave4/cards/RuneboltLightningMutator__consumeCooldownReducedPerRuneInvocated.txt.card.txt",
    "affectsNumbers": "cooldown reduction per rune invocation (tree formula: 0.2 per point)",
    "confidence": "dead"
   }
@@ -20921,7 +20921,7 @@
    "formula": "acc[stk:0x70] on ShadowCascadeMutator field offset=0x194",
    "useQuote": null,
    "quote": "status=no_reader\nRAW ISIL SCAN: 1 candidate non-store accesses of +0x194\nprevious note: Slice reported readers=[] because the read uses base+offset arithmetic",
-   "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/cards/ShadowCascadeMutator__daggerShadowDaggerChance.txt.card.txt",
+   "quoteFile": "dump/work_wave4/cards/ShadowCascadeMutator__daggerShadowDaggerChance.txt.card.txt",
    "affectsNumbers": "shadow dagger chance (tree formula: 1 per point, flat 0)",
    "confidence": "D?"
   },
@@ -26942,7 +26942,7 @@
    "formula": "acc[reg:xmm9] on SigilsOfHopeMutator field offset=0x178",
    "useQuote": null,
    "quote": "status=dead\nRAW ISIL SCAN: 0 candidate non-store accesses of +0x178\nprevious note: dead copy; real effect in DivineFlareMutator",
-   "quoteFile": "D:/LastEpochBuilder/dump/work_wave4/cards/SigilsOfHopeMutator__divineFlareChanceToBlindPerSigil.txt.card.txt",
+   "quoteFile": "dump/work_wave4/cards/SigilsOfHopeMutator__divineFlareChanceToBlindPerSigil.txt.card.txt",
    "affectsNumbers": "blind chance (tree formula: 0.25 per point, flat 0)",
    "confidence": "dead"
   }
