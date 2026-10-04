@@ -142,7 +142,7 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   Hovering any item shows what equipping it changes (DPS vs enemy of the selected skill and every numeric character stat). The editor
   shows the bonuses of a set item's set: active ones in green, inactive ones grey. Slot icons are the item type icons of the game's
   prophecy / monolith rewards (`client/assets/items/`, `tools/extract/extract_item_icons.py`).
-- **Blessings** — one per timeline (normal or grand) with a roll, implicits go into stats. Hovering a blessing in the dropdown shows its effect (roll range of every implicit).
+- **Blessings** — one per timeline (normal or grand) with a roll, implicits go into stats. Hovering a blessing in the dropdown shows its effect (roll range of every implicit). Under the rows a stat diff shows what all chosen blessings give (DPS and character stats, live while a roll slider moves).
 - **Idols** — a 5×5 grid, an altar (13 subtypes) changes the grid and gives refracted cells and properties; clicking a cell places an idol,
   the base size is checked against free cells; 1 prefix and 1 suffix, affixes and large idols are by class.
 - **Calculations** — at the top is a totals strip: DPS vs enemy (with the target name), average hit, uses per second, crit chance; below are the calculation parameters

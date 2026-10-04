@@ -103,6 +103,9 @@ Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `
   `ItemCompare.diff(snapshot(Build), snapshot_with_items(Build, changes))` (`diff_line.tscn`, `DeltaUp`/`DeltaDown`). A snapshot is the
   "DPS vs enemy" of the selected skill plus every numeric `CharacterCalc` row; `snapshot_with_items` swaps `Build.items` without signals
   and restores it.
+- Blessings tab (`blessings_tab.tscn`): `%Rows` (one `blessing_row.tscn` per timeline) and below them `%Summary` (hidden without blessings):
+  "The chosen blessings give you:" — `%SummaryDps` and `%SummaryLines` (`ItemCompare.diff(snapshot_with_blessings(Build, {}), snapshot(Build))`,
+  `diff_line.tscn`, `DeltaUp`/`DeltaDown`) or `%SummaryNone`; recomputed at most 20 times a second (`%DiffTimer`) while the tab is shown, also while a roll slider is dragged.
 - `Build.stash` — an `Array` of item dicts of the same shape as `Build.items[slot]`; the signal `Build.stash_changed` does not trigger a
   recalculation. API: `stash_add`, `stash_set`, `stash_remove`, `equip_from_stash` (a swap), `equip_item`, `unequip_to_stash`, `move_item`.
 

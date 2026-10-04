@@ -321,6 +321,18 @@ static func snapshot_with_items(build: Node, changes: Dictionary) -> Dictionary:
 	return values
 
 
+## snapshot() with `blessings` (timelineID -> {id, roll}, as Build.blessings) instead of the chosen ones. Build.blessings is
+## restored exactly.
+static func snapshot_with_blessings(build: Node, blessings: Dictionary) -> Dictionary:
+	var previous: Dictionary = build.blessings
+	build.blessings = blessings
+	build._skill_bonus_cache.clear()
+	var values: Dictionary = snapshot(build)
+	build.blessings = previous
+	build._skill_bonus_cache.clear()
+	return values
+
+
 ## Changed values, in `after` order then keys only in `before` (a missing value counts as 0):
 ## [{"label", "delta", "before", "after", "pct", "text"}].
 static func diff(before: Dictionary, after: Dictionary) -> Array[Dictionary]:

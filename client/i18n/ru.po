@@ -14050,3 +14050,6 @@ msgstr "Осколки"
 
 msgid "item"
 msgstr "Предметы"
+
+msgid "The chosen blessings give you:"
+msgstr "Выбранные благословения дают:"

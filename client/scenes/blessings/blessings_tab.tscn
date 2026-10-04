@@ -1,12 +1,56 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/blessings/blessings_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/items/diff_line.tscn" id="2_diff_line"]
 
 [node name="BlessingsTab" type="ScrollContainer"]
 script = ExtResource("1_script")
+diff_line_scene = ExtResource("2_diff_line")
 
-[node name="Rows" type="VBoxContainer" parent="."]
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Rows" type="VBoxContainer" parent="Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
+
+[node name="Summary" type="VBoxContainer" parent="Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Separator" type="HSeparator" parent="Content/Summary"]
+layout_mode = 2
+
+[node name="SummaryHeader" type="Label" parent="Content/Summary"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "The chosen blessings give you:"
+
+[node name="SummaryDps" type="Label" parent="Content/Summary"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"DeltaUp"
+text = "Skill · DPS vs enemy: 0 → 0 (+0)"
+
+[node name="SummaryLines" type="VBoxContainer" parent="Content/Summary"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="SummaryNone" type="Label" parent="Content/Summary"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "No stat changes."
+
+[node name="DiffTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
