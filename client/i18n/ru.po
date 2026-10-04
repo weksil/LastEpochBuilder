@@ -14006,8 +14006,47 @@ msgstr "Отбросить несохранённые изменения и ве
 msgid "%s: %s (no change)"
 msgstr "%s: %s (без изменений)"
 
-msgid "%s increased drop rate"
-msgstr "%s к шансу выпадения"
-
-msgid "%s increased drop rate of: %s"
+msgid "%s increased %s drop rate"
 msgstr "%s к шансу выпадения: %s"
+
+msgid "%s increased experience"
+msgstr "%s к получаемому опыту"
+
+msgid "Rune"
+msgstr "Руны"
+
+msgid "Glyph"
+msgstr "Глифы"
+
+msgid "Rune / Glyph"
+msgstr "Руны / Глифы"
+
+msgid "%s Shard"
+msgstr "Осколки: %s"
+
+msgid "Unique item"
+msgstr "Уникальные предметы"
+
+msgid "Gold"
+msgstr "Золото"
+
+msgid "Prefix Shard"
+msgstr "Осколки префиксов"
+
+msgid "Suffix Shard"
+msgstr "Осколки суффиксов"
+
+msgid "Class-Specific Shard"
+msgstr "Осколки, специфичные для класса"
+
+msgid "Ailment Shard"
+msgstr "Осколки состояний"
+
+msgid "Skill Shard"
+msgstr "Осколки умений"
+
+msgid "Shard"
+msgstr "Осколки"
+
+msgid "item"
+msgstr "Предметы"

@@ -34,23 +34,42 @@ func setup(timeline: Dictionary) -> void:
 	_on_build_changed()
 
 
-## Effect of a blessing: every implicit with its roll range. The drop rate one does not touch the stats, but is described too.
+## Effect of a blessing: every implicit with its roll range, drop rates included (they do not touch the stats).
 func _tooltip(blessing: Dictionary) -> String:
 	var lines: Array[String] = [str(blessing.get("displayName", ""))]
 	for implicit: Dictionary in blessing.get("implicits", []):
 		var value: float = float(implicit.get("value", 0.0))
 		var max_value: float = float(implicit.get("maxValue", value))
 		var range_text: String = ItemCompare.format_range(implicit, value, max_value)
-		if int(implicit.get("property", 0)) == 104:  # IncreasedDropRate
-			var drop_type: String = str(implicit.get("dropRateItemType", "")).replace("IDOL_", "").replace("_", " ").capitalize()
-			if drop_type == "":
-				lines.append(tr("%s increased drop rate") % range_text)
-			else:
-				lines.append(tr("%s increased drop rate of: %s") % [range_text, drop_type])
-		else:
-			lines.append("%s %s" % [range_text, ItemCompare.prop_title(implicit)])
+		match int(implicit.get("property", 0)):
+			104:  # IncreasedDropRate
+				lines.append(tr("%s increased %s drop rate") % [range_text, _drop_target(implicit)])
+			105:  # Experience
+				lines.append(tr("%s increased experience") % range_text)
+			_:
+				lines.append("%s %s" % [range_text, ItemCompare.prop_title(implicit)])
 	return "
 ".join(lines)
+
+
+## What a drop rate implicit applies to: specialTag 0 = equipment type (tags), 1 = rune / glyph, 2 = shards of an
+## equipment type, 3 = unique / gold, 4 = prefix / suffix / class-specific / ailment / skill shards.
+func _drop_target(implicit: Dictionary) -> String:
+	var tag: int = int(implicit.get("tags", 0))
+	var equipment: String = str(GameData.item_base(tag).get("displayName", ""))
+	match int(implicit.get("specialTag", 0)):
+		0:
+			return equipment
+		1:
+			return {1: tr("Rune"), 2: tr("Glyph")}.get(tag, tr("Rune / Glyph"))
+		2:
+			return tr("%s Shard") % equipment
+		3:
+			return {0: tr("Unique item"), 1: tr("Gold")}.get(tag, tr("Gold"))
+		4:
+			return {0: tr("Prefix Shard"), 1: tr("Suffix Shard"), 2: tr("Class-Specific Shard"),
+				4: tr("Ailment Shard"), 5: tr("Skill Shard")}.get(tag, tr("Shard"))
+	return tr("item")
 
 
 func _on_blessing_selected(index: int) -> void:

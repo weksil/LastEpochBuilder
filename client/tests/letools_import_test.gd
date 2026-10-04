@@ -346,5 +346,13 @@ func _main_ui() -> void:
 	_check("blessing dropdowns", chosen.slice(0, 2), ["Sight of the Outcasts", tr("— none —")])
 	var first: OptionButton = rows[0].get_node("%BlessingSelect")
 	_check("blessing tooltip", first.get_item_tooltip(first.selected).begins_with("Sight of the Outcasts"), true)
+	var tips: Dictionary = {}
+	for i in first.item_count:
+		tips[first.get_item_text(i)] = first.get_item_tooltip(i)
+	print(tips["Memory of the Living"], " | ", tips["Sign of Torment"], " | ", tips["Winds of Fortune"], " | ", tips["Pride of Rebellion"])
+	_check("tooltip glyph", tips["Memory of the Living"].contains(tr("Glyph")), true)
+	_check("tooltip rune", tips["Sign of Torment"].contains(tr("Rune")), true)
+	_check("tooltip unique", tips["Winds of Fortune"].contains(tr("Unique item")), true)
+	_check("tooltip idol", tips["Pride of Rebellion"].contains("Grand Idol"), true)
 	dialog.hide()
 	main.queue_free()
