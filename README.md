@@ -159,6 +159,7 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   copy the build code (the whole build as one line: JSON → zlib → URL-safe base64, as in Path of Building) and load a build from someone's code.
 - **Import** (the "Import…" button in the top bar) — a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data
   JSON): class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings.
+  The dialog shows the request status; on a timeout (HTTPRequest.RESULT_TIMEOUT) it waits 3 s and retries, up to 3 times.
   The current build is replaced; unsupported things (Weaver, set items) and unrecognized ids are listed as warnings.
 - **Stats** (on the right) — attributes, resources, defenses, resistances; a row's tooltip is its breakdown.
 

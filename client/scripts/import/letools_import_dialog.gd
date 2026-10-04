@@ -10,9 +10,14 @@ enum Stage { IDLE, PAGE, DATA }
 const LEToolsImportScript: GDScript = preload("res://scripts/engine/letools_import.gd")
 
 const WARNINGS_SHOWN: int = 30
+const MAX_RETRIES: int = 3
+const RETRY_DELAY: float = 3.0  # keep in sync with RetryTimer.wait_time in the scene
 
 var _stage: Stage = Stage.IDLE
 var _planner_url: String = ""
+var _request_url: String = ""
+var _request_headers: PackedStringArray = []
+var _retries: int = 0
 
 
 func _ready() -> void:
@@ -23,6 +28,7 @@ func _ready() -> void:
 	%OpenSiteButton.pressed.connect(func() -> void: OS.shell_open(LEToolsImportScript.PLANNER_URL))
 	%LinkEdit.text_submitted.connect(_on_link_submitted)
 	%Http.request_completed.connect(_on_request_completed)
+	%RetryTimer.timeout.connect(_on_retry_timeout)
 
 
 func _on_about_to_popup() -> void:
@@ -51,12 +57,24 @@ func _on_load_pressed() -> void:
 func _start(stage: Stage, url: String, accept: Array[String]) -> void:
 	var headers: PackedStringArray = ["Referer: " + _planner_url]
 	headers.append_array(accept)
-	var err: int = %Http.request(url, headers)
+	_request_url = url
+	_request_headers = headers
+	_retries = 0
+	_send(stage)
+
+
+func _send(stage: Stage) -> void:
+	var err: int = %Http.request(_request_url, _request_headers)
 	if err != OK:
 		_fail(tr("Could not send the request (error code %d).") % err)
 		return
 	_stage = stage
 	%LoadButton.disabled = true
+
+
+func _on_retry_timeout() -> void:
+	_status(tr("Retrying the request (attempt %d of %d)…") % [_retries, MAX_RETRIES])
+	_send(_stage)
 
 
 func _finish() -> void:
@@ -71,6 +89,11 @@ func _fail(message: String) -> void:
 
 func _on_request_completed(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	var stage: Stage = _stage
+	if result == HTTPRequest.RESULT_TIMEOUT and _retries < MAX_RETRIES:
+		_retries += 1
+		_status(tr("The site did not answer in time. Retrying in %d s (attempt %d of %d)…") % [int(RETRY_DELAY), _retries, MAX_RETRIES])
+		%RetryTimer.start()
+		return
 	if result != HTTPRequest.RESULT_SUCCESS:
 		_fail(tr("Network error (code %d). Check your internet connection.") % result)
 		return

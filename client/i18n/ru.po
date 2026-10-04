@@ -13963,3 +13963,9 @@ msgstr "Бонусы сета:"
 
 msgid "%d items: %s"
 msgstr "%d предм.: %s"
+
+msgid "The site did not answer in time. Retrying in %d s (attempt %d of %d)…"
+msgstr "Сайт не ответил вовремя. Повтор через %d с (попытка %d из %d)…"
+
+msgid "Retrying the request (attempt %d of %d)…"
+msgstr "Повторяю запрос (попытка %d из %d)…"

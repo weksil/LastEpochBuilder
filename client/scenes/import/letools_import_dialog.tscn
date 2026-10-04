@@ -102,3 +102,8 @@ text = "Close"
 [node name="Http" type="HTTPRequest" parent="."]
 unique_name_in_owner = true
 timeout = 30.0
+
+[node name="RetryTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 3.0
+one_shot = true
