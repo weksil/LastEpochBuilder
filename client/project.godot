@@ -29,14 +29,13 @@ window/size/viewport_width=1600
 window/size/viewport_height=900
 window/stretch/aspect="expand"
 
-[internationalization]
-
-locale/translations=PackedStringArray("res://i18n/ru.po")
-locale/fallback="en"
-
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://i18n/ru.po")
 
 [physics]
 
