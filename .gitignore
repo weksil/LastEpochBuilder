@@ -22,3 +22,4 @@ venv/
 
 # Serena local state
 /.serena/cache/
+/.serena/project.local.yml
