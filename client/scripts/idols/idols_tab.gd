@@ -19,7 +19,6 @@ func _ready() -> void:
 		%AltarSelect.add_item(GameData.display_name(sub), int(sub["subTypeID"]))
 	%AltarSelect.item_selected.connect(_on_altar_selected)
 	%AltarEditButton.pressed.connect(_on_altar_edit)
-	%CorruptedCheck.toggled.connect(_on_corrupted_toggled)
 
 	_update_grid()
 
@@ -34,8 +33,15 @@ func _on_cell_pressed(row: int, col: int) -> void:
 	else:
 		slot = IdolGrid.key(row, col)
 
+	_edit(slot, tr("Idol %d:%d") % [row + 1, col + 1])
+
+
+## Shows the item editor (hidden until a cell or the altar is picked) for an idol cell or the altar.
+func _edit(slot: String, title: String) -> void:
 	_selected_slot = slot
-	%ItemEditor.edit_slot(slot, tr("Idol %d:%d") % [row + 1, col + 1])
+	%EditorHint.visible = false
+	%EditorScroll.visible = true
+	%ItemEditor.edit_slot(slot, title)
 	_update_grid()
 
 
@@ -46,7 +52,7 @@ func _on_altar_selected(index: int) -> void:
 	if sub_id == NO_ALTAR:
 		Build.clear_item(IdolGrid.ALTAR_SLOT)
 		if _selected_slot == IdolGrid.ALTAR_SLOT:
-			_selected_slot = ""
+			_close_editor()
 	else:
 		var old: Dictionary = Build.items.get(IdolGrid.ALTAR_SLOT, {})
 		var rolls: Array = []
@@ -56,13 +62,18 @@ func _on_altar_selected(index: int) -> void:
 			"affixes": old.get("affixes", []).duplicate(true)})
 	_drop_misplaced_idols()
 	if _selected_slot == IdolGrid.ALTAR_SLOT:
-		%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
+		_edit(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
+
+
+## Hides the item editor until another cell or the altar is picked.
+func _close_editor() -> void:
+	_selected_slot = ""
+	%EditorScroll.visible = false
+	%EditorHint.visible = true
 
 
 func _on_altar_edit() -> void:
-	_selected_slot = IdolGrid.ALTAR_SLOT
-	%ItemEditor.edit_slot(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
-	_update_grid()
+	_edit(IdolGrid.ALTAR_SLOT, tr("Idol altar"))
 
 
 ## Idols that no longer sit on open cells of the chosen altar are removed.
@@ -72,19 +83,8 @@ func _drop_misplaced_idols() -> void:
 			var a: Vector2i = IdolGrid.anchor(slot)
 			if not IdolGrid.fits(Build.items, a.x, a.y, int(Build.items[slot]["base"]), slot):
 				if _selected_slot == slot:
-					_selected_slot = ""
+					_close_editor()
 				Build.clear_item(slot)
-
-
-func _on_corrupted_toggled(on: bool) -> void:
-	if _filling or not Build.items.has(_selected_slot):
-		return
-	var item: Dictionary = Build.items[_selected_slot].duplicate(true)
-	if on:
-		item["corrupted"] = true
-	else:
-		item.erase("corrupted")
-	Build.set_item(_selected_slot, item)
 
 
 func _on_build_changed() -> void:
@@ -98,9 +98,6 @@ func _update_grid() -> void:
 	var altar: Dictionary = IdolGrid.altar(Build.items)
 	%AltarSelect.select(maxi(0, %AltarSelect.get_item_index(int(altar.get("sub", NO_ALTAR)) if not altar.is_empty() else NO_ALTAR)))
 	%AltarEditButton.disabled = altar.is_empty()
-	var idol: Dictionary = Build.items.get(_selected_slot, {}) if IdolGrid.is_idol_key(_selected_slot) else {}
-	%CorruptedCheck.visible = not idol.is_empty()
-	%CorruptedCheck.button_pressed = bool(idol.get("corrupted", false))
 	_filling = false
 
 	for cell: Node in %Grid.get_children():

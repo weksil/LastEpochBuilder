@@ -3295,9 +3295,6 @@ msgstr "Перезарядка: %s / %s = %s с"
 msgid "Corrupted"
 msgstr "Осквернённый"
 
-msgid "Corrupted idol (for altar properties)"
-msgstr "Осквернённый идол (для свойств алтаря)"
-
 msgid "Corrupted idol limit"
 msgstr "Лимит осквернённых идолов"
 
@@ -14053,3 +14050,27 @@ msgstr "Предметы"
 
 msgid "The chosen blessings give you:"
 msgstr "Выбранные благословения дают:"
+
+msgid "A corrupted item gets one more affix from the corruption pool (idols: also counts for the altar properties)."
+msgstr "Осквернённый предмет получает ещё один аффикс из пула осквернения (идолы: также учитываются свойствами алтаря)."
+
+msgid "Click a cell of the grid to place or edit an idol, or Edit altar to edit the altar."
+msgstr "Кликните по клетке сетки, чтобы поставить или изменить идол, или «Изменить алтарь», чтобы изменить алтарь."
+
+msgid "set"
+msgstr "сетовый"
+
+msgid "experimental"
+msgstr "экспериментальный"
+
+msgid "personal"
+msgstr "личный"
+
+msgid "weaver"
+msgstr "Ткач"
+
+msgid "enchantment"
+msgstr "зачарование"
+
+msgid "corrupted"
+msgstr "осквернение"

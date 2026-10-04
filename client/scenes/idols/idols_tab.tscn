@@ -43,12 +43,6 @@ layout_mode = 2
 disabled = true
 text = "Edit altar"
 
-[node name="CorruptedCheck" type="CheckBox" parent="Left"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Corrupted idol (for altar properties)"
-
 [node name="Grid" type="GridContainer" parent="Left"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -181,7 +175,18 @@ layout_mode = 2
 metadata/row = 4
 metadata/col = 4
 
+[node name="EditorHint" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_type_variation = &"MutedLabel"
+text = "Click a cell of the grid to place or edit an idol, or Edit altar to edit the altar."
+autowrap_mode = 3
+
 [node name="EditorScroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 0

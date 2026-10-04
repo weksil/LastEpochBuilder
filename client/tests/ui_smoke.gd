@@ -5,6 +5,8 @@ extends Node
 
 
 var tree_switch_failed: bool = false
+## Idols offered in the Items tab, other items in the Idols tab, or broken sealed / corrupted affix rows.
+var split_failed: bool = false
 
 
 func _ready() -> void:
@@ -126,6 +128,18 @@ func _ready() -> void:
 		else:
 			hover_failed = true
 			print("FAIL: no hover tooltip for the first entry of %s" % hover_select.name)
+
+	# the Items tab offers no idols in any slot; a regular item has the sealed row
+	for item_slot: String in BuildMods.SLOTS:
+		items_tab._edit_slot(item_slot)
+		await _frames(1)
+		_check_editor_bases(editor, false, item_slot)
+	items_tab._edit_slot("weapon")
+	await _frames(1)
+	if not editor.get_node("%Affixes/Sealed").visible:
+		split_failed = true
+		print("FAIL: no sealed affix row on a regular weapon")
+	_check_corrupted_row(editor, "weapon")
 
 	# unique helmet through the editor
 	var helmet_row: Node = items_tab.get_node("%SlotList/Slot_helmet")
@@ -268,12 +282,19 @@ func _ready() -> void:
 	tabs.current_tab = 3
 	await _frames(1)
 	var idols_tab: Node = tabs.get_child(3)
+	if idols_tab.get_node("%EditorScroll").visible:
+		split_failed = true
+		print("FAIL: the idol editor is shown before a cell is picked")
 	for cell: Node in idols_tab.get_node("%Grid").get_children():
 		if not cell.disabled:
 			cell.pressed.emit()
 			break
 	await _frames(1)
 	var idol_editor: Node = idols_tab.get_node("%ItemEditor")
+	if not idols_tab.get_node("%EditorScroll").visible:
+		split_failed = true
+		print("FAIL: the idol editor is hidden after a cell is picked")
+	_check_editor_bases(idol_editor, true, "idol cell")
 	var idol_sub: SearchSelect = idol_editor.get_node("%SubSelect")
 	if idol_sub.item_count > 1:
 		idol_sub.select(1)
@@ -285,6 +306,10 @@ func _ready() -> void:
 		idol_affix.item_selected.emit(1)
 	idol_editor.get_node("%SaveButton").pressed.emit()
 	await _frames(2)
+	if idol_editor.get_node("%Affixes/Sealed").visible:
+		split_failed = true
+		print("FAIL: an idol shows the sealed affix row")
+	_check_corrupted_row(idol_editor, "idol")
 	for item_slot: String in Build.items:
 		if IdolGrid.is_idol_key(item_slot):
 			print("idol %s: %s" % [item_slot, str(Build.items[item_slot])])
@@ -348,7 +373,7 @@ func _ready() -> void:
 	if bool(Build.player_state["haste"]):
 		failed = true
 		print("FAIL: reset_player_conditions")
-	failed = failed or tree_switch_failed or failed_items or search_failed or hover_failed or pending_failed
+	failed = failed or split_failed or tree_switch_failed or failed_items or search_failed or hover_failed or pending_failed
 	# interface language: the Russian catalogue (res://i18n/ru.po) is loaded and switching the locale works
 	var saved_locale: String = TranslationServer.get_locale()
 	TranslationServer.set_locale("ru")
@@ -363,6 +388,55 @@ func _ready() -> void:
 	TranslationServer.set_locale(saved_locale)
 	print("UI SMOKE %s" % ("FAIL" if failed else "DONE"))
 	get_tree().quit(1 if failed else 0)
+
+
+## Every base and unique the editor offers is an idol (want_idol) or none is.
+func _check_editor_bases(editor: Node, want_idol: bool, label: String) -> void:
+	var sub_select: SearchSelect = editor.get_node("%SubSelect")
+	var unique_select: SearchSelect = editor.get_node("%UniqueSelect")
+	var base_ids: Array[int] = []
+	for i in range(sub_select.item_count):
+		if sub_select.get_item_id(i) != ItemEditor.EMPTY_ID:
+			@warning_ignore("integer_division")
+			base_ids.append(sub_select.get_item_id(i) / ItemEditor.SUB_ID_STRIDE)
+	for i in range(unique_select.item_count):
+		if unique_select.get_item_id(i) != ItemEditor.UNIQUE_EMPTY_ID:
+			base_ids.append(int(GameData.unique(unique_select.get_item_id(i)).get("baseType", -1)))
+	if want_idol and sub_select.item_count < 2:
+		split_failed = true
+		print("FAIL: %s offers no idol bases" % label)
+	for base_id: int in base_ids:
+		if GameData.is_idol_type(int(GameData.item_base(base_id).get("type", -1))) != want_idol:
+			split_failed = true
+			print("FAIL: %s offers %s" % [label, GameData.display_name(GameData.item_base(base_id))])
+			return
+	print("%s: %d bases and uniques, all %s" % [label, base_ids.size(), "idols" if want_idol else "non-idols"])
+
+
+## The Corrupted box opens the corrupted row with corruption affixes only; clearing it closes the row again.
+func _check_corrupted_row(editor: Node, label: String) -> void:
+	var check: CheckBox = editor.get_node("%CorruptedCheck")
+	var row: Node = editor.get_node("%Affixes/Corrupted")
+	check.button_pressed = true
+	var select: SearchSelect = row.get_node("Top/AffixSelect")
+	var count: int = 0
+	for i in range(select.item_count):
+		var affix: Dictionary = GameData.affix(select.get_item_id(i))
+		if select.get_item_id(i) != ItemEditor.EMPTY_ID:
+			count += 1
+			if str(affix.get("specialAffixType", "")) != "Corrupted":
+				split_failed = true
+				print("FAIL: %s corrupted row offers %s" % [label, affix.get("name", "?")])
+				break
+	if not row.visible or count == 0:
+		split_failed = true
+		print("FAIL: %s: the Corrupted box does not open a corrupted row with affixes" % label)
+	check.button_pressed = false
+	if row.visible:
+		split_failed = true
+		print("FAIL: %s: clearing Corrupted keeps the corrupted row" % label)
+	editor._revert()
+	print("%s corrupted affixes: %d" % [label, count])
 
 
 func _frames(n: int) -> void:

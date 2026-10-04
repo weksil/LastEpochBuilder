@@ -122,12 +122,16 @@ Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `
   (visible only if `maxValue > value`), `%ValueLabel` = `AffixMath.roll_value(...)` via `LE.fmt_num`/`fmt_pct`
   (INCREASED and values < 1 for resistances — in %).
 - `%Affixes` holds 4 ready-made rows `Prefix1, Prefix2, Suffix1, Suffix2` (scene `affix_row.tscn`):
-  `%KindLabel` "Prefix"/"Suffix"; `%AffixSelect` item 0 "— none —", then `GameData.affixes_for_type(base.type)` with the required
-  `type` (PREFIX/SUFFIX), text `name`, id = affixId; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
+  `%KindLabel` "Prefix"/"Suffix"; `%AffixSelect` item 0 "— none —", then `GameData.affixes_for_type(base.type, class, kinds)` with the
+  required `type` (PREFIX/SUFFIX), text `name` (special kinds get a marker: "(set)" in the set colour, "(experimental)", "(personal)",
+  "(weaver)", "(enchantment)"), id = affixId; kinds `ItemEditor.AFFIX_KINDS` (Standard, Set, Experimental, Personal, IdolWeaver,
+  IdolEnchantment; set and idol affixes filtered by class), the corrupted row offers only `Corrupted` affixes; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
   `%ValueLabel` — the values of all the affix's `properties` for the tier and roll (via `AffixMath`, with the base's `effect_modifier`).
   `%RollSlider` covers every tier: value = (tier − 1) · 256 + roll, `tick_count = tiers + 1` marks the tier borders; `%TierSpin` follows it.
-  Extra rows `Sealed` (index 4) and `Corrupted` (index 5) show the sealed / corrupted affix ("Sealed prefix", "Corrupted suffix"…) only when
-  the item has one. Entries without a valid `index` (LE Tools imports, older saves) are placed by `ItemCompare.place_affixes` (by the affix
+  Extra rows `Sealed` (index 4) and `Corrupted` (index 5) hold the sealed / corrupted affix ("Sealed prefix", "Corrupted suffix"…): the
+  sealed row is shown on regular equipment (not idols, uniques or the altar), the corrupted row when the item is corrupted (`%CorruptedCheck`
+  in `%AffixesHeader` next to the title sets `corrupted: true`, clearing it drops the corrupted affix; a corrupted subtype is always
+  corrupted, the box is then disabled); either row is also shown whenever it holds an affix. Entries without a valid `index` (LE Tools imports, older saves) are placed by `ItemCompare.place_affixes` (by the affix
   type; imports flag `sealed` / `corrupted`); an affix the lists do not offer is appended to its row's list. A unique keeps the four
   regular rows for legendary affixes (title "Legendary affixes (legendary potential)" or "(Weaver's Will)" by `legendaryType`); a set item
   shows only its mods, the affix block only with the affixes it carries.
@@ -159,7 +163,10 @@ First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scen
 
 ## Idols — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Scene `scenes/idols/idols_tab.tscn`: `%Grid` holds 25 ready-made `IdolCell` buttons with `metadata/row`, `metadata/col`;
-on the right `%ItemEditor` (the same `ItemEditor`, it understands idol keys itself). The helper is `IdolGrid` (`scripts/engine/idol_grid.gd`):
+on the right `%EditorScroll` > `%ItemEditor` (the same `ItemEditor`, it understands idol keys itself; it offers only idol bases and
+unique idols that fit the cell, each named with its grid size "[WxH]" from `IdolGrid.size_of`). Until a cell or "Edit altar" is picked `%EditorScroll` is hidden and `%EditorHint` asks to pick a cell;
+it is hidden again when the edited altar or idol is removed by an altar change. The corrupted flag of an idol (altar properties) is the
+editor's `%CorruptedCheck`. The helper is `IdolGrid` (`scripts/engine/idol_grid.gd`):
 `key(row, col)`, `anchor(slot)`, `is_open(row, col)`, `occupancy(Build.items) -> {Vector2i(row, col): slot}`, `size_of(base_id)`.
 The grids `GameData.idol_grid()` / `altar_grid(sub)` are already in `[row][col]` rows: the game's `unlockMatrix` is stored as `[x][y]` and transposed on load.
 - Clicking a cell: if the cell is occupied by an idol → `slot = occupancy[cell]`; otherwise (an open cell) → `slot = IdolGrid.key(row, col)`.

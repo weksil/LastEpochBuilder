@@ -13,6 +13,12 @@ const UNIQUE_EMPTY_ID: int = 99998
 const AFFIX_ROWS: Array[String] = ["Prefix1", "Prefix2", "Suffix1", "Suffix2", "Sealed", "Corrupted"]
 ## Slot kind of every %TypeSelect entry, indexed by the entry id.
 const TYPE_SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "relic"]
+## specialAffixType kinds offered in the prefix / suffix / sealed rows; the corrupted row offers CORRUPTED_KINDS.
+const AFFIX_KINDS: Array[String] = ["Standard", "Set", "Experimental", "Personal", "IdolWeaver", "IdolEnchantment"]
+const CORRUPTED_KINDS: Array[String] = ["Corrupted"]
+## Marker after the name of a special affix in the affix lists (translated).
+const KIND_TAGS: Dictionary = {"Set": "set", "Experimental": "experimental", "Personal": "personal", "IdolWeaver": "weaver",
+	"IdolEnchantment": "enchantment", "Corrupted": "corrupted"}
 ## Values of an affix roll slider per tier: the slider covers every tier, value = (tier - 1) * TIER_SPAN + roll.
 const TIER_SPAN: int = 256
 ## %SubSelect entry id = baseTypeID * SUB_ID_STRIDE + subTypeID.
@@ -54,6 +60,7 @@ func _ready() -> void:
 	%EquipButton.pressed.connect(_on_equip)
 	%SaveButton.pressed.connect(_save)
 	%RevertButton.pressed.connect(_revert)
+	%CorruptedCheck.toggled.connect(_on_corrupted_toggled)
 	%DiffTimer.timeout.connect(_update_diff)
 	for row_name: String in AFFIX_ROWS:
 		var row: Node = %Affixes.get_node(row_name)
@@ -177,7 +184,8 @@ func _fill() -> void:
 			return level_a < level_b
 		return GameData.display_name(a) < GameData.display_name(b))
 	for u: Dictionary in unique_items:
-		%UniqueSelect.add_item(GameData.display_name(u) + ItemCompare.level_suffix(ItemCompare.unique_level(u)), int(u["uniqueID"]))
+		%UniqueSelect.add_item(GameData.display_name(u) + _idol_size_tag(GameData.item_base(int(u.get("baseType", -1))))
+			+ ItemCompare.level_suffix(ItemCompare.unique_level(u)), int(u["uniqueID"]))
 		%UniqueSelect.set_item_variation(%UniqueSelect.item_count - 1,
 			&"RaritySet" if int(u.get("isSetItem", 0)) != 0 else &"RarityUnique")
 	%UniqueSelect.select(maxi(0, %UniqueSelect.get_item_index(unique_id)))
@@ -212,12 +220,16 @@ func _fill() -> void:
 	%EquipButton.visible = in_stash and has_item
 	%StashCopyButton.visible = has_item and BuildMods.SLOTS.has(_slot)
 	%StashMoveButton.visible = has_item and not in_stash and BuildMods.SLOTS.has(_slot)
-	for node_name: String in ["%AffixesTitle", "%Affixes", "%ClearButton"]:
-		get_node(node_name).visible = has_item
-	# a unique takes affixes as a legendary (legendary potential, Weaver's Will); a set item shows only its mods
-	if is_set and (item.get("affixes", []) as Array).is_empty():
-		%AffixesTitle.visible = false
-		%Affixes.visible = false
+	%ClearButton.visible = has_item
+	# a unique takes affixes as a legendary (legendary potential, Weaver's Will); a set item shows only its mods (and
+	# the corrupted affix); _fill_affixes hides the rows that do not apply
+	var any_row: bool = %Affixes.get_children().any(func(row: Node) -> bool: return row.visible)
+	%CorruptedCheck.visible = has_item and _slot != IdolGrid.ALTAR_SLOT
+	%AffixesHeader.visible = has_item and (any_row or %CorruptedCheck.visible)
+	%AffixesTitle.visible = any_row
+	%Affixes.visible = has_item and any_row
+	%CorruptedCheck.set_pressed_no_signal(_is_corrupted(item))
+	%CorruptedCheck.disabled = _corrupted_subtype(item)
 	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
 	%Implicits.visible = has_item
 	%UniqueTitle.visible = has_unique
@@ -244,7 +256,7 @@ func _fill_sub_select(item: Dictionary) -> void:
 		for sub: Dictionary in b.get("subItems", []):
 			if _sub_allowed(sub):
 				entries.append({"id": int(b["baseTypeID"]) * SUB_ID_STRIDE + int(sub["subTypeID"]), "name": GameData.display_name(sub),
-					"base": GameData.display_name(b), "level": int(sub.get("levelRequirement", 0))})
+					"base": GameData.display_name(b), "level": int(sub.get("levelRequirement", 0)), "size": _idol_size_tag(b)})
 	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if a["level"] != b["level"]:
 			return a["level"] < b["level"]
@@ -253,6 +265,7 @@ func _fill_sub_select(item: Dictionary) -> void:
 		var label: String = entry["name"]
 		if show_base:
 			label += " (%s)" % entry["base"]
+		label += entry["size"]
 		%SubSelect.add_item(label + ItemCompare.level_suffix(entry["level"]), entry["id"])
 	if item.has("base"):
 		var current_id: int = int(item["base"]) * SUB_ID_STRIDE + int(item.get("sub", 0))
@@ -263,6 +276,14 @@ func _fill_sub_select(item: Dictionary) -> void:
 		%SubSelect.select(%SubSelect.get_item_index(current_id))
 	else:
 		%SubSelect.select(0)
+
+
+## " [WxH]" (grid width x height, e.g. " [1x3]") after the name of an idol base, "" for other bases.
+func _idol_size_tag(base: Dictionary) -> String:
+	if not GameData.is_idol_type(int(base.get("type", -1))):
+		return ""
+	var size: Vector2i = IdolGrid.size_of(int(base["baseTypeID"]))
+	return " [%dx%d]" % [size.x, size.y]
 
 
 func _unique_tooltip(unique_id: int) -> Control:
@@ -402,20 +423,37 @@ func _placed_affixes(item: Dictionary) -> Array:
 	return ItemCompare.place_affixes(item.get("affixes", []), IdolGrid.is_idol_key(_slot))
 
 
+## True when the item counts as corrupted: the user's flag or a corrupted subtype.
+func _is_corrupted(item: Dictionary) -> bool:
+	return bool(item.get("corrupted", false)) or _corrupted_subtype(item)
+
+
+func _corrupted_subtype(item: Dictionary) -> bool:
+	return int(GameData.item_sub(int(item.get("base", -1)), int(item.get("sub", -1))).get("isCorruptedSubtype", 0)) != 0
+
+
+## Affixes of the given kinds that roll on the base, split by type: {"PREFIX": [...], "SUFFIX": [...]}.
+func _affix_options(base: Dictionary, kinds: Array) -> Dictionary:
+	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
+	if not base.is_empty():
+		for aff: Dictionary in GameData.affixes_for_type(int(base.get("type", -1)), _class_name(), kinds):
+			if options.has(str(aff.get("type", ""))):
+				options[str(aff["type"])].append(aff)
+	return options
+
+
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	var stored: Array = _placed_affixes(item)
 	var is_set: bool = item.has("unique") and int(GameData.unique(int(item["unique"])).get("isSetItem", 0)) != 0
-	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
-	if not base.is_empty():
-		var class_name_str: String = str(GameData.get_class_data(Build.class_id).get("className", ""))
-		for aff: Dictionary in GameData.affixes_for_type(int(base.get("type", -1)), class_name_str):
-			if options.has(str(aff.get("type", ""))):
-				options[str(aff["type"])].append(aff)
+	var is_idol: bool = IdolGrid.is_idol_key(_slot)
+	var options: Dictionary = _affix_options(base, AFFIX_KINDS)
+	var corrupted_options: Dictionary = _affix_options(base, CORRUPTED_KINDS)
 	for r in range(AFFIX_ROWS.size()):
 		var row: Node = %Affixes.get_node(AFFIX_ROWS[r])
 		var select: SearchSelect = row.get_node("Top/AffixSelect")
 		var extra: bool = r >= ItemCompare.SEALED_AFFIX_INDEX
 		var kinds: Array = ["PREFIX", "SUFFIX"] if extra else (["PREFIX"] if r < 2 else ["SUFFIX"])
+		var pool: Dictionary = corrupted_options if r == ItemCompare.CORRUPTED_AFFIX_INDEX else options
 		var entry: Dictionary = {}
 		for e: Dictionary in stored:
 			if int(e.get("index", -1)) == r:
@@ -424,8 +462,14 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		select.clear()
 		select.add_item(tr("— none —"), EMPTY_ID)
 		for kind: String in kinds:
-			for aff: Dictionary in options[kind]:
-				select.add_item(str(aff.get("name", "")), int(aff["affixId"]))
+			for aff: Dictionary in pool[kind]:
+				var special: String = str(aff.get("specialAffixType", "Standard"))
+				var label: String = str(aff.get("name", ""))
+				if KIND_TAGS.has(special):
+					label += " (%s)" % tr(KIND_TAGS[special])
+				select.add_item(label, int(aff["affixId"]))
+				if special == "Set":
+					select.set_item_variation(select.item_count - 1, &"RaritySet")
 		# an affix the lists do not offer (another class, imported data) is still shown in its row
 		if affix_id != EMPTY_ID and select.get_item_index(affix_id) < 0 and not GameData.affix(affix_id).is_empty():
 			select.add_item(str(GameData.affix(affix_id).get("name", "")), affix_id)
@@ -446,11 +490,15 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		slider.set_value_no_signal(float((tier - 1) * TIER_SPAN + clampi(int(entry.get("roll", 255)), 0, TIER_SPAN - 1)))
 		for path: String in ["Top/TierLabel", "Top/TierSpin", "Bottom"]:
 			row.get_node(path).visible = affix_id != EMPTY_ID
-		# idols have one prefix and one suffix; the sealed / corrupted rows only when the item has one; set items show
-		# only the affixes they carry
-		row.visible = not (IdolGrid.is_idol_key(_slot) and (r == 1 or r == 3))
-		if extra or is_set:
-			row.visible = row.visible and affix_id != EMPTY_ID
+		# idols have one prefix and one suffix; the sealed row on regular equipment, the corrupted row on corrupted
+		# items; set items show only the affixes they carry; a stored affix is always shown
+		var has_affix: bool = affix_id != EMPTY_ID
+		if r == ItemCompare.SEALED_AFFIX_INDEX:
+			row.visible = has_affix or not (is_idol or item.has("unique") or _slot == IdolGrid.ALTAR_SLOT)
+		elif r == ItemCompare.CORRUPTED_AFFIX_INDEX:
+			row.visible = has_affix or (_is_corrupted(item) and _slot != IdolGrid.ALTAR_SLOT)
+		else:
+			row.visible = not (is_idol and (r == 1 or r == 3)) and (has_affix or not is_set)
 
 
 # --- storing user edits ---------------------------------------------------------------
@@ -476,6 +524,23 @@ func _on_unique_selected(index: int) -> void:
 func _keep_name(new_item: Dictionary, old_item: Dictionary) -> void:
 	if old_item.has("name"):
 		new_item["name"] = old_item["name"]
+
+
+## The Corrupted box: sets the item flag (it opens the corrupted affix row); clearing it drops the corrupted affix.
+func _on_corrupted_toggled(on: bool) -> void:
+	if _filling:
+		return
+	var item: Dictionary = _item().duplicate(true)
+	if item.is_empty():
+		return
+	if on:
+		item["corrupted"] = true
+	else:
+		item.erase("corrupted")
+		item["affixes"] = _placed_affixes(item).filter(func(entry: Dictionary) -> bool:
+			return int(entry.get("index", -1)) != ItemCompare.CORRUPTED_AFFIX_INDEX)
+	_commit(item)
+	_fill()
 
 
 func _on_name_changed(text: String) -> void:

@@ -316,15 +316,18 @@ func item_sub(base: int, sub: int) -> Dictionary:
 	return {}
 
 
-## Standard affixes that can roll on an equipment or idol type. Idol affixes are also filtered by class.
-func affixes_for_type(type_id: int, class_filter: String = "") -> Array:
+## Affixes of the given specialAffixType kinds (Standard, Set, Corrupted, Experimental, Personal, IdolWeaver,
+## IdolEnchantment) that can roll on an equipment or idol type. Idol and set affixes are also filtered by class.
+func affixes_for_type(type_id: int, class_filter: String = "", kinds: Array = ["Standard"]) -> Array:
 	var result: Array = []
 	var rolls_on: String = "Idols" if is_idol_type(type_id) else "Equipment"
 	for aff: Dictionary in _affixes_list:
-		if aff.get("rollsOn") != rolls_on or aff.get("specialAffixType") != "Standard":
+		if aff.get("rollsOn") != rolls_on or not kinds.has(aff.get("specialAffixType")):
 			continue
 		var classes_ok: Array = aff.get("classSpecificity", [])
-		if rolls_on == "Idols" and class_filter != "" and not classes_ok.is_empty() 				and not classes_ok.has("NonSpecific") and not classes_ok.has(class_filter):
+		var class_bound: bool = rolls_on == "Idols" or aff.get("specialAffixType") == "Set"
+		if class_bound and class_filter != "" and not classes_ok.is_empty() \
+				and not classes_ok.has("NonSpecific") and not classes_ok.has(class_filter):
 			continue
 		for t: Variant in aff.get("canRollOn", []):
 			if int(t) == type_id:
