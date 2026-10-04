@@ -147,8 +147,8 @@ func _ready() -> void:
 	var blessings_json: Variant = _load_json(data_dir.path_join("blessings.json"))
 	if blessings_json is Dictionary:
 		_blessings_json = blessings_json
-		for blessing: Dictionary in blessings_json.get("data", []):
-			_blessings_by_id[int(blessing.get("blessingId", -1))] = blessing
+		for entry: Dictionary in blessings_json.get("data", []):
+			_blessings_by_id[int(entry.get("blessingId", -1))] = entry
 
 
 func _index_ability_name(ab: Dictionary) -> void:
@@ -446,12 +446,12 @@ func blessings_for_timeline(timeline_id: int) -> Array[int]:
 			result.append_array(difficulty.get("firstSlotBlessings", []))
 	# Remove duplicates
 	var seen: Dictionary = {}
-	var unique: Array[int] = []
+	var deduped: Array[int] = []
 	for id: int in result:
 		if not seen.has(id):
 			seen[id] = true
-			unique.append(id)
-	return unique
+			deduped.append(id)
+	return deduped
 
 
 var _altar_grids: Array = []

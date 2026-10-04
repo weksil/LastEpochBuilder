@@ -217,15 +217,15 @@ static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: D
 			event_rate = float(build.skills[slot].get("inputs", {}).get(key, 0.0))
 		if on == "crit" and crit < 0.0:
 			crit = float(_build_damage(head_ctx)["cc"])
-		var tr: Dictionary = trigger_rate(trig, uses, hits, maxf(crit, 0.0), event_rate)
+		var rate_info: Dictionary = trigger_rate(trig, uses, hits, maxf(crit, 0.0), event_rate)
 		var sub: Dictionary = GameData.ability_by_name(str(trig.get("ability", "")))
 		var label: String = str(sub.get("abilityName", sub.get("name", trig.get("ability", ""))))
 		var copy: Dictionary = trig.duplicate()
-		copy["rate"] = float(tr["rate"])
+		copy["rate"] = float(rate_info["rate"])
 		copy["label"] = label
-		copy["note"] = LE.t("trigger, node \"%s\": %s") % [trig.get("node", "?"), tr["text"]]
+		copy["note"] = LE.t("trigger, node \"%s\": %s") % [trig.get("node", "?"), rate_info["text"]]
 		result.append(copy)
-		if float(tr["rate"]) <= 0.0:
+		if float(rate_info["rate"]) <= 0.0:
 			var note: String = LE.t("Trigger \"%s\" (%s): 0 events/s — set the rate on the Calculations tab") % [label, _event_name(on)]
 			if not notes.has(note):
 				notes.append(note)
@@ -781,7 +781,7 @@ static func _weapon_rate(build: Node, tags: int) -> float:
 
 # --- 8.5 against the enemy ----------------------------------------------------------
 
-static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dictionary, notes: Array[String]) -> Array:
+static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dictionary, _notes: Array[String]) -> Array:
 	var enemy: Dictionary = build.enemy
 	var e: StatStore = Enemy.store(enemy)
 	var hit: bool = ctx["hit"]

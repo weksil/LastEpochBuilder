@@ -71,16 +71,16 @@ static func store(enemy: Dictionary) -> StatStore:
 ## Return resistance for damage type i (0..6).
 ## Returns a StatQuery with added = final resistance value and mods = contributing mods.
 ## Only considers added values; increased/more are ignored per spec.
-static func resistance(store: StatStore, i: int) -> StatQuery:
+static func resistance(stat_store: StatStore, i: int) -> StatQuery:
 	var res_group: int = LE.RES_GROUP[i]
 	var res_sp: int = LE.RES_SP[i]
 	var neg_res_sp: int = LE.NEG_RES_SP[i]
 
 	# Start with base resistance for this type
-	var q := store.query_untagged(res_sp)
+	var q := stat_store.query_untagged(res_sp)
 
 	# Add ALL_RES contribution
-	var all_res_q = store.query_untagged(LE.ALL_RES)
+	var all_res_q = stat_store.query_untagged(LE.ALL_RES)
 
 	# Build result with only added values
 	var result := StatQuery.new()
@@ -91,25 +91,25 @@ static func resistance(store: StatStore, i: int) -> StatQuery:
 
 	# Add group-specific resistances
 	if res_group == 1:  # Elemental
-		var elem_res_q = store.query_untagged(LE.ELEMENTAL_RES)
+		var elem_res_q = stat_store.query_untagged(LE.ELEMENTAL_RES)
 		result.added += elem_res_q.added
 		result.mods += elem_res_q.mods
 	elif res_group == 2:  # Phys/Void
-		var phys_void_res_q = store.query_untagged(LE.PHYS_VOID_RES)
+		var phys_void_res_q = stat_store.query_untagged(LE.PHYS_VOID_RES)
 		result.added += phys_void_res_q.added
 		result.mods += phys_void_res_q.mods
 	elif res_group == 4:  # Necrotic/Poison
-		var necro_poison_res_q = store.query_untagged(LE.NECRO_POISON_RES)
+		var necro_poison_res_q = stat_store.query_untagged(LE.NECRO_POISON_RES)
 		result.added += necro_poison_res_q.added
 		result.mods += necro_poison_res_q.mods
 
 	# Subtract negative resistances
-	var neg_res_q = store.query_untagged(neg_res_sp)
+	var neg_res_q = stat_store.query_untagged(neg_res_sp)
 	result.added -= neg_res_q.added
 	result.mods += neg_res_q.mods
 
 	if res_group == 1:  # Elemental
-		var neg_elem_res_q = store.query_untagged(LE.NEG_ELEMENTAL_RES)
+		var neg_elem_res_q = stat_store.query_untagged(LE.NEG_ELEMENTAL_RES)
 		result.added -= neg_elem_res_q.added
 		result.mods += neg_elem_res_q.mods
 
@@ -117,9 +117,9 @@ static func resistance(store: StatStore, i: int) -> StatQuery:
 
 
 ## Calculate effective armour value.
-static func armour(store: StatStore) -> float:
-	var armour_q = store.query_untagged(LE.ARMOUR)
-	var neg_armour_q = store.query_untagged(LE.NEG_ARMOUR)
+static func armour(stat_store: StatStore) -> float:
+	var armour_q = stat_store.query_untagged(LE.ARMOUR)
+	var neg_armour_q = stat_store.query_untagged(LE.NEG_ARMOUR)
 	return armour_q.value() - neg_armour_q.added
 
 

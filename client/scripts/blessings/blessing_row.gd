@@ -40,16 +40,18 @@ func _tooltip(blessing: Dictionary) -> String:
 	for implicit: Dictionary in blessing.get("implicits", []):
 		var value: float = float(implicit.get("value", 0.0))
 		var max_value: float = float(implicit.get("maxValue", value))
-		var range_text: String = ItemCompare.format_range(implicit, value, max_value)
-		match int(implicit.get("property", 0)):
-			104:  # IncreasedDropRate
-				lines.append(tr("%s increased %s drop rate") % [range_text, _drop_target(implicit)])
-			105:  # Experience
-				lines.append(tr("%s increased experience") % range_text)
-			_:
-				lines.append("%s %s" % [range_text, ItemCompare.prop_title(implicit)])
-	return "
-".join(lines)
+		lines.append(_effect_line(implicit, ItemCompare.format_range(implicit, value, max_value)))
+	return "\n".join(lines)
+
+
+## "+27% Void Resistance" / "+10% increased Glyph drop rate" for an already formatted value.
+func _effect_line(implicit: Dictionary, value_text: String) -> String:
+	match int(implicit.get("property", 0)):
+		104:  # IncreasedDropRate
+			return tr("%s increased %s drop rate") % [value_text, _drop_target(implicit)]
+		105:  # Experience
+			return tr("%s increased experience") % value_text
+	return "%s %s" % [value_text, ItemCompare.prop_title(implicit)]
 
 
 ## What a drop rate implicit applies to: specialTag 0 = equipment type (tags), 1 = rune / glyph, 2 = shards of an
@@ -124,25 +126,14 @@ func _update_value_label() -> void:
 		return
 
 	var roll: int = int(%RollSlider.value)
-	var implicits: Array = blessing.get("implicits", [])
 	var parts: Array[String] = []
 
-	for implicit: Dictionary in implicits:
-		var property: int = int(implicit.get("property", 0))
-		if property == 104:  # Skip IncreasedDropRate
-			continue
-
+	for implicit: Dictionary in blessing.get("implicits", []):
 		var modType: String = str(implicit.get("modType", "ADDED"))
 		var value: float = float(implicit.get("value", 0.0))
 		var maxValue: float = float(implicit.get("maxValue", value))
 		var rounding: String = str(implicit.get("rounding", "Integer"))
-
 		var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0.0)
-		var formatted: String = LE.fmt_num(rolled_value)
+		parts.append(_effect_line(implicit, ItemCompare.format_value(implicit, rolled_value)))
 
-		if modType == "INCREASED" or modType == "MORE":
-			formatted += "%"
-
-		parts.append(formatted)
-
-	%ValueLabel.text = " / ".join(parts)
+	%ValueLabel.text = "\n".join(parts)

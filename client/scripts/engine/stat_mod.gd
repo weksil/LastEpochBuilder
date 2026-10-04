@@ -16,13 +16,13 @@ var on_curse_hit: bool = false  # Ailment chance that applies only when the curs
 ## Create a StatMod with the given parameters.
 ## kind: "added" | "increased" | "more" | "quotient"
 ## quotient: more = 1/(1+x) - 1
-static func make(property: int, kind: String, value: float, tags: int = 0, source: String = "", special: int = 0, extra: int = 0) -> StatMod:
+static func make(prop: int, kind: String, value: float, tag_mask: int = 0, src: String = "", special_id: int = 0, extra_id: int = 0) -> StatMod:
 	var mod = StatMod.new()
-	mod.property = property
-	mod.tags = tags
-	mod.source = source
-	mod.special = special
-	mod.extra = extra
+	mod.property = prop
+	mod.tags = tag_mask
+	mod.source = src
+	mod.special = special_id
+	mod.extra = extra_id
 
 	match kind:
 		"added":

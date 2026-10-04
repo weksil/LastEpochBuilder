@@ -34,8 +34,8 @@ static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 			# the model's own input: unset means its declared default (the UI shows the default, not "off")
 			var slot: int = ctx.get("slot", -1)
 			var build: Node = ctx["build"]
-			var inputs: Dictionary = build.skills[slot].get("inputs", {}) if slot >= 0 and slot < build.skills.size() else {}
-			if not bool(inputs.get(cond.get_slice(":", 1), model["input"].get("default", false))):
+			var skill_inputs: Dictionary = build.skills[slot].get("inputs", {}) if slot >= 0 and slot < build.skills.size() else {}
+			if not bool(skill_inputs.get(cond.get_slice(":", 1), model["input"].get("default", false))):
 				return condition_name(cond, ctx)
 			continue
 		if not holds(cond, ctx):
@@ -143,8 +143,7 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 
 
 ## Display name of the source.
-static func source_name(per: String, ctx: Dictionary, model: Dictionary = {}) -> String:
-	var build: Node = ctx["build"]
+static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -> String:
 	var kind: String = per.get_slice(":", 0)
 	var arg: String = per.get_slice(":", 1) if per.contains(":") else ""
 	match kind:
@@ -230,8 +229,7 @@ static func _player_flag(build: Node, flag: String) -> bool:
 
 
 ## Display name of the condition.
-static func condition_name(cond: String, ctx: Dictionary) -> String:
-	var build: Node = ctx["build"]
+static func condition_name(cond: String, _ctx: Dictionary) -> String:
 	var kind: String = cond.get_slice(":", 0)
 	var arg: String = cond.get_slice(":", 1)
 	match kind:

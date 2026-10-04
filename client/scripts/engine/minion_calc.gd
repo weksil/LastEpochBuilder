@@ -171,24 +171,24 @@ static func _defence_base(label: String, base: float, q: StatQuery, extra_text: 
 
 
 ## Rows {label, text, breakdown}: health, armour, 7 resistances, damage taken multiplier.
-static func defence_rows(minion_store: StatStore, minion: Dictionary) -> Array[Dictionary]:
+static func defence_rows(stats: StatStore, minion: Dictionary) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	var health: Dictionary = minion.get("health", {})
-	rows.append(_defence_base(LE.t("Minion health"), float(health.get("maxHealth", 0.0)), minion_store.query_untagged(LE.HEALTH)))
+	rows.append(_defence_base(LE.t("Minion health"), float(health.get("maxHealth", 0.0)), stats.query_untagged(LE.HEALTH)))
 
 	var protection: Dictionary = minion.get("protection", {})
-	var shred: float = minion_store.sum_added_untagged([LE.NEG_ARMOUR])
-	var armour_row: Dictionary = _defence_base(LE.t("Armor"), float(protection.get("armour", 0.0)), minion_store.query_untagged(LE.ARMOUR),
+	var shred: float = stats.sum_added_untagged([LE.NEG_ARMOUR])
+	var armour_row: Dictionary = _defence_base(LE.t("Armor"), float(protection.get("armour", 0.0)), stats.query_untagged(LE.ARMOUR),
 		(LE.t(" − %s (shred)") % LE.fmt_num(shred)) if shred != 0.0 else "")
 	armour_row["text"] = str(LE.round_half_even(float(armour_row["value"]) - shred))
 	rows.append(armour_row)
 
 	for i in range(LE.RES_SP.size()):
-		var q: StatQuery = Enemy.resistance(minion_store, i)
+		var q: StatQuery = Enemy.resistance(stats, i)
 		rows.append({"label": LE.t("Resistance: %s") % LE.t(TYPE_NAMES[i]), "text": LE.fmt_pct(q.added), "breakdown": q.breakdown()})
 
-	var taken: StatQuery = minion_store.query(LE.DAMAGE_TAKEN, 0)
-	var taken_pet: StatQuery = minion_store.query(LE.DAMAGE_TAKEN, LE.PET_RESISTED)
+	var taken: StatQuery = stats.query(LE.DAMAGE_TAKEN, 0)
+	var taken_pet: StatQuery = stats.query(LE.DAMAGE_TAKEN, LE.PET_RESISTED)
 	var taken_value: float = (1.0 + taken.increased) * taken.more
 	var taken_pet_value: float = (1.0 + taken_pet.increased) * taken_pet.more
 	rows.append({

@@ -15,7 +15,8 @@ func show_set(set_id: int) -> void:
 	var set_data: Dictionary = GameData.set_data(set_id)
 	var count: int = int(BuildMods.set_counts(Build).get(set_id, 0))
 	var members: Array = set_data.get("items", [])
-	(get_node("%SetTitle") as Label).text = tr("Set \"%s\": %d/%d items equipped") % [str(set_data.get("setName", "")), count, members.size()]
+	var title_label: Label = get_node("%SetTitle")
+	title_label.text = tr("Set \"%s\": %d/%d items equipped") % [str(set_data.get("setName", "")), count, members.size()]
 	var equipped: Dictionary = {}
 	for slot: String in Build.items:
 		if (Build.items[slot] as Dictionary).has("unique"):

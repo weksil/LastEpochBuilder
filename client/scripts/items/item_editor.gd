@@ -277,6 +277,7 @@ func _sub_tooltip(entry_id: int) -> Control:
 	if entry_id == EMPTY_ID:
 		return null
 	var tip: ItemInfoTooltip = info_tooltip_scene.instantiate()
+	@warning_ignore("integer_division")
 	tip.show_sub(entry_id / SUB_ID_STRIDE, entry_id % SUB_ID_STRIDE)
 	return tip
 
@@ -511,6 +512,7 @@ func _on_sub_selected(index: int) -> void:
 		_remove()
 	else:
 		var item: Dictionary = _item()
+		@warning_ignore("integer_division")
 		var base_id: int = entry_id / SUB_ID_STRIDE
 		# another base starts without affixes; the same base keeps them
 		var kept_affixes: Array = item.get("affixes", []) if int(item.get("base", -1)) == base_id else []

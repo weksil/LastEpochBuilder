@@ -192,7 +192,7 @@ static func _declare_buff_input(result: Dictionary) -> void:
 
 # --- 5.1.5 blessings -------------------------------------------------------
 
-static func _add_blessings(build: Node, store: StatStore, notes: Array[String]) -> void:
+static func _add_blessings(build: Node, store: StatStore, _notes: Array[String]) -> void:
 	for timeline_id: Variant in build.blessings:
 		var blessing_data: Dictionary = build.blessings[timeline_id]
 		var blessing_id: int = int(blessing_data.get("id", -1))
@@ -482,7 +482,7 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 
 # --- 5.3 attributes -----------------------------------------------------------
 
-static func _add_attributes(store: StatStore, notes: Array[String]) -> void:
+static func _add_attributes(store: StatStore, _notes: Array[String]) -> void:
 	var all_attr: float = _sum_added_any_tags(store, LE.ALL_ATTRIBUTES)
 	for attr: Dictionary in GameData.attributes:
 		var index: int = int(attr.get("attribute", 0))

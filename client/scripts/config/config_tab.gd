@@ -161,7 +161,7 @@ static func _set_spin(spin: SpinBox, value: float) -> void:
 func _apply_player() -> void:
 	var show_all: bool = _show_all.button_pressed
 	var active: PackedStringArray = []
-	var hidden: int = 0
+	var hidden_count: int = 0
 	var no_source_on: int = 0
 	var shown: int = 0
 
@@ -175,7 +175,7 @@ func _apply_player() -> void:
 		if check.visible:
 			shown += 1
 		else:
-			hidden += 1
+			hidden_count += 1
 		check.theme_type_variation = &"CheckBoxNoSource" if (on and not has_source) else &""
 		check.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
 		if on:
@@ -195,7 +195,7 @@ func _apply_player() -> void:
 		if row.visible:
 			shown += 1
 		else:
-			hidden += 1
+			hidden_count += 1
 		row.theme_type_variation = &"RowIdle" if value == 0 else (&"RowActive" if has_source else &"RowNoSource")
 		row.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
 		if value != 0:
@@ -207,7 +207,7 @@ func _apply_player() -> void:
 	_player_flags_grid.visible = _any_visible(_player_flag_checks)
 	_player_values_box.visible = _any_visible(_player_value_spins, 2)
 	_player_shown = shown
-	_set_summary(_player_summary, active, tr("Nothing enabled"), hidden, no_source_on)
+	_set_summary(_player_summary, active, tr("Nothing enabled"), hidden_count, no_source_on)
 
 
 static func _source_tooltip(reason: String, has_source: bool) -> String:
@@ -224,7 +224,7 @@ func _apply_enemy() -> void:
 	var show_all: bool = _show_all.button_pressed
 	var flags: Dictionary = Build.enemy.get("flags", {}) as Dictionary
 	var active: PackedStringArray = []
-	var hidden: int = 0
+	var hidden_count: int = 0
 	var shown: int = 0
 	var no_source_on: int = 0
 	for check: CheckBox in _enemy_flag_checks:
@@ -238,7 +238,7 @@ func _apply_enemy() -> void:
 		if check.visible:
 			shown += 1
 		else:
-			hidden += 1
+			hidden_count += 1
 		check.theme_type_variation = &"CheckBoxNoSource" if (changed_from_default and not has_source) else &""
 		check.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
 		if on:
@@ -248,7 +248,7 @@ func _apply_enemy() -> void:
 	_enemy_flags_grid.visible = shown > 0
 	_enemy_flags_title.visible = shown > 0
 	_enemy_shown = shown
-	_set_summary(_enemy_summary, active, tr("No special states"), hidden, no_source_on)
+	_set_summary(_enemy_summary, active, tr("No special states"), hidden_count, no_source_on)
 
 
 static func _any_visible(controls: Array, parent_levels: int = 0) -> bool:
@@ -282,7 +282,7 @@ func _apply_ailments() -> void:
 	var needle: String = _filter.text.strip_edges().to_lower()
 	var ailments: Dictionary = Build.enemy.get("ailments", {}) as Dictionary
 	var active: PackedStringArray = []
-	var hidden: int = 0
+	var hidden_count: int = 0
 	var no_source_on: int = 0
 	var order: PackedStringArray = []
 	var listed_count: int = 0
@@ -295,7 +295,7 @@ func _apply_ailments() -> void:
 		row.show_state(stacks, str(source["reason"]), has_source)
 		var listed: bool = show_all or has_source or stacks > 0 or row.has_edit_focus()
 		if not listed:
-			hidden += 1
+			hidden_count += 1
 		row.visible = listed and (needle == "" or row.search_text.contains(needle))
 		if listed:
 			listed_count += 1
@@ -316,12 +316,12 @@ func _apply_ailments() -> void:
 			index += 1
 
 	_ailments_shown = listed_count
-	_set_summary(_ailment_summary, active, tr("Nothing applied"), hidden, no_source_on)
+	_set_summary(_ailment_summary, active, tr("Nothing applied"), hidden_count, no_source_on)
 
 
 # --- summaries ------------------------------------------------------------------------------------
 
-func _set_summary(label: Label, active: PackedStringArray, empty_text: String, hidden: int, no_source_on: int) -> void:
+func _set_summary(label: Label, active: PackedStringArray, empty_text: String, hidden_count: int, no_source_on: int) -> void:
 	var text: String = empty_text
 	var shown: PackedStringArray = active
 	if active.size() > MAX_LISTED:
@@ -332,8 +332,8 @@ func _set_summary(label: Label, active: PackedStringArray, empty_text: String, h
 	label.theme_type_variation = &"SummaryActive" if not active.is_empty() else &"SummaryOff"
 	if no_source_on > 0:
 		text += tr(" · without source: %d") % no_source_on
-	if hidden > 0:
-		text += tr(" · %d hidden without source") % hidden
+	if hidden_count > 0:
+		text += tr(" · %d hidden_count without source") % hidden_count
 	label.text = text
 
 
