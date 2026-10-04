@@ -100,6 +100,9 @@ func _on_select_button_toggled(pressed: bool) -> void:
 
 	if pressed:
 		selected.emit(slot_index)
+	else:
+		# a second click on the shown slot keeps it shown
+		set_selected(true)
 
 
 func set_selected(on: bool) -> void:

@@ -4,6 +4,9 @@ extends Node
 ## Run: Godot_console.exe --headless --path client res://tests/ui_smoke.tscn
 
 
+var tree_switch_failed: bool = false
+
+
 func _ready() -> void:
 	# a script error stops this coroutine; never hang the headless run
 	get_tree().create_timer(180.0).timeout.connect(func() -> void:
@@ -51,6 +54,22 @@ func _ready() -> void:
 		Build.add_skill_point(0, int(node["id"]))
 	await _frames(2)
 	print("skill points: %d" % Build.skill_points_spent(0))
+	# switching the shown tree: «Дерево» of slot 2 (another skill) and back to slot 1
+	var skills_tab: Node = tabs.get_child(1)
+	var slot2: Node = skills_tab.get_node("%Slots").get_child(1)
+	var select2: OptionButton = slot2.get_node("%SkillSelect")
+	select2.select(select2.item_count - 1)
+	select2.item_selected.emit(select2.item_count - 1)
+	slot2.get_node("%SelectButton").toggled.emit(true)
+	await _frames(2)
+	var title2: String = skills_tab.get_node("%TreeTitle").text
+	slot.get_node("%SelectButton").toggled.emit(true)
+	await _frames(2)
+	var title1: String = skills_tab.get_node("%TreeTitle").text
+	print("tree titles: slot 2 «%s», slot 1 «%s»" % [title2, title1])
+	if title2 == title1 or title1 != str(GameData.get_ability("fi9").get("abilityName", "")):
+		tree_switch_failed = true
+		print("FAIL: skill tree does not follow the selected slot")
 
 	# items tab: pick a wand through the editor
 	tabs.current_tab = 2
@@ -191,6 +210,7 @@ func _ready() -> void:
 	if bool(Build.player_state["haste"]):
 		failed = true
 		print("FAIL: reset_player_conditions")
+	failed = failed or tree_switch_failed
 	print("UI SMOKE %s" % ("FAIL" if failed else "DONE"))
 	get_tree().quit(1 if failed else 0)
 

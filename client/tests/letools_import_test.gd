@@ -200,6 +200,12 @@ func _apply(doc: Dictionary) -> void:
 		var r: Dictionary = SkillCalc.compute(Build, slot)
 		_check("SkillCalc slot %d title" % slot, r["title"] != "", true)
 		_check("SkillCalc slot %d sections" % slot, r["sections"].size() > 0, true)
+		if slot == 4:
+			# Harvest bleeds: its «Айлмент: Bleed» section has its own «DPS по врагу»; the headline must be the total
+			var total: Dictionary = CalcSummary.find_row(r, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
+			var hit_dps: Dictionary = CalcSummary.find_row(r, "DPS удара по врагу", CalcSummary.ENEMY_SECTION)
+			_check("Harvest headline DPS > hit DPS", float(total.get("text", "0")) > float(hit_dps.get("text", "0")), true)
+			_check("Harvest headline DPS > 11000", float(total.get("text", "0")) > 11000.0, true)
 		if slot == 0:
 			print("--- %s" % r["title"])
 			for section: Dictionary in r["sections"]:

@@ -198,7 +198,9 @@ func _rebuild_sections(entries: Array[Dictionary]) -> void:
 			rows_container.add_child(row)
 			var key: String = str(item["key"])
 			var data: Dictionary = item["row"]
-			row.setup(key, data, alt, _expanded.has(key), str(data.get("label", "")) == KEY_ROW_LABEL)
+			# the total of a component, not the «DPS по врагу» of an ailment section
+			var is_key: bool = str(data.get("label", "")) == KEY_ROW_LABEL and str(entry["title"]).ends_with(CalcSummary.ENEMY_SECTION)
+			row.setup(key, data, alt, _expanded.has(key), is_key)
 			row.expanded_changed.connect(_on_row_expanded)
 			_row_nodes.append(row)
 			alt = not alt

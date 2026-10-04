@@ -123,7 +123,7 @@ func _update_skill_summary() -> void:
 		return
 
 	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill)
-	var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL)
+	var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
 	if dps.is_empty():
 		return
 	summary_card.visible = true

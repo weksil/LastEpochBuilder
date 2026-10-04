@@ -21,6 +21,7 @@ func _on_build_changed() -> void:
 	for slot_child in %Slots.get_children():
 		if slot_child is SkillSlot:
 			slot_child.sync()
+			slot_child.set_selected(slot_child.slot_index == Build.selected_skill)
 
 	# Rebuild tree if class changed
 	if Build.class_id != _built_class:
