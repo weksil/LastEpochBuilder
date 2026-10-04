@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/set_block.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/items/set_bonus_line.tscn" id="2_line"]
+
+[node name="SetBlock" type="VBoxContainer"]
+theme_override_constants/separation = 2
+script = ExtResource("1_script")
+line_scene = ExtResource("2_line")
+
+[node name="SetTitle" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SetHeader"
+text = "Set"
+
+[node name="SetItems" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SetBonusesTitle" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Set bonuses:"
+
+[node name="SetBonuses" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 2

@@ -65,6 +65,7 @@ research/        research notes (01…07m) and data
   data/          enums, tables and JSON with game data (data/game/*.json)
 client/          Godot project
   assets/trees/  skill and passive tree sprites from the game client (PNGs in Git LFS; tools/extract/extract_tree_art.py)
+  assets/items/  item type icons from the game client (PNGs in Git LFS; tools/extract/extract_item_icons.py)
   i18n/          ru.po — Russian translation (msgid = English source text)
   data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
@@ -133,6 +134,12 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   (stats from attributes and resistances, conditional bonuses, properties of specific skills, multipliers of damage taken);
   conditional ones are enabled by flags in the Conditions tab, the rest are listed in "Not counted" with the reason.
   Values are quantized as in the game (`AffixMath`, 07a §6), taking the base's effect modifier into account.
+  Items are switched as in Path of Building: each slot is a dropdown of the character's items that fit it (equipped ones carry
+  the symbolic icon of their slot, unequipped ones are grey); below a separator the unequipped items are listed and "+" adds a new one (type, then base, in the editor). Items can be
+  renamed; an affix slider runs through all its tiers, ticks mark the tier borders; the unique, base and affix lists have a search field.
+  Hovering any item shows what equipping it changes (DPS vs enemy of the selected skill and every numeric character stat). The editor
+  shows the bonuses of a set item's set: active ones in green, inactive ones grey. Slot icons are the item type icons of the game's
+  prophecy / monolith rewards (`client/assets/items/`, `tools/extract/extract_item_icons.py`).
 - **Blessings** — one per timeline (normal or grand) with a roll, implicits go into stats.
 - **Idols** — a 5×5 grid, an altar (13 subtypes) changes the grid and gives refracted cells and properties; clicking a cell places an idol,
   the base size is checked against free cells; 1 prefix and 1 suffix, affixes and large idols are by class.

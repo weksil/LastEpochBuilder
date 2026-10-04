@@ -1,13 +1,28 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=17 format=3]
 
+[ext_resource type="PackedScene" path="res://scenes/common/search_select.tscn" id="9_search"]
 [ext_resource type="Script" path="res://scripts/items/item_editor.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/items/implicit_row.tscn" id="2_implicit"]
 [ext_resource type="PackedScene" path="res://scenes/items/affix_row.tscn" id="3_affix"]
+[ext_resource type="PackedScene" path="res://scenes/items/set_bonus_line.tscn" id="4_set_line"]
+[ext_resource type="PackedScene" path="res://scenes/items/item_info_tooltip.tscn" id="8_info"]
+[ext_resource type="Texture2D" path="res://assets/items/helmet.png" id="icon_helmet"]
+[ext_resource type="Texture2D" path="res://assets/items/armor.png" id="icon_armor"]
+[ext_resource type="Texture2D" path="res://assets/items/belt.png" id="icon_belt"]
+[ext_resource type="Texture2D" path="res://assets/items/boots.png" id="icon_boots"]
+[ext_resource type="Texture2D" path="res://assets/items/gloves.png" id="icon_gloves"]
+[ext_resource type="Texture2D" path="res://assets/items/sword.png" id="icon_sword"]
+[ext_resource type="Texture2D" path="res://assets/items/shield.png" id="icon_shield"]
+[ext_resource type="Texture2D" path="res://assets/items/amulet.png" id="icon_amulet"]
+[ext_resource type="Texture2D" path="res://assets/items/ring.png" id="icon_ring"]
+[ext_resource type="Texture2D" path="res://assets/items/relic.png" id="icon_relic"]
 
 [node name="ItemEditor" type="PanelContainer"]
 size_flags_horizontal = 3
 script = ExtResource("1_script")
 implicit_row_scene = ExtResource("2_implicit")
+set_line_scene = ExtResource("4_set_line")
+info_tooltip_scene = ExtResource("8_info")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -23,42 +38,100 @@ size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
 text = "Slot"
 
+[node name="NameEdit" type="LineEdit" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Item name: type your own or leave it empty for the default one."
+theme_type_variation = &"TitleEdit"
+placeholder_text = "Item"
+max_length = 60
+select_all_on_focus = true
+
+[node name="EquipButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Equip this item; the item it replaces becomes unequipped."
+text = "Equip"
+
+[node name="StashCopyButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Add a copy of this item to the unequipped items."
+text = "Copy"
+
+[node name="StashMoveButton" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+tooltip_text = "Unequip this item and keep it among the unequipped items."
+text = "Move to stash"
+
 [node name="ClearButton" type="Button" parent="VBox/Header"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Remove item"
 
+[node name="TypeRow" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TypeLabel" type="Label" parent="VBox/TypeRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Type"
+
+[node name="TypeSelect" type="OptionButton" parent="VBox/TypeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_constants/icon_max_width = 22
+selected = 0
+item_count = 10
+popup/item_0/text = "Helmet"
+popup/item_0/icon = ExtResource("icon_helmet")
+popup/item_0/id = 0
+popup/item_1/text = "Body armor"
+popup/item_1/icon = ExtResource("icon_armor")
+popup/item_1/id = 1
+popup/item_2/text = "Belt"
+popup/item_2/icon = ExtResource("icon_belt")
+popup/item_2/id = 2
+popup/item_3/text = "Boots"
+popup/item_3/icon = ExtResource("icon_boots")
+popup/item_3/id = 3
+popup/item_4/text = "Gloves"
+popup/item_4/icon = ExtResource("icon_gloves")
+popup/item_4/id = 4
+popup/item_5/text = "Weapon"
+popup/item_5/icon = ExtResource("icon_sword")
+popup/item_5/id = 5
+popup/item_6/text = "Off-hand"
+popup/item_6/icon = ExtResource("icon_shield")
+popup/item_6/id = 6
+popup/item_7/text = "Amulet"
+popup/item_7/icon = ExtResource("icon_amulet")
+popup/item_7/id = 7
+popup/item_8/text = "Ring"
+popup/item_8/icon = ExtResource("icon_ring")
+popup/item_8/id = 8
+popup/item_9/text = "Relic"
+popup/item_9/icon = ExtResource("icon_relic")
+popup/item_9/id = 9
+
 [node name="UniqueRow" type="HBoxContainer" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="UniqueLabel" type="Label" parent="VBox/UniqueRow"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-text = "Unique"
-
-[node name="UniqueSelect" type="OptionButton" parent="VBox/UniqueRow"]
+[node name="UniqueSelect" parent="VBox/UniqueRow" instance=ExtResource("9_search")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-focus_mode = 0
-
-[node name="BaseRow" type="HBoxContainer" parent="VBox"]
-layout_mode = 2
-
-[node name="BaseLabel" type="Label" parent="VBox/BaseRow"]
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-text = "Base"
-
-[node name="BaseSelect" type="OptionButton" parent="VBox/BaseRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
 
 [node name="SubRow" type="HBoxContainer" parent="VBox"]
 unique_name_in_owner = true
@@ -70,11 +143,10 @@ layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Item"
 
-[node name="SubSelect" type="OptionButton" parent="VBox/SubRow"]
+[node name="SubSelect" parent="VBox/SubRow" instance=ExtResource("9_search")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-focus_mode = 0
 
 [node name="ImplicitsTitle" type="Label" parent="VBox"]
 unique_name_in_owner = true
@@ -103,6 +175,22 @@ layout_mode = 2
 theme_type_variation = &"BreakdownLabel"
 autowrap_mode = 3
 
+[node name="SetBonuses" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="SetTitle" type="Label" parent="VBox/SetBonuses"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Set"
+
+[node name="SetLines" type="VBoxContainer" parent="VBox/SetBonuses"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 2
+
 [node name="AffixesTitle" type="Label" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -130,4 +218,4 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Pick an item base"
+text = "Pick an item"

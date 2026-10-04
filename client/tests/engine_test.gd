@@ -21,6 +21,7 @@ func _ready() -> void:
 	_curse_hits()
 	_high_health_vs_dummy()
 	_detonations_and_maintained_dot()
+	_item_compare()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -932,3 +933,83 @@ func _count_rows(r: Dictionary, section: String, label: String) -> float:
 				if row["label"] == label:
 					n += 1
 	return float(n)
+
+
+func _flag(label: String, ok: bool) -> void:
+	_check(label, 1.0 if ok else 0.0, 1.0)
+
+
+## Stat diff of an item swap (ItemCompare) and the stash swap of Build (docs/UI.md "Items").
+func _item_compare() -> void:
+	print("--- item compare and stash on the sample build")
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
+	var slots: Array[String] = []
+	for slot: String in BuildMods.SLOTS:
+		if Build.items.has(slot):
+			slots.append(slot)
+	_flag("compare: the sample build has equipped items", not slots.is_empty())
+	var items_before: String = var_to_str(Build.items)
+	var base: Dictionary = ItemCompare.snapshot(Build)
+	_flag("compare: the snapshot has the DPS row", base.has("dps"))
+	_flag("compare: the snapshot has character stats", base.size() > 10)
+
+	var same_empty: bool = true
+	var removal_changes: bool = false
+	for slot: String in slots:
+		same_empty = same_empty and ItemCompare.diff(base, ItemCompare.snapshot_with_item(Build, slot, Build.items[slot])).is_empty()
+		removal_changes = removal_changes or not ItemCompare.diff(base, ItemCompare.snapshot_with_item(Build, slot, {})).is_empty()
+	_flag("compare: the same item gives an empty diff", same_empty)
+	_flag("compare: removing equipped items changes the stats", removal_changes)
+	_flag("compare: Build.items is unchanged", var_to_str(Build.items) == items_before)
+	_flag("compare: an absent slot stays absent", not ItemCompare.snapshot_with_item(Build, "altar", {}).is_empty() and not Build.items.has("altar"))
+	_check("format_delta +", 1.0 if ItemCompare.format_delta(12.5, false) == "+12.5" else 0.0, 1.0)
+	_check("format_delta −%", 1.0 if ItemCompare.format_delta(-0.03, true) == "−3%" else 0.0, 1.0)
+
+	# stash swap: the old item takes the place of the equipped stash item
+	var slot: String = slots[0]
+	var old_item: Dictionary = (Build.items[slot] as Dictionary).duplicate(true)
+	var new_item: Dictionary = old_item.duplicate(true)
+	new_item["affixes"] = []
+	new_item["implicit_rolls"] = []
+	Build.stash.clear()
+	Build.stash_add(new_item)
+	Build.stash_add(old_item)
+	Build.equip_from_stash(0, slot)
+	_flag("stash: the stash item is equipped", var_to_str(Build.items[slot]) == var_to_str(new_item))
+	_flag("stash: the old item sits at the same index", Build.stash.size() == 2 and var_to_str(Build.stash[0]) == var_to_str(old_item))
+	Build.unequip_to_stash(slot)
+	_flag("stash: unequip moves the item to the end", not Build.items.has(slot) and Build.stash.size() == 3)
+	Build.equip_from_stash(2, slot)
+	_flag("stash: equip into an empty slot removes the entry", Build.items.has(slot) and Build.stash.size() == 2)
+	Build.equip_item(slot, old_item)
+	_flag("stash: equip_item stashes the replaced item", Build.stash.size() == 3 and var_to_str(Build.items[slot]) == var_to_str(old_item))
+	Build.stash_remove(99)
+	Build.stash_remove(0)
+	_flag("stash: remove is bounds-checked", Build.stash.size() == 2)
+	Build.stash_set(0, old_item)
+	_flag("stash: stash_set replaces the entry", var_to_str(Build.stash[0]) == var_to_str(old_item))
+
+	# moving between slots: rings swap, an item that does not fit the source slot goes to the stash
+	var ring_a: Dictionary = ItemCompare.new_item(_first_base("ring1"), 0, [])
+	var ring_b: Dictionary = ring_a.duplicate(true)
+	ring_b["implicit_rolls"] = [0]
+	Build.set_item("ring1", ring_a)
+	Build.set_item("ring2", ring_b)
+	var stash_size: int = Build.stash.size()
+	var both: Dictionary = ItemCompare.snapshot_with_items(Build, {"ring1": ring_b, "ring2": ring_a})
+	_flag("move: swapping two rings changes nothing", ItemCompare.diff(ItemCompare.snapshot(Build), both).is_empty())
+	Build.move_item("ring1", "ring2")
+	_flag("move: rings swap", var_to_str(Build.items["ring2"]) == var_to_str(ring_a) and var_to_str(Build.items["ring1"]) == var_to_str(ring_b))
+	Build.set_item("helmet", ItemCompare.new_item(_first_base("helmet"), 0, []))
+	Build.set_item("amulet", ItemCompare.new_item(_first_base("amulet"), 0, []))
+	Build.move_item("amulet", "helmet")  # not a real use, but checks the "does not fit back" branch
+	_flag("move: the replaced item that does not fit goes to the stash",
+		not Build.items.has("amulet") and Build.stash.size() == stash_size + 1)
+
+
+func _first_base(slot: String) -> int:
+	for base: Dictionary in GameData.item_bases:
+		if ItemCompare.fits_slot(slot, base):
+			return int(base["baseTypeID"])
+	return -1

@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/slot_row.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://theme/icons/arrow_down.svg" id="2_arrow"]
+
+[node name="SlotRow" type="HBoxContainer"]
+theme_override_constants/separation = 4
+script = ExtResource("1_script")
+
+[node name="SlotIcon" type="TextureRect" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ItemButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+tooltip_text = "Choose which of the character's items is equipped in this slot; the slot opens in the editor."
+text = "—"
+icon = ExtResource("2_arrow")
+alignment = 0
+text_overrun_behavior = 3
+icon_alignment = 2

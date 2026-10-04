@@ -1,53 +1,109 @@
 class_name ItemEditor extends PanelContainer
 
-## Edits one equipment slot of Build.items (docs/UI.md "Items"). Controls live in item_editor.tscn.
+## Edits one equipment slot of Build.items or one unequipped item of Build.stash (docs/UI.md "Items").
+## Controls live in item_editor.tscn.
+
+## The edited item is gone or moved: the parent should show the slot instead.
+signal slot_requested(slot: String)
 
 const EMPTY_ID: int = 99999
 const UNIQUE_EMPTY_ID: int = 99998
 const AFFIX_ROWS: Array[String] = ["Prefix1", "Prefix2", "Suffix1", "Suffix2"]
-const ONE_HANDED_TYPES: Array[String] = [
-	"ONE_HANDED_AXE", "ONE_HANDED_DAGGER", "ONE_HANDED_MACES", "ONE_HANDED_SCEPTRE", "ONE_HANDED_SWORD", "WAND", "ONE_HANDED_FIST"]
-const SLOT_TYPES: Dictionary = {
-	"helmet": ["HELMET"], "body": ["BODY_ARMOR"], "belt": ["BELT"], "boots": ["BOOTS"], "gloves": ["GLOVES"],
-	"amulet": ["AMULET"], "ring1": ["RING"], "ring2": ["RING"], "relic": ["RELIC"],
-	"offhand": ["SHIELD", "QUIVER", "CATALYST"],
-	"altar": ["IDOL_ALTAR"],
-}
+## Slot kind of every %TypeSelect entry, indexed by the entry id.
+const TYPE_SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "relic"]
+## Values of an affix roll slider per tier: the slider covers every tier, value = (tier - 1) * TIER_SPAN + roll.
+const TIER_SPAN: int = 256
+## %SubSelect entry id = baseTypeID * SUB_ID_STRIDE + subTypeID.
+const SUB_ID_STRIDE: int = 1000
 
 @export var implicit_row_scene: PackedScene
+@export var set_line_scene: PackedScene
+@export var info_tooltip_scene: PackedScene
 
+## The slot being edited; in stash mode the slot kind of the stashed item (it filters bases and uniques).
 var _slot: String = ""
+## Index of the edited Build.stash entry, -1 when an equipment slot is edited.
+var _stash_index: int = -1
 var _filling: bool = false
 var _shown_item: Dictionary = {}
 
 
 func _ready() -> void:
 	%UniqueSelect.item_selected.connect(_on_unique_selected)
-	%BaseSelect.item_selected.connect(_on_base_selected)
 	%SubSelect.item_selected.connect(_on_sub_selected)
+	%TypeSelect.item_selected.connect(_on_type_selected)
+	%UniqueSelect.tooltip_builder = _unique_tooltip
+	%SubSelect.tooltip_builder = _sub_tooltip
+	%NameEdit.text_changed.connect(_on_name_changed)
 	%ClearButton.pressed.connect(_on_clear)
+	%StashCopyButton.pressed.connect(func() -> void: Build.stash_add(_item()))
+	%StashMoveButton.pressed.connect(_on_stash_move)
+	%EquipButton.pressed.connect(_on_equip)
 	for row_name: String in AFFIX_ROWS:
 		var row: Node = %Affixes.get_node(row_name)
 		row.get_node("Top/KindLabel").text = tr("Prefix") if row_name.begins_with("Prefix") else tr("Suffix")
 		row.get_node("Top/AffixSelect").item_selected.connect(func(_i: int) -> void: _store_affixes(true))
-		row.get_node("Top/TierSpin").value_changed.connect(func(_v: float) -> void: _store_affixes(false))
+		row.get_node("Top/AffixSelect").tooltip_builder = _affix_tooltip
+		row.get_node("Top/TierSpin").value_changed.connect(_on_tier_spin.bind(row))
 		row.get_node("Bottom/RollSlider").value_changed.connect(func(_v: float) -> void: _store_affixes(false))
 	Build.changed.connect(_on_build_changed)
+	Build.stash_changed.connect(_on_build_changed)
 
 
 func edit_slot(slot: String, title: String) -> void:
+	_stash_index = -1
 	_slot = slot
+	%NameEdit.release_focus()
 	%SlotTitle.text = title
 	_fill()
 
 
+## Edits Build.stash[index], an unequipped item.
+func edit_stash(index: int) -> void:
+	_stash_index = index
+	%NameEdit.release_focus()
+	_slot = ItemCompare.target_slot(Build.stash[index], "") if index >= 0 and index < Build.stash.size() else ""
+	%SlotTitle.text = tr("Unequipped item")
+	_fill()
+
+
+## Makes sure the Type row is shown (it is only used for unequipped items).
+func focus_type() -> void:
+	%TypeRow.visible = _stash_index >= 0
+	if %TypeSelect.focus_mode != Control.FOCUS_NONE:
+		%TypeSelect.grab_focus()
+
+
 func _item() -> Dictionary:
+	if _stash_index >= 0:
+		return Build.stash[_stash_index] if _stash_index < Build.stash.size() else {}
 	return Build.items.get(_slot, {})
 
 
+## Stores an edited item in the slot or the stash entry.
+func _put(item: Dictionary) -> void:
+	if _stash_index >= 0:
+		Build.stash_set(_stash_index, item)
+	else:
+		Build.set_item(_slot, item)
+
+
+## Removes the item: deletes the stash entry (and hands over to the slot), or empties the slot.
+func _remove() -> void:
+	if _stash_index >= 0:
+		Build.stash_remove(_stash_index)
+		slot_requested.emit(_slot)
+	else:
+		Build.clear_item(_slot)
+
+
 func _on_build_changed() -> void:
-	if _slot != "" and not _filling and _item() != _shown_item:
+	if _stash_index >= 0 and _stash_index >= Build.stash.size():
+		slot_requested.emit.call_deferred(_slot)
+	elif (_slot != "" or _stash_index >= 0) and not _filling and _item() != _shown_item:
 		_fill.call_deferred()
+	if _slot != "":
+		_update_set_bonuses.call_deferred()
 
 
 # --- filling controls from Build ---------------------------------------------------
@@ -69,24 +125,19 @@ func _fill() -> void:
 		var u_base: Dictionary = GameData.item_base(int(u.get("baseType", -1)))
 		if _base_fits_slot(u_base):
 			unique_items.append(u)
-	unique_items.sort_custom(func(a, b): return str(GameData.display_name(a)) < str(GameData.display_name(b)))
+	unique_items.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var level_a: int = ItemCompare.unique_level(a)
+		var level_b: int = ItemCompare.unique_level(b)
+		if level_a != level_b:
+			return level_a < level_b
+		return GameData.display_name(a) < GameData.display_name(b))
 	for u: Dictionary in unique_items:
-		%UniqueSelect.add_item(GameData.display_name(u), int(u["uniqueID"]))
+		%UniqueSelect.add_item(GameData.display_name(u) + ItemCompare.level_suffix(ItemCompare.unique_level(u)), int(u["uniqueID"]))
+		%UniqueSelect.set_item_variation(%UniqueSelect.item_count - 1,
+			&"RaritySet" if int(u.get("isSetItem", 0)) != 0 else &"RarityUnique")
 	%UniqueSelect.select(maxi(0, %UniqueSelect.get_item_index(unique_id)))
 
-	%BaseSelect.clear()
-	%BaseSelect.add_item(tr("— empty —"), EMPTY_ID)
-	for b: Dictionary in GameData.item_bases:
-		if _base_fits_slot(b):
-			%BaseSelect.add_item(GameData.display_name(b), int(b["baseTypeID"]))
-	%BaseSelect.select(maxi(0, %BaseSelect.get_item_index(base_id)))
-
-	%SubSelect.clear()
-	for sub: Dictionary in base.get("subItems", []):
-		if _sub_allowed(sub):
-			%SubSelect.add_item(GameData.display_name(sub), int(sub["subTypeID"]))
-	if not base.is_empty():
-		%SubSelect.select(maxi(0, %SubSelect.get_item_index(int(item.get("sub", 0)))))
+	_fill_sub_select(item)
 
 	var has_unique: bool = unique_id != UNIQUE_EMPTY_ID
 	_fill_implicits(item)
@@ -102,10 +153,21 @@ func _fill() -> void:
 		if str(unique.get("legendaryType", "")) == "LegendaryPotential":
 			%AffixesTitle.text = tr("Legendary affixes")
 
-	%BaseSelect.disabled = has_unique
 	%SubSelect.disabled = has_unique
 	%EmptyHint.visible = not has_item
-	for node_name: String in ["%SubRow", "%AffixesTitle", "%Affixes", "%ClearButton"]:
+	%SlotTitle.visible = not has_item
+	%NameEdit.visible = has_item
+	%NameEdit.placeholder_text = ItemCompare.default_title(item)
+	var custom_name: String = str(item.get("name", ""))
+	if not %NameEdit.has_focus() and %NameEdit.text != custom_name:
+		%NameEdit.text = custom_name
+	var in_stash: bool = _stash_index >= 0
+	%TypeRow.visible = in_stash
+	%TypeSelect.select(TYPE_SLOTS.find("ring1" if _slot == "ring2" else _slot))
+	%EquipButton.visible = in_stash and has_item
+	%StashCopyButton.visible = has_item and BuildMods.SLOTS.has(_slot)
+	%StashMoveButton.visible = has_item and not in_stash and BuildMods.SLOTS.has(_slot)
+	for node_name: String in ["%AffixesTitle", "%Affixes", "%ClearButton"]:
 		get_node(node_name).visible = has_item
 	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
 	%Implicits.visible = has_item
@@ -114,6 +176,67 @@ func _fill() -> void:
 	%UniqueText.visible = has_unique
 	_filling = false
 	_update_values()
+	_update_set_bonuses()
+
+
+## %SubSelect: every usable subtype of every base that fits the slot; id = baseTypeID * 1000 + subTypeID.
+func _fill_sub_select(item: Dictionary) -> void:
+	var bases: Array = []
+	for b: Dictionary in GameData.item_bases:
+		if _base_fits_slot(b):
+			bases.append(b)
+	var show_base: bool = bases.size() > 1
+	%SubSelect.clear()
+	if _stash_index < 0:
+		%SubSelect.add_item(tr("— empty —"), EMPTY_ID)
+	var entries: Array[Dictionary] = []
+	for b: Dictionary in bases:
+		for sub: Dictionary in b.get("subItems", []):
+			if _sub_allowed(sub):
+				entries.append({"id": int(b["baseTypeID"]) * SUB_ID_STRIDE + int(sub["subTypeID"]), "name": GameData.display_name(sub),
+					"base": GameData.display_name(b), "level": int(sub.get("levelRequirement", 0))})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if a["level"] != b["level"]:
+			return a["level"] < b["level"]
+		return a["name"] < b["name"])
+	for entry: Dictionary in entries:
+		var label: String = entry["name"]
+		if show_base:
+			label += " (%s)" % entry["base"]
+		%SubSelect.add_item(label + ItemCompare.level_suffix(entry["level"]), entry["id"])
+	if item.has("base"):
+		var current_id: int = int(item["base"]) * SUB_ID_STRIDE + int(item.get("sub", 0))
+		if %SubSelect.get_item_index(current_id) < 0:
+			# e.g. the subtype of a unique that is legacy or restricted to another class
+			var current: Dictionary = GameData.item_sub(int(item["base"]), int(item.get("sub", 0)))
+			%SubSelect.add_item(GameData.display_name(current) + ItemCompare.level_suffix(int(current.get("levelRequirement", 0))), current_id)
+		%SubSelect.select(%SubSelect.get_item_index(current_id))
+	else:
+		%SubSelect.select(0)
+
+
+func _unique_tooltip(unique_id: int) -> Control:
+	if unique_id == UNIQUE_EMPTY_ID or GameData.unique(unique_id).is_empty():
+		return null
+	var tip: ItemInfoTooltip = info_tooltip_scene.instantiate()
+	tip.show_unique(unique_id)
+	return tip
+
+
+func _sub_tooltip(entry_id: int) -> Control:
+	if entry_id == EMPTY_ID:
+		return null
+	var tip: ItemInfoTooltip = info_tooltip_scene.instantiate()
+	tip.show_sub(entry_id / SUB_ID_STRIDE, entry_id % SUB_ID_STRIDE)
+	return tip
+
+
+func _affix_tooltip(affix_id: int) -> Control:
+	if affix_id == EMPTY_ID or GameData.affix(affix_id).is_empty():
+		return null
+	var tip: ItemInfoTooltip = info_tooltip_scene.instantiate()
+	tip.show_affix(affix_id)
+	return tip
 
 
 func _base_fits_slot(base: Dictionary) -> bool:
@@ -121,11 +244,9 @@ func _base_fits_slot(base: Dictionary) -> bool:
 	if IdolGrid.is_idol_key(_slot):
 		var a: Vector2i = IdolGrid.anchor(_slot)
 		return GameData.is_idol_type(int(base.get("type", -1))) 			and IdolGrid.fits(Build.items, a.x, a.y, int(base["baseTypeID"]), _slot)
-	if _slot == "weapon":
-		return bool(base.get("isWeapon", false)) and type_name != "CROSSBOW"
-	if _slot == "offhand" and type_name in ONE_HANDED_TYPES:
-		return true
-	return type_name in SLOT_TYPES.get(_slot, [])
+	if _slot == "altar":
+		return type_name in ItemCompare.SLOT_TYPES.get(_slot, [])
+	return ItemCompare.fits_slot(_slot, base)
 
 
 ## Non-legacy subtypes usable by the current class.
@@ -133,7 +254,11 @@ func _sub_allowed(sub: Dictionary) -> bool:
 	if int(sub.get("isLegacySubType", 0)) != 0:
 		return false
 	var classes: Array = sub.get("classRequirement", [])
-	return classes.is_empty() or classes.has(str(GameData.get_class_data(Build.class_id).get("className", "")))
+	return classes.is_empty() or classes.has(_class_name())
+
+
+func _class_name() -> String:
+	return str(GameData.get_class_data(Build.class_id).get("className", ""))
 
 
 func _fill_implicits(item: Dictionary) -> void:
@@ -147,11 +272,20 @@ func _fill_implicits(item: Dictionary) -> void:
 		var imp: Dictionary = implicits[j]
 		var row: Node = implicit_row_scene.instantiate()
 		%Implicits.add_child(row)
-		row.get_node("%NameLabel").text = _prop_title(imp)
+		row.get_node("%NameLabel").text = ItemCompare.prop_title(imp)
 		var slider: HSlider = row.get_node("%RollSlider")
-		slider.visible = float(imp.get("maxValue", 0.0)) > float(imp.get("value", 0.0))
+		slider.visible = _implicit_rolls(imp)
 		slider.set_value_no_signal(float(rolls[j]) if j < rolls.size() else 255.0)
 		slider.value_changed.connect(_on_implicit_roll.bind(j))
+
+
+## True when the implicit's value depends on the roll (a fixed value, also after rounding, gets no slider).
+func _implicit_rolls(imp: Dictionary) -> bool:
+	var rounding: String = str(imp.get("rounding", "Integer"))
+	var mod_type: String = str(imp.get("modType", "ADDED"))
+	var lo: float = float(imp.get("value", 0.0))
+	var hi: float = float(imp.get("maxValue", lo))
+	return not is_equal_approx(AffixMath.roll_value(lo, hi, rounding, mod_type, 0, 0.0), AffixMath.roll_value(lo, hi, rounding, mod_type, 255, 0.0))
 
 
 func _fill_unique(item: Dictionary, unique_id: int) -> void:
@@ -169,39 +303,47 @@ func _fill_unique(item: Dictionary, unique_id: int) -> void:
 		var roll_id: int = int(mod.get("rollID", 0))
 		var row: Node = implicit_row_scene.instantiate()
 		%UniqueMods.add_child(row)
-		row.get_node("%NameLabel").text = _prop_title(mod)
+		row.get_node("%NameLabel").text = ItemCompare.prop_title(mod)
 		var slider: HSlider = row.get_node("%RollSlider")
 		var can_roll: int = int(mod.get("canRoll", 0))
-		var max_val: float = float(mod.get("maxValue", 0.0))
-		var curr_val: float = float(mod.get("value", 0.0))
-		slider.visible = can_roll == 1 and max_val > curr_val
+		slider.visible = can_roll == 1 and not is_equal_approx(AffixMath.unique_value(mod, 0), AffixMath.unique_value(mod, 255))
 		slider.set_value_no_signal(float(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255.0)
 		slider.value_changed.connect(_on_unique_roll.bind(roll_id))
 
-	# Set unique text (descriptions and set info)
+	# Unique text (the set bonuses have their own block, _update_set_bonuses)
 	var text_lines: PackedStringArray = []
 	var descriptions: Array = unique.get("tooltipDescriptions", [])
 	for desc_obj: Dictionary in descriptions:
 		text_lines.append(str(desc_obj.get("description", "")))
 
-	if int(unique.get("isSetItem", 0)) != 0:
-		text_lines.append("")
-		var set_id: int = int(unique.get("setID", -1))
-		var set_data: Dictionary = GameData.set_data(set_id)
-		var set_name: String = set_data.get("setName", "")
-		text_lines.append(tr("Set \"%s\":") % set_name)
-		var set_descriptions: Array = set_data.get("tooltipDescriptions", [])
-		for i in range(set_descriptions.size()):
-			var desc_obj: Dictionary = set_descriptions[i]
-			var req_str: String = ""
-			if "setRequirement" in desc_obj:
-				req_str = " (%d)" % int(desc_obj["setRequirement"])
-			text_lines.append(req_str + " " + str(desc_obj.get("description", "")))
+	%UniqueText.text = ItemCompare.expand_template("\n".join(text_lines))
 
-	# tooltip templates "[min,max,rollID]" -> "min–max"
-	var template := RegEx.new()
-	template.compile("\\[(-?[0-9.]+),(-?[0-9.]+),[0-9]+\\]")
-	%UniqueText.text = template.sub("\n".join(text_lines), "$1–$2", true)
+
+## Set bonuses of the edited set unique: pieces equipped and the bonus list, active ones highlighted.
+func _update_set_bonuses() -> void:
+	var item: Dictionary = _item()
+	var unique: Dictionary = GameData.unique(int(item["unique"])) if item.has("unique") else {}
+	var is_set: bool = int(unique.get("isSetItem", 0)) != 0
+	%SetBonuses.visible = is_set
+	for child: Node in %SetLines.get_children():
+		%SetLines.remove_child(child)
+		child.queue_free()
+	if not is_set:
+		return
+	var set_id: int = int(unique.get("setID", -1))
+	var set_data: Dictionary = GameData.set_data(set_id)
+	var count: int = int(BuildMods.set_counts(Build).get(set_id, 0))
+	var total: int = (set_data.get("items", []) as Array).size()
+	%SetTitle.text = tr("Set \"%s\": %d/%d items equipped") % [str(set_data.get("setName", "")), count, total]
+	var bonuses: Array = (set_data.get("tooltipDescriptions", []) as Array).duplicate()
+	bonuses.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("setRequirement", 0)) < int(b.get("setRequirement", 0)))
+	for desc_obj: Dictionary in bonuses:
+		var requirement: int = int(desc_obj.get("setRequirement", 0))
+		var line: Label = set_line_scene.instantiate()
+		%SetLines.add_child(line)
+		line.text = ItemCompare.expand_template("(%d) %s" % [requirement, str(desc_obj.get("description", ""))])
+		line.theme_type_variation = &"SetBonusActive" if requirement <= count else &"SetBonusInactive"
 
 
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
@@ -214,7 +356,7 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 				options[str(aff["type"])].append(aff)
 	for r in range(AFFIX_ROWS.size()):
 		var row: Node = %Affixes.get_node(AFFIX_ROWS[r])
-		var select: OptionButton = row.get_node("Top/AffixSelect")
+		var select: SearchSelect = row.get_node("Top/AffixSelect")
 		var kind: String = "PREFIX" if AFFIX_ROWS[r].begins_with("Prefix") else "SUFFIX"
 		select.clear()
 		select.add_item(tr("— none —"), EMPTY_ID)
@@ -229,8 +371,12 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		var tiers: int = GameData.affix(affix_id).get("tiers", []).size()
 		var spin: SpinBox = row.get_node("Top/TierSpin")
 		spin.max_value = maxi(1, tiers)
-		spin.set_value_no_signal(float(entry.get("tier", mini(5, maxi(1, tiers)))))
-		row.get_node("Bottom/RollSlider").set_value_no_signal(float(entry.get("roll", 255)))
+		var tier: int = clampi(int(entry.get("tier", mini(5, maxi(1, tiers)))), 1, maxi(1, tiers))
+		spin.set_value_no_signal(float(tier))
+		var slider: HSlider = row.get_node("Bottom/RollSlider")
+		slider.max_value = maxi(1, tiers) * TIER_SPAN
+		slider.tick_count = maxi(1, tiers) + 1
+		slider.set_value_no_signal(float((tier - 1) * TIER_SPAN + clampi(int(entry.get("roll", 255)), 0, TIER_SPAN - 1)))
 		for path: String in ["Top/TierLabel", "Top/TierSpin", "Bottom"]:
 			row.get_node(path).visible = affix_id != EMPTY_ID
 		# idols have one prefix and one suffix
@@ -249,31 +395,32 @@ func _on_unique_selected(index: int) -> void:
 		item.erase("unique_rolls")
 		_commit(item)
 	else:
-		var unique: Dictionary = GameData.unique(unique_id)
-		var base_type_id: int = int(unique.get("baseType", -1))
-		var sub_types: Array = unique.get("subTypes", [0])
-		var sub_type_id: int = int(sub_types[0]) if not sub_types.is_empty() else 0
-
-		# Create unique_rolls array with 255 for each mod's rollID
-		var unique_rolls: Array = []
-		var mods: Array = unique.get("mods", [])
-		var max_roll_id: int = -1
-		for mod: Dictionary in mods:
-			var roll_id: int = int(mod.get("rollID", 0))
-			max_roll_id = maxi(max_roll_id, roll_id)
-		for i in range(max_roll_id + 1):
-			unique_rolls.append(255)
-
 		var item: Dictionary = _item().duplicate(true)
-		var affixes: Array = item.get("affixes", [])
-		var new_item: Dictionary = _new_item(base_type_id, sub_type_id, [])
-		new_item.merge({
-			"unique": unique_id,
-			"unique_rolls": unique_rolls,
-			"affixes": affixes,
-		}, true)
+		var new_item: Dictionary = ItemCompare.unique_item(unique_id)
+		new_item["affixes"] = item.get("affixes", [])
+		_keep_name(new_item, item)
 		_commit(new_item)
 	_fill()
+
+
+## Copies the user's custom name of `old_item` into a rebuilt item.
+func _keep_name(new_item: Dictionary, old_item: Dictionary) -> void:
+	if old_item.has("name"):
+		new_item["name"] = old_item["name"]
+
+
+func _on_name_changed(text: String) -> void:
+	if _filling:
+		return
+	var item: Dictionary = _item().duplicate(true)
+	if item.is_empty():
+		return
+	var custom_name: String = text.strip_edges()
+	if custom_name.is_empty():
+		item.erase("name")
+	else:
+		item["name"] = custom_name
+	_commit(item)
 
 
 func _on_unique_roll(value: float, roll_id: int) -> void:
@@ -288,38 +435,38 @@ func _on_unique_roll(value: float, roll_id: int) -> void:
 	_commit(item)
 
 
-func _on_base_selected(index: int) -> void:
-	if _filling:
-		return
-	var base_id: int = %BaseSelect.get_item_id(index)
-	if base_id == EMPTY_ID:
-		Build.clear_item(_slot)
-	else:
-		var base: Dictionary = GameData.item_base(base_id)
-		var sub_id: int = 0
-		for sub: Dictionary in base.get("subItems", []):
-			if _sub_allowed(sub):
-				sub_id = int(sub["subTypeID"])
-				break
-		# Clear unique when manually changing base
-		var item: Dictionary = _new_item(base_id, sub_id, [])
-		Build.set_item(_slot, item)
-	_fill()
-
-
 func _on_sub_selected(index: int) -> void:
 	if _filling:
 		return
-	var item: Dictionary = _item()
-	Build.set_item(_slot, _new_item(int(item.get("base", 0)), %SubSelect.get_item_id(index), item.get("affixes", [])))
+	var entry_id: int = %SubSelect.get_item_id(index)
+	if entry_id == EMPTY_ID:
+		_remove()
+	else:
+		var item: Dictionary = _item()
+		var base_id: int = entry_id / SUB_ID_STRIDE
+		# another base starts without affixes; the same base keeps them
+		var kept_affixes: Array = item.get("affixes", []) if int(item.get("base", -1)) == base_id else []
+		var new_item: Dictionary = ItemCompare.new_item(base_id, entry_id % SUB_ID_STRIDE, kept_affixes)
+		_keep_name(new_item, item)
+		_put(new_item)
 	_fill()
 
 
-func _new_item(base_id: int, sub_id: int, affixes: Array) -> Dictionary:
-	var rolls: Array = []
-	for _imp: Variant in GameData.item_sub(base_id, sub_id).get("implicits", []):
-		rolls.append(255)
-	return {"base": base_id, "sub": sub_id, "implicit_rolls": rolls, "affixes": affixes.duplicate(true)}
+## Stash mode: turns the item into a fresh one of the first base of the chosen kind; the custom name stays.
+func _on_type_selected(index: int) -> void:
+	if _filling:
+		return
+	var kind: String = TYPE_SLOTS[%TypeSelect.get_item_id(index)]
+	var base_id: int = ItemCompare.first_base(kind)
+	if kind == ("ring1" if _slot == "ring2" else _slot) or base_id < 0:
+		_fill()
+		return
+	var old_item: Dictionary = _item()
+	_slot = kind
+	var new_item: Dictionary = ItemCompare.new_item(base_id, ItemCompare.default_sub(GameData.item_base(base_id), _class_name()), [])
+	_keep_name(new_item, old_item)
+	_put(new_item)
+	_fill()
 
 
 func _on_implicit_roll(value: float, index: int) -> void:
@@ -335,8 +482,20 @@ func _on_implicit_roll(value: float, index: int) -> void:
 
 
 func _on_clear() -> void:
-	Build.clear_item(_slot)
+	_remove()
 	_fill()
+
+
+func _on_stash_move() -> void:
+	Build.unequip_to_stash(_slot)
+	_fill()
+
+
+## Stash mode: equips the item into its slot; the item that was there takes its place in the stash.
+func _on_equip() -> void:
+	var slot: String = _slot
+	Build.equip_from_stash(_stash_index, slot)
+	slot_requested.emit(slot)
 
 
 ## Reads the four affix rows into Build. refill = true when the affix choice changed (tier range may differ).
@@ -351,10 +510,12 @@ func _store_affixes(refill: bool) -> void:
 		if affix_id == EMPTY_ID or not row.visible:
 			continue
 		var tiers: int = GameData.affix(affix_id).get("tiers", []).size()
+		var tier_roll: Vector2i = _slider_position(row.get_node("Bottom/RollSlider"), tiers)
+		# keep the tier box in step with the slider
+		(row.get_node("Top/TierSpin") as SpinBox).set_value_no_signal(float(tier_roll.x))
 		affixes.append({
 			"id": affix_id, "index": r, "kind": "prefix" if r < 2 else "suffix",
-			"tier": clampi(int(row.get_node("Top/TierSpin").value), 1, maxi(1, tiers)),
-			"roll": int(row.get_node("Bottom/RollSlider").value),
+			"tier": tier_roll.x, "roll": tier_roll.y,
 		})
 	item["affixes"] = affixes
 	_commit(item)
@@ -362,9 +523,30 @@ func _store_affixes(refill: bool) -> void:
 		_fill()
 
 
+## (tier, roll) of an affix roll slider: value = (tier - 1) * TIER_SPAN + roll; the very end of the range is the
+## top roll of the last tier.
+func _slider_position(slider: HSlider, tiers: int) -> Vector2i:
+	var tier_count: int = maxi(1, tiers)
+	var value: int = int(slider.value)
+	var tier: int = mini(floori(float(value) / TIER_SPAN) + 1, tier_count)
+	return Vector2i(tier, clampi(value - (tier - 1) * TIER_SPAN, 0, TIER_SPAN - 1))
+
+
+## The tier box was edited: move the slider to the same roll within the new tier, then store.
+func _on_tier_spin(value: float, row: Node) -> void:
+	if _filling:
+		return
+	var slider: HSlider = row.get_node("Bottom/RollSlider")
+	var tiers: int = GameData.affix(row.get_node("Top/AffixSelect").get_selected_id()).get("tiers", []).size()
+	var roll: int = _slider_position(slider, tiers).y
+	var tier: int = clampi(int(value), 1, maxi(1, tiers))
+	slider.set_value_no_signal(float((tier - 1) * TIER_SPAN + roll))
+	_store_affixes(false)
+
+
 func _commit(item: Dictionary) -> void:
 	_shown_item = item.duplicate(true)
-	Build.set_item(_slot, item)
+	_put(item)
 	_update_values()
 
 
@@ -389,7 +571,7 @@ func _update_values() -> void:
 			var roll_id: int = int(mod.get("rollID", 0))
 			var roll: int = int(unique_rolls[roll_id]) if roll_id < unique_rolls.size() else 255
 			var v: float = AffixMath.unique_value(mod, roll)
-			unique_mod_rows[mod_row_index].get_node("%ValueLabel").text = _format(mod, v)
+			unique_mod_rows[mod_row_index].get_node("%ValueLabel").text = ItemCompare.format_value(mod, v)
 			unique_mod_rows[mod_row_index].get_node("%RollSlider").set_value_no_signal(float(roll))
 			mod_row_index += 1
 
@@ -404,7 +586,7 @@ func _update_values() -> void:
 		var roll: int = int(rolls[j]) if j < rolls.size() else 255
 		var v: float = AffixMath.roll_value(float(imp["value"]), float(imp.get("maxValue", imp["value"])),
 			str(imp.get("rounding", "Integer")), str(imp.get("modType", "ADDED")), roll, 0.0)
-		rows[j].get_node("%ValueLabel").text = _format(imp, v)
+		rows[j].get_node("%ValueLabel").text = ItemCompare.format_value(imp, v)
 
 	var used: Array[int] = []
 	for entry: Dictionary in item.get("affixes", []):
@@ -423,27 +605,8 @@ func _update_values() -> void:
 			var prop: Dictionary = props[j]
 			var v: float = AffixMath.roll_value(float(ranges[j][0]), float(ranges[j][1]), str(prop.get("rounding", "Integer")),
 				str(prop.get("modType", "ADDED")), int(entry.get("roll", 255)), m)
-			lines.append("%s %s" % [_format(prop, v), _prop_title(prop)])
+			lines.append("%s %s" % [ItemCompare.format_value(prop, v), ItemCompare.prop_title(prop)])
 		%Affixes.get_node(AFFIX_ROWS[index]).get_node("Bottom/ValueLabel").text = "\n".join(lines)
 	for r in range(AFFIX_ROWS.size()):
 		if not used.has(r):
 			%Affixes.get_node(AFFIX_ROWS[r]).get_node("Bottom/ValueLabel").text = ""
-
-
-func _prop_title(prop: Dictionary) -> String:
-	var tags: Array = prop.get("tagNames", [])
-	var title: String = str(prop.get("propertyName", ""))
-	if not tags.is_empty():
-		title += " (%s)" % ", ".join(PackedStringArray(tags))
-	return title
-
-
-## INCREASED/MORE and fractional ADDED values (resistances, crit multiplier…) are shown as percentages.
-func _format(prop: Dictionary, v: float) -> String:
-	var mod_type: String = str(prop.get("modType", "ADDED"))
-	var rounding: String = str(prop.get("rounding", "Integer"))
-	var pct: bool = mod_type != "ADDED" or rounding == "Hundredth" or rounding == "Thousandth"
-	var text: String = LE.fmt_pct(v) if pct else LE.fmt_num(v)
-	if mod_type == "MORE":
-		text += " more"
-	return ("+" if v > 0.0 else "") + text

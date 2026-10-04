@@ -36,6 +36,13 @@ func _prepare_build() -> void:
 	Build.set_skill_input(0, "buff_active", false)
 	Build.set_skill_hits(1, 2.5)
 	Build.selected_skill = 2
+	for unique: Dictionary in GameData.uniques:
+		if ItemCompare.target_slot({"base": int(unique.get("baseType", -1))}, "") != "":
+			Build.stash_add(ItemCompare.unique_item(int(unique["uniqueID"])))
+			break
+	var named: Dictionary = (Build.items[Build.items.keys()[0]] as Dictionary).duplicate(true)
+	named["name"] = "Named test item"
+	Build.stash_add(named)
 
 
 func _other_class() -> int:
@@ -80,6 +87,10 @@ func _roundtrip() -> void:
 	_check(Build.player_state["haste"] == true, "player haste lost")
 	_check(Build.selected_skill == 2, "selected skill lost")
 	_check(Build.quest_passive_points is int, "quest points must be int")
+	_check(Build.stash.size() == 2, "stash must keep 2 items, has %d" % Build.stash.size())
+	for item: Dictionary in Build.stash:
+		_check(item["base"] is int, "stash item: base must be int")
+	_check(str(Build.stash[1].get("name", "")) == "Named test item", "the custom item name was lost")
 
 
 func _code_format() -> void:

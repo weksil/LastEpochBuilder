@@ -1,140 +1,141 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/items/items_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/items/item_editor.tscn" id="2_editor"]
+[ext_resource type="PackedScene" path="res://scenes/items/slot_row.tscn" id="3_row"]
+[ext_resource type="PackedScene" path="res://scenes/items/stash_item_button.tscn" id="4_stash"]
+[ext_resource type="PackedScene" path="res://scenes/items/item_choice_button.tscn" id="5_choice"]
+[ext_resource type="Texture2D" path="res://assets/items/amulet.png" id="icon_amulet"]
+[ext_resource type="Texture2D" path="res://assets/items/armor.png" id="icon_armor"]
+[ext_resource type="Texture2D" path="res://assets/items/belt.png" id="icon_belt"]
+[ext_resource type="Texture2D" path="res://assets/items/boots.png" id="icon_boots"]
+[ext_resource type="Texture2D" path="res://assets/items/gloves.png" id="icon_gloves"]
+[ext_resource type="Texture2D" path="res://assets/items/helmet.png" id="icon_helmet"]
+[ext_resource type="Texture2D" path="res://assets/items/relic.png" id="icon_relic"]
+[ext_resource type="Texture2D" path="res://assets/items/ring.png" id="icon_ring"]
+[ext_resource type="Texture2D" path="res://assets/items/shield.png" id="icon_shield"]
+[ext_resource type="Texture2D" path="res://assets/items/sword.png" id="icon_sword"]
 
-[sub_resource type="ButtonGroup" id="slot_group"]
+[sub_resource type="ButtonGroup" id="select_group"]
 
 [node name="Items" type="HBoxContainer"]
 theme_override_constants/separation = 10
 script = ExtResource("1_script")
+stash_button_scene = ExtResource("4_stash")
+choice_button_scene = ExtResource("5_choice")
+select_group = SubResource("select_group")
 
-[node name="SlotList" type="VBoxContainer" parent="."]
+[node name="LeftScroll" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Left" type="VBoxContainer" parent="LeftScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="SlotList" type="VBoxContainer" parent="LeftScroll/Left"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="Slot_helmet" type="Button" parent="SlotList"]
+[node name="Slot_helmet" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Helmet"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "helmet"
-metadata/slot_name = "Helmet"
+slot = "helmet"
+slot_name = "Helmet"
+slot_icon = ExtResource("icon_helmet")
 
-[node name="Slot_body" type="Button" parent="SlotList"]
+[node name="Slot_body" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Body armor"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "body"
-metadata/slot_name = "Body armor"
+slot = "body"
+slot_name = "Body armor"
+slot_icon = ExtResource("icon_armor")
 
-[node name="Slot_belt" type="Button" parent="SlotList"]
+[node name="Slot_belt" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Belt"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "belt"
-metadata/slot_name = "Belt"
+slot = "belt"
+slot_name = "Belt"
+slot_icon = ExtResource("icon_belt")
 
-[node name="Slot_boots" type="Button" parent="SlotList"]
+[node name="Slot_boots" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Boots"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "boots"
-metadata/slot_name = "Boots"
+slot = "boots"
+slot_name = "Boots"
+slot_icon = ExtResource("icon_boots")
 
-[node name="Slot_gloves" type="Button" parent="SlotList"]
+[node name="Slot_gloves" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Gloves"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "gloves"
-metadata/slot_name = "Gloves"
+slot = "gloves"
+slot_name = "Gloves"
+slot_icon = ExtResource("icon_gloves")
 
-[node name="Slot_weapon" type="Button" parent="SlotList"]
+[node name="Slot_weapon" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Weapon"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "weapon"
-metadata/slot_name = "Weapon"
+slot = "weapon"
+slot_name = "Weapon"
+slot_icon = ExtResource("icon_sword")
 
-[node name="Slot_offhand" type="Button" parent="SlotList"]
+[node name="Slot_offhand" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Off-hand"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "offhand"
-metadata/slot_name = "Off-hand"
+slot = "offhand"
+slot_name = "Off-hand"
+slot_icon = ExtResource("icon_shield")
 
-[node name="Slot_amulet" type="Button" parent="SlotList"]
+[node name="Slot_amulet" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Amulet"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "amulet"
-metadata/slot_name = "Amulet"
+slot = "amulet"
+slot_name = "Amulet"
+slot_icon = ExtResource("icon_amulet")
 
-[node name="Slot_ring1" type="Button" parent="SlotList"]
+[node name="Slot_ring1" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Ring 1"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "ring1"
-metadata/slot_name = "Ring 1"
+slot = "ring1"
+slot_name = "Ring 1"
+slot_icon = ExtResource("icon_ring")
 
-[node name="Slot_ring2" type="Button" parent="SlotList"]
+[node name="Slot_ring2" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Ring 2"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "ring2"
-metadata/slot_name = "Ring 2"
+slot = "ring2"
+slot_name = "Ring 2"
+slot_icon = ExtResource("icon_ring")
 
-[node name="Slot_relic" type="Button" parent="SlotList"]
+[node name="Slot_relic" parent="LeftScroll/Left/SlotList" instance=ExtResource("3_row")]
 layout_mode = 2
+slot = "relic"
+slot_name = "Relic"
+slot_icon = ExtResource("icon_relic")
+
+[node name="Separator" type="HSeparator" parent="LeftScroll/Left"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StashTitle" type="Label" parent="LeftScroll/Left"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Unequipped items"
+
+[node name="StashRows" type="VBoxContainer" parent="LeftScroll/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StashEmpty" type="Label" parent="LeftScroll/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "None yet: \"+\" adds an item, \"Move to stash\" in the editor unequips one."
+autowrap_mode = 3
+
+[node name="AddButton" type="Button" parent="LeftScroll/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+size_flags_horizontal = 0
 focus_mode = 0
-toggle_mode = true
-button_group = SubResource("slot_group")
-text = "Relic"
-alignment = 0
-text_overrun_behavior = 3
-metadata/slot = "relic"
-metadata/slot_name = "Relic"
+tooltip_text = "Add a new unequipped item and open it in the editor."
+text = "+"
 
 [node name="EditorScroll" type="ScrollContainer" parent="."]
 layout_mode = 2
@@ -144,3 +145,14 @@ horizontal_scroll_mode = 0
 [node name="ItemEditor" parent="EditorScroll" instance=ExtResource("2_editor")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="ChoicePopup" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+
+[node name="ChoiceRows" type="VBoxContainer" parent="ChoicePopup"]
+unique_name_in_owner = true
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 264.0
+offset_bottom = 34.0
+theme_override_constants/separation = 2

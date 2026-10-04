@@ -20,6 +20,11 @@ square), a `CheckBox` in the `pressed` state — a gold border and backing; vari
 `ValueLabel`, `ValueLabelKey`, `*Changed`; breakdown — `BreakdownPanel` + `BreakdownLabel` (monospace `SystemFont`);
 `SummaryActive`/`SummaryOff` — one-line group summaries; `FlatToggle` — a flat expander button; `DeltaUp`/`DeltaDown` — the change of a value.
 
+**Searchable dropdowns.** `scenes/common/search_select.tscn` (`SearchSelect extends Button`, `scripts/common/search_select.gd`) is a drop-in for
+`OptionButton` (`clear`, `add_item`, `select`, `get_item_id/index/text`, `get_selected_id`, `item_count`, signal `item_selected`; plus
+`set_item_variation(index, theme type)` — the row colour from that type's `font_color`, e.g. `RarityUnique` / `RaritySet`): pressing it opens
+`%Popup` with `%Search` (substring / all-words filter, Up/Down, Enter) and `%List`. Used for the unique, base, subtype and affix lists of `ItemEditor`.
+
 ## Localization
 Source strings are English. Russian lives in `client/i18n/ru.po` (msgid = the English text). Scene texts are translated by Godot's
 auto-translation; texts built in code use `tr()` in nodes and `LE.t()` in static engine code. Data labels from `client/data/*.json` are
@@ -81,13 +86,35 @@ clicking again on the shown slot keeps it selected), the other slots `set_select
 `Build.can_add_skill_point(sel, id)` (not `bind`: it appends the argument at the end). `%TreePoints` "spent / level". Rebuild the tree only when the skill/class changes.
 
 ## Items
-`scripts/items/items_tab.gd` (`extends HBoxContainer`): the slot buttons are children of `%SlotList` with `metadata/slot`, `metadata/slot_name`.
-Pressing → `%ItemEditor.edit_slot(slot, slot_name)`. The button text: "slot_name: item name" or "slot_name: —".
-The first slot is selected at start.
+`scripts/items/items_tab.gd` (`class_name ItemsTab extends HBoxContainer`), `@export stash_button_scene, choice_button_scene, select_group`.
+The left column (`items_tab.tscn`): `%SlotList` holds 11 `slot_row.tscn` (`SlotRow`: `@export slot, slot_name, slot_icon`;
+`%SlotIcon` — a plain picture (`mouse_filter` ignore); `%ItemButton` — the equipped item: pressing it shows the slot in the editor and opens the
+choice list; the edited slot's button gets the variation `SlotItemSelected`; unique / set item names use `SlotItem(Selected)Unique` /
+`…Set` and `ItemChoiceUnique` / `ItemChoiceSet` — `ItemCompare.rarity(item)`),
+a separator, `%StashRows` (the unequipped items `Build.stash`, `stash_item_button.tscn`, grey variation `ItemButtonStashed`, no icon;
+pressing one edits it), `%StashEmpty`, `%AddButton` "+" → a new stash item (the selected slot's type, its first base) opened in the editor,
+where `%TypeRow` > `%TypeSelect` (stash mode only, types with icons) and the base are chosen.
+Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `tools/extract/extract_item_icons.py`).
+- `%ChoicePopup` > `%ChoiceRows` (`item_choice_button.tscn`): "— none —" (`Build.unequip_to_stash`), every equipped item that fits the slot
+  (variation `ItemChoice`, icon of the slot it is equipped in; another slot → `Build.move_item(from, to)`, the replaced item goes back if it
+  fits or to the stash), every fitting stash item (variation `ItemChoiceStashed`, `Build.equip_from_stash(index, slot)`).
+- `ItemButton` (`scripts/items/item_button.gd`) — the custom tooltip `item_diff_tooltip.tscn` (`ItemDiffTooltip.show_item(item, slot, changes)`):
+  the item's mod lines (`ItemCompare.item_lines`) and "Equipping this item in <slot> will give you:" with the lines of
+  `ItemCompare.diff(snapshot(Build), snapshot_with_items(Build, changes))` (`diff_line.tscn`, `DeltaUp`/`DeltaDown`). A snapshot is the
+  "DPS vs enemy" of the selected skill plus every numeric `CharacterCalc` row; `snapshot_with_items` swaps `Build.items` without signals
+  and restores it.
+- `Build.stash` — an `Array` of item dicts of the same shape as `Build.items[slot]`; the signal `Build.stash_changed` does not trigger a
+  recalculation. API: `stash_add`, `stash_set`, `stash_remove`, `equip_from_stash` (a swap), `equip_item`, `unequip_to_stash`, `move_item`.
+
 `scripts/items/item_editor.gd` (`class_name ItemEditor extends PanelContainer`), `@export implicit_row_scene`:
-- `edit_slot(slot, title)`; `%BaseSelect`: item 0 "— empty —", then the `GameData` item bases that fit the slot (ENGINE.md §3),
-  id = baseTypeID. `%SubSelect`: the base's subtypes (`displayName` or `name`, id = subTypeID; skip `isLegacySubType`).
-- Choosing a base/subtype → `Build.set_item(slot, {base, sub, implicit_rolls: [255…], affixes: []})`.
+- `edit_slot(slot, title)`; there is no base field: `%SubSelect` ("Item") lists every allowed subtype of every base that fits the slot
+  (ENGINE.md §3; skip `isLegacySubType`), id = baseTypeID · 1000 + subTypeID, the base name in brackets when several bases fit; in slot mode
+  item 0 is "— empty —". Choosing another base → `{base, sub, implicit_rolls: [255…], affixes: []}`, the same base keeps the affixes.
+- Hover tooltips of the search lists (`SearchSelect.tooltip_builder`, id → Control): `item_info_tooltip.tscn` (`ItemInfoTooltip.show_unique /
+  show_sub / show_affix`) — the name in the rarity colour (`RarityNormal/Unique/Set/Affix`), kind, level requirement, implicit and mod ranges,
+  descriptions and lore for uniques, one line per tier for affixes. A set item adds `%SetBox` (`set_block.tscn`, `SetBlock.show_set(setID)`; also in `ItemDiffTooltip`, i.e. the stash and slot choice tooltips): "Set "name": n/m items equipped", the members
+  (base in brackets; equipped ones `SetBonusActive`, the rest `SetBonusInactive`) and the bonuses "N items: …" in requirement order, active ones green. Uniques and items are sorted by required level, shown as " (level N)"
+  (`ItemCompare.level_suffix`).
 - `%Implicits`: one `implicit_row_scene` row per implicit: `%NameLabel` = propertyName (+ tags), `%RollSlider` 0..255
   (visible only if `maxValue > value`), `%ValueLabel` = `AffixMath.roll_value(...)` via `LE.fmt_num`/`fmt_pct`
   (INCREASED and values < 1 for resistances — in %).
@@ -95,55 +122,16 @@ The first slot is selected at start.
   `%KindLabel` "Prefix"/"Suffix"; `%AffixSelect` item 0 "— none —", then `GameData.affixes_for_type(base.type)` with the required
   `type` (PREFIX/SUFFIX), text `name`, id = affixId; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
   `%ValueLabel` — the values of all the affix's `properties` for the tier and roll (via `AffixMath`, with the base's `effect_modifier`).
+  `%RollSlider` covers every tier: value = (tier − 1) · 256 + roll, `tick_count = tiers + 1` marks the tier borders; `%TierSpin` follows it.
   Any change → `Build.set_item(slot, updated dict)` (affixes — an array of up to 4 `{id, tier, roll, kind:"prefix"|"suffix", index}`).
-- `%EmptyHint` is visible when there is no base; then `%SubRow`, the implicits and the affixes are hidden. `%ClearButton` → `Build.clear_item(slot)`.
-
-## Conditions — `scripts/config/config_tab.gd` (`extends ScrollContainer`), `@export ailment_row_scene`
-Three cards (`SectionCard`): "Player" and "Enemy" on the left, "Ailments, shreds and curses on the enemy (stacks)" on the right; at the top `%ShowAllCheck` ("Show all conditions",
-off by default) and `%EmptyHint`. Each group has a one-line summary (`%PlayerSummary`, `%EnemySummary`, `%AilmentSummary`: "Active: Haste, Moving" /
-"Nothing enabled", variant `SummaryActive`/`SummaryOff`) and a suffix "· N hidden without a source" / "· without a source: N". The buttons `%ResetPlayerButton` →
-`Build.reset_player_conditions()` and `%ResetAilmentsButton` → `Build.clear_enemy_ailments()` (one `changed` each).
-- **A filter like Path of Building**: `ConfigRelevance.compute(Build)` (`scripts/engine/config_relevance.gd`, computed only while the tab is visible, at most once per frame) returns
-  `{player_flags, player_values, ailments, enemy}` — a key is present if the condition has a source in the build, the value is the source text (may be several lines), it goes into `tooltip_text`
-  (for ailments — also the second line of the row). Without "Show all conditions", player flags, player numbers, enemy flags and ailments without a source are hidden, **except** those whose value
-  differs from the default (the enemy flags `high_health` and `full_health` are on by default): those stay visible and are marked "no source"
-  (`CheckBoxNoSource`, `RowNoSource`). A row with input focus is not hidden. The enemy's type, level, armor and resistances are always visible. If there is nothing to show — `%EmptyHint`
-  "No conditions the build depends on". If the file `config_relevance.gd` is missing — everything is considered to have a source.
-- `%HealthSelect` → `Build.set_player_state("health", ["full","high","normal","low"][i])`.
-- `%KindSelect` → `Build.set_enemy("kind", ["dummy","normal","magic","rare","miniboss","boss"][i])`; `%LevelSpin` → "level"; `%ArmourSpin` → "armour".
-- The SpinBoxes with `metadata/res_index` (children of `%EnemyGrid`) → `res[i]` (a copy of the array, then `Build.set_enemy("res", arr)`).
-- The CheckBoxes `%EnemyFlags` with `metadata/flag` → a copy of `flags`, `Build.set_enemy("flags", d)` (including `frozen`).
-- The CheckBoxes `%PlayerFlags` with `metadata/player_flag` (`hit_recently, crit_recently, moving, leeching, low_mana, haste, frenzy`) → `Build.set_player_state(flag, pressed)`;
-  the SpinBoxes in the `%PlayerValues` rows (`PanelContainer` > `HBoxContainer` > `Label`, `SpinBox`) with `metadata/player_value` (`ward, curses, ignite_stacks, damned_stacks`) →
-  `Build.set_player_state(key, int(v))`. A row with a non-zero value is `RowActive`.
-- `%AilmentList`: one `AilmentRow` (`scenes/config/ailment_row.tscn`, `class_name AilmentRow`) per `GameData.enemy_ailments()`: `%NameLabel` = `displayName` (otherwise `name`),
-  `%KindLabel` ("curse" / "shred"), `%ReasonLabel` = the source, `tooltip_text` = the description, `buffs`, `maxInstances`, "against bosses ×(1+moreBuffEffectAgainstBosses)";
-  `%StacksSpin.max_value` = maxInstances (or 200) → `signal stacks_changed(id, stacks)` → `Build.set_enemy_ailment`. A row with stacks is `RowActive`, without a source — `RowNoSource`.
-  Rows with a source go first. `%Filter.text_changed` hides rows whose name (both names and the kind) does not contain the text (case-insensitive).
-
-## Calculations — `scripts/calcs/calcs_tab.gd` (`class_name CalcsTab extends VBoxContainer`), `@export section_scene, row_scene, input_row_scene`
-Top to bottom: `%SkillSelect` (5 slots "N. skill name", empty ones "N. —"; the choice → `Build.selected_skill`), `%Summary` (`CalcSummary`), a scrollable `%Scroll`
-with `ParamsPanel` ("Calculation parameters": `%HitsSpin` and the `%Inputs` grid in 2 columns), `%Buffs` (`BuffsPanel`), the columns `%Left` / `%Right` and `%Wide` (`%Notes`).
-- `r = SkillCalc.compute(Build, Build.selected_skill)` once per frame on `Build.changed` and when the tab is shown (an invisible tab calculates nothing).
-- **The summary strip** `scenes/calcs/calc_summary.tscn` (`class_name CalcSummary`, `show_result(result)`): the skill name, "Target: …" and four `CalcTile`
-  tiles (`show_value(text, sub, tooltip)`): "DPS vs enemy" (the main one), "Average hit" (the row "Average hit vs enemy"), "Uses per second", "Crit chance".
-  The values are taken from the result rows by the label inside their section (`CalcSummary.find_row(result, label, section)`): DPS, average hit and target —
-  from exactly the section "Against enemy" (each "Ailment: …" section has its own "DPS vs enemy" row), uses — from "Speed and mana", crit — from "Crit"
-  (for uses and crit, if there is no section — the first row with the label); no row — "—". The tile's tooltip is the row's breakdown.
-- **Parameters**: `SkillInputRow` (`setup(slot, inp)`, `fits(inp)`, `update_input(slot, inp)`): a number — `SpinBox`, a flag — `CheckBox` with the label text. The set of rows
-  is recreated only when the slot or the set of keys/types changes; otherwise values are updated without signals (`max` — only if it changed).
-- **Sections** in a fixed order (`CalcsTab.ordered_sections`): first the main component (damage → conversions → penetration/crit → speed and mana → ailments →
-  skill parameters → against enemy → sustain), then the other components (sub-skills, triggers) in the same order. The columns are filled consecutively:
-  the first half of the rows is `%Left`, the rest is `%Right`. A section is `section_scene` (`%Title`, `%Rows`), a row is `row_scene` (`CalcRow`: `setup(key, row, alt, expanded, key_row)`,
-  `update_row(row)`; "+"/"−" expands `%DetailsPanel`/`%Details`, the button is hidden without a breakdown; the "DPS vs enemy" row of the "… Against enemy" sections — `ValueLabelKey`).
-  A row's identity is "section title|label" (repeats with `#n`). If the set of sections and rows is the same — the rows are updated in place (a changed value flashes);
-  otherwise the tree is recreated, expanded rows are restored by key (`_expanded`), `scroll_vertical` is kept.
-- "Not counted" from `r.notes` is a collapsible block `CalcNotes` (`show_notes(notes)`, collapsed by default, "▸ Not counted (N)"), hidden without notes.
-- No skill in the slot — one section with a hint to pick a skill in the "Skills" tab.
-- **Skill buffs on the character** — `scenes/calcs/buffs_panel.tscn` (`BuffsPanel.refresh()`, `@export row_scene` = `BuffSkillRow`): `BuildMods.skill_buffs(Build)` gives for
-  each skill on the bar (one per skill) `{slot, ability_name, active, toggle, mods}`. The row: `%ActiveCheck` ("Slot N · skill", bound to the `buff_active` input via
-  `Build.set_skill_input(slot, "buff_active", on)`), the status ("active · mods: N" / "off — not active" / "no buffs on the character" — then a label instead of the checkbox),
-  an expander "mods (N)" with the rows `BuildMods.describe_mod(mod)` ("+60% inc Damage — source"). A disabled skill shows the mods that it would give if enabled.
+- `%EmptyHint` is visible when there is no item; then the implicits and the affixes are hidden. `%ClearButton` → `Build.clear_item(slot)`.
+- `edit_stash(index)` edits an unequipped item (writes go to `Build.stash_set`, the base list is that of `ItemCompare.target_slot(item, "")`);
+  `%EquipButton` (stash mode) → `Build.equip_from_stash`, `%StashCopyButton` → `Build.stash_add(item)`, `%StashMoveButton` (slot mode) →
+  `Build.unequip_to_stash(slot)`; the signal `slot_requested(slot)` asks the tab to switch the editor to a slot.
+- `%NameEdit` (header, when there is an item): a custom name stored as `item.name` (`ItemCompare.item_title` prefers it; the placeholder is
+  `ItemCompare.default_title`); `%SlotTitle` is shown only for an empty slot.
+- Set items: `%SetBonuses` — `%SetTitle` "Set "name": n/m items equipped" (`BuildMods.set_counts`) and one `set_bonus_line.tscn` per bonus,
+  variation `SetBonusActive` when the requirement is met, otherwise `SetBonusInactive` (grey).
 
 ## Stats panel — `scripts/stats/stats_panel.gd`
 `@export row_scene, group_scene`. On `Build.changed` (at most once per frame): `g = BuildMods.global_store(Build)`, `rows = CharacterCalc.compute(g.store, Build)`.
@@ -178,12 +166,11 @@ tooltipDescriptions[{description}], isSetItem, setID, legendaryType}`), `GameDat
 - Choosing a unique → `Build.set_item(slot, {unique, base: baseType, sub: subTypes[0], implicit_rolls: 255 for each implicit,
   unique_rolls: [255 × (max rollID + 1)], affixes: current})`, then `_fill()`. Choosing "regular" → remove the keys `unique`/`unique_rolls`.
   Manually changing the base to another one also removes `unique`.
-- With a unique: `%BaseSelect` and `%SubSelect` `disabled = true`; `%UniqueTitle`, `%UniqueMods`, `%UniqueText` are visible (otherwise hidden).
+- With a unique: `%SubSelect` `disabled = true`; `%UniqueTitle`, `%UniqueMods`, `%UniqueText` are visible (otherwise hidden).
   `%UniqueMods`: an `implicit_row_scene` row for every mod with `hideInTooltip == 0`: `%NameLabel` = `_prop_title(mod)`, `%RollSlider` is visible
   if `canRoll == 1 and maxValue > value`, the value = `unique_rolls[rollID]`; a change → write into `unique_rolls[rollID]` and `_commit`;
   `%ValueLabel` = `_format(mod, AffixMath.unique_value(mod, roll))` (update in `_update_values`, all rows of the same rollID in sync).
-- `%UniqueText.text`: the lines `tooltipDescriptions[].description`; if `isSetItem` — an empty line, "Set "setName":" and the lines
-  `set_data.tooltipDescriptions` of the form "(N) description".
+- `%UniqueText.text`: the lines `tooltipDescriptions[].description`; the set bonuses of a set item are in `%SetBonuses` (see "Items").
 - `%AffixesTitle` for a unique: "Legendary affixes" (if `legendaryType == "LegendaryPotential"`), otherwise as now.
 - `scripts/items/items_tab.gd` and `scripts/idols/idols_tab.gd`: if the item has `unique` — show the unique's name.
 
@@ -214,7 +201,7 @@ The dialog: `%NameEdit` + `%SaveButton` (save under a name, the same name overwr
 `%LoadButton`, `%DeleteButton` (asks `%DeleteConfirm` first), `%OpenFolderButton`, `%CodeEdit`, `%CopyCodeButton` (encodes the current build,
 puts the code into the field and the clipboard), `%LoadCodeButton` (decodes the field, or the clipboard when the field is empty), `%StatusLabel`, `%CloseButton`.
 - `BuildCodec.to_dict(Build)` — a JSON-safe snapshot `{format: "le-builder", version: 1, class, mastery, level, quest_points, passives, skills[5]
-  {ability, level, tree, inputs, hits}, selected_skill, items, blessings, enemy, player}`; dictionary keys that are ids are written as strings.
+  {ability, level, tree, inputs, hits}, selected_skill, items, stash, blessings, enemy, player}` (`stash` — the unequipped items; older saves have none); dictionary keys that are ids are written as strings.
 - `from_dict(data)` validates and restores the types (JSON numbers are floats, keys are strings): unknown class → error; unknown passive / skill nodes,
   skills and item bases are skipped with English warnings; enemy and player state are merged over `Build.default_enemy()` / `default_player_state()`,
   so older saves get new keys with defaults. A newer `version` is refused. `apply(Build, doc)` replaces the build and emits `changed`.

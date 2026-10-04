@@ -1,0 +1,62 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_info_tooltip.gd" id="1_script"]
+[ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/items/set_block.tscn" id="4_set"]
+
+[node name="ItemInfoTooltip" type="VBoxContainer"]
+custom_minimum_size = Vector2(360, 0)
+theme = ExtResource("2_theme")
+theme_override_constants/separation = 4
+script = ExtResource("1_script")
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RarityNormal"
+text = "Item"
+
+[node name="Kind" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Unique item · Helmet"
+
+[node name="Requirement" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Requires level 0"
+
+[node name="Separator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="Implicits" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Mods" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_type_variation = &"ValueLabel"
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="SetBox" parent="." instance=ExtResource("4_set")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Lore" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3

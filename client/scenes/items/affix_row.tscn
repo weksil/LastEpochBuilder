@@ -1,4 +1,6 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/common/search_select.tscn" id="1_search"]
 
 [node name="AffixRow" type="VBoxContainer"]
 theme_override_constants/separation = 2
@@ -14,13 +16,11 @@ layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Prefix"
 
-[node name="AffixSelect" type="OptionButton" parent="Top"]
+[node name="AffixSelect" parent="Top" instance=ExtResource("1_search")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-focus_mode = 0
-fit_to_longest_item = false
 
 [node name="TierLabel" type="Label" parent="Top"]
 layout_mode = 2
@@ -49,8 +49,11 @@ custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
+tooltip_text = "Tier and roll: each segment between the ticks is one tier, from its lowest to its highest roll."
 max_value = 255.0
 value = 255.0
+tick_count = 2
+ticks_on_borders = true
 
 [node name="ValueLabel" type="Label" parent="Bottom"]
 unique_name_in_owner = true

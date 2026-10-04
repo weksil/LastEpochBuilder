@@ -75,39 +75,156 @@ func _ready() -> void:
 	tabs.current_tab = 2
 	await _frames(1)
 	var items_tab: Node = tabs.get_child(2)
-	var weapon_button: Button = items_tab.get_node("%SlotList/Slot_weapon")
-	weapon_button.pressed.emit()
+	var weapon_row: Node = items_tab.get_node("%SlotList/Slot_weapon")
+	items_tab._edit_slot("weapon")
 	await _frames(1)
 	var editor: Node = items_tab.get_node("%ItemEditor")
-	var base_select: OptionButton = editor.get_node("%BaseSelect")
-	for i in range(base_select.item_count):
-		if base_select.get_item_text(i).to_lower().contains("wand"):
-			base_select.select(i)
-			base_select.item_selected.emit(i)
+	var sub_select: SearchSelect = editor.get_node("%SubSelect")
+	for i in range(sub_select.item_count):
+		if sub_select.get_item_text(i).to_lower().contains("wand"):
+			sub_select.select(i)
+			sub_select.item_selected.emit(i)
 			break
 	await _frames(2)
 	var prefix: Node = editor.get_node("%Affixes/Prefix1")
-	var affix_select: OptionButton = prefix.get_node("Top/AffixSelect")
+	var affix_select: SearchSelect = prefix.get_node("Top/AffixSelect")
 	if affix_select.item_count > 1:
 		affix_select.select(1)
 		affix_select.item_selected.emit(1)
 	await _frames(2)
-	print("weapon: %s" % weapon_button.text)
+	print("weapon: %s" % weapon_row.get_node("%ItemButton").text)
 	print("item: %s" % str(Build.items.get("weapon", {})))
+	# hover tooltips of the search lists
+	var hover_failed: bool = false
+	var hover_selects: Array[SearchSelect] = [editor.get_node("%UniqueSelect"), editor.get_node("%SubSelect"), affix_select]
+	for hover_select: SearchSelect in hover_selects:
+		var hover_id: int = -1
+		for i in range(hover_select.item_count):
+			var entry_id: int = hover_select.get_item_id(i)
+			if entry_id != ItemEditor.EMPTY_ID and entry_id != ItemEditor.UNIQUE_EMPTY_ID:
+				hover_id = entry_id
+				break
+		var hover_tip: Variant = hover_select.tooltip_builder.call(hover_id) if hover_id >= 0 else null
+		if hover_tip is Control:
+			(hover_tip as Control).free()
+		else:
+			hover_failed = true
+			print("FAIL: no hover tooltip for the first entry of %s" % hover_select.name)
 
 	# unique helmet through the editor
-	var helmet_button: Button = items_tab.get_node("%SlotList/Slot_helmet")
-	helmet_button.pressed.emit()
+	var helmet_row: Node = items_tab.get_node("%SlotList/Slot_helmet")
+	items_tab._edit_slot("helmet")
 	await _frames(1)
-	var unique_select: OptionButton = editor.get_node("%UniqueSelect")
+	var unique_select: SearchSelect = editor.get_node("%UniqueSelect")
+	var snowblind_id: int = -1
 	for i in range(unique_select.item_count):
-		if unique_select.get_item_text(i) == "Snowblind":
-			unique_select.select(i)
-			unique_select.item_selected.emit(i)
+		if unique_select.get_item_text(i).begins_with("Snowblind"):
+			snowblind_id = unique_select.get_item_id(i)
+	# open the popup, search by a name fragment and pick the single hit with Enter
+	unique_select.pressed.emit()
 	await _frames(2)
-	print("unique helmet: %s / %s" % [helmet_button.text, str(Build.items.get("helmet", {}))])
+	var unique_search: LineEdit = unique_select.get_node("%Search")
+	var unique_list: ItemList = unique_select.get_node("%List")
+	var search_failed: bool = snowblind_id < 0 or unique_list.item_count != unique_select.item_count
+	unique_search.text = "snowbl"
+	unique_search.text_changed.emit("snowbl")
+	if unique_list.item_count != 1:
+		search_failed = true
+		print("FAIL: searching \"snowbl\" gave %d rows instead of 1" % unique_list.item_count)
+	unique_search.text_submitted.emit("snowbl")
+	if search_failed:
+		print("FAIL: the searchable unique select did not list every item or Snowblind")
+	await _frames(2)
+	print("unique helmet: %s / %s" % [helmet_row.get_node("%ItemButton").text, str(Build.items.get("helmet", {}))])
+	if int(Build.items.get("helmet", {}).get("unique", -1)) != snowblind_id:
+		search_failed = true
+		print("FAIL: Enter in the search did not choose Snowblind")
 	print("unique rows: %d, text: %s" % [editor.get_node("%UniqueMods").get_child_count(), editor.get_node("%UniqueText").text.replace("
 ", " | ")])
+
+	# unequipped items: copy the helmet to the stash, open the choice list, add an item and equip it
+	var failed_items: bool = false
+	editor.get_node("%StashCopyButton").pressed.emit()
+	await _frames(2)
+	var stash_rows: Node = items_tab.get_node("%StashRows")
+	print("stash: %d, stash buttons: %d" % [Build.stash.size(), stash_rows.get_child_count()])
+	if Build.stash.size() != 1 or stash_rows.get_child_count() != 1:
+		failed_items = true
+		print("FAIL: Copy to stash did not add an item")
+	items_tab._show_choices("helmet", helmet_row.get_node("%ItemButton"))
+	await _frames(2)
+	var choice_rows: Node = items_tab.get_node("%ChoiceRows")
+	print("choices: %d" % choice_rows.get_child_count())
+	if choice_rows.get_child_count() < 3:
+		failed_items = true
+		print("FAIL: the helmet choice list lacks entries (none, equipped, stash copy)")
+	else:
+		var tip: Node = choice_rows.get_child(choice_rows.get_child_count() - 1)._make_custom_tooltip("")
+		print("choice tooltip lines: %d" % tip.get_node("%Lines").get_child_count())
+		tip.free()
+	items_tab.get_node("%ChoicePopup").hide()
+	items_tab.get_node("%AddButton").pressed.emit()
+	await _frames(2)
+	var equip_button: Button = editor.get_node("%EquipButton")
+	print("stash after add: %d, equip button visible: %s" % [Build.stash.size(), equip_button.visible])
+	if Build.stash.size() != 2 or not equip_button.visible:
+		failed_items = true
+		print("FAIL: the + button did not add an editable stash item")
+	if not editor.get_node("%TypeRow").visible:
+		failed_items = true
+		print("FAIL: the Type row is hidden for an unequipped item")
+	# custom name
+	var name_edit: LineEdit = editor.get_node("%NameEdit")
+	name_edit.text = "My test helm"
+	name_edit.text_changed.emit("My test helm")
+	await _frames(2)
+	var stash_button: Button = items_tab.get_node("%StashRows").get_child(1)
+	print("named item: %s / button \"%s\"" % [str(Build.stash[1].get("name", "")), stash_button.text])
+	if str(Build.stash[1].get("name", "")) != "My test helm" or stash_button.text != "My test helm":
+		failed_items = true
+		print("FAIL: the custom item name was not stored or shown")
+	# type -> relic (id 9)
+	var type_select: OptionButton = editor.get_node("%TypeSelect")
+	type_select.select(type_select.get_item_index(9))
+	type_select.item_selected.emit(type_select.get_item_index(9))
+	await _frames(2)
+	var relic_base: Dictionary = GameData.item_base(int(Build.stash[1].get("base", -1)))
+	if relic_base.is_empty() or not ItemCompare.fits_slot("relic", relic_base) or str(Build.stash[1].get("name", "")) != "My test helm":
+		failed_items = true
+		print("FAIL: the Type row did not turn the item into a relic with its name kept: %s" % str(Build.stash[1]))
+	# one slider for tier and roll: put a 3rd tier affix on the first prefix of the weapon-type item
+	type_select.select(type_select.get_item_index(5))
+	type_select.item_selected.emit(type_select.get_item_index(5))
+	await _frames(2)
+	var tier_prefix: Node = editor.get_node("%Affixes/Prefix1")
+	var tier_affix_select: SearchSelect = tier_prefix.get_node("Top/AffixSelect")
+	var tier_picked: bool = false
+	for i in range(1, tier_affix_select.item_count):
+		if GameData.affix(tier_affix_select.get_item_id(i)).get("tiers", []).size() >= 3:
+			tier_affix_select.select(i)
+			tier_affix_select.item_selected.emit(i)
+			tier_picked = true
+			break
+	await _frames(2)
+	if tier_picked:
+		var tier_slider: HSlider = tier_prefix.get_node("Bottom/RollSlider")
+		tier_slider.value = 256 * 2 + 100
+		tier_slider.value_changed.emit(256.0 * 2 + 100)
+		await _frames(2)
+		var stored: Array = Build.stash[1].get("affixes", [])
+		print("tier slider affix: %s" % str(stored))
+		if stored.size() != 1 or int(stored[0]["tier"]) != 3 or int(stored[0]["roll"]) != 100 \
+				or int((tier_prefix.get_node("Top/TierSpin") as SpinBox).value) != 3:
+			failed_items = true
+			print("FAIL: the tier+roll slider did not store tier 3, roll 100")
+	else:
+		print("tier slider: no weapon affix with 3 tiers, skipped")
+	equip_button.pressed.emit()
+	await _frames(2)
+	print("stash after equip: %d" % Build.stash.size())
+	if Build.stash.size() != 2 or not Build.items.has("helmet"):
+		failed_items = true
+		print("FAIL: equipping a stash item did not swap it with the equipped one")
 
 	# blessings tab: select a blessing in the first timeline
 	tabs.current_tab = 4
@@ -137,12 +254,12 @@ func _ready() -> void:
 			break
 	await _frames(1)
 	var idol_editor: Node = idols_tab.get_node("%ItemEditor")
-	var idol_base: OptionButton = idol_editor.get_node("%BaseSelect")
-	if idol_base.item_count > 1:
-		idol_base.select(1)
-		idol_base.item_selected.emit(1)
+	var idol_sub: SearchSelect = idol_editor.get_node("%SubSelect")
+	if idol_sub.item_count > 1:
+		idol_sub.select(1)
+		idol_sub.item_selected.emit(1)
 	await _frames(2)
-	var idol_affix: OptionButton = idol_editor.get_node("%Affixes/Suffix1").get_node("Top/AffixSelect")
+	var idol_affix: SearchSelect = idol_editor.get_node("%Affixes/Suffix1").get_node("Top/AffixSelect")
 	if idol_affix.item_count > 1:
 		idol_affix.select(1)
 		idol_affix.item_selected.emit(1)
@@ -210,7 +327,7 @@ func _ready() -> void:
 	if bool(Build.player_state["haste"]):
 		failed = true
 		print("FAIL: reset_player_conditions")
-	failed = failed or tree_switch_failed
+	failed = failed or tree_switch_failed or failed_items or search_failed or hover_failed
 	# interface language: the Russian catalogue (res://i18n/ru.po) is loaded and switching the locale works
 	var saved_locale: String = TranslationServer.get_locale()
 	TranslationServer.set_locale("ru")

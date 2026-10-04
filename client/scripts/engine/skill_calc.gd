@@ -135,7 +135,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 				LE.t("Damage events per second: %s.\nHit %s + ailments %s.") % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
 	enemy_rows.push_front({"label": LE.t("Target"), "text": Enemy.describe(build.enemy), "breakdown":
 		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type and level are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
-	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "breakdown":
+	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "value": total_enemy, "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else LE.t("Hit %s + ailments %s = %s") % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
 	var param_rows: Array = _param_rows(s)

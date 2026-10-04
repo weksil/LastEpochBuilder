@@ -191,7 +191,7 @@ msgid "%s%s: %s × crit %s × %s hits/s × leech %s = %s/s"
 msgstr "%s%s: %s × крит %s × %s ударов/с × вампиризм %s = %s/с"
 
 msgid "%s: %s (implicit)"
-msgstr "%s: %s (импликит)"
+msgstr "%s: %s (имплисит)"
 
 msgid "%s: %s (special effect, does not affect the damage calculation)"
 msgstr "%s: %s (особый эффект, на расчёт урона не влияет)"
@@ -6569,7 +6569,7 @@ msgid "Implicit"
 msgstr "Импликит"
 
 msgid "Implicits"
-msgstr "Импликиты"
+msgstr "Имплиситы"
 
 msgid "Import a build from lastepochtools.com"
 msgstr "Импорт билда с lastepochtools.com"
@@ -9213,8 +9213,6 @@ msgstr "Физических миньонов"
 msgid "Pick a skill in the \"Skills\" tab"
 msgstr "Выберите умение во вкладке «Скиллы»"
 
-msgid "Pick an item base"
-msgstr "Выберите базу предмета"
 
 msgid "Picked up 4 arrows: ballistas always crit"
 msgstr "Подобрано 4 стрелы: баллисты всегда крит"
@@ -10464,8 +10462,6 @@ msgstr "Задано"
 msgid "Set \"%s\" (%d items)"
 msgstr "Сет «%s» (%d предм.)"
 
-msgid "Set \"%s\":"
-msgstr "Сет «%s»:"
 
 msgid "Setup speed"
 msgstr "Скорость установки"
@@ -13853,3 +13849,117 @@ msgstr "Сначала вставьте код сборки."
 
 msgid "Build loaded from the code."
 msgstr "Сборка загружена из кода."
+
+
+msgid "Move to stash"
+msgstr "Снять в запас"
+
+
+msgid "Unequip this item and keep it among the unequipped items."
+msgstr "Снять предмет и сохранить его среди снятых."
+
+msgid "Equip"
+msgstr "Надеть"
+
+
+
+msgid "Add a copy of this item to the unequipped items."
+msgstr "Добавить копию предмета в снятые."
+
+
+
+
+
+
+
+
+
+
+
+
+
+msgid "Equipping this item in %s will give you:"
+msgstr "Если надеть этот предмет в слот «%s»:"
+
+msgid "(replacing %s)"
+msgstr "(вместо «%s»)"
+
+msgid "No stat changes."
+msgstr "Характеристики не изменятся."
+
+msgid "This item does not fit any equipment slot."
+msgstr "Этот предмет не подходит ни к одному слоту экипировки."
+
+msgid "Unequipped items: %d unknown items skipped."
+msgstr "Снятые предметы: пропущено неизвестных — %d."
+
+msgid "Choose which of the character's items is equipped in this slot; the slot opens in the editor."
+msgstr "Выберите, какой из предметов персонажа надет в этот слот; слот откроется в редакторе."
+
+msgid "Unequipped items"
+msgstr "Снятые предметы"
+
+msgid "None yet: \"+\" adds an item, \"Move to stash\" in the editor unequips one."
+msgstr "Пока нет: «+» добавляет предмет, «Снять в запас» в редакторе снимает надетый."
+
+
+msgid "Equip this item; the item it replaces becomes unequipped."
+msgstr "Надеть предмет; заменённый станет снятым."
+
+msgid "Copy"
+msgstr "Копия"
+
+msgid "Unequipped item"
+msgstr "Снятый предмет"
+
+msgid "Set \"%s\": %d/%d items equipped"
+msgstr "Сет «%s»: надето %d из %d"
+
+msgid "Ring"
+msgstr "Кольцо"
+
+msgid "Leaving %s empty will give you:"
+msgstr "Если оставить слот «%s» пустым:"
+
+msgid "Add a new unequipped item and open it in the editor."
+msgstr "Добавить новый снятый предмет и открыть его в редакторе."
+
+msgid "Item name: type your own or leave it empty for the default one."
+msgstr "Название предмета: введите своё или оставьте пустым для стандартного."
+
+msgid "Tier and roll: each segment between the ticks is one tier, from its lowest to its highest roll."
+msgstr "Тир и ролл: каждый отрезок между засечками — один тир, от минимального до максимального ролла."
+
+msgid "Search by name"
+msgstr "Поиск по названию"
+
+msgid "Nothing found."
+msgstr "Ничего не найдено."
+
+msgid "Pick an item"
+msgstr "Выберите предмет"
+
+msgid "Set item · %s"
+msgstr "Сетовый предмет · %s"
+
+msgid "Unique item · %s"
+msgstr "Уникальный предмет · %s"
+
+msgid "Requires level %d"
+msgstr "Требуемый уровень: %d"
+
+
+msgid "Base item · %s"
+msgstr "Базовый предмет · %s"
+
+msgid "%d tiers"
+msgstr "Тиров: %d"
+
+msgid " (level %d)"
+msgstr " (нужен %d ур.)"
+
+msgid "Set bonuses:"
+msgstr "Бонусы сета:"
+
+msgid "%d items: %s"
+msgstr "%d предм.: %s"

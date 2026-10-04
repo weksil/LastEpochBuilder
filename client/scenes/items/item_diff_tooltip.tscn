@@ -1,0 +1,65 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_diff_tooltip.gd" id="1_script"]
+[ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/items/diff_line.tscn" id="3_line"]
+[ext_resource type="PackedScene" path="res://scenes/items/set_block.tscn" id="4_set"]
+
+[node name="ItemDiffTooltip" type="VBoxContainer"]
+custom_minimum_size = Vector2(340, 0)
+theme = ExtResource("2_theme")
+theme_override_constants/separation = 4
+script = ExtResource("1_script")
+line_scene = ExtResource("3_line")
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Item"
+
+[node name="Base" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Base"
+
+[node name="Mods" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="SetBox" parent="." instance=ExtResource("4_set")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Separator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Equipping this item in %s will give you:"
+autowrap_mode = 3
+
+[node name="Replacing" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "(replacing %s)"
+autowrap_mode = 3
+
+[node name="Lines" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="NoChange" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "No stat changes."

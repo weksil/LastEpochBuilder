@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[node name="SetBonusLine" type="Label"]
+custom_minimum_size = Vector2(300, 0)
+theme_type_variation = &"SetBonusInactive"
+text = "(2) Set bonus"
+autowrap_mode = 3

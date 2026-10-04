@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_button.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/items/item_diff_tooltip.tscn" id="2_tooltip"]
+
+[node name="ItemChoiceButton" type="Button"]
+custom_minimum_size = Vector2(260, 0)
+focus_mode = 0
+tooltip_text = "Item"
+theme_type_variation = &"ItemChoice"
+theme_override_constants/icon_max_width = 22
+text = "Item"
+alignment = 0
+text_overrun_behavior = 3
+script = ExtResource("1_script")
+tooltip_scene = ExtResource("2_tooltip")

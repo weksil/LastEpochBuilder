@@ -1,0 +1,46 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/common/search_select.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://theme/icons/arrow_down.svg" id="2_arrow"]
+[ext_resource type="Script" path="res://scripts/common/search_select_list.gd" id="3_list"]
+
+[node name="SearchSelect" type="Button"]
+custom_minimum_size = Vector2(120, 0)
+focus_mode = 0
+text = "—"
+icon = ExtResource("2_arrow")
+alignment = 0
+text_overrun_behavior = 3
+icon_alignment = 2
+script = ExtResource("1_script")
+
+[node name="Popup" type="PopupPanel" parent="."]
+unique_name_in_owner = true
+
+[node name="Box" type="VBoxContainer" parent="Popup"]
+offset_left = 10.0
+offset_top = 8.0
+offset_right = 410.0
+offset_bottom = 368.0
+theme_override_constants/separation = 6
+
+[node name="Search" type="LineEdit" parent="Popup/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Search by name"
+clear_button_enabled = true
+
+[node name="List" type="ItemList" parent="Popup/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 320)
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+allow_search = false
+script = ExtResource("3_list")
+
+[node name="Empty" type="Label" parent="Popup/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Nothing found."

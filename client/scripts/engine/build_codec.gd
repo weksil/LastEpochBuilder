@@ -46,6 +46,7 @@ static func to_dict(build: Node) -> Dictionary:
 		"skills": skills,
 		"selected_skill": build.selected_skill,
 		"items": (build.items as Dictionary).duplicate(true),
+		"stash": (build.stash as Array).duplicate(true),
 		"blessings": blessings,
 		"enemy": enemy,
 		"player": (build.player_state as Dictionary).duplicate(true),
@@ -65,7 +66,7 @@ static func _string_keys(source: Dictionary) -> Dictionary:
 
 ## Snapshot (usually parsed from JSON: numbers are floats, keys are strings) -> normalized document for apply().
 ## {"ok": false, "warnings"} when the data cannot be used at all; otherwise {"ok": true, "warnings", class_id, mastery,
-## level, quest_points, passives, skills, selected_skill, items, blessings, enemy, player}.
+## level, quest_points, passives, skills, selected_skill, items, stash, blessings, enemy, player}.
 static func from_dict(data: Variant) -> Dictionary:
 	var warnings: Array[String] = []
 	if not data is Dictionary or data.get("format") != FORMAT:
@@ -96,6 +97,17 @@ static func from_dict(data: Variant) -> Dictionary:
 		else:
 			warnings.append(LE.t("Unknown slot \"%s\", skipped.") % slot)
 
+	var stash: Array = []
+	var skipped_stash: int = 0
+	var raw_stash: Variant = _ints(data.get("stash", []))
+	for item: Variant in raw_stash if raw_stash is Array else []:
+		if item is Dictionary and not GameData.item_base(int(item.get("base", -1))).is_empty():
+			stash.append(item)
+		else:
+			skipped_stash += 1
+	if skipped_stash > 0:
+		warnings.append(LE.t("Unequipped items: %d unknown items skipped.") % skipped_stash)
+
 	var blessings: Dictionary = {}
 	var raw_blessings: Variant = _ints(data.get("blessings", {}))
 	for timeline: Variant in raw_blessings if raw_blessings is Dictionary else {}:
@@ -114,6 +126,7 @@ static func from_dict(data: Variant) -> Dictionary:
 		"skills": _skills(data.get("skills"), warnings),
 		"selected_skill": clampi(int(data.get("selected_skill", 0)), 0, SKILL_SLOTS - 1),
 		"items": items,
+		"stash": stash,
 		"blessings": blessings,
 		"enemy": _enemy(data.get("enemy")),
 		"player": _merged(BuildScript.default_player_state(), data.get("player")),
@@ -220,7 +233,7 @@ static func _enemy(saved: Variant) -> Dictionary:
 
 ## Replaces the build of the Build autoload (`build`) with a document from from_dict (ok == true) and emits `changed`.
 static func apply(build: Node, doc: Dictionary) -> void:
-	build.set_class(int(doc["class_id"]))  # resets mastery, passives, skills, items and blessings
+	build.set_class(int(doc["class_id"]))  # resets mastery, passives, skills, items, stash and blessings
 	build.mastery = int(doc["mastery"])
 	build.level = int(doc["level"])
 	build.quest_passive_points = int(doc["quest_points"])
@@ -236,6 +249,8 @@ static func apply(build: Node, doc: Dictionary) -> void:
 		build.skills[i]["inputs"] = (skill["inputs"] as Dictionary).duplicate(true)
 		build.skills[i]["hits"] = float(skill["hits"])
 	build.items = (doc["items"] as Dictionary).duplicate(true)
+	build.stash.assign((doc["stash"] as Array).duplicate(true))
+	build.stash_changed.emit()
 	build.blessings = (doc["blessings"] as Dictionary).duplicate(true)
 	build.enemy = (doc["enemy"] as Dictionary).duplicate(true)
 	build.player_state = (doc["player"] as Dictionary).duplicate(true)

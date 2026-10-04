@@ -1,6 +1,8 @@
 extends Node
 
 signal changed
+## The unequipped items (`stash`) changed. They do not affect the stats, so `changed` is not emitted for them alone.
+signal stash_changed
 
 const QUEST_PASSIVE_POINTS_MAX: int = 15
 
@@ -28,6 +30,8 @@ var _skill_nodes: Array[Dictionary] = []  # skill tree nodes per slot
 
 # Items
 var items: Dictionary = {}
+## Unequipped (inactive) equipment items, same dict shape as items[slot] (docs/UI.md "Items").
+var stash: Array[Dictionary] = []
 
 # Blessings (timelineID -> {"id": int, "roll": int})
 var blessings: Dictionary = {}
@@ -60,6 +64,7 @@ func _init_defaults() -> void:
 	enemy = default_enemy()
 	player_state = default_player_state()
 	items = {}
+	stash.clear()
 
 
 ## Empty skill slot.
@@ -116,6 +121,7 @@ func set_class(id: int) -> void:
 	for i in range(_skill_nodes.size()):
 		_skill_nodes[i] = {}
 	items.clear()
+	stash.clear()
 	blessings.clear()
 
 	var tree: Dictionary = GameData.get_passive_tree(class_id)
@@ -127,6 +133,7 @@ func set_class(id: int) -> void:
 					var node_id: int = int(node_entry["id"])
 					_nodes[node_id] = node_entry
 
+	stash_changed.emit()
 	changed.emit()
 
 func set_mastery(m: int) -> void:
@@ -531,6 +538,88 @@ func clear_item(slot: String) -> void:
 	if slot in items:
 		items.erase(slot)
 		changed.emit()
+
+
+## Puts a copy of the item into the stash (unequipped items).
+func stash_add(item: Dictionary) -> void:
+	if item.is_empty():
+		return
+	stash.append(item.duplicate(true))
+	stash_changed.emit()
+
+
+func stash_remove(index: int) -> void:
+	if index < 0 or index >= stash.size():
+		return
+	stash.remove_at(index)
+	stash_changed.emit()
+
+
+## Replaces the stash entry with a copy of `item` (the item editor writes its edits here).
+func stash_set(index: int, item: Dictionary) -> void:
+	if index < 0 or index >= stash.size():
+		return
+	stash[index] = item.duplicate(true)
+	stash_changed.emit()
+
+
+## Moves the item of `from_slot` into `to_slot`. The item that was in `to_slot` swaps into `from_slot` when its base
+## fits there, otherwise it goes to the stash.
+func move_item(from_slot: String, to_slot: String) -> void:
+	if from_slot == to_slot or not items.has(from_slot):
+		return
+	var moved: Dictionary = items[from_slot]
+	var old: Dictionary = items.get(to_slot, {})
+	items[to_slot] = moved
+	var stashed: bool = false
+	if old.is_empty():
+		items.erase(from_slot)
+	elif ItemCompare.fits_slot(from_slot, GameData.item_base(int(old.get("base", -1)))):
+		items[from_slot] = old
+	else:
+		stash.append(old)
+		items.erase(from_slot)
+		stashed = true
+	if stashed:
+		stash_changed.emit()
+	changed.emit()
+
+
+## Equips the stash item into `slot`; the item that was in the slot takes its place in the stash.
+func equip_from_stash(index: int, slot: String) -> void:
+	if index < 0 or index >= stash.size():
+		return
+	var old: Dictionary = items.get(slot, {})
+	items[slot] = stash[index].duplicate(true)
+	if old.is_empty():
+		stash.remove_at(index)
+	else:
+		stash[index] = old
+	stash_changed.emit()
+	changed.emit()
+
+
+## Equips a new item (for example a unique from the database); the item that was in the slot goes to the stash.
+func equip_item(slot: String, item: Dictionary) -> void:
+	var old: Dictionary = items.get(slot, {})
+	var stashed: bool = not old.is_empty()
+	if stashed:
+		stash.append(old)
+	items[slot] = item.duplicate(true)
+	if stashed:
+		stash_changed.emit()
+	changed.emit()
+
+
+## Takes the item out of the slot into the stash.
+func unequip_to_stash(slot: String) -> void:
+	var old: Dictionary = items.get(slot, {})
+	if old.is_empty():
+		return
+	stash.append(old)
+	items.erase(slot)
+	stash_changed.emit()
+	changed.emit()
 
 
 # ============================================================================
