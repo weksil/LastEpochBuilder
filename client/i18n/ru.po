@@ -13969,3 +13969,15 @@ msgstr "Сайт не ответил вовремя. Повтор через %d 
 
 msgid "Retrying the request (attempt %d of %d)…"
 msgstr "Повторяю запрос (попытка %d из %d)…"
+
+msgid "Sealed prefix"
+msgstr "Закреплённый префикс"
+
+msgid "Sealed suffix"
+msgstr "Закреплённый суффикс"
+
+msgid "Corrupted prefix"
+msgstr "Осквернённый префикс"
+
+msgid "Corrupted suffix"
+msgstr "Осквернённый суффикс"

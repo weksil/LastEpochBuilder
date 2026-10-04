@@ -8,7 +8,8 @@ signal slot_requested(slot: String)
 
 const EMPTY_ID: int = 99999
 const UNIQUE_EMPTY_ID: int = 99998
-const AFFIX_ROWS: Array[String] = ["Prefix1", "Prefix2", "Suffix1", "Suffix2"]
+## Rows 0-1 prefixes, 2-3 suffixes, 4 the sealed and 5 the corrupted affix (ItemCompare.SEALED/CORRUPTED_AFFIX_INDEX).
+const AFFIX_ROWS: Array[String] = ["Prefix1", "Prefix2", "Suffix1", "Suffix2", "Sealed", "Corrupted"]
 ## Slot kind of every %TypeSelect entry, indexed by the entry id.
 const TYPE_SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "relic"]
 ## Values of an affix roll slider per tier: the slider covers every tier, value = (tier - 1) * TIER_SPAN + roll.
@@ -41,7 +42,8 @@ func _ready() -> void:
 	%EquipButton.pressed.connect(_on_equip)
 	for row_name: String in AFFIX_ROWS:
 		var row: Node = %Affixes.get_node(row_name)
-		row.get_node("Top/KindLabel").text = tr("Prefix") if row_name.begins_with("Prefix") else tr("Suffix")
+		if row_name.begins_with("Prefix") or row_name.begins_with("Suffix"):
+			row.get_node("Top/KindLabel").text = tr("Prefix") if row_name.begins_with("Prefix") else tr("Suffix")
 		row.get_node("Top/AffixSelect").item_selected.connect(func(_i: int) -> void: _store_affixes(true))
 		row.get_node("Top/AffixSelect").tooltip_builder = _affix_tooltip
 		row.get_node("Top/TierSpin").value_changed.connect(_on_tier_spin.bind(row))
@@ -169,6 +171,10 @@ func _fill() -> void:
 	%StashMoveButton.visible = has_item and not in_stash and BuildMods.SLOTS.has(_slot)
 	for node_name: String in ["%AffixesTitle", "%Affixes", "%ClearButton"]:
 		get_node(node_name).visible = has_item
+	# a unique shows its mods; the affix block only when it carries affixes (a legendary)
+	if has_unique and (item.get("affixes", []) as Array).is_empty():
+		%AffixesTitle.visible = false
+		%Affixes.visible = false
 	%ImplicitsTitle.visible = has_item and %Implicits.get_child_count() > 0
 	%Implicits.visible = has_item
 	%UniqueTitle.visible = has_unique
@@ -346,8 +352,14 @@ func _update_set_bonuses() -> void:
 		line.theme_type_variation = &"SetBonusActive" if requirement <= count else &"SetBonusInactive"
 
 
+## The item's affixes with their editor rows (imported items have none, ItemCompare.place_affixes).
+func _placed_affixes(item: Dictionary) -> Array:
+	return ItemCompare.place_affixes(item.get("affixes", []), IdolGrid.is_idol_key(_slot))
+
+
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
-	var stored: Array = item.get("affixes", [])
+	var stored: Array = _placed_affixes(item)
+	var has_unique: bool = item.has("unique")
 	var options: Dictionary = {"PREFIX": [], "SUFFIX": []}
 	if not base.is_empty():
 		var class_name_str: String = str(GameData.get_class_data(Build.class_id).get("className", ""))
@@ -357,16 +369,26 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	for r in range(AFFIX_ROWS.size()):
 		var row: Node = %Affixes.get_node(AFFIX_ROWS[r])
 		var select: SearchSelect = row.get_node("Top/AffixSelect")
-		var kind: String = "PREFIX" if AFFIX_ROWS[r].begins_with("Prefix") else "SUFFIX"
-		select.clear()
-		select.add_item(tr("— none —"), EMPTY_ID)
-		for aff: Dictionary in options[kind]:
-			select.add_item(str(aff.get("name", "")), int(aff["affixId"]))
+		var extra: bool = r >= ItemCompare.SEALED_AFFIX_INDEX
+		var kinds: Array = ["PREFIX", "SUFFIX"] if extra else (["PREFIX"] if r < 2 else ["SUFFIX"])
 		var entry: Dictionary = {}
 		for e: Dictionary in stored:
 			if int(e.get("index", -1)) == r:
 				entry = e
 		var affix_id: int = int(entry.get("id", EMPTY_ID))
+		select.clear()
+		select.add_item(tr("— none —"), EMPTY_ID)
+		for kind: String in kinds:
+			for aff: Dictionary in options[kind]:
+				select.add_item(str(aff.get("name", "")), int(aff["affixId"]))
+		# an affix the lists do not offer (another class, imported data) is still shown in its row
+		if affix_id != EMPTY_ID and select.get_item_index(affix_id) < 0 and not GameData.affix(affix_id).is_empty():
+			select.add_item(str(GameData.affix(affix_id).get("name", "")), affix_id)
+		if extra:
+			var prefix: bool = str(GameData.affix(affix_id).get("type", "PREFIX")) == "PREFIX"
+			var label: String = ("Sealed prefix" if prefix else "Sealed suffix") if r == ItemCompare.SEALED_AFFIX_INDEX \
+				else ("Corrupted prefix" if prefix else "Corrupted suffix")
+			row.get_node("Top/KindLabel").text = tr(label)
 		select.select(maxi(0, select.get_item_index(affix_id)))
 		var tiers: int = GameData.affix(affix_id).get("tiers", []).size()
 		var spin: SpinBox = row.get_node("Top/TierSpin")
@@ -379,8 +401,10 @@ func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 		slider.set_value_no_signal(float((tier - 1) * TIER_SPAN + clampi(int(entry.get("roll", 255)), 0, TIER_SPAN - 1)))
 		for path: String in ["Top/TierLabel", "Top/TierSpin", "Bottom"]:
 			row.get_node(path).visible = affix_id != EMPTY_ID
-		# idols have one prefix and one suffix
+		# idols have one prefix and one suffix; the sealed row only when the item has one; uniques show only their affixes
 		row.visible = not (IdolGrid.is_idol_key(_slot) and (r == 1 or r == 3))
+		if extra or has_unique:
+			row.visible = row.visible and affix_id != EMPTY_ID
 
 
 # --- storing user edits ---------------------------------------------------------------
@@ -397,7 +421,6 @@ func _on_unique_selected(index: int) -> void:
 	else:
 		var item: Dictionary = _item().duplicate(true)
 		var new_item: Dictionary = ItemCompare.unique_item(unique_id)
-		new_item["affixes"] = item.get("affixes", [])
 		_keep_name(new_item, item)
 		_commit(new_item)
 	_fill()
@@ -513,10 +536,14 @@ func _store_affixes(refill: bool) -> void:
 		var tier_roll: Vector2i = _slider_position(row.get_node("Bottom/RollSlider"), tiers)
 		# keep the tier box in step with the slider
 		(row.get_node("Top/TierSpin") as SpinBox).set_value_no_signal(float(tier_roll.x))
-		affixes.append({
+		var stored: Dictionary = {
 			"id": affix_id, "index": r, "kind": "prefix" if r < 2 else "suffix",
 			"tier": tier_roll.x, "roll": tier_roll.y,
-		})
+		}
+		if r >= ItemCompare.SEALED_AFFIX_INDEX:
+			stored["kind"] = "prefix" if str(GameData.affix(affix_id).get("type", "")) == "PREFIX" else "suffix"
+			stored["sealed" if r == ItemCompare.SEALED_AFFIX_INDEX else "corrupted"] = true
+		affixes.append(stored)
 	item["affixes"] = affixes
 	_commit(item)
 	if refill:
@@ -589,7 +616,7 @@ func _update_values() -> void:
 		rows[j].get_node("%ValueLabel").text = ItemCompare.format_value(imp, v)
 
 	var used: Array[int] = []
-	for entry: Dictionary in item.get("affixes", []):
+	for entry: Dictionary in _placed_affixes(item):
 		var index: int = int(entry.get("index", 0))
 		var aff: Dictionary = GameData.affix(int(entry["id"]))
 		var tiers: Array = aff.get("tiers", [])

@@ -214,6 +214,12 @@ layout_mode = 2
 [node name="Suffix2" parent="VBox/Affixes" instance=ExtResource("3_affix")]
 layout_mode = 2
 
+[node name="Sealed" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
+[node name="Corrupted" parent="VBox/Affixes" instance=ExtResource("3_affix")]
+layout_mode = 2
+
 [node name="EmptyHint" type="Label" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2

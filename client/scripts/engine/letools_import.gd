@@ -386,16 +386,24 @@ static func _convert_item(raw: Dictionary, label: String, warnings: Array[String
 	var raw_affixes: Array = []
 	if raw.get("affixes") is Array:
 		raw_affixes.append_array(raw["affixes"])
+	var regular_count: int = raw_affixes.size()
 	raw_affixes.append(raw.get("sealedAffix"))
 	raw_affixes.append(raw.get("corruptedAffix"))
-	for entry: Variant in raw_affixes:
+	for i in range(raw_affixes.size()):
+		var entry: Variant = raw_affixes[i]
 		if not entry is Dictionary:
 			continue
 		var affix_dec: Dictionary = decode_id(str(entry.get("id", "")))
 		if affix_dec.get("kind", "") != "A" or GameData.affix(int(affix_dec["affix"])).is_empty():
 			warnings.append(LE.t("%s: unknown affix \"%s\", skipped.") % [label, entry.get("id", "")])
 			continue
-		item["affixes"].append({"id": int(affix_dec["affix"]), "tier": int(entry.get("tier", 1)), "roll": int(entry.get("r", 255))})
+		var affix: Dictionary = {"id": int(affix_dec["affix"]), "tier": int(entry.get("tier", 1)), "roll": int(entry.get("r", 255))}
+		if i == regular_count:
+			affix["sealed"] = true
+		elif i > regular_count:
+			affix["corrupted"] = true
+		item["affixes"].append(affix)
+	item["affixes"] = ItemCompare.place_affixes(item["affixes"], GameData.is_idol_type(int(GameData.item_base(base_id).get("type", -1))))
 	return item
 
 

@@ -87,6 +87,47 @@ static func item_subtitle(item: Dictionary) -> String:
 	return GameData.display_name(GameData.item_base(base_id))
 
 
+## Item editor rows beyond the regular ones (0-1 prefixes, 2-3 suffixes): the sealed and the corrupted affix.
+const SEALED_AFFIX_INDEX: int = 4
+const CORRUPTED_AFFIX_INDEX: int = 5
+
+
+## Affix entries with an editor row "index": entries that already have a free valid index keep it; the others go to the
+## first free prefix (0, 1) or suffix (2, 3) row by the affix type (idols: rows 0 and 2 only); a sealed entry takes row 4,
+## a corrupted one row 5; whatever does not fit takes a free one of them, the rest is dropped. Imported items have no index.
+static func place_affixes(affixes: Array, is_idol: bool) -> Array:
+	var placed: Array = []
+	var taken: Dictionary = {}
+	var pending: Array = []
+	for entry: Variant in affixes:
+		if not entry is Dictionary:
+			continue
+		var index: int = int(entry.get("index", -1))
+		if index >= 0 and index <= CORRUPTED_AFFIX_INDEX and not taken.has(index):
+			taken[index] = true
+			placed.append(entry.duplicate())
+		else:
+			pending.append(entry)
+	for entry: Dictionary in pending:
+		var rows: Array = []
+		if entry.get("sealed", false):
+			rows = [SEALED_AFFIX_INDEX]
+		elif entry.get("corrupted", false):
+			rows = [CORRUPTED_AFFIX_INDEX]
+		else:
+			var prefix: bool = str(GameData.affix(int(entry.get("id", -1))).get("type", "PREFIX")) == "PREFIX"
+			rows = ([0] if is_idol else [0, 1]) if prefix else ([2] if is_idol else [2, 3])
+		rows.append_array([SEALED_AFFIX_INDEX, CORRUPTED_AFFIX_INDEX])
+		for row: int in rows:
+			if not taken.has(row):
+				taken[row] = true
+				var copy: Dictionary = entry.duplicate()
+				copy["index"] = row
+				placed.append(copy)
+				break
+	return placed
+
+
 ## Mod lines of the item with their rolled values, as the item editor shows them: implicits, the unique's mods,
 ## then every affix property ("+12% Fire Resistance (T5)").
 static func item_lines(item: Dictionary) -> PackedStringArray:

@@ -148,8 +148,15 @@ func _convert() -> Dictionary:
 	_check("helmet base/sub", [items["helmet"]["base"], items["helmet"]["sub"]], [0, 63])
 	_check("helmet implicit rolls", items["helmet"]["implicit_rolls"], [154, 78, 90])
 	_check("helmet affixes = 4 + sealed", items["helmet"]["affixes"].size(), 5)
-	_check("helmet first affix", items["helmet"]["affixes"][0], {"id": 505, "tier": 6, "roll": 68})
+	_check("helmet first affix", items["helmet"]["affixes"][0], {"id": 505, "tier": 6, "roll": 68, "index": 0})
+	var helmet_rows: Array = []
+	for affix: Dictionary in items["helmet"]["affixes"]:
+		helmet_rows.append(int(affix["index"]))
+	helmet_rows.sort()
+	_check("helmet affix rows: 2 prefixes, 2 suffixes, sealed", helmet_rows, [0, 1, 2, 3, 4])
+	_check("helmet sealed affix flagged", items["helmet"]["affixes"].back().get("sealed", false), true)
 	_check("ring1 corrupted affix appended", items["ring1"]["affixes"].back()["id"], 1028)
+	_check("ring1 corrupted affix in the extra row", [items["ring1"]["affixes"].back().get("corrupted", false), int(items["ring1"]["affixes"].back()["index"])], [true, 5])
 	_check("ring1 affix count", items["ring1"]["affixes"].size(), 5)
 	var idol: Dictionary = items[IdolGrid.key(0, 3)]
 	_check("idol (x4,y1) base/sub", [idol["base"], idol["sub"]], [32, 3])

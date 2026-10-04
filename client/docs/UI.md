@@ -123,6 +123,10 @@ Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `
   `type` (PREFIX/SUFFIX), text `name`, id = affixId; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
   `%ValueLabel` — the values of all the affix's `properties` for the tier and roll (via `AffixMath`, with the base's `effect_modifier`).
   `%RollSlider` covers every tier: value = (tier − 1) · 256 + roll, `tick_count = tiers + 1` marks the tier borders; `%TierSpin` follows it.
+  Extra rows `Sealed` (index 4) and `Corrupted` (index 5) show the sealed / corrupted affix ("Sealed prefix", "Corrupted suffix"…) only when
+  the item has one. Entries without a valid `index` (LE Tools imports, older saves) are placed by `ItemCompare.place_affixes` (by the affix
+  type; imports flag `sealed` / `corrupted`); an affix the lists do not offer is appended to its row's list. A unique shows only its mods:
+  the affix block is hidden unless it carries affixes (a legendary), and then only the filled rows are shown.
   Any change → `Build.set_item(slot, updated dict)` (affixes — an array of up to 4 `{id, tier, roll, kind:"prefix"|"suffix", index}`).
 - `%EmptyHint` is visible when there is no item; then the implicits and the affixes are hidden. `%ClearButton` → `Build.clear_item(slot)`.
 - `edit_stash(index)` edits an unequipped item (writes go to `Build.stash_set`, the base list is that of `ItemCompare.target_slot(item, "")`);
