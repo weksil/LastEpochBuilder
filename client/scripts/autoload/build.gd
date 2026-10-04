@@ -73,6 +73,7 @@ func _init_defaults() -> void:
 			"moving": false,
 			"stunned": false,
 			"low_health": false,
+			"high_health": true,
 			"full_health": true,
 			"frozen": false
 		}

@@ -186,6 +186,9 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 		1:  # LowHealth
 			return 1.0 if flags.get("low_health", false) else 0.0
 
+		2:  # HighHealth: >= 65% (Stats.highHealthPercent); full health (>= 99%) is high too (research/06a)
+			return 1.0 if flags.get("high_health", false) or flags.get("full_health", false) else 0.0
+
 		3:  # FullHealth
 			return 1.0 if flags.get("full_health", false) else 0.0
 

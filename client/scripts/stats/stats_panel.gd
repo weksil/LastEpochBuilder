@@ -120,21 +120,18 @@ func _update_skill_summary() -> void:
 	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill)
 	var sections: Array = result.get("sections", [])
 
-	# Extract DPS from "Против врага" or "DPS" sections
+	# Extract DPS from the "Против врага" section
 	var dps_value: String = ""
 	var tooltip: String = ""
 
 	var enemy_dps: String = ""
-	var tooltip_dps: String = ""
 	for section: Dictionary in sections:
 		for row: Dictionary in section.get("rows", []):
 			if row.get("label") == "DPS по врагу":
 				enemy_dps = str(row.get("text", ""))
 				tooltip = str(row.get("breakdown", ""))
-			elif row.get("label") == "DPS" and str(section.get("title", "")).begins_with("DPS"):
-				tooltip_dps = str(row.get("text", ""))
 	dps_value = enemy_dps
 
 	if dps_value != "":
-		skill_summary_label.text = "%s: DPS по врагу (%s) %s, подсказка игры %s" % [str(result.get("title", "")), Enemy.describe(Build.enemy), enemy_dps, tooltip_dps]
+		skill_summary_label.text = "%s: DPS по врагу (%s) %s" % [str(result.get("title", "")), Enemy.describe(Build.enemy), enemy_dps]
 		skill_summary_label.tooltip_text = tooltip

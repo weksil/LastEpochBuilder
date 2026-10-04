@@ -18,6 +18,7 @@ func _ready() -> void:
 	_buff_skill_base_models()
 	_sustain()
 	_curse_hits()
+	_high_health_vs_dummy()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -225,7 +226,7 @@ func _sample_build() -> void:
 					aoe_breakdown = str(row["breakdown"])
 	_check("Meteor: MeteorAoe base fire 240", 1.0 if aoe_breakdown.contains("База: 240") else 0.0, 1.0)
 	_check("Meteor: fire damage >= 240", 1.0 if _section_value(r, "Урон за применение (до врага)", "Огонь") >= 240.0 else 0.0, 1.0)
-	_check("Meteor: DPS in tooltip section > 0", 1.0 if _section_value(r, "DPS как в подсказке игры", "DPS") > 0.0 else 0.0, 1.0)
+	_check("Meteor: hit vs enemy > 0", 1.0 if _section_value(r, "Против врага", "Средний удар по врагу") > 0.0 else 0.0, 1.0)
 	_check("Meteor: DPS vs enemy > 0", 1.0 if _section_value(r, "Против врага", "DPS по врагу") > 0.0 else 0.0, 1.0)
 
 	# Blessings: choose first timeline's first blessing with a non-104 implicit at roll 255
@@ -753,9 +754,9 @@ func _curse_hits() -> void:
 	r = SkillCalc.compute(Build, 0)
 	_print_sections(r)
 	_check("curse events = 2×3 + 1", _section_value(r, CURSE_SECTION, "Событий урона в секунду"), 7.0)
-	var per_use: float = _section_value(r, "DPS как в подсказке игры", "Урон за применение")
-	_check("curse tooltip DPS = per hit × 7", _section_value(r, "DPS как в подсказке игры", "DPS удара"), per_use * 7.0, 0.1)
+	var plain_hit: float = _section_value(r, "Против врага", "Удар без крита")
 	var avg_hit: float = _section_value(r, "Против врага", "Средний удар по врагу")
+	_check("curse average hit = non-crit hit × average crit multiplier", avg_hit, plain_hit * _section_value(r, "Против врага", "Средний множитель крита"), 0.05)
 	_check("curse DPS vs enemy = average hit × 7", _section_value(r, "Против врага", "DPS удара по врагу"), avg_hit * 7.0, 0.1)
 	_check("curse: no Poison section from generic on-hit chances", _count_sections(r, "Айлмент: Poison"), 0.0)
 	# the tree's «when the cursed enemy is hit» ArmourShred: 100% × (2 + 1) hits/s × 4 s
@@ -778,3 +779,48 @@ func _count_sections(r: Dictionary, title: String) -> float:
 		if s["title"] == title:
 			n += 1
 	return float(n)
+
+
+## Harvest of the sample build against a dummy, no buffs (calibrated in game: non-crit hits 995, crit 2487 within ±20%).
+## Swaddling of the Erased «17% more Melee Damage to High Health Enemies» (SP 117, ConditionalDamageProperty 2) applies
+## while the target has high (>= 65%) or full health.
+func _high_health_vs_dummy() -> void:
+	print("--- High Health condition (Harvest vs dummy)")
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
+	for i in range(Build.skills.size()):
+		Build.skills[i]["inputs"]["enemy_cursed"] = false
+		Build.skills[i]["inputs"]["buff_active"] = false
+	Build.enemy["kind"] = "dummy"
+	var flags: Dictionary = Build.enemy["flags"]
+	flags["full_health"] = true
+	flags["high_health"] = true
+	var high: float = _hit_vs_enemy(SkillCalc.compute(Build, 4))
+	flags["full_health"] = false
+	flags["high_health"] = false
+	var low: float = _hit_vs_enemy(SkillCalc.compute(Build, 4))
+	flags["full_health"] = true
+	flags["high_health"] = true
+	# in game (no variance on the dummy): non-crit 995, crit 2487 (= 995 × 2.5 crit multiplier)
+	_check("Harvest non-crit hit vs dummy at high health = game 995", high, 995.0, 1.0)
+	_check("Harvest crit hit vs dummy = game 2487", high * 2.5, 2487.0, 2.0)
+	_check("High Health more is ×1.17", high / low, 1.17, 0.0005)
+	var r: Dictionary = SkillCalc.compute(Build, 4)
+	_check("Harvest «Удар без крита» row = game 995", _section_value(r, "Против врага", "Удар без крита"), 995.0, 1.0)
+	_check("Harvest «Удар с критом» row = game 2487", _section_value(r, "Против врага", "Удар с критом"), 2487.0, 2.0)
+	print("  Harvest vs dummy: no crit %s, crit %s, average %s, hit DPS %s, DPS %s" % [
+		_section_value(r, "Против врага", "Удар без крита"), _section_value(r, "Против врага", "Удар с критом"),
+		_section_value(r, "Против врага", "Средний удар по врагу"), _section_value(r, "Против врага", "DPS удара по врагу"),
+		_section_value(r, "Против врага", "DPS по врагу")])
+
+
+## Sum of the per-type rows of the «Против врага» section (average non-crit hit against the target).
+func _hit_vs_enemy(r: Dictionary) -> float:
+	var total: float = 0.0
+	for s: Dictionary in r["sections"]:
+		if s["title"] != "Против врага":
+			continue
+		for row: Dictionary in s["rows"]:
+			if LE.DT_NAME_RU.has(str(row["label"])):
+				total += float(row["text"])
+	return total

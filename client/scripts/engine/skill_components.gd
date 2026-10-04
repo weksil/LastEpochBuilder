@@ -178,7 +178,7 @@ static func _curse_hit_component(build: Node, slot: int, s: Dictionary, label: S
 	b.append("Ваши попадания бьют в ×%s сильнее (moreDamageWhenHitByCreator %s + 1): событий урона = %s × %s + %s = %s в секунду." % [
 		LE.fmt_num(own_mult), LE.fmt_num(own_mult - 1.0), LE.fmt_num(own), LE.fmt_num(own_mult), LE.fmt_num(other), LE.fmt_num(weighted)])
 	b.append("Попаданий по цели в секунду (для шансов айлментов): %s + %s = %s." % [LE.fmt_num(own), LE.fmt_num(other), LE.fmt_num(hits)])
-	b.append("Число попаданий за применение не используется. Подсказка игры частоты попаданий не знает: «DPS как в подсказке» считается с теми же событиями.")
+	b.append("Число попаданий за применение не используется.")
 	if weighted <= 0.0:
 		_skip_note(out_notes, "Проклятие «%s»: 0 попаданий по цели в секунду — задайте частоту попаданий во вкладке «Расчёты»." % label)
 	var comp: Dictionary = _component(label, "curse_hit", ab, base, 1.0, weighted, "урон проклятия при попадании по цели (abilities_code_damage.json)")

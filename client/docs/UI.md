@@ -80,8 +80,8 @@
 `@export row_scene, group_scene`. На `Build.changed`: `g = BuildMods.global_store(Build)`,
 `rows = CharacterCalc.compute(g.store, Build)`. Сначала строки «Класс/Мастерство/Уровень» (как сейчас), затем по группам:
 `group_scene` (Label, text = group) и `row_scene` (`NameLabel`, `ValueLabel`, `tooltip_text` строки = breakdown).
-`%SkillSummary`: если выбранный слот с умением — `SkillCalc.compute` → «Умение: DPS по врагу X (подсказка игры Y)»
-(значения из секций «Против врага»/«DPS»; при отсутствии — пусто). Пересчёт откладывать `call_deferred`, не чаще раза за кадр.
+`%SkillSummary`: если выбранный слот с умением — `SkillCalc.compute` → «Умение: DPS по врагу (<цель>) X»
+(значение строки «DPS по врагу» секции «Против врага»; при отсутствии — пусто). Пересчёт откладывать `call_deferred`, не чаще раза за кадр.
 
 ## Идолы — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Сцена `scenes/idols/idols_tab.tscn`: `%Grid` содержит 25 готовых кнопок `IdolCell` с `metadata/row`, `metadata/col`;

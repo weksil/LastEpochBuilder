@@ -298,12 +298,22 @@ layout_mode = 2
 focus_mode = 0
 button_pressed = true
 text = "Полное здоровье"
+tooltip_text = "Здоровье цели не ниже 99% (тогда оно и высокое)"
 metadata/flag = "full_health"
+
+[node name="HighHealthCheck" type="CheckBox" parent="Columns/Left"]
+layout_mode = 2
+focus_mode = 0
+button_pressed = true
+text = "Высокое здоровье (≥ 65%)"
+tooltip_text = "Условие «High Health»: здоровье цели не ниже 65%"
+metadata/flag = "high_health"
 
 [node name="LowHealthCheck" type="CheckBox" parent="Columns/Left"]
 layout_mode = 2
 focus_mode = 0
 text = "Низкое здоровье"
+tooltip_text = "Условие «Low Health»: здоровье цели не выше 35%"
 metadata/flag = "low_health"
 
 [node name="FrozenCheck" type="CheckBox" parent="Columns/Left"]

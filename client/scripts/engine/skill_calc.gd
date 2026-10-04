@@ -50,7 +50,6 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		if not notes.has(n):
 			notes.append(n)
 	var sections: Array = []
-	var tooltip_rows: Array = []
 	var enemy_rows: Array = []
 	var extra_enemy_sections: Array = []
 	var comp_results: Array[Dictionary] = []
@@ -63,7 +62,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
 		var head_ail: Dictionary = AilmentCalc.compute(build, head_ctx, uses, ail_notes)
 		sections.append_array(head_ail["sections"])
-		comp_results.append({"name": "", "hit_tooltip": 0.0, "hit_enemy": 0.0, "ail": head_ail, "events": uses})
+		comp_results.append({"name": "", "hit_enemy": 0.0, "ail": head_ail, "events": uses})
 	for idx in range(components.size()):
 		var comp: Dictionary = components[idx]
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
@@ -84,7 +83,6 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		sections.append({"title": prefix + "Крит", "rows": ds["crit_rows"]})
 		if idx == 0:
 			sections.append({"title": "Скорость и мана", "rows": speed["rows"]})
-		var comp_tooltip: Array = _tooltip(ds, comp_speed)
 		var comp_enemy: Array = _vs_enemy(build, ctx, ds, comp_speed, notes)
 		# curse hits: damage (and leech) follow the weighted rate, per-hit gains and ailment chances the plain hit count
 		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else events
@@ -93,44 +91,31 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
 		if idx == 0:
-			tooltip_rows = comp_tooltip
 			enemy_rows = comp_enemy
 		else:
 			extra_enemy_sections.append({"title": prefix + "Против врага", "rows": comp_enemy})
-		comp_results.append({"name": str(comp["name"]), "hit_tooltip": float(comp_speed["tooltip_dps"]), "hit_enemy": float(comp_speed["enemy_dps"]),
+		comp_results.append({"name": str(comp["name"]), "hit_enemy": float(comp_speed["enemy_dps"]),
 			"ail": ail, "events": events})
 	for n: String in ail_notes:
 		if not notes.has(n):
 			notes.append(n)
 
-	var total_tooltip: float = 0.0
 	var total_enemy: float = 0.0
-	var tooltip_lines: PackedStringArray = []
 	var enemy_lines: PackedStringArray = []
 	for cr: Dictionary in comp_results:
-		var ail_t: float = float(cr["ail"]["tooltip_dps"])
 		var ail_e: float = float(cr["ail"]["enemy_dps"])
-		total_tooltip += float(cr["hit_tooltip"]) + ail_t
 		total_enemy += float(cr["hit_enemy"]) + ail_e
-		tooltip_lines.append("%s: удар %s + айлменты %s = %s" % [cr["name"], LE.fmt_num(cr["hit_tooltip"]), LE.fmt_num(ail_t), LE.fmt_num(float(cr["hit_tooltip"]) + ail_t)])
 		enemy_lines.append("%s: удар %s + айлменты %s = %s" % [cr["name"], LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(ail_e), LE.fmt_num(float(cr["hit_enemy"]) + ail_e)])
 	var main: Dictionary = comp_results[0]
-	if float(main["ail"]["tooltip_dps"]) > 0.0:
-		tooltip_rows.append({"label": "DPS айлментов", "text": LE.fmt_num(main["ail"]["tooltip_dps"]), "breakdown": "Сумма DPS всех айлментов без врага (разделы «Айлмент: …»)."})
 	if float(main["ail"]["enemy_dps"]) > 0.0:
 		enemy_rows.append({"label": "DPS айлментов по врагу", "text": LE.fmt_num(main["ail"]["enemy_dps"]), "breakdown": "Сумма DPS всех айлментов по врагу (разделы «Айлмент: …»)."})
 	if comp_results.size() > 1:
 		for cr: Dictionary in comp_results:
-			tooltip_rows.append({"label": "DPS: %s" % cr["name"], "text": LE.fmt_num(float(cr["hit_tooltip"]) + float(cr["ail"]["tooltip_dps"])), "breakdown":
-				"Событий урона в секунду: %s.\nУдар %s + айлменты %s." % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_tooltip"]), LE.fmt_num(cr["ail"]["tooltip_dps"])]})
 			enemy_rows.append({"label": "DPS по врагу: %s" % cr["name"], "text": LE.fmt_num(float(cr["hit_enemy"]) + float(cr["ail"]["enemy_dps"])), "breakdown":
 				"Событий урона в секунду: %s.\nУдар %s + айлменты %s." % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
-	tooltip_rows.append({"label": "DPS", "text": LE.fmt_num(total_tooltip), "breakdown":
-		"\n".join(tooltip_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
-			LE.fmt_num(main["hit_tooltip"]), LE.fmt_num(main["ail"]["tooltip_dps"]), LE.fmt_num(total_tooltip)]})
 	enemy_rows.push_front({"label": "Цель", "text": Enemy.describe(build.enemy), "breakdown":
 		"Скрытое снижение урона по уровню цели: %s (таблица из кода игры; у босса и мини-босса + 5%% остатка).
-Подсказка игры его не учитывает. Тип и уровень цели — во вкладке «Условия»." % LE.fmt_pct(Enemy.level_dr(build.enemy))})
+Тип и уровень цели — во вкладке «Условия»." % LE.fmt_pct(Enemy.level_dr(build.enemy))})
 	enemy_rows.append({"label": "DPS по врагу", "text": LE.fmt_num(total_enemy), "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else "Удар %s + айлменты %s = %s" % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
@@ -139,7 +124,6 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		param_rows.append({"label": "Механика", "text": "есть", "breakdown": flag})
 	if not param_rows.is_empty():
 		sections.append({"title": "Параметры умения", "rows": param_rows})
-	sections.append({"title": "DPS как в подсказке игры", "rows": tooltip_rows})
 	sections.append({"title": "Против врага", "rows": enemy_rows})
 	sections.append_array(extra_enemy_sections)
 	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
@@ -741,30 +725,6 @@ static func _weapon_rate(build: Node, tags: int) -> float:
 	return sum / rates.size()
 
 
-# --- 8.4 tooltip DPS --------------------------------------------------------------
-
-static func _tooltip(ds: Dictionary, speed: Dictionary) -> Array:
-	var cc: float = ds["cc"]
-	var cm: float = ds["cm"]
-	var crit_f: float = maxf(1.0, 1.0 + minf(1.0, cc) * (cm - 1.0))
-	var per_use: float = 0.0
-	var b: PackedStringArray = ["Средний множитель крита: 1 + min(1, %s) × (%s − 1) = %s" % [LE.fmt_pct(cc), LE.fmt_num(cm), LE.fmt_num(crit_f)]]
-	for i in range(7):
-		var d: float = ds["final"][i]
-		if d <= 0.0:
-			continue
-		var part: float = (1.0 + float(ds["pen"][i])) * crit_f * d
-		per_use += part
-		b.append("%s: %s × (1 + пробивание %s) × %s = %s" % [LE.DT_NAME_RU[i], LE.fmt_num(d), LE.fmt_pct(ds["pen"][i]), LE.fmt_num(crit_f), LE.fmt_num(part)])
-	var dps: float = per_use * float(speed["uses"])
-	speed["tooltip_dps"] = dps
-	return [
-		{"label": "Урон за применение", "text": LE.fmt_num(per_use), "breakdown": "\n".join(b) +
-			"\nПодсказка игры не учитывает сопротивления, броню, скрытое снижение урона и условные модификаторы."},
-		{"label": "DPS удара", "text": LE.fmt_num(dps), "breakdown": "%s × %s %s/с = %s" % [LE.fmt_num(per_use), LE.fmt_num(speed["uses"]), speed.get("unit", "применений"), LE.fmt_num(dps)]},
-	]
-
-
 # --- 8.5 against the enemy ----------------------------------------------------------
 
 static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dictionary, notes: Array[String]) -> Array:
@@ -826,6 +786,22 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var ctbc: float = e.query(LE.CHANCE_TO_BE_CRIT).added
 	var p: float = minf(1.0, cc + ctbc) if cc > 0.0 else 0.0
 	var e_crit: float = 1.0 + p * (cm - 1.0)
+	# single-hit numbers as the training dummy shows them (no per-hit variance there)
+	var type_parts: PackedStringArray = []
+	for i in range(7):
+		if by_type[i] > 0.0:
+			type_parts.append("%s %s" % [LE.DT_NAME_RU[i], LE.fmt_num(by_type[i])])
+	const VARIANCE_NOTE: String = "
+Урон удара в игре обычно разбегается ×0.8–1.2 на каждый удар (research/06b §3.1); манекен для тренировок разброса не показывает."
+	rows.append({"label": "Удар без крита", "text": LE.fmt_num(total), "breakdown":
+		"Сумма урона по типам против цели: %s = %s." % [" + ".join(type_parts) if not type_parts.is_empty() else "нет урона", LE.fmt_num(total)] +
+		"
+Это число показывает манекен для обычного (не критического) удара." + VARIANCE_NOTE})
+	if hit and p > 0.0:
+		rows.append({"label": "Удар с критом", "text": LE.fmt_num(total * cm), "breakdown":
+			"Удар без крита %s × множитель крита %s = %s." % [LE.fmt_num(total), LE.fmt_num(cm), LE.fmt_num(total * cm)] +
+			"
+Это число показывает манекен для критического удара." + VARIANCE_NOTE})
 	rows.append({"label": "Средний множитель крита", "text": "×" + LE.fmt_num(e_crit), "breakdown":
 		"Шанс %s + уязвимость цели %s = %s; 1 + %s × (%s − 1) = %s" % [
 			LE.fmt_pct(cc), LE.fmt_pct(ctbc), LE.fmt_pct(p), LE.fmt_pct(p), LE.fmt_num(cm), LE.fmt_num(e_crit)]})

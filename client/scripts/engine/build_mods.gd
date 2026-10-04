@@ -88,7 +88,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 
 	_add_skill_passives(build, ability, result)
 	BUFF_SKILLS.apply(build, slot, ability, result)
-	_add_ability_scaling(build, ability, global, store)
+	_add_ability_scaling(build, ability, global, store, result["conversions"])
 	UniqueEffects.apply_skill(build, ability, result)
 	_declare_buff_input(result)
 	return result
@@ -651,19 +651,45 @@ static func _is_unconditional_temp(target: String) -> bool:
 	return false
 
 
+## Conversion rules whose mutator also re-types the added damage of the ability's attribute scaling (evidence in
+## skill_conversions.json: «Dex/attribute scaling»). Calibrated in game: Harvest with Physical conversion, Dex 21 →
+## «Gains 2 (42) Melee Physical Damage» in the tooltip and dummy hits 995 / 2487 (crit) only with physical Dex damage.
+const ATTRIBUTE_SCALING_CONVERSIONS: Array[String] = [
+	"HarvestMutator.physicalConversion", "HarvestMutator.coldConversion", "FlayMutator.coldConversion",
+]
+
+
 ## attributeScaling × attribute value, levelScaling × character level (06a §6.6).
-static func _add_ability_scaling(build: Node, ability: Dictionary, global: StatStore, store: StatStore) -> void:
+static func _add_ability_scaling(build: Node, ability: Dictionary, global: StatStore, store: StatStore, conversions: Array = []) -> void:
 	for entry: Dictionary in ability.get("attributeScaling", []):
 		var index: int = int(entry.get("attribute", 0))
 		var attr_sp: int = LE.STRENGTH + _attr_sp_offset(index)
 		var n: int = LE.round_half_even(_sum_added_any_tags(global, attr_sp) + _sum_added_any_tags(global, LE.ALL_ATTRIBUTES))
 		for stat: Dictionary in entry.get("stats", []):
 			var mod: StatMod = stat_from_record(stat, "Умение: за %s ×%d" % [ATTRIBUTE_NAMES_RU[index], n])
+			_convert_scaling_type(mod, conversions)
 			store.add(mod.scaled(float(n)))
 	for entry: Dictionary in ability.get("levelScaling", []):
 		for stat: Dictionary in entry.get("stats", []):
 			var mod: StatMod = stat_from_record(stat, "Умение: за уровень персонажа ×%d" % build.level)
 			store.add(mod.scaled(float(build.level)))
+
+
+## Re-types added damage of an attribute-scaling stat by the active conversion rules of ATTRIBUTE_SCALING_CONVERSIONS.
+static func _convert_scaling_type(mod: StatMod, conversions: Array) -> void:
+	if mod.property != LE.DAMAGE or mod.added == 0.0:
+		return
+	for c: Dictionary in conversions:
+		var rule: Dictionary = c.get("rule", {})
+		if not ATTRIBUTE_SCALING_CONVERSIONS.has(str(rule.get("key", ""))) or float(c.get("value", 0.0)) <= 0.0:
+			continue
+		for conv: Dictionary in rule.get("convert", []):
+			var from_i: int = SkillComponents.TYPE_ORDER.find(str(conv.get("from", "")))
+			var to_i: int = SkillComponents.TYPE_ORDER.find(str(conv.get("to", "")))
+			if from_i < 0 or to_i < 0 or (mod.tags & LE.DT_TAG[from_i]) == 0:
+				continue
+			mod.tags = (mod.tags & ~LE.DT_TAG[from_i]) | LE.DT_TAG[to_i]
+			mod.source += " (%s → %s, узел «%s»)" % [LE.DT_NAME_RU[from_i], LE.DT_NAME_RU[to_i], c.get("node", "")]
 
 
 ## CoreAttribute enum order is Str 0, Vit 1, Int 2, Dex 3, Att 4; SP order is Str 19, Vit 20, Int 21, Dex 22, Att 23.

@@ -8,7 +8,7 @@ class_name AilmentCalc
 const ENEMY_TICK_K: float = 0.4
 
 
-## {sections: Array, tooltip_dps: float, enemy_dps: float}
+## {sections: Array, enemy_dps: float}
 ## `uses` is the number of hits per second that roll the chances. `curse_hit`: the hits are hits on a cursed enemy
 ## (docs/ENGINE.md §9.3): only chances that the skill tree attaches to «when the cursed enemy is hit» apply to them
 ## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
@@ -19,7 +19,6 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 	var unit: String = "попаданий по проклятой цели" if curse_hit else "применений"
 	var sections: Array = []
 	var applied_rows: Array = []
-	var tooltip_total: float = 0.0
 	var enemy_total: float = 0.0
 	var ids: Array = chances.keys()
 	ids.sort()
@@ -47,14 +46,13 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 			continue
 		var r: Dictionary = _damaging_ailment(build, ctx, ail, c, health, rate, duration, stacks, chance_text, unit)
 		sections.append({"title": "Айлмент: %s" % name, "rows": r["rows"]})
-		tooltip_total += float(r["dps"])
 		enemy_total += float(r["enemy_dps"])
 	if not applied_rows.is_empty():
 		sections.append({"title": "Наложение айлментов без урона", "rows": applied_rows})
 	for conv: Dictionary in ctx.get("ailment_conversions", []):
 		if GameData.ailment_id_by_name(str(conv["from"])) < 0 or GameData.ailment_id_by_name(str(conv["to"])) < 0:
 			notes.append("Узел «%s»: конверсия %s → %s не распознана" % [conv["node"], conv["from"], conv["to"]])
-	return {"sections": sections, "tooltip_dps": tooltip_total, "enemy_dps": enemy_total}
+	return {"sections": sections, "enemy_dps": enemy_total}
 
 
 ## AilmentID -> {name, chance, lines, inc_dur, inc_eff, more}: prefab chances + AilmentChance stats + conversions.
