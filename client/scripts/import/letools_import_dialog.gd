@@ -25,6 +25,8 @@ func _ready() -> void:
 	close_requested.connect(hide)
 	%SourceTabs.set_tab_title(0, tr("Maxroll account"))
 	%SourceTabs.set_tab_title(1, tr("Last Epoch Tools link"))
+	# The browser build cannot read lastepochtools.com: its CORS allows only its own origin.
+	%SourceTabs.set_tab_hidden(1, OS.has_feature("web"))
 	%MaxrollPanel.imported.connect(imported.emit)
 	about_to_popup.connect(_on_about_to_popup)
 	%LoadButton.pressed.connect(_on_load_pressed)

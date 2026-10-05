@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/skillIcon-glyph-2_997950.png-c19f57e5a5a16d77
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

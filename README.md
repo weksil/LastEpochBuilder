@@ -1,5 +1,9 @@
 # Last Epoch Builder
 
+## [▶ Open Last Epoch Builder in the browser](https://weksil.github.io/LastEpochBuilder/)
+
+Runs in any desktop browser with WebGL 2; saved builds stay in that browser. A Windows version is also available:
+
 ## [⬇ Download Last Epoch Builder 0.1.2 for Windows x64](https://github.com/weksil/LastEpochBuilder/releases/download/v0.1.2/LastEpochBuilder-0.1.2-windows-x64.zip)
 
 All versions and release notes: [Releases](https://github.com/weksil/LastEpochBuilder/releases/latest).
@@ -13,6 +17,7 @@ Interface in English or Russian.
 
 The planner imports builds from [Last Epoch Tools](https://www.lastepochtools.com/planner/) links
 (`https://www.lastepochtools.com/planner/XXXXXXXX`).
+This import is available in the Windows version only: the browser cannot load Last Epoch Tools pages.
 
 How to get a link to your character:
 

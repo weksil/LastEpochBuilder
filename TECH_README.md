@@ -1,7 +1,7 @@
 # Last Epoch Builder — technical README
 
 Developer documentation: formula and data sources, architecture, checks, the release build. The user-facing page is
-[README.md](README.md) (download, screenshots); the landing page for GitHub Pages is [docs/index.html](docs/index.html).
+[README.md](README.md) (download, screenshots); GitHub Pages serves the browser build (see "Web build").
 
 A build planner for Last Epoch in the spirit of Path of Building: exact numbers with a breakdown
 of every value, items / idols / blessings / skill and passive trees,
@@ -61,9 +61,10 @@ the commands for repeating the extraction are described in the notes `research/0
 README.md        user-facing README shown on GitHub (download, screenshots, license)
 TECH_README.md   this file
 LICENSE          MIT license (for the project code, see "License")
-docs/            GitHub Pages landing page (index.html) and the screenshots used by it and README.md
-                 (docs/screenshots are plain git, not LFS: Pages does not serve LFS files)
+docs/            screenshots used by README.md (plain git, not LFS)
 build_windows.ps1  builds the Windows x64 release (see "Release build")
+build_web.ps1    builds the browser version (see "Web build")
+.github/workflows/pages.yml  builds the browser version and publishes it to GitHub Pages
 release/         README.txt shipped inside the release zip
 PLAN.md          verdict, architecture, phases, risks
 BACKLOG.md       deferred tasks
@@ -264,6 +265,26 @@ else `godot` on `PATH`. The script copies
 data and assets embedded in the exe), deletes the copy and packs `build/LastEpochBuilder-<version>-windows-x64.zip`
 (exe, LICENSE, `release/README.txt`). The version is also set in `client/project.godot` (`application/config/version`).
 
+### Web build
+
+```
+.uild_web.ps1
+```
+Same Godot lookup as the release build; needs the 4.7 export template `web_nothreads_release.zip` and Python 3. The script copies
+`research/data` into `client/data/research`, minifies the JSON of that copy, exports the preset "Web" into `build/web` and deletes
+the copy. Test locally: `python -m http.server -d build/web 8060`, open `http://localhost:8060`.
+
+- The preset is single-threaded (`variant/thread_support=false`): the threaded build needs COOP/COEP headers that GitHub Pages
+  cannot send. The renderer is GL Compatibility (WebGL 2).
+- Images of `client/assets/trees` and `client/assets/items` are imported as lossy WebP (`compress/mode=1`, quality 0.85) to keep
+  the download small; new images there need the same import settings.
+- `user://` (settings, saved builds) lives in the browser IndexedDB. The "open the saves folder" button is hidden there.
+- Clipboard: Godot copies to the system clipboard; Ctrl+V in a text field pastes from it (Godot reads the browser paste event).
+- Import: the Last Epoch Tools tab is hidden (lastepochtools.com sends CORS only for its own origin); the Maxroll import works
+  (Maxroll sends CORS for any origin), as does a build code pasted in "Builds…".
+- Publishing: `.github/workflows/pages.yml` runs on pushes to `main` that touch the client, the data or the build script, and by
+  hand (Actions → "Web build to GitHub Pages"). Repository settings → Pages → Source must be "GitHub Actions".
+
 ### Localization
 
 Source strings are English. Russian lives in `client/i18n/ru.po` (msgid = English text): scene texts are translated by Godot,
@@ -294,7 +315,7 @@ the build is kept in the `Build` autoload. Details: [client/docs/UI.md](client/d
 TECH_README.md is updated in the same commit as the change that makes it stale:
 a new folder or tool, a status change in the table above, a new build/run step,
 a change to the git rules. We keep the "Status", "Repository layout" and "Development tools" sections up to date.
-README.md and docs/index.html are updated on a release (version, download link) and when a feature worth a screenshot changes
+README.md is updated on a release (version, download link) and when a feature worth a screenshot changes
 (re-run `readme_screenshots`).
 
 ## License

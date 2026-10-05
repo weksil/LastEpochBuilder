@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/idol.png-2b51ed2beb3f65a46ebf9aca03871f93.cte
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

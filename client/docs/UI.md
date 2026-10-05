@@ -206,6 +206,7 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
   page and tied to it, it cannot be cached) → JSON → `LEToolsImport.to_build` → `LEToolsImport.apply(Build, doc)`.
   Text starting with `{` is treated as ready-made response JSON (no network). The browser's User-Agent is **not** sent: Cloudflare answers 403
   to a Chrome UA with a non-Chrome TLS fingerprint, while the engine's UA gets through.
+- Browser build (`OS.has_feature("web")`): the Last Epoch Tools tab is hidden — lastepochtools.com sends CORS only for its own origin.
 - `to_build` accepts the full response `{data: {...}}` or just `data`; it returns `{class_id, mastery, level, passives, skills[5], items, blessings, warnings}`.
   Unknown ids/nodes are skipped with an English warning, no crashes.
 - Skills come from the specialized trees `skillTrees` (`treeID`, `slotNumber`, `level`, `selected`), not from the skill bar `hud`:
@@ -239,7 +240,7 @@ dictionary; double click imports), `%ImportButton`, `%StatusLabel`, `%Http`. The
 ## Builds: saves and the build code — `scripts/builds/builds_dialog.gd` (`class_name BuildsDialog extends Window`), `scripts/engine/build_codec.gd` (`BuildCodec`)
 The button `%BuildsButton` ("Builds…", top bar) opens `%BuildsDialog`; on its `loaded` signal `main.gd` syncs the top bar like after an import.
 The dialog: `%NameEdit` + `%SaveButton` (save under a name, the same name overwrites), `%BuildList` (newest first; double click loads),
-`%LoadButton`, `%DeleteButton` (asks `%DeleteConfirm` first), `%OpenFolderButton`, `%CodeEdit`, `%CopyCodeButton` (encodes the current build,
+`%LoadButton`, `%DeleteButton` (asks `%DeleteConfirm` first), `%OpenFolderButton` (hidden in the browser build), `%CodeEdit`, `%CopyCodeButton` (encodes the current build,
 puts the code into the field and the clipboard), `%LoadCodeButton` (decodes the field, or the clipboard when the field is empty), `%StatusLabel`, `%CloseButton`.
 - `BuildCodec.to_dict(Build)` — a JSON-safe snapshot `{format: "le-builder", version: 1, class, mastery, level, quest_points, passives, skills[5]
   {ability, level, tree, inputs, hits}, selected_skill, items, stash, blessings, enemy, player}` (`stash` — the unequipped items; older saves have none); dictionary keys that are ids are written as strings.

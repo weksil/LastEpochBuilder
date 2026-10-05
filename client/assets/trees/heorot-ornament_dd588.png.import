@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/heorot-ornament_dd588.png-97e7edbf0c27f0af8f6
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

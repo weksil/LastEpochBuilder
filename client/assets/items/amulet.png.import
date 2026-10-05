@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/amulet.png-4c9fc20c24ae9f3f4d73ad33807688f5.c
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

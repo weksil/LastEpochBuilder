@@ -17,6 +17,7 @@ func _ready() -> void:
 	%LoadButton.pressed.connect(_load_selected)
 	%DeleteButton.pressed.connect(_on_delete_pressed)
 	%OpenFolderButton.pressed.connect(_on_open_folder_pressed)
+	%OpenFolderButton.visible = not OS.has_feature("web")  # saves live in the browser storage there
 	%CopyCodeButton.pressed.connect(_on_copy_code_pressed)
 	%LoadCodeButton.pressed.connect(_on_load_code_pressed)
 	%BuildList.item_selected.connect(_on_item_selected)
