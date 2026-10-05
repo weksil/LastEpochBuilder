@@ -218,6 +218,24 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
   weapon1→weapon, weapon2→offhand, idol_altar→altar. Not supported: the Weaver tree and idols, set ids (`S`); blessings come as `{timelineID: {id, ir}}`
   (`I` base 34, subtype = the blessing id, roll = `ir[0]`), checked on `letools_ApbrXYvx.json`.
 
+## Import by account through Maxroll — `scripts/import/maxroll_import_panel.gd` (`class_name MaxrollImportPanel extends VBoxContainer`), `scripts/engine/maxroll_import.gd` (`MaxrollImport`)
+The import dialog (`scenes/import/letools_import_dialog.tscn`) holds `%SourceTabs`: tab 0 is `%MaxrollPanel` (instance of
+`scenes/import/maxroll_import_panel.tscn`), tab 1 is the Last Epoch Tools panel above; tab titles are set in the dialog script.
+The panel re-emits `imported` through the dialog. Nodes: `%AccountEdit`, `%FindButton`, `%CharacterList` (ItemList, metadata = the character
+dictionary; double click imports), `%ImportButton`, `%StatusLabel`, `%Http`. The last account name is `Settings.maxroll_account`.
+- Flow: account → `GET https://planners.maxroll.gg/lastepoch/characters/<account>` (a JSON array; an unknown or private account answers HTTP 500)
+  → `MaxrollImport.parse_character_list` (`{name, level, class_id, mastery, cycle, hardcore, legacy}`; legacy = an older cycle than the newest
+  one of the account; current cycle first, then by level) → pick → `GET …/<account>/<name>` → `MaxrollImport.to_build` → `LEToolsImport.apply`.
+  A name can repeat within one account; the API returns one of them.
+- The character JSON is the offline-save format (`research/07e_save_format.md`). `to_build` returns the doc of `LEToolsImport.to_build` and reuses its
+  `passives_from` / `skills_from` (`savedCharacterTree`, `savedSkillTrees` with level = spent + unspent points capped at 20, `abilityBar` as the hud).
+- Items come from `savedItems` by `containerID`: 2–12 equipment (10 → ring1, 9 → ring2), 123 with base 41 → the altar (other items of 123 are the
+  idol inventory), 29 idols, 33–39 / 43–45 blessings (subtype = blessing id, roll = first implicit roll, slot = the blessing's first timeline),
+  91–96 Weaver items (a warning only). The blob is upgraded to version 6 (`upgrade_item`, port of `save_parser.upgrade_to_v6`) and decoded by
+  `decode_item`. Idol position: the game y axis goes up and the position is the bottom-left cell, so `row = 5 - y - height`, `col = x`
+  (checked on real characters with altars). Affix ids are redirected by `convertOnIncompatibleItemType`; idol affixes get tier 1 except
+  enchantments; regular-sealed and primordial affixes get `sealed`, corruption-sealed ones `corrupted`.
+
 ## Builds: saves and the build code — `scripts/builds/builds_dialog.gd` (`class_name BuildsDialog extends Window`), `scripts/engine/build_codec.gd` (`BuildCodec`)
 The button `%BuildsButton` ("Builds…", top bar) opens `%BuildsDialog`; on its `loaded` signal `main.gd` syncs the top bar like after an import.
 The dialog: `%NameEdit` + `%SaveButton` (save under a name, the same name overwrites), `%BuildList` (newest first; double click loads),

@@ -1,6 +1,7 @@
 class_name LEToolsImportDialog extends Window
 
-## Dialog "Import from Last Epoch Tools": link -> planner page -> data hash -> planner_data JSON -> LEToolsImport -> Build.
+## Dialog "Import a build" with two source tabs. "Maxroll account" is MaxrollImportPanel (its own scene and script);
+## "Last Epoch Tools": link -> planner page -> data hash -> planner_data JSON -> LEToolsImport -> Build.
 ## A pasted raw JSON (starting with "{") is imported without network access. All nodes are defined in the scene.
 
 signal imported
@@ -22,6 +23,9 @@ var _retries: int = 0
 
 func _ready() -> void:
 	close_requested.connect(hide)
+	%SourceTabs.set_tab_title(0, tr("Maxroll account"))
+	%SourceTabs.set_tab_title(1, tr("Last Epoch Tools link"))
+	%MaxrollPanel.imported.connect(imported.emit)
 	about_to_popup.connect(_on_about_to_popup)
 	%LoadButton.pressed.connect(_on_load_pressed)
 	%CloseButton.pressed.connect(hide)
@@ -32,7 +36,10 @@ func _ready() -> void:
 
 
 func _on_about_to_popup() -> void:
-	%LinkEdit.grab_focus.call_deferred()
+	if %SourceTabs.current_tab == 0:
+		%MaxrollPanel.get_node("%AccountEdit").grab_focus.call_deferred()
+	else:
+		%LinkEdit.grab_focus.call_deferred()
 
 
 func _on_link_submitted(_text: String) -> void:

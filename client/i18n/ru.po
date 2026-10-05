@@ -14074,3 +14074,63 @@ msgstr "зачарование"
 
 msgid "corrupted"
 msgstr "осквернение"
+
+msgid "%s: could not read the item data, skipped."
+msgstr "%s: не удалось прочитать данные предмета, пропущен."
+
+msgid "Import a build"
+msgstr "Импорт билда"
+
+msgid "Import a character by account name"
+msgstr "Импорт персонажа по имени аккаунта"
+
+msgid "Characters are read from the Maxroll profile of the Last Epoch account, so the profile must be public. Enter the account name, find the characters and pick one. The current build will be replaced."
+msgstr "Персонажи берутся из профиля аккаунта Last Epoch на Maxroll, поэтому профиль должен быть публичным. Введите имя аккаунта, найдите персонажей и выберите одного. Текущий билд будет заменён."
+
+msgid "Account name"
+msgstr "Имя аккаунта"
+
+msgid "Find characters"
+msgstr "Найти персонажей"
+
+msgid "Import the character"
+msgstr "Импортировать персонажа"
+
+msgid "or double-click a character"
+msgstr "или дважды щёлкните по персонажу"
+
+msgid "Maxroll account"
+msgstr "Аккаунт Maxroll"
+
+msgid "Last Epoch Tools link"
+msgstr "Ссылка Last Epoch Tools"
+
+msgid "Enter the account name."
+msgstr "Введите имя аккаунта."
+
+msgid "Loading the character list…"
+msgstr "Загрузка списка персонажей…"
+
+msgid "Account not found or its Maxroll profile is not public (HTTP %d)."
+msgstr "Аккаунт не найден или его профиль на Maxroll не публичный (HTTP %d)."
+
+msgid "The account has no characters."
+msgstr "На аккаунте нет персонажей."
+
+msgid "%s — %s, level %d"
+msgstr "%s — %s, уровень %d"
+
+msgid "Legacy"
+msgstr "Legacy"
+
+msgid "Hardcore"
+msgstr "Хардкор"
+
+msgid "Characters found: %d. Pick one and press Import."
+msgstr "Найдено персонажей: %d. Выберите одного и нажмите «Импортировать»."
+
+msgid "Loading character %s…"
+msgstr "Загрузка персонажа %s…"
+
+msgid "The character could not be loaded (HTTP %d)."
+msgstr "Не удалось загрузить персонажа (HTTP %d)."

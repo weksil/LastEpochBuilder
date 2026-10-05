@@ -1,0 +1,75 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/import/maxroll_import_panel.gd" id="1_script"]
+
+[node name="MaxrollImportPanel" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Import a character by account name"
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Characters are read from the Maxroll profile of the Last Epoch account, so the profile must be public. Enter the account name, find the characters and pick one. The current build will be replaced."
+autowrap_mode = 3
+
+[node name="AccountRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AccountEdit" type="LineEdit" parent="AccountRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Account name"
+clear_button_enabled = true
+
+[node name="FindButton" type="Button" parent="AccountRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Find characters"
+
+[node name="CharacterList" type="ItemList" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ImportRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ImportButton" type="Button" parent="ImportRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+disabled = true
+text = "Import the character"
+
+[node name="ImportHint" type="Label" parent="ImportRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "or double-click a character"
+autowrap_mode = 3
+
+[node name="StatusScroll" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatusLabel" type="Label" parent="StatusScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="Http" type="HTTPRequest" parent="."]
+unique_name_in_owner = true
+timeout = 30.0

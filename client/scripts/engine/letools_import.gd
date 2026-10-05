@@ -151,8 +151,8 @@ static func to_build(response: Dictionary) -> Dictionary:
 		mastery = 0
 	doc["mastery"] = mastery
 
-	doc["passives"] = _passives(class_id, data.get("charTree"), warnings)
-	doc["skills"] = _skills(data, warnings)
+	doc["passives"] = passives_from(class_id, data.get("charTree"), warnings)
+	doc["skills"] = skills_from(data, warnings)
 
 	var items: Dictionary = {}
 	_equipment(data.get("equipment"), items, warnings)
@@ -168,7 +168,7 @@ static func to_build(response: Dictionary) -> Dictionary:
 	return doc
 
 
-static func _passives(class_id: int, tree: Variant, warnings: Array[String]) -> Dictionary:
+static func passives_from(class_id: int, tree: Variant, warnings: Array[String]) -> Dictionary:
 	var result: Dictionary = {}
 	if not tree is Dictionary or not tree.get("selected") is Dictionary:
 		return result
@@ -194,7 +194,7 @@ static func _passives(class_id: int, tree: Variant, warnings: Array[String]) -> 
 ## Skills come from the specialized trees (`skillTrees`), not from the skill bar (`hud`): the bar may hold a skill
 ## without a tree while a specialized skill is off the bar. A specialized skill keeps its bar slot; the others fill
 ## the free slots in `slotNumber` order; bar skills without a tree take the slots that are still free.
-static func _skills(data: Dictionary, warnings: Array[String]) -> Array:
+static func skills_from(data: Dictionary, warnings: Array[String]) -> Array:
 	var skills: Array = []
 	for i in range(SKILL_SLOTS):
 		skills.append({"ability": "", "level": SKILL_LEVEL_MAX, "tree": {}})

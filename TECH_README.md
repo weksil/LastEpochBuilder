@@ -18,7 +18,7 @@ Full plan, architecture and risks: [PLAN.md](PLAN.md).
 | Extracted game data | ready (`research/data/game/`) |
 | Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers, minions), damage conversions and skill tag changes from tree nodes, character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy. The test vectors from the research pass |
 | Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, Conditions with a filter by source, a stats panel with highlighting of changes, saved builds and a shareable build code (as in Path of Building) |
-| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), import from an offline character save file (import by Last Epoch Tools link exists; Weaver and set ids are not imported). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
+| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), import from a local offline save file (a character is imported by account name through Maxroll or by a Last Epoch Tools link; the Weaver tree is not imported, set ids of LE Tools are not imported). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
 
 Deferred tasks are in [BACKLOG.md](BACKLOG.md).
 
@@ -79,7 +79,7 @@ client/          Godot project
   docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
   scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, stats/, trees/, builds/, common/
   scripts/       logic (.gd): autoload/ (Settings, GameData, Build), engine/ (calculations), UI scripts in folders matching the scenes
-  tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test,
+  tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test, maxroll_import_test,
                  layout_test, relevance_test, i18n_test, build_codec_test,
                  readme_screenshots (captures docs/screenshots, needs a window)
   export_presets.cfg  export preset "Windows Desktop"
@@ -171,10 +171,15 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   and enabled conditions without a source are highlighted in red. Each group has an "Active: …" line and a "Reset" button; ailments are shown with readable names.
 - **Builds** (the "Builds…" button in the top bar) — save the current build under a name (`user://builds/<name>.json`), load or delete a saved one,
   copy the build code (the whole build as one line: JSON → zlib → URL-safe base64, as in Path of Building) and load a build from someone's code.
-- **Import** (the "Import…" button in the top bar) — a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data
-  JSON): class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings.
-  The dialog shows the request status; on a timeout (HTTPRequest.RESULT_TIMEOUT) it waits 3 s and retries, up to 3 times.
-  The current build is replaced; unsupported things (Weaver, set items) and unrecognized ids are listed as warnings.
+- **Import** (the "Import…" button in the top bar) — two tabs:
+  - "Maxroll account": the account name → the character list (`GET planners.maxroll.gg/lastepoch/characters/<account>`) → pick a
+    character → `GET …/<account>/<name>`. The answer is the game's offline-save JSON with binary item blobs (`research/07e`), the
+    profile on Maxroll must be public. The last account name is kept in `user://settings.cfg`.
+  - "Last Epoch Tools link": a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data JSON). On a timeout
+    (HTTPRequest.RESULT_TIMEOUT) the dialog waits 3 s and retries, up to 3 times.
+
+  Both give class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings. The current build is replaced;
+  unsupported things (Weaver; set items of LE Tools) and unrecognized ids are listed as warnings.
 - **Stats** (on the right) — attributes, resources, defenses, resistances; a row's tooltip is its breakdown.
 
 ### Checks
@@ -186,6 +191,8 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/trees_t
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/layout_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/relevance_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/i18n_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/letools_import_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/maxroll_import_test.tscn
 ```
 `engine_test` checks the test vectors from `research/06a–06c`, `07a`, checks uniques, sets and special effects
 (including a run of all uniques with conditions enabled) and prints an example build with a breakdown;
@@ -198,6 +205,9 @@ translation in `client/i18n/ru.po` (`LE.missing`);
 `layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
 `letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,
 skills taken from the specialized trees rather than the skill bar (`letools_Q0V58LLX.json`), applying to `Build`, the button in the top bar); `letools_live` (not part of the suite, needs network) loads a live link through the dialog;
+`maxroll_import_test` checks the Maxroll import (URLs, the character list `maxroll_list_jessrabbit.json`, item blob versions 1–6,
+sealed / corrupted / primordial affixes, the characters `maxroll_char_palading.json` and `maxroll_char_chudlet.json` with altars, idols,
+blessings and a set item, applying to `Build`); `maxroll_live` (not part of the suite, needs network) imports a live character through the dialog;
 `trees_test` checks that tree nodes have icons from the game client and that every node of all 136 current skill trees and 5 passive trees can be taken
 (obsolete version 0 trees — Fire Shield, Ice Ward, etc. — are skipped).
 
