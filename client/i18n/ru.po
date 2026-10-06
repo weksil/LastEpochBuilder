@@ -13625,6 +13625,9 @@ msgstr "символы стоят"
 msgid "target: %s"
 msgstr "цель: %s"
 
+msgid "Total DPS vs enemy"
+msgstr "Суммарный DPS по врагу"
+
 msgid "tooltip says 2 sec cooldown, code says 3 sec"
 msgstr "в подсказке КД 2 с, в коде 3 с"
 

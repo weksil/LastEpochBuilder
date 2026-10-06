@@ -33,7 +33,7 @@ theme_override_constants/separation = 0
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeroCaption"
-text = "Skill · DPS vs enemy"
+text = "Total DPS vs enemy"
 clip_text = true
 text_overrun_behavior = 3
 
@@ -42,6 +42,13 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeroValueMain"
 text = ""
+
+[node name="SkillBreakdown" type="Label" parent="VBox/SummaryCard/SummaryBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeroSkillList"
+text = ""
+autowrap_mode = 3
 
 [node name="SkillTarget" type="Label" parent="VBox/SummaryCard/SummaryBox"]
 unique_name_in_owner = true

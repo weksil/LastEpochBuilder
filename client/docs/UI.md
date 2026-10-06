@@ -158,8 +158,9 @@ Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `
 First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scene` (Label) and `row_scene` (`StatRow`: `NameLabel`, `DeltaLabel`, `ValueLabel`,
 `tooltip_text` = the breakdown). While the set of rows is the same, the rows are updated in place (`StatRow.update_row(text, tooltip, value)`): a changed row gets the variant
 `StatRowChanged` for ~1.5 s, and if the row has a numeric `value`, the difference is shown next to it ("+12", "−3%", variants `DeltaUp`/`DeltaDown`).
-`%SummaryCard` (visible if the selected slot has a skill and there is a "DPS vs enemy" row in the "Against enemy" section): `%SkillName` "<skill> · DPS vs enemy", `%SkillSummary` — the number (`HeroValueMain`),
-`%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is the row's breakdown.
+`%SummaryCard` (visible if at least one skill on the bar has a positive "DPS vs enemy" row in its "Against enemy" section): `%SkillName` "Total DPS vs enemy",
+`%SkillSummary` — the sum over the bar (`HeroValueMain`), `%SkillBreakdown` — one line "<skill> — <DPS>" per contributing skill, highest first (`HeroSkillList`),
+`%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is every skill's breakdown.
 
 ## Idols — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Scene `scenes/idols/idols_tab.tscn`: `%Grid` holds 25 ready-made `IdolCell` buttons with `metadata/row`, `metadata/col`;

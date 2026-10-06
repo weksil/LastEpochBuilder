@@ -12,7 +12,7 @@ var _rows: Array[StatRow] = []  # stat rows only (group headers are not listed)
 
 @onready var rows_container: VBoxContainer = %Rows
 @onready var summary_card: PanelContainer = %SummaryCard
-@onready var skill_name_label: Label = %SkillName
+@onready var skill_breakdown_label: Label = %SkillBreakdown
 @onready var skill_summary_label: Label = %SkillSummary
 @onready var skill_target_label: Label = %SkillTarget
 
@@ -114,20 +114,34 @@ static func _row_item(group_name: String, title: String, text: String, tooltip: 
 	return {"kind": "row", "key": group_name + "|" + title, "title": title, "text": text, "tooltip": tooltip, "value": value}
 
 
+## Total DPS vs enemy of every skill on the bar, with the share of each skill below it.
 func _update_skill_summary() -> void:
-	summary_card.visible = false
-	if Build.selected_skill < 0 or Build.selected_skill >= Build.skills.size():
+	var parts: Array[Dictionary] = []
+	var total: float = 0.0
+	for slot: int in range(Build.skills.size()):
+		if str((Build.skills[slot] as Dictionary).get("ability", "")) == "":
+			continue
+		var result: Dictionary = SkillCalc.compute(Build, slot)
+		var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
+		var value: Variant = dps.get("value")
+		if not (value is float or value is int) or float(value) <= 0.0:
+			continue
+		total += float(value)
+		parts.append({"title": str(result.get("title", "")), "value": float(value), "breakdown": str(dps.get("breakdown", ""))})
+	summary_card.visible = not parts.is_empty()
+	if parts.is_empty():
 		return
-	var skill: Dictionary = Build.skills[Build.selected_skill] as Dictionary
-	if skill.is_empty() or str(skill.get("ability", "")) == "":
-		return
-
-	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill)
-	var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
-	if dps.is_empty():
-		return
-	summary_card.visible = true
-	skill_name_label.text = tr("%s · DPS vs enemy") % str(result.get("title", ""))
-	skill_summary_label.text = str(dps.get("text", ""))
+	parts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["value"] > b["value"])
+	var lines: PackedStringArray = []
+	var tips: PackedStringArray = []
+	for part: Dictionary in parts:
+		lines.append("%s — %s" % [part["title"], LE.fmt_num(part["value"])])
+		tips.append("%s: %s
+%s" % [part["title"], LE.fmt_num(part["value"]), part["breakdown"]])
+	skill_summary_label.text = LE.fmt_num(total)
+	skill_breakdown_label.text = "
+".join(lines)
 	skill_target_label.text = tr("target: %s") % Enemy.describe(Build.enemy)
-	summary_card.tooltip_text = str(dps.get("breakdown", ""))
+	summary_card.tooltip_text = "
+
+".join(tips)
