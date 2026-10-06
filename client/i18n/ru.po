@@ -14520,3 +14520,252 @@ msgstr "секунд урона со временем"
 
 msgid "of the raw damage, on average"
 msgstr "от исходного урона, в среднем"
+
+msgid "%s: %d attacks of %d monsters, average %s per second"
+msgstr "%s: %d атак у %d монстров, в среднем %s в секунду"
+
+msgid "%s: %d attacks of %d monsters, average %s per hit"
+msgstr "%s: %d атак у %d монстров, в среднем %s за удар"
+
+msgid "Melee attacks"
+msgstr "Атаки ближнего боя"
+
+msgid "Ranged attacks"
+msgstr "Атаки дальнего боя"
+
+msgid "Spells"
+msgstr "Заклинания"
+
+msgid "Hit with every damage type"
+msgstr "Удар всеми типами урона"
+
+msgid "Melee hit"
+msgstr "Удар ближнего боя"
+
+msgid "Ranged hit"
+msgstr "Удар дальнего боя"
+
+msgid "Spell hit"
+msgstr "Удар заклинанием"
+
+msgid "Every damage type at the average value of the monster attacks that deal it"
+msgstr "Каждый тип урона — со средним значением атак монстров, которые его наносят"
+
+msgid "Split by the share of each damage type in these attacks"
+msgstr "Разделён по доле каждого типа урона в этих атаках"
+
+msgid "Average monster (monolith, level 100)"
+msgstr "Средний монстр (монолит, уровень 100)"
+
+msgid "Base damage of the attack: %s (authored at level %d)"
+msgstr "Базовый урон атаки: %s (создана для уровня %d)"
+
+msgid "Set in the fight parameters"
+msgstr "Задано в параметрах боя"
+
+msgid "Use time or charge time of the attack (a boss mixes several attacks, so this is the longest gap); 0 in the parameters = this value"
+msgstr "Время применения или накопления заряда атаки (босс чередует атаки, так что это самый длинный промежуток); 0 в параметрах = это значение"
+
+msgid "Default: the attack has no timing"
+msgstr "По умолчанию: у атаки нет таймингов"
+
+msgid "Seconds between enemy hits"
+msgstr "Секунд между ударами врага"
+
+msgid "Skill used between hits"
+msgstr "Умение между ударами"
+
+msgid "The skill selected on the Calculations tab: its leech, gains on hit and resource effects"
+msgstr "Умение, выбранное во вкладке «Расчёты»: его вампиризм, восстановление при ударе и эффекты ресурсов"
+
+msgid "per enemy hit"
+msgstr "за удар врага"
+
+msgid "per second"
+msgstr "в секунду"
+
+msgid " × maximum health"
+msgstr " × максимальное здоровье"
+
+msgid " × missing health"
+msgstr " × недостающее здоровье"
+
+msgid " × current health"
+msgstr " × текущее здоровье"
+
+msgid "Ward gain"
+msgstr "Прирост ward"
+
+msgid "Health recovered per second"
+msgstr "Восстановление здоровья в секунду"
+
+msgid "At half health, enemy-hit events spread over the time between hits; health stops at its maximum"
+msgstr "При половине здоровья; события от ударов врага распределены по времени между ударами; здоровье не превышает максимум"
+
+msgid "Ward gained per second"
+msgstr "Прирост ward в секунду"
+
+msgid "Before ward decay: ward above the threshold %s decays by (0.00005·x² + 0.2·x)/(1 + 0.5·retention) per second"
+msgstr "До распада: ward выше порога %s распадается на (0.00005·x² + 0.2·x)/(1 + 0.5·удержание) в секунду"
+
+msgid "Recovery between hits"
+msgstr "Восстановление между ударами"
+
+msgid "Average hits of %s from a full pool, one every %s s with the recovery above; ∞ when the recovery outlasts the hits"
+msgstr "Средние удары по %s с полного запаса, по одному каждые %s с, с восстановлением выше; ∞ — если восстановление перекрывает удары"
+
+msgid "Block, dodge and crit do not apply to damage over time; ward, mana before health and endurance do"
+msgstr "Блок, уклонение и крит не действуют на урон со временем; ward, мана до здоровья и выносливость действуют"
+
+msgid "From a full pool under this damage, with the recovery between hits; ∞ when the recovery outlasts it"
+msgstr "С полного запаса под этим уроном, с восстановлением; ∞ — если восстановление его перекрывает"
+
+msgid "Recovery not counted: %s"
+msgstr "Восстановление не учтено: %s"
+
+msgid "%s × DPS vs enemy %s"
+msgstr "%s × DPS по врагу %s"
+
+msgid "%s per event × %s events/s"
+msgstr "%s за событие × %s событий/с"
+
+msgid "%s per event × %s per enemy hit"
+msgstr "%s за событие × %s за удар врага"
+
+msgid "Average monster of a level 100 monolith, end bosses of the timelines, pinnacle bosses · \"+\" expands the breakdown"
+msgstr "Средний монстр монолита 100 уровня, финальные боссы линий, пиковые боссы · «+» раскрывает расчёт"
+
+msgid "Seconds between two enemy hits for the recovery between them; 0 = the attack timing"
+msgstr "Секунд между двумя ударами врага для восстановления между ними; 0 = тайминг атаки"
+
+msgid "Seconds between hits"
+msgstr "Секунд между ударами"
+
+msgid "Count recovery between hits: regeneration, ward, leech and gains of the skill selected on Calculations"
+msgstr "Учитывать восстановление между ударами: регенерацию, ward, вампиризм и восстановление умения, выбранного в «Расчётах»"
+
+msgid "armor"
+msgstr "броню"
+
+msgid "glancing blow chance (2 × dodge chance)"
+msgstr "шанс скользящего удара (2 × шанс уклонения)"
+
+msgid "glancing blow chance"
+msgstr "шанс скользящего удара"
+
+msgid "parry chance"
+msgstr "шанс парирования"
+
+msgid "Conditional defenses: ×%s (see \"Conditional defenses\")"
+msgstr "Условная защита: ×%s (см. «Условная защита»)"
+
+msgid "Damage taken as another type"
+msgstr "Урон, получаемый как другой тип"
+
+msgid "Block effectiveness against damage over time"
+msgstr "Эффективность блока против урона со временем"
+
+msgid "1 − block damage reduction %s × %s"
+msgstr "1 − снижение урона блоком %s × %s"
+
+msgid "Sources"
+msgstr "Источники"
+
+msgid "Conditional defenses"
+msgstr "Условная защита"
+
+msgid "Dodge rating converted to %s: you cannot dodge"
+msgstr "Рейтинг уклонения преобразуется в %s: вы не можете уклоняться"
+
+msgid "Block chance converted to %s: you cannot block"
+msgstr "Шанс блока преобразуется в %s: вы не можете блокировать"
+
+msgid "Maximum block chance %s"
+msgstr "Максимальный шанс блока %s"
+
+msgid "Endurance applies to all damage (before ward)"
+msgstr "Выносливость действует на весь урон (до ward)"
+
+msgid "Endurance also reduces the mana spent by mana before health"
+msgstr "Выносливость также снижает расход маны при «мане до здоровья»"
+
+msgid "%s: damage taken ×%s (PP %d)"
+msgstr "%s: получаемый урон ×%s (PP %d)"
+
+msgid "Enemy within 4 m: block chance +%s (PP 258)"
+msgstr "Враг в пределах 4 м: шанс блока +%s (PP 258)"
+
+msgid "At least 400 current mana"
+msgstr "Не менее 400 текущей маны"
+
+msgid "Damage over time per 8% overcapped cold resistance"
+msgstr "Урон со временем за каждые 8% сопротивления холоду сверх предела"
+
+msgid "Slowed attacker"
+msgstr "Атакующий замедлен"
+
+msgid "Time Rotted attacker"
+msgstr "Атакующий под гниением времени"
+
+msgid "Shocked attacker"
+msgstr "Атакующий шокирован"
+
+msgid "Shocked attacker: crit avoidance +%s (PP 321)"
+msgstr "Атакующий шокирован: избежание крита +%s (PP 321)"
+
+msgid "Shocked attacker: armor ×%s for %d Shock stacks (PP 323)"
+msgstr "Атакующий шокирован: броня ×%s за %d стаков шока (PP 323)"
+
+msgid "Ignited attacker"
+msgstr "Атакующий подожжён"
+
+msgid "Ignited attacker: endurance threshold +%s (PP 322, 549)"
+msgstr "Атакующий подожжён: порог выносливости +%s (PP 322, 549)"
+
+msgid "Ignited, Damned or Bleeding attacker"
+msgstr "Атакующий подожжён, проклят (Damned) или кровоточит"
+
+msgid "Chilled or Bleeding attacker"
+msgstr "Атакующий охлаждён или кровоточит"
+
+msgid "Cursed attacker"
+msgstr "Атакующий под проклятием"
+
+msgid "%d curses on the attacker"
+msgstr "%d проклятий на атакующем"
+
+msgid "%d curses on the attacker: armor ×%s (PP 354)"
+msgstr "%d проклятий на атакующем: броня ×%s (PP 354)"
+
+msgid "Withering attacker"
+msgstr "Атакующий под иссушением"
+
+msgid "Damage redirected to your highest health minion (assumed alive)"
+msgstr "Урон перенаправляется миньону с наибольшим здоровьем (считаем, что он жив)"
+
+msgid "Damage redirected to your lowest health minion (assumed alive)"
+msgstr "Урон перенаправляется миньону с наименьшим здоровьем (считаем, что он жив)"
+
+msgid "Damage redirected to your Summoned Bear (assumed above half health)"
+msgstr "Урон перенаправляется призванному медведю (считаем, что у него больше половины здоровья)"
+
+msgid "%s of the hit is taken over 4 s instead (PP 498, 564, 671)"
+msgstr "%s удара вместо этого получается за 4 с (PP 498, 564, 671)"
+
+msgid "Extra endurance %s while delayed damage is pending (PP 525)"
+msgstr "Доп. выносливость %s, пока идёт отложенный урон (PP 525)"
+
+msgid "Fire damage taken ×%s from %s fire resistance above the cap (PP 436, 437)"
+msgstr "Получаемый урон огнём ×%s от %s сопротивления огню сверх предела (PP 436, 437)"
+
+msgid "Physical damage taken ×%s from %s physical resistance above the cap (Battle Hardened)"
+msgstr "Получаемый физический урон ×%s от %s физ. сопротивления сверх предела (Battle Hardened)"
+
+msgid "PP %d: less damage from enemies hit by your Hail of Arrows / Drain Life — not counted"
+msgstr "PP %d: меньше урона от врагов, задетых Hail of Arrows / Drain Life — не учтено"
+
+msgid "Damage taken as %s without a source damage type does nothing in the game"
+msgstr "«Урон получаемый как %s» без исходного типа урона в игре ничего не делает"
+
+msgid "%s of %s damage taken as %s: %s"
+msgstr "%s урона типа %s получается как %s: %s"

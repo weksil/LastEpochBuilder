@@ -56,6 +56,30 @@ func _pool_vectors() -> void:
 	pool = {"health": 1000.0, "ward": 300.0, "mana": 0.0}
 	_near(DefenseCalc.take_damage(layers, pool, 200.0), 0.0, "ward absorbs")
 	_near(float(pool["ward"]), 100.0, "ward left")
+	# endurance mode "everything": endurance reduces the whole hit before ward; delayed share: 4 s of direct damage
+	layers = _layers(0.5, 0.0)
+	layers["endurance_mode"] = 2
+	pool = {"health": 2000.0, "ward": 0.0, "mana": 0.0, "slow": []}
+	_near(DefenseCalc.take_damage(layers, pool, 1000.0), 500.0, "endurance mode 2")
+	layers = _layers(0.0, 0.0)
+	layers["delayed"] = 0.5
+	layers["health"] = 2000.0
+	layers["ward_threshold"] = 0.0
+	layers["ward_retention"] = 0.0
+	pool = {"health": 2000.0, "ward": 0.0, "mana": 0.0, "slow": []}
+	_near(DefenseCalc.take_damage(layers, pool, 1000.0), 500.0, "delayed: half now")
+	DefenseRecovery.recover(layers, [] as Array[Dictionary], pool, 5.0)
+	_near(float(pool["health"]), 1000.0, "delayed: the other half over 4 s")
+	# damage taken as another type (ConvertDamageTaken, research/07n §1): source order Phys, Lightning, Cold, Fire, …
+	var dmg: Array[float] = [1000.0, 500.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	var conv_out: Array = DefenseConversions.convert_damage([{"sources": [0], "target": 1, "share": 1.0},
+		{"sources": [1], "target": 2, "share": 1.0}], dmg)["damage"]
+	_check(conv_out == [0.0, 1000.0, 500.0, 0.0, 0.0, 0.0, 0.0], "taken as: no chaining %s" % str(conv_out))
+	conv_out = DefenseConversions.convert_damage([{"sources": [0, 1], "target": 5, "share": 0.5}], [1000.0, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0] as Array[float])["damage"]
+	_check(conv_out == [500.0, 1000.0, 0.0, 0.0, 0.0, 500.0, 0.0], "taken as: first source type only %s" % str(conv_out))
+	conv_out = DefenseConversions.convert_damage([{"sources": [0], "target": 1, "share": 0.6}, {"sources": [0], "target": 2, "share": 0.6}],
+		[1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] as Array[float])["damage"]
+	_check(conv_out == [0.0, 600.0, 600.0, 0.0, 0.0, 0.0, 0.0], "taken as: not normalised %s" % str(conv_out))
 	# lethal damage and hits to die
 	layers = _layers(0.0, 0.0)
 	_near(DefenseCalc.lethal_damage(layers), 1000.0, "lethal without layers")
@@ -119,12 +143,46 @@ func _build() -> void:
 			print("  %s: %s" % [row["label"], row["text"]])
 	# a DoT preset
 	for p: Dictionary in DefenseCalc.presets():
-		if not bool(p["is_hit"]) and float(p["interval"]) > 0.0:
+		if not bool(p["is_hit"]) and float(p["tick"]) > 0.0:
 			Build.set_defense("attack", str(p["key"]))
 			var r: Dictionary = DefenseCalc.compute(Build)
 			_check(not bool(r["attack"]["is_hit"]), "DoT preset")
 			_check(float(r["summary"]["hits"]) > 0.0, "seconds to die")
 			break
+	# the average monster group: five attacks, the "every type" hit holds all seven types
+	var groups: Array[Dictionary] = DefenseCalc.groups()
+	_check(str(groups[0]["key"]) == DefenseCalc.AVERAGE_KEY and (groups[0]["attacks"] as Array).size() == 5, "average group first")
+	_check(str(groups[-1]["key"]) == DefenseCalc.CUSTOM_KEY, "custom hit last")
+	var all_types: Dictionary = DefenseCalc.preset("average|all")
+	for i in range(7):
+		_check(float(all_types.get("damage", [0, 0, 0, 0, 0, 0, 0])[i]) > 0.0, "average hit has damage type %d" % i)
+	_check(not bool(DefenseCalc.preset("average|dot").get("is_hit", true)), "average DoT")
+	# recovery between hits: never fewer hits to die than without it; regeneration alone recovers per second
+	Build.set_defense("attack", "average|melee")
+	Build.set_enemy("corruption", 0)
+	Build.set_defense("recovery", false)
+	var no_rec: float = float(DefenseCalc.compute(Build)["summary"]["hits"])
+	Build.set_defense("recovery", true)
+	Build.set_defense("interval", 2.0)
+	var with_rec: float = float(DefenseCalc.compute(Build)["summary"]["hits"])
+	_check(with_rec >= no_rec, "recovery adds hits: %s < %s" % [with_rec, no_rec])
+	var layers: Dictionary = _layers(0.0, 0.0)
+	layers["ward_threshold"] = 0.0
+	layers["ward_retention"] = 0.0
+	var regen: Array[Dictionary] = [{"resource": "health", "timing": "rate", "base": "flat", "k": 100.0, "label": "", "text": ""}]
+	_near(DefenseRecovery.hits_to_die(layers, regen, 400.0, 1.0), 3.0, "regen 100/s against 400 every second: 1000 → 700 → 400 → dead on the 3rd hit")
+	_check(is_inf(DefenseRecovery.hits_to_die(layers, regen, 90.0, 1.0)), "regen outheals the hits")
+	_near(DefenseRecovery.seconds_to_die(layers, regen, 200.0), 10.0, "DoT 200/s vs regen 100/s: 10 s", 0.02)
+	# PlayerProperty from a passive: Rogue "Apostasy" converts dodge to glancing blow (07n §2)
+	for class_data: Dictionary in GameData.classes:
+		if str(class_data["className"]) == "Rogue":
+			Build.set_class(int(class_data["classID"]))
+	Build.passives[61] = 1
+	var conv: Dictionary = DefenseConversions.collect(Build, BuildMods.global_store(Build)["store"], {"is_hit": true})
+	_check(int(conv["dodge_conversion"]) == 2, "Apostasy: dodge → glancing blow (%d)" % int(conv["dodge_conversion"]))
+	var rogue: Dictionary = DefenseCalc.compute(Build)
+	_check(float(rogue["layers"]["dodge"]) == 0.0, "Apostasy: no dodge")
+	Build.passives.erase(61)
 	# round trip of the settings through the build code
 	Build.set_defense("area_level", 90)
 	var decoded: Dictionary = BuildCodec.decode(BuildCodec.encode(Build))

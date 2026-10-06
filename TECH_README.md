@@ -16,7 +16,7 @@ Full plan, architecture and risks: [PLAN.md](PLAN.md).
 |---|---|
 | Formula and data research | done (`research/`) |
 | Extracted game data | ready (`research/data/game/`) |
-| Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers, minions), damage conversions and skill tag changes from tree nodes, character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy, effective health against one enemy attack (boss presets of the monolith end bosses and pinnacle bosses scaled by area level and corruption, maximum hit taken, hits to die). The test vectors from the research pass |
+| Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers, minions), damage conversions and skill tag changes from tree nodes, character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy, effective health against one enemy attack (the average monster of a level 100 monolith and the attacks of the monolith end bosses and pinnacle bosses, scaled by area level and corruption; dodge/block conversions, conditional defenses of the character mutator, damage taken as another type, delayed damage; maximum hit taken, hits to die with regeneration, ward, leech and on-hit recovery between hits). The test vectors from the research pass |
 | Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, a Defense tab with effective health against boss attacks, Conditions with a filter by source, a stats panel with highlighting of changes, saved builds and a shareable build code (as in Path of Building) |
 | Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), import from a local offline save file (a character is imported by account name through Maxroll or by a Last Epoch Tools link; the Weaver tree is not imported, set ids of LE Tools are not imported). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
 
@@ -68,7 +68,7 @@ build_web.ps1    builds the browser version (see "Web build")
 release/         README.txt shipped inside the release zip
 PLAN.md          verdict, architecture, phases, risks
 BACKLOG.md       deferred tasks
-research/        research notes (01…07m) and data
+research/        research notes (01…07n) and data
   02_assets/     texts and images of the formulas from the in-game guide (PNGs are in Git LFS)
   data/          enums, tables and JSON with game data (data/game/*.json)
 client/          Godot project
@@ -165,10 +165,14 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   triggers, minions), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
   DPS vs enemy (hit without crit and with crit as on the dummy, average hit, per component and the total), sustain (leech, health/mana/ward per hit).
   "+" expands the breakdown (in a monospace font; expanded rows do not collapse on recalculation), "Not counted" is a collapsible block.
-- **Defense** — effective health against one enemy attack, as "Maximum hit taken" / "Total EHP" in Path of Building. The attack is
-  a boss preset (the end bosses of the 10 monolith timelines and the pinnacle bosses: Aberroth, Herald of Oblivion, Morditas, Majasa,
-  the Observer and its Vision, the Uber Aberroth Harbingers; `research/data/game/boss_attacks.json`) or a custom hit. A preset is
-  scaled to the area level (ActorScaler) and by the enemy corruption of the Conditions tab (also editable here). The tiles show
+- **Defense** — effective health against one enemy attack, as "Maximum hit taken" / "Total EHP" in Path of Building. Two dropdowns:
+  the group, then its attack. Groups: the average monster of a level 100 monolith (hit with every damage type, melee hit, ranged hit,
+  spell hit, damage over time; `research/data/game/monster_damage.json`), the end bosses of the 10 monolith timelines and the pinnacle
+  bosses (Aberroth, Herald of Oblivion, Morditas, Majasa, the Observer and its Vision, the Uber Aberroth Harbingers;
+  `research/data/game/boss_attacks.json`), a custom hit. An attack is scaled to the area level (ActorScaler) and by the enemy
+  corruption of the Conditions tab (also editable here). Dodge and block conversions, conditional defenses, damage taken as another
+  type and delayed damage come from research/07n. Recovery between hits (regeneration, ward with decay, leech and on-hit gains of the
+  skill selected on Calculations, recovery effects of the tree, uniques and passives) is simulated every "seconds between hits". The tiles show
   effective health (hits to die × raw hit), maximum hit taken, hits to die and the share of the raw damage taken; the sections show the
   attack, mitigation by damage type (resistance with the enemy's area penetration, damage taken, armor), avoidance (dodge, parry,
   glancing, block, enemy crit), the pool (health, ward, endurance, mana before health) and the maximum hit per damage type
@@ -211,8 +215,9 @@ in-place updates of the Calculations rows, the totals strip and the "Reset" butt
 `i18n_test` imports the saved builds, shows every tab in Russian and fails on every string that went through `LE.t()` without a
 translation in `client/i18n/ru.po` (`LE.missing`);
 `relevance_test` checks the Conditions filter (`ConfigRelevance`: which flags, numbers and ailments have a source in the build);
-`defense_test` checks effective health (pool vectors of research/06c §2.7/§2.9, ActorScaler and corruption scaling, the boss
-presets, an imported build against Uber Aberroth, the defense settings in the build code);
+`defense_test` checks effective health (pool vectors of research/06c §2.7/§2.9, endurance modes, delayed damage, damage taken
+as another type (07n §1), recovery between hits, ActorScaler and corruption scaling, the boss presets and the average monster,
+an imported build against Uber Aberroth, a passive dodge conversion, the defense settings in the build code);
 `minion_test` checks the transfer of player stats to a minion (07d §1.1);
 `layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
 `letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,
@@ -241,7 +246,10 @@ The conversion rules in `research/data/game/skill_conversions.json` are built by
 `tools/extract/conversions/` (`prefilter.py` → annotation of batches → `merge.py` with checks and manual fixes).
 The boss attacks in `research/data/game/boss_attacks.json` are built by `tools/extract/extract_boss_attacks.py` (UnityPy: boss
 ActorData → actor prefab → abilities referenced in the prefab or named with the boss prefix → damage components; the monolith
-timeline assets do not name their boss, so the timeline → boss mapping is given in the script).
+timeline assets do not name their boss, so the timeline → boss mapping is given in the script); the average monster damage in
+`research/data/game/monster_damage.json` by `tools/extract/extract_monster_damage.py` (ordinary monsters with `spawnsInMonolith`).
+The recovery models of `client/data/field_models.json` and `unique_effect_models.json` carry an `amount` (how much a resource
+effect restores, client/docs/ENGINE.md §10.3), annotated by hand from the field semantics.
 The projectile counts and shotgun flags in `research/data/game/ability_projectiles.json` are built by
 `tools/extract/extract_projectiles.py` from the AssetRipper export (client/docs/ENGINE.md §9.9).
 An editor in which the autoloads were added without a restart shows false errors

@@ -362,13 +362,17 @@ func _ready() -> void:
 	tabs.current_tab = 6
 	await _frames(3)
 	var defense: Node = tabs.get_child(6)
+	var group_select: SearchSelect = defense.get_node("%GroupSelect")
+	group_select.select(1)
+	group_select.item_selected.emit(1)
+	await _frames(2)
 	var attack_select: SearchSelect = defense.get_node("%AttackSelect")
 	attack_select.select(1)
 	attack_select.item_selected.emit(1)
 	await _frames(2)
-	if str(Build.defense["attack"]) == DefenseCalc.CUSTOM_KEY:
+	if DefenseCalc.group_of(str(Build.defense["attack"])) != str(DefenseCalc.groups()[1]["key"]) or attack_select.item_count < 2:
 		failed = true
-		print("FAIL: defense preset was not applied")
+		print("FAIL: defense group / attack was not applied: %s" % str(Build.defense["attack"]))
 	var corruption_edit: LineEdit = (defense.get_node("%CorruptionSpin") as SpinBox).get_line_edit()
 	corruption_edit.text = "200"
 	corruption_edit.text_changed.emit("200")

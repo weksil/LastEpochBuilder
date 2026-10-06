@@ -1,7 +1,8 @@
 class_name DefenseTab extends VBoxContainer
 
-## "Defense" tab (docs/UI.md): the enemy attack (boss preset or a custom hit), fight parameters, the effective health
-## strip and the sections of DefenseCalc.compute. Rows are updated in place like the "Calculations" tab.
+## "Defense" tab (docs/UI.md): the enemy attack (a group — the average monster, a boss or the custom hit — then one of its
+## attacks), fight parameters, the effective health strip and the sections of DefenseCalc.compute. Rows are updated in
+## place like the "Calculations" tab.
 
 @export var section_scene: PackedScene
 @export var row_scene: PackedScene
@@ -10,10 +11,16 @@ var _pending: bool = false
 var _section_signature: String = ""
 var _row_nodes: Array[CalcRow] = []
 var _expanded: Dictionary = {}  # row key -> true
-var _keys: Array[String] = []
+var _groups: Array[Dictionary] = []
+## Attack keys of the group shown in %AttackSelect, by item id.
+var _attack_keys: Array[String] = []
+var _shown_group: String = ""
 var _dmg_spins: Array[SpinBox] = []
 
+@onready var group_select: SearchSelect = %GroupSelect
 @onready var attack_select: SearchSelect = %AttackSelect
+@onready var interval_spin: SpinBox = %IntervalSpin
+@onready var recovery_check: CheckBox = %RecoveryCheck
 @onready var attack_title: Label = %AttackTitle
 @onready var context_label: Label = %ContextLabel
 @onready var one_shot_label: Label = %OneShotLabel
@@ -37,16 +44,14 @@ func _ready() -> void:
 	Build.changed.connect(_on_build_changed)
 	visibility_changed.connect(_on_visibility_changed)
 
-	attack_select.clear()
-	attack_select.add_item(tr("Custom hit"), 0)
-	_keys.clear()
-	_keys.append(DefenseCalc.CUSTOM_KEY)
-	for i in range(DefenseCalc.presets().size()):
-		var p: Dictionary = DefenseCalc.presets()[i]
-		attack_select.add_item("%s: %s" % [p["boss"], p["label"]], i + 1)
-		_keys.append(str(p["key"]))
-
+	_groups = DefenseCalc.groups()
+	group_select.clear()
+	for i in range(_groups.size()):
+		group_select.add_item(str(_groups[i]["name"]), i)
+	group_select.item_selected.connect(_on_group_selected)
 	attack_select.item_selected.connect(_on_attack_selected)
+	interval_spin.value_changed.connect(func(v: float) -> void: Build.set_defense("interval", v))
+	recovery_check.toggled.connect(func(on: bool) -> void: Build.set_defense("recovery", on))
 	area_level_spin.value_changed.connect(func(v: float) -> void: Build.set_defense("area_level", int(v)))
 	corruption_spin.value_changed.connect(func(v: float) -> void: Build.set_enemy("corruption", int(v)))
 	ward_spin.value_changed.connect(func(v: float) -> void: Build.set_player_state("ward", v))
@@ -70,10 +75,40 @@ func _on_build_changed() -> void:
 	_schedule_update()
 
 
+## Another group: its first attack (the custom hit has none).
+func _on_group_selected(index: int) -> void:
+	var group: Dictionary = _groups[group_select.get_item_id(index)]
+	var attacks: Array = group["attacks"]
+	Build.set_defense("attack", str(attacks[0]["key"]) if not attacks.is_empty() else DefenseCalc.CUSTOM_KEY)
+
+
 func _on_attack_selected(index: int) -> void:
 	var id: int = attack_select.get_item_id(index)
-	if id < _keys.size():
-		Build.set_defense("attack", _keys[id])
+	if id >= 0 and id < _attack_keys.size():
+		Build.set_defense("attack", _attack_keys[id])
+
+
+## The group of the current attack in %GroupSelect, its attacks in %AttackSelect (refilled only when the group changes).
+func _sync_attack(key: String) -> void:
+	var group_key: String = DefenseCalc.group_of(key)
+	var gi: int = 0
+	for i in range(_groups.size()):
+		if str(_groups[i]["key"]) == group_key:
+			gi = i
+	if group_select.get_selected_id() != gi:
+		group_select.select(group_select.get_item_index(gi))
+	var gkey: String = str(_groups[gi]["key"])
+	if gkey != _shown_group:
+		_shown_group = gkey
+		attack_select.clear()
+		_attack_keys.clear()
+		for attack: Dictionary in _groups[gi]["attacks"]:
+			attack_select.add_item(str(attack["label"]), _attack_keys.size())
+			_attack_keys.append(str(attack["key"]))
+	attack_select.visible = not _attack_keys.is_empty()
+	var ai: int = _attack_keys.find(key)
+	if ai >= 0 and attack_select.get_selected_id() != ai:
+		attack_select.select(attack_select.get_item_index(ai))
 
 
 ## `bind(i)` appends the spin index after the new value.
@@ -111,13 +146,10 @@ func _update() -> void:
 
 
 func _sync_controls(settings: Dictionary) -> void:
-	var key: String = str(settings["attack"])
-	var id: int = _keys.find(key)
-	if id < 0:
-		id = 0
-	var index: int = attack_select.get_item_index(id)
-	if index >= 0 and attack_select.get_selected_id() != id:
-		attack_select.select(index)
+	_sync_attack(str(settings["attack"]))
+	if not is_equal_approx(interval_spin.value, float(settings["interval"])):
+		interval_spin.set_value_no_signal(float(settings["interval"]))
+	recovery_check.set_pressed_no_signal(bool(settings["recovery"]))
 	if not is_equal_approx(area_level_spin.value, float(settings["area_level"])):
 		area_level_spin.set_value_no_signal(float(settings["area_level"]))
 	if not is_equal_approx(corruption_spin.value, float(Build.enemy.get("corruption", 0))):

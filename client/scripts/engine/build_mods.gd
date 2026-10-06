@@ -153,6 +153,8 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
 		"flags": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
 		"global_mods": [] as Array[StatMod], "ability_name": "",
+		# resource models that passed their conditions: {model, v, x, source} (the Defense tab turns them into recovery)
+		"resources": [] as Array[Dictionary],
 		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": ""},
 	}
 	if slot < 0 or slot >= build.skills.size():
@@ -708,6 +710,8 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 					entry["added"] += x
 			entry["sources"].append("%s  (%s)" % [LE.fmt_num(x), source])
 			result["params"][label] = entry
+			if str(model.get("kind", "")) == "resource" and result.has("resources"):
+				result["resources"].append({"model": model, "v": v, "x": x, "source": source})
 		"trigger":
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
 				"chance": _num(model.get("chance", 1.0), v), "count": _num(model.get("count", 1.0), v),

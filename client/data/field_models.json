@@ -43,6 +43,7 @@
 "param": "echo_chains"
 },
 "AbyssalEchoesMutator.addedHealing": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Healing allies per echo hit",
@@ -438,6 +439,7 @@
 "param": "haste_duration"
 },
 "AerialAssaultMutator.healingGainedAsWardPercent": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Part of Aerial Prowess heal as ward",
@@ -445,6 +447,7 @@
 "resource": "ward"
 },
 "AerialAssaultMutator.healthGainPerAerialProwessStackConsumed": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health per spent Aerial Prowess stack",
@@ -505,6 +508,7 @@
 "text": "Aerial Assault does not move player"
 },
 "AerialAssaultMutator.percentOfCurrentMissingHealthToRestore": {
+"amount": "missing_health",
 "confidence": "D?",
 "kind": "resource",
 "label": "Restore missing health",
@@ -922,6 +926,7 @@
 ]
 },
 "ArcaneAscendanceMutator.wardOnStart": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on activation",
@@ -1470,6 +1475,7 @@
 "param": "armour_shred_share"
 },
 "AuraOfDecayMutator.percentMissingHealthHealedPerSecond": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing allies (% of missing health per second)",
@@ -2161,6 +2167,7 @@
 "kind": "component"
 },
 "BlackHoleMutator.wardPerSecond": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per second while hole exists",
@@ -2862,6 +2869,7 @@
 "on": "hit"
 },
 "ChaosBoltsMutator.healthOnHitCursed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per hit to cursed enemy",
@@ -2869,6 +2877,7 @@
 "resource": "health"
 },
 "ChaosBoltsMutator.healthPerCurseOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per curse on target",
@@ -3046,6 +3055,7 @@
 "kind": "conversion"
 },
 "ChaosBoltsMutator.percentCurrentHealthConsumedOnCast": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health cost on use (part of current)",
@@ -3053,6 +3063,7 @@
 "resource": "health"
 },
 "ChaosBoltsMutator.percentWardConsumedOnCast": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward cost on use (part of current)",
@@ -3471,6 +3482,7 @@
 "stat": "CriticalMultiplier"
 },
 "CharacterMutator.barrageOfPainHealthOnCrit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on crit per Barrage of Pain stack",
@@ -3719,6 +3731,7 @@
 "stat": "AilmentChance"
 },
 "CharacterMutator.chanceToRegainManaCostAsHealth": {
+"amount": "mana_cost",
 "confidence": "D?",
 "kind": "resource",
 "label": "Mana or rage cost returned as health",
@@ -3839,6 +3852,7 @@
 ]
 },
 "CharacterMutator.critMultiGainedAsWardOnCrit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per crit (part of crit multiplier)",
@@ -4042,6 +4056,7 @@
 "text": "Initial Concentration"
 },
 "CharacterMutator.healOnCompanionAbilityUse": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Heal on ally skill",
@@ -4068,6 +4083,7 @@
 "text": "Heals group members to full health (threshold 50%), 80% goes to ward"
 },
 "CharacterMutator.healthGainOn0CostSkillUseAndHit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on free skill (and hit)",
@@ -4082,6 +4098,7 @@
 "param": "health_on_block_chance"
 },
 "CharacterMutator.healthOnBlockFromChance": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per block",
@@ -4089,10 +4106,12 @@
 "resource": "health"
 },
 "CharacterMutator.healthOnHitWithCooldown": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on hit (once per 3 s)",
 "on": "hit",
+"per_second_cap": 0.333,
 "resource": "health"
 },
 "CharacterMutator.healthOnHitWithCooldownAffectsMinions": {
@@ -4101,6 +4120,7 @@
 "text": "Heal on hit also heals minions"
 },
 "CharacterMutator.holySymbolHealingAmount": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Holy Symbol heal",
@@ -4108,6 +4128,7 @@
 "resource": "health"
 },
 "CharacterMutator.holySymbolWardAmount": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per second from Holy Symbol",
@@ -4583,6 +4604,7 @@
 "scope": "minion"
 },
 "CharacterMutator.missingHealthPercentGainOnLightSentinelSkillUse": {
+"amount": "missing_health",
 "confidence": "D",
 "kind": "resource",
 "label": "Health (% of missing) on Light Sentinel skill",
@@ -4884,6 +4906,7 @@
 "text": "Added physical damage of minions melee also counts as throwing"
 },
 "CharacterMutator.percentMinionDrainedAsHealthOnPotionUse": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health from minions on potion",
@@ -4944,6 +4967,7 @@
 "param": "duration"
 },
 "CharacterMutator.shapeshifterHealing": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing you and minions on transformation",
@@ -5191,6 +5215,7 @@
 "stat": "AilmentChance"
 },
 "CharacterMutator.wardGainedAtHalfHealthPer1PercentPoisonResistance": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward at health below 50% per 1% poison resistance uncapped",
@@ -5198,6 +5223,7 @@
 "resource": "ward"
 },
 "CharacterMutator.wardGainedOnFirstElementalMeleeHit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on first elemental melee hit",
@@ -5219,6 +5245,8 @@
 "resource": "ward"
 },
 "CharacterMutator.wardGainedPer10MaxHealthAt70pHealth": {
+"amount": "max_health",
+"amount_factor": 0.1,
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per 10 max health at health ≤70%",
@@ -5226,6 +5254,7 @@
 "resource": "ward"
 },
 "CharacterMutator.wardGainedPerCurrentManaCostOnHighCostAbilityUse": {
+"amount": "mana_cost",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per 30 current mana on expensive skill",
@@ -5233,6 +5262,7 @@
 "resource": "ward"
 },
 "CharacterMutator.wardOnElementalSpellHitWithCooldown": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on elemental spell hit (with cooldown)",
@@ -5240,6 +5270,7 @@
 "resource": "ward"
 },
 "CharacterMutator.wardOnFireSkillUseWithCooldown": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on fire skill (with cooldown)",
@@ -5247,6 +5278,7 @@
 "resource": "ward"
 },
 "CharacterMutator.wardOnLightningSkillUseWithCooldown": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on lightning skill (with cooldown)",
@@ -5727,6 +5759,7 @@
 "text": "Unstable Flask replaced with Explosive Trap"
 },
 "CinderStrikeMutator.healthGainedWhenFireEating": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on stack absorption",
@@ -6205,6 +6238,7 @@
 "on": "use"
 },
 "DancingStrikesMutator.thirdStrikeHealOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per hit of third hit",
@@ -6412,6 +6446,7 @@
 "param": "frenzy_duration"
 },
 "DarkQuiverBuffMutator.healthRestoreOnArrowPickup": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on arrow pickup",
@@ -6733,6 +6768,7 @@
 ]
 },
 "DeathSealMutator.percentMissingHealthRecoveredOnEnd": {
+"amount": "missing_health",
 "confidence": "D?",
 "kind": "resource",
 "label": "Restore missing health on end",
@@ -7610,6 +7646,7 @@
 "param": "beams"
 },
 "DisintegrateMutator.wardPer3IntWhileChanneling": {
+"amount": "none",
 "confidence": "D",
 "factor": 0.3333,
 "kind": "resource",
@@ -8640,6 +8677,7 @@
 "stat": "AilmentChance"
 },
 "DreamslashMutator.wardOnHitPerSilver": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Silver Shroud stack hit",
@@ -9311,6 +9349,7 @@
 "text": "Seeds grow into vines after explosion"
 },
 "EntanglingRootsMutator.shockwaveHealing": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing allies by shockwave",
@@ -9325,6 +9364,7 @@
 "param": "haste_duration"
 },
 "EntanglingRootsMutator.sporeHealing": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing from popping seeds",
@@ -9540,6 +9580,7 @@
 "resource": "health"
 },
 "ErasingStrikeMutator.percentLifeGainedOnRareHit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on hit vs rare/boss (% of target max health)",
@@ -9730,6 +9771,7 @@
 "param": "downed_recover"
 },
 "EterrasBlessingMutator.percentToHealYourselfAlsoOnCompanionHeal": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Self-heal from companion healing",
@@ -11445,6 +11487,7 @@
 "param": "count"
 },
 "FirebrandMutator.wardGainedIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward from first hit",
@@ -11452,6 +11495,7 @@
 "resource": "ward"
 },
 "FirebrandMutator.wardPerStackConsumedOrExpired": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Firebrand stack on spend or expiry",
@@ -11672,6 +11716,7 @@
 ]
 },
 "FlameReaveMutator.wardGainOnAtLeastOneCrit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on crit",
@@ -11941,6 +11986,7 @@
 "note": "Orb moves with player and explodes on exit"
 },
 "FlameRushMutator.wardAtEnd": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward at end of dash",
@@ -11948,6 +11994,7 @@
 "resource": "ward"
 },
 "FlameRushMutator.wardGainedPerIgniteConsumed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per consumed ignite",
@@ -11955,6 +12002,7 @@
 "resource": "ward"
 },
 "FlameRushMutator.wardPerIgnitedEnemyYouTravelThrough": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per ignited enemy on path",
@@ -11968,6 +12016,7 @@
 "stat": "ManaEfficiency"
 },
 "FlameWardMutator.additionalWard": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on use",
@@ -12035,6 +12084,7 @@
 "text": "No counter-explosion"
 },
 "FlameWardMutator.percentOfMissingHealthGrantedAsWard": {
+"amount": "missing_health",
 "confidence": "D",
 "input": {
 "default": 100,
@@ -12077,6 +12127,7 @@
 ]
 },
 "FlameWardMutator.wardOnBlock": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on block",
@@ -12749,6 +12800,7 @@
 "kind": "component"
 },
 "FlurryMutator.healOnCrit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing on crit",
@@ -12756,6 +12808,7 @@
 "resource": "health"
 },
 "FlurryMutator.healthGainOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on hit",
@@ -12934,6 +12987,7 @@
 "param": "overcharge"
 },
 "FocusMutator.addedWardFromBurst": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward from initial impulse",
@@ -12980,6 +13034,7 @@
 "on": "end"
 },
 "FocusMutator.endWardPerMana": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward on end (% mana gained)",
@@ -12992,6 +13047,7 @@
 "text": "Haste after channelling ends"
 },
 "FocusMutator.healthRecoveryPerSecond": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per second during Focus",
@@ -13649,6 +13705,7 @@
 "text": "Third use behind target"
 },
 "FrostClawMutator.wardGainedOnCast": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on use",
@@ -13656,6 +13713,7 @@
 "resource": "ward"
 },
 "FrostClawMutator.wardGainedOnCastPer100pFreezeRateMulti": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per freeze multiplier on use",
@@ -13911,6 +13969,7 @@
 "text": "Next use is free after 15 s idle"
 },
 "FrostWallMutator.percentEnemyHealthGainedAsWardOnLateHit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward: 1% hp from enemy (max 200)",
@@ -13978,6 +14037,7 @@
 "tags": "Spell"
 },
 "FrostWallMutator.wardGainedOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per enemy pass",
@@ -13985,6 +14045,7 @@
 "resource": "ward"
 },
 "FrostWallMutator.wardGrantedOnAllyHit": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per ally pass",
@@ -14104,6 +14165,7 @@
 "param": "frenzy_duration"
 },
 "FuryLeapMutator.healthHealedOnLanding": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on landing",
@@ -14586,7 +14648,9 @@
 "param": "haste_duration"
 },
 "GhostflameMutator.healthSacrificedPerSecond": {
+"amount": "max_health",
 "confidence": "D",
+"costs_health": true,
 "kind": "resource",
 "label": "Health spending per second (fraction of max)",
 "on": "second",
@@ -14784,6 +14848,7 @@
 "mana": "added"
 },
 "GhostflameMutator.wardPerNearbyEnemyPostChannel": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per cursed enemy after channelling",
@@ -14967,6 +15032,7 @@
 "text": "Teleport to target on first use, counts as movement skill"
 },
 "GlacierMutator.wardOnCrit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on crit",
@@ -15060,6 +15126,7 @@
 "stat": "Damage"
 },
 "GlyphOfDominionMutator.disintegrateGrantedWardPerSecond": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per second from Disintegrate on glyph",
@@ -15595,6 +15662,7 @@
 "text": "Free when no mana"
 },
 "HammerThrowMutator.healthGainOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per hit (with chance)",
@@ -15819,6 +15887,7 @@
 "param": "health_cost"
 },
 "HarvestMutator.healthGainedOnCursedHitPerInt": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health per hit on cursed target (on Intelligence)",
@@ -15901,6 +15970,7 @@
 "stat": "AilmentChance"
 },
 "HarvestMutator.percentMissingHealthGainedAsWardOnDirectUseHit": {
+"amount": "missing_health",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward from missing health (direct use)",
@@ -15929,10 +15999,12 @@
 "param": "spirit_stack_chance"
 },
 "HarvestMutator.wardGainedAgainstCursed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per hit on cursed (limit 10 per 5 s)",
 "on": "hit",
+"per_second_cap": 2.0,
 "resource": "ward"
 },
 "HarvestMutator.zombieChanceOnKillOrRareBossHit": {
@@ -15965,6 +16037,7 @@
 "mana": "added"
 },
 "HealingHandsMutator.addedUpFrontHealing": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Instant healing",
@@ -15972,6 +16045,7 @@
 "resource": "health"
 },
 "HealingHandsMutator.additionalHealingPerSecond": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing per second",
@@ -16147,6 +16221,7 @@
 ]
 },
 "HealingHandsMutator.percentHealingConvertedToWardIfTargetHasWardPerMissingHealth": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Fraction of healing converted to ward",
@@ -16154,6 +16229,7 @@
 "resource": "ward"
 },
 "HealingHandsMutator.percentUpFrontWardGainedAsWardPerSecond": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Fraction of initial ward as ward per second",
@@ -16185,6 +16261,7 @@
 "text": "Dash to target, counts as movement skill"
 },
 "HealingHandsMutator.wardToAlliesPer10pHealingEffectiveness": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward to allies per 10% healing effectiveness",
@@ -16192,6 +16269,7 @@
 "resource": "ward"
 },
 "HealingHandsMutator.wardToAlliesPerAttunement": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward to allies per Attunement",
@@ -16469,6 +16547,7 @@
 ]
 },
 "HolyAuraMutator.wardGainedOnActivation": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on activation",
@@ -16648,6 +16727,7 @@
 "tags": "Spell"
 },
 "HungeringSoulsMutator.wardOnDirectCast": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on direct use",
@@ -16698,6 +16778,7 @@
 "on": "hit"
 },
 "IceBarrageMutator.chanceToGainWardOnHit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward on hit (chance)",
@@ -16969,6 +17050,7 @@
 ]
 },
 "IceBarrageMutator.wardGainedOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per trigger",
@@ -17377,6 +17459,7 @@
 "param": "radius"
 },
 "IceWardMutator.wardOnBlock": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on block",
@@ -17632,6 +17715,7 @@
 "text": "Re-use: dash to flag"
 },
 "JavelinMutator.fireTrailHealAmount": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Healing per second from trail",
@@ -17657,6 +17741,7 @@
 "on": "second"
 },
 "JavelinMutator.flagHealingAuraPerSecond": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Healing per second from flag",
@@ -17966,6 +18051,7 @@
 "param": "frenzy_duration"
 },
 "JudgementMutator.healPerMeleeHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing per melee hit",
@@ -18668,6 +18754,7 @@
 "stat": "Damage"
 },
 "LightningBlastMutator.wardOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per hit",
@@ -18675,6 +18762,7 @@
 "resource": "ward"
 },
 "LightningBlastMutator.wardPerManaSpent": {
+"amount": "mana_cost",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per spent mana",
@@ -18777,6 +18865,7 @@
 "param": "haste_duration"
 },
 "LungeMutator.healAmountForAllyTarget": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing of target ally",
@@ -18784,6 +18873,7 @@
 "resource": "health"
 },
 "LungeMutator.healthRestoredOnOtherMeleeAttackUse": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on other melee skill use",
@@ -18856,6 +18946,7 @@
 ]
 },
 "LungeMutator.percentMissingHealthToRestoreOnUse": {
+"amount": "missing_health",
 "confidence": "D",
 "kind": "resource",
 "label": "Health from missing on use",
@@ -18996,6 +19087,7 @@
 "on": "cast"
 },
 "MaelstromMutator.healingPerSecond": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing of allies in Maelstrom",
@@ -19345,6 +19437,7 @@
 "param": "ward_gained"
 },
 "ManaStrikeMutator.percentManaOnHitConvertedToWard": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Fraction of mana converted to ward (2:1)",
@@ -19714,6 +19807,7 @@
 "resource": "health"
 },
 "MarrowShardsMutator.healthReturned": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health from brain sphere",
@@ -20006,6 +20100,7 @@
 "text": "Simplified fire circle indicator"
 },
 "MeteorMutator.wardFromFireball": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Fireball in Craterborn",
@@ -21558,6 +21653,7 @@
 "stat": "Damage"
 },
 "ProfaneVeilMutator.wardGainOnDodgePerDexWhileInProfaneForm": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Dexterity on dodge in form",
@@ -21565,6 +21661,7 @@
 "resource": "ward"
 },
 "ProfaneVeilMutator.wardPer15UncappedNecroticResFromWanderingSpirit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per 15% uncapped Necrotic Res (spirit hit)",
@@ -21673,6 +21770,7 @@
 "param": "frenzy_duration"
 },
 "PunctureMutator.healthRestoredPerBleedConsumed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per absorbed bleed stack",
@@ -21918,6 +22016,7 @@
 "kind": "conversion"
 },
 "RadiantLanceMutator.healthOnDirectUse": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on direct use",
@@ -22097,6 +22196,7 @@
 "stat": "HealthLeech"
 },
 "ReapMutator.addedReapHealOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per Reap hit",
@@ -22210,6 +22310,7 @@
 "kind": "conversion"
 },
 "ReapMutator.wardOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per hit",
@@ -22371,6 +22472,7 @@
 ]
 },
 "ReaperFormMutator.wardGainedOnTransformToReaper": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on conversion to Reaper",
@@ -22383,6 +22485,7 @@
 "mana": "added"
 },
 "RebukeMutator.aoeHealPerSecond": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing per second to self and allies in 4 m radius",
@@ -23361,6 +23464,7 @@
 "note": "Explosion at end of arrow path"
 },
 "RuneboltColdMutator.fireBoltHealthGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on fire arrow hit",
@@ -23432,6 +23536,7 @@
 "scope": "component:Runemaster 05c2.1 Runebolt Cold Explosion"
 },
 "RuneboltColdMutator.lightningBoltWardGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on Lightning hit",
@@ -23689,6 +23794,7 @@
 "note": "Explosion at end of arrow path"
 },
 "RuneboltFireMutator.fireBoltHealthGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on fire arrow hit",
@@ -23760,6 +23866,7 @@
 "scope": "component:Runemaster 05c1.1 Runebolt Fire Explosion"
 },
 "RuneboltFireMutator.lightningBoltWardGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on Lightning hit",
@@ -24017,6 +24124,7 @@
 "note": "Explosion at end of arrow path"
 },
 "RuneboltLightningMutator.fireBoltHealthGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on fire arrow hit",
@@ -24088,6 +24196,7 @@
 "scope": "component:Runemaster 05c3.1 Runebolt Lightning Explosion"
 },
 "RuneboltLightningMutator.lightningBoltWardGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on Lightning hit",
@@ -24552,6 +24661,7 @@
 "tags": "Elemental"
 },
 "RunicInvocationMutator.percentCurrentManaGainedAsWardAfterCast": {
+"amount": "current_mana",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward: % current mana after use",
@@ -24639,6 +24749,7 @@
 "param": "buff_duration"
 },
 "RunicInvocationMutator.wardGainOnCastPerRune": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per rune on use",
@@ -24646,6 +24757,8 @@
 "resource": "ward"
 },
 "RunicInvocationMutator.wardGainedPer10MaxManaWhenRunesIncreaseFromChannelling": {
+"amount": "max_mana",
+"amount_factor": 0.1,
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per 10 max mana on rune gain",
@@ -24653,6 +24766,7 @@
 "resource": "ward"
 },
 "RunicInvocationMutator.wardGainedPerIntWith3UniqueRunes": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Intelligence (3 different runes)",
@@ -24972,6 +25086,7 @@
 "speed": "increased"
 },
 "SerpentStrikeMutator.lifeOnCrit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per crit",
@@ -25452,6 +25567,7 @@
 "param": "dusk_shroud_chance"
 },
 "ShadowRendBowMutator.healthPerDexPerShadow": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health per Dexterity per shadow",
@@ -25633,6 +25749,7 @@
 "text": "Skill counts as movement (fixed dash)"
 },
 "ShadowRendBowMutator.wardPerDuskShroudOnShadowHit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per Dusk Shroud stack on shadow hit",
@@ -25685,6 +25802,7 @@
 "param": "dusk_shroud_chance"
 },
 "ShadowRendMeleeMutator.healthPerDexPerShadow": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health per Dexterity per shadow",
@@ -25872,6 +25990,7 @@
 "text": "Skill counts as movement (fixed dash)"
 },
 "ShadowRendMeleeMutator.wardPerDuskShroudOnShadowHit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per Dusk Shroud stack on shadow hit",
@@ -26127,6 +26246,7 @@
 "scope": "global"
 },
 "ShatterStrikeMutator.wardGainedIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per hit",
@@ -26134,6 +26254,7 @@
 "resource": "ward"
 },
 "ShatterStrikeMutator.wardGainedIfHitsFrozen": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward on Frozen hit",
@@ -26203,6 +26324,7 @@
 ]
 },
 "ShieldBashMutator.healthGainedOnStun": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on stun",
@@ -26210,6 +26332,7 @@
 "resource": "health"
 },
 "ShieldBashMutator.healthGainedOnStunPerStrength": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on stun per Strength",
@@ -26627,6 +26750,7 @@
 "param": "haste_duration"
 },
 "ShieldThrowMutator.healthGainedOnRicochetPerDex": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health per ricochet (per Dexterity)",
@@ -26785,6 +26909,7 @@
 "text": "Potion at health below 50%"
 },
 "ShiftMutator.healthToHeal": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per use",
@@ -26792,6 +26917,7 @@
 "resource": "health"
 },
 "ShiftMutator.healthToHealPerDex": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per use per Dexterity point",
@@ -27231,6 +27357,7 @@
 "kind": "conversion"
 },
 "SigilsOfHopeMutator.maxHealthPercentAsWardPerSigil": {
+"amount": "none",
 "confidence": "D",
 "input": {
 "default": 3,
@@ -27245,6 +27372,7 @@
 "resource": "ward"
 },
 "SigilsOfHopeMutator.maxHealthPercentHealedOnUse": {
+"amount": "max_health",
 "confidence": "D",
 "kind": "resource",
 "label": "% max health on activation",
@@ -27753,6 +27881,7 @@
 "param": "frailty_duration"
 },
 "SmokeBombMutator.healthToRestoreOnShadowConsumed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per absorbed Shadow",
@@ -28131,6 +28260,7 @@
 "stat": "ManaEfficiency"
 },
 "SoulFeastMutator.addedWardGainedPerIntelligence": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per Intelligence",
@@ -28140,6 +28270,7 @@
 "resource": "ward"
 },
 "SoulFeastMutator.addedWardGainedPerTarget": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per target",
@@ -28541,10 +28672,12 @@
 "scope": "global"
 },
 "SpiritPlagueMutator.wardGainedWhenYouHitAffected": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on hit vs infected (max 10 times per 2 s)",
 "on": "hit",
+"per_second_cap": 5.0,
 "resource": "ward"
 },
 "SpiritThornsMutator.castEntanglingOnMaxSpirits": {
@@ -28611,6 +28744,7 @@
 "resource": "rage"
 },
 "SpiritThornsMutator.wardGainIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on first hit",
@@ -28622,6 +28756,7 @@
 "kind": "conversion"
 },
 "SprigganFormMutator.gainWardPerArmorOnFormEnter": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward equal to armor on form entry",
@@ -29216,6 +29351,7 @@
 "on": "second"
 },
 "StaticMutator.wardPerCharge": {
+"amount": "flat",
 "confidence": "D",
 "input": {
 "default": 100,
@@ -29974,6 +30110,7 @@
 "stat": "FreezeRateMultiplier"
 },
 "SummonBoneGolemMutator.healthOnHit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Golem health per hit",
@@ -29981,6 +30118,7 @@
 "resource": "health"
 },
 "SummonBoneGolemMutator.healthOnHitPerVit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Golem health per hit from Vitality",
@@ -30418,6 +30556,7 @@
 "param": "teleported_minions"
 },
 "SummonMageMutator.percentageMaxHealthRestoreOnCrit": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Mage health (% max) per crit",
@@ -30750,6 +30889,7 @@
 "text": "Sabertooth does not jump"
 },
 "SummonSabertoothMutator.percentHealthRecoveredOnLeap": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Sabertooth health per jump (% max)",
@@ -31304,6 +31444,7 @@
 "text": "Ensnaring Roots cannot be dodged"
 },
 "SummonSprigganMutator.rootsShockwaveHealing": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ensnaring Roots shockwave healing",
@@ -31552,6 +31693,7 @@
 "param": "berry_cooldown_recovery"
 },
 "SummonStormCrowMutator.giveBerriesWardGranted": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Berry ward",
@@ -31560,6 +31702,7 @@
 "resource": "ward"
 },
 "SummonStormCrowMutator.giveBerryHealthRestored": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Berry healing for companions",
@@ -31821,6 +31964,7 @@
 "kind": "conversion"
 },
 "SummonVolatileZombieMutator.percentMaxHealthAsHealingOnDeath": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Healing from max zombie health on death",
@@ -31943,6 +32087,7 @@
 "scope": "skill"
 },
 "SummonWeaponMutator.wardOnSummonWeapon": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on weapon forge",
@@ -31950,6 +32095,7 @@
 "resource": "ward"
 },
 "SummonWeaponMutator.wardPerSecond": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per second per forged weapon",
@@ -32152,6 +32298,7 @@
 "param": "flame_wraith_chance"
 },
 "SummonWraithMutator.healOnCrit": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Spectre healing on your crit",
@@ -32232,6 +32379,7 @@
 "text": "Spectres summoned at target point"
 },
 "SummonWraithMutator.wardGainedOnWraithSummon": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per summoned spectre",
@@ -32439,6 +32587,7 @@
 "param": "static_charges"
 },
 "SurgeMutator.wardGainedIfHits": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on first hit after use",
@@ -32446,6 +32595,7 @@
 "resource": "ward"
 },
 "SurgeMutator.wardGainedOnCrit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on crit",
@@ -32453,6 +32603,7 @@
 "resource": "ward"
 },
 "SurgeMutator.wardGainedOnHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per hit",
@@ -32460,6 +32611,7 @@
 "resource": "ward"
 },
 "SurgeMutator.wardGainedPerStackOfDominantEnergyConsumed": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per spent energy stack",
@@ -32820,6 +32972,7 @@
 "stat": "FreezeRateMultiplier"
 },
 "SwarmbladeSummonHiveMutator.healthGainOnLocustSpawn": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health on locusts released",
@@ -33015,6 +33168,7 @@
 "stat": "CullPercentFromPassives"
 },
 "SwipeMutator.healthOnFirstHitWhenTransformed": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health on first hit (in form)",
@@ -33364,6 +33518,7 @@
 "param": "shadows"
 },
 "SynchronizedStrikesMutator.wardToGainPerShadowConsumed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward per absorbed Shadow",
@@ -33382,6 +33537,7 @@
 "stat": "ManaEfficiency"
 },
 "TeleportMutator.addedWard": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on teleport",
@@ -33389,6 +33545,7 @@
 "resource": "ward"
 },
 "TeleportMutator.addedWardPerInt": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on teleport to Intelligence",
@@ -33420,7 +33577,9 @@
 "on": "use"
 },
 "TeleportMutator.currentHealthConvertedToWard": {
+"amount": "current_health",
 "confidence": "D",
+"costs_health": true,
 "kind": "resource",
 "label": "Ward from current health (% on teleport)",
 "on": "use",
@@ -33510,6 +33669,7 @@
 "stat": "ManaEfficiency"
 },
 "TeleportReturnMutator.addedWard": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on teleport",
@@ -33517,6 +33677,7 @@
 "resource": "ward"
 },
 "TeleportReturnMutator.addedWardPerInt": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on teleport to Intelligence",
@@ -33548,7 +33709,9 @@
 "on": "use"
 },
 "TeleportReturnMutator.currentHealthConvertedToWard": {
+"amount": "current_health",
 "confidence": "D",
+"costs_health": true,
 "kind": "resource",
 "label": "Ward from current health (% on teleport)",
 "on": "use",
@@ -33892,6 +34055,7 @@
 "text": "Removes all storms"
 },
 "TempestStrikeColdMutator.percentEnduranceThresholdToRecoverAsHealthOnTempest": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health from endurance threshold on Storm",
@@ -34211,6 +34375,7 @@
 "text": "Removes all storms"
 },
 "TempestStrikeLightMutator.percentEnduranceThresholdToRecoverAsHealthOnTempest": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health from endurance threshold on Storm",
@@ -34505,6 +34670,7 @@
 "text": "Removes all storms"
 },
 "TempestStrikePhysMutator.percentEnduranceThresholdToRecoverAsHealthOnTempest": {
+"amount": "none",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health from endurance threshold on Storm",
@@ -35023,6 +35189,7 @@
 "text": "Teleport to minion and its victim"
 },
 "TransplantMutator.bloodPoolPercentHeal": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing from blood pools (% max health)",
@@ -35130,6 +35297,7 @@
 "param": "health_cost_regen_duration"
 },
 "TransplantMutator.healthOnHitVsBoneCursed": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on hit vs target with Bone Curse",
@@ -35275,6 +35443,7 @@
 "on": "use"
 },
 "TransplantMutator.wardOnHitVsSpiritPlagued": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Ward on hit vs target with Spirit Plague",
@@ -35932,6 +36101,7 @@
 ]
 },
 "UmbralBladesRecallMutator.wardOnHitWithRecall": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Ward per returning blade hit",
@@ -37542,6 +37712,7 @@
 "text": "Healing also affects allies under cry"
 },
 "WarcryMutator.healthGainedOnLowHealthUse": {
+"amount": "flat",
 "confidence": "D?",
 "kind": "resource",
 "label": "Health on use at low health",
@@ -37550,6 +37721,7 @@
 "resource": "health"
 },
 "WarcryMutator.healthGainedOnUse": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health on use",
@@ -37780,6 +37952,7 @@
 ]
 },
 "WarpathMutator.healAlliesOnHitAmount": {
+"amount": "none",
 "confidence": "D",
 "kind": "resource",
 "label": "Healing allies in area per hit",
@@ -38151,6 +38324,7 @@
 "text": "Roar transforms into Bladestorm form"
 },
 "WerebearRoarMutator.healthGrantedByRoarPerHit": {
+"amount": "flat",
 "confidence": "D",
 "kind": "resource",
 "label": "Health per enemy hit by roar",

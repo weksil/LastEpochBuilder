@@ -164,11 +164,13 @@ First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scen
 
 ## Defense — `scripts/defense/defense_tab.gd` (`class_name DefenseTab extends VBoxContainer`)
 Scene `scenes/defense/defense_tab.tscn`, `@export section_scene, row_scene` (the `calc_section` / `calc_row` scenes of Calculations).
-`%AttackSelect` (`SearchSelect`): item 0 "Custom hit", then every `DefenseCalc.presets()` entry "<boss>: <attack>" (id = index + 1)
-→ `Build.set_defense("attack", key)`. The headline: `%AttackTitle`, `%ContextLabel` (area level and corruption), `%OneShotLabel`
+`%GroupSelect` (`SearchSelect`): `DefenseCalc.groups()` — the average monster, every boss, the custom hit (id = index);
+picking a group selects its first attack. `%AttackSelect`: the attacks of the current group (hidden for the custom hit),
+refilled only when the group changes → `Build.set_defense("attack", key)`. The headline: `%AttackTitle`, `%ContextLabel` (area level and corruption), `%OneShotLabel`
 (`NoSourceLabel`, visible when the worst hit kills from full health), tiles `%EhpTile` (main), `%MaxHitTile`, `%HitsTile`, `%TakenTile`
 (`CalcTile`) from `result.summary`. "Fight parameters": `%AreaLevelSpin` → `set_defense("area_level")`, `%CorruptionSpin` →
-`Build.set_enemy("corruption")` (the same value as on Conditions), `%WardSpin` → `Build.set_player_state("ward")`. `%CustomPanel`
+`Build.set_enemy("corruption")` (the same value as on Conditions), `%WardSpin` → `Build.set_player_state("ward")`,
+`%IntervalSpin` → `set_defense("interval")` (0 = the attack timing), `%RecoveryCheck` → `set_defense("recovery")`. `%CustomPanel`
 (shown for the custom hit): `%Dmg0…%Dmg6`, `%CritChanceSpin` (percent), `%CritMultiSpin`. Sections of `DefenseCalc.compute` go into
 `%Left` / `%Right` in their order and are updated in place like Calculations; `%Notes` is the "Not counted" block.
 

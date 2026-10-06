@@ -612,39 +612,94 @@ minion's (a shotgun one preferred), so the selector is shown for such summons to
 The "Defense" tab, in the spirit of Path of Building's "Maximum hit taken" / "Total EHP": one enemy attack is run through
 the player side of `ProtectionClass.ApplyDamage` (research/06c §1). There is no EHP in the game client (06c §6).
 
-Settings: `Build.defense = {attack, area_level, custom_damage[7], custom_crit_chance, custom_crit_multi}`
-(`default_settings()`, saved in the build code; `settings_of(build)` merges the defaults). The enemy corruption is the
-Conditions value `Build.enemy.corruption`, the current ward is `Build.player_state.ward`.
+Settings: `Build.defense = {attack, area_level, interval, recovery, custom_damage[7], custom_crit_chance, custom_crit_multi}`
+(`default_settings()`, saved in the build code; `settings_of(build)` / `normalized()` merge the defaults and fix the types).
+The enemy corruption is the Conditions value `Build.enemy.corruption`, the current ward is `Build.player_state.ward`.
 
-**Attacks.** `presets()` reads `research/data/game/boss_attacks.json` (built by the local `tools/extract/extract_boss_attacks.py`:
-the 10 monolith timeline end bosses and the pinnacle bosses — Aberroth, Herald of Oblivion (Uber Aberroth), Morditas,
-Majasa, Vision of the Observer, The Observer, the Uber Aberroth Harbingers; every ability found in the boss prefab or by the
-boss's asset name prefix, with its damage components). A preset is one damage component with non-zero damage; abilities
-of actors the boss spawns (`viaActor`) are skipped. `key = "<actorData>|<ability asset>|<component index>"`.
-Damage of a preset at area level L (the monster level), **D?** for the whole chain:
-- base `damage[7]` × `(1 + damageModifier)` of the component × the boss's own `Damage MORE` stats (`actorStats`, matched
-  with `LE.tags_match` against the component tags + Hit/DoT + the damage type);
-- × `(damageModifier[L] + 1)·1.06` × `originalDamageApproximation[L] / originalDamageApproximation[L0]` (ActorScaler, 06c §7,
-  `actor_scaler.json`; L0 = `actorLevel`);
-- × `1 + 0.01·f(c)` for hits, `1 + 0.005·f(c)` for damage over time (`Enemy.corruption_more`);
-- a non-hit component that repeats every `timing.damageInterval` seconds is shown per second (× 1/interval).
-The custom hit is the final damage, without level or corruption scaling.
+### 10.1 Attacks
 
-**Per-type layers** (`type_multiplier`, 06c §1 step 7): `1 − min(res, 0.75) + zonePen + pen` with
-`zonePen = min(0.01·L, 0.75)` (enemies penetrate players by area level, guide "Penetrations"), × damage taken SP 6
-(`HIT|DOT | type | health tags`), × more damage taken while moving SP 113 (only with the "moving" condition),
+`groups()` — the first dropdown: the average monster, every boss, the custom hit (last); `presets()` — every attack,
+`key = "<group>|…"`, `group_of(key)`. Labels repeat words shared by every attack of a boss less (`_strip_common_prefix`).
+The cache is rebuilt after a language switch.
+- **Average monster** (`average|all|melee|ranged|spell|dot`): `research/data/game/monster_damage.json` (local
+  `tools/extract/extract_monster_damage.py`): 261 ordinary monsters with `spawnsInMonolith`, 1137 damaging components, base
+  damage × `(1 + damageModifier)` × the monster's own Damage MORE × `originalDamageApproximation[100] / originalDamageApproximation[L0]`.
+  Per category (melee, ranged, spell, DoT per second) the 10% trimmed mean of the total, split by the share of each damage
+  type; "every damage type" holds each type at the average value of the hit attacks that deal it. Treated as authored at
+  level 100. **D?** (monsters are weighted equally, spawn weights are ignored).
+- **Bosses**: `research/data/game/boss_attacks.json` (local `tools/extract/extract_boss_attacks.py`): the 10 monolith
+  timeline end bosses and the pinnacle bosses — Aberroth, Herald of Oblivion (Uber Aberroth), Morditas, Majasa, Vision of
+  the Observer, The Observer, the Uber Aberroth Harbingers. A preset is one damage component with non-zero damage;
+  abilities of actors the boss spawns (`viaActor`) are skipped. `every` — seconds between uses: `useDuration`, or
+  `1 / chargesGainedPerSecond` for abilities with charges.
+- **Custom hit**: the final damage, no level or corruption scaling.
+
+Damage at area level L (the monster level), **D?** for the whole chain: base × `(1 + damageModifier)` × the boss's Damage
+MORE stats (matched with `LE.tags_match` against the component tags + Hit/DoT + type) × `(damageModifier[L] + 1)·1.06` ×
+`originalDamageApproximation[L] / originalDamageApproximation[L0]` (ActorScaler, 06c §7) × `1 + 0.01·f(c)` for hits,
+`1 + 0.005·f(c)` for damage over time (`Enemy.corruption_more`); a repeating damage area (`timing.damageInterval`) is shown
+per second.
+
+### 10.2 Layers
+
+**Per type** (`type_multiplier`, 06c §1 step 7): `1 − min(res, 0.75) + zonePen + pen` with `zonePen = min(0.01·L, 0.75)`,
+× damage taken SP 6 (`HIT|DOT | type | health tags`), × more damage taken while moving SP 113 (only with "moving"),
 × `1 − armour_mitigation(armor, L, type ≠ Physical)` (DoT: × min(SP 118, 1)), × `1 + damageTakenBuff` SP 108.
+Conditional defenses of uniques that reduce to stats (DamageTaken / Armour / BlockChance … with conditions from the
+Conditions tab) are already in the store.
 **Avoidance** (hits only): average factor `(1 − dodge)(1 − parry)(1 − 0.35·glancing)(1 − block·blockDR)(1 + critChance·(critMulti − 1))`
-with dodge and block at area level L; enemy crit `(attack crit + SP 112)·(1 − SP 89)`, multiplier
-`max(1, 1 + (1 − SP 114)(cm − 1))` (06c §2.8).
-**Pool** (`take_damage`, 06c §1 steps 10–16): mana before ward SP 94, ward, mana before health SP 24 (1 mana = 5 damage),
-endurance (min(0.6, SP 75)) for the part below the endurance threshold (mode "health below threshold").
-Results: `lethal_damage` — the smallest post-layer damage that kills from full health (binary search);
-"Maximum hit taken" = lethal / (post-layer share of the attack mix), "Maximum crit taken" = that / crit multiplier;
-"Hits to die" — repeated average hits from a full pool without regeneration (fractional last hit); "Effective health" =
-hits to die × raw damage per hit; "Worst hit" = post-layer damage × crit multiplier × 1.2 (variance) — the tab warns when
-it kills from full health. DoT presets show damage taken per second and seconds to die instead. "Maximum hit taken by
-damage type" divides the lethal damage by the hit multiplier of each type without attack penetration.
-Not counted (`notes`): damage taken as another type (SP 31–37), dodge/block conversions, the conditional defenses of the
-character mutator (06c §0 f-slots), regeneration and leech between hits, boss mechanics without damage numbers.
-Check — `tests/defense_test.tscn` (06c §2.7/§2.9 vectors, scaling, presets, an imported build, the build code).
+at area level L; enemy crit `(attack crit + SP 112)·(1 − SP 89)`, multiplier `max(1, 1 + (1 − SP 114)(cm − 1))` (06c §2.8).
+**Conversions and conditional defenses** (`engine/defense_conversions.gd`, `DefenseConversions.collect(build, store, attack)`,
+research/07n, `research/data/game/conditional_defenses.json`). PlayerProperty values (`pp_values`) are summed from uniques
+(only effects whose model is not already a stat / overcap_taken in the store), item and idol affixes (SP 98), passives and
+skill tree nodes (`PlayerPropertyStat`). Then:
+- dodge → endurance threshold (PP 425) / glancing blow at 2 × dodge chance (PP 194) / armor (PP 177), in that priority;
+  block → parry without a shield (PP 531) / glancing blow (PP 392); maximum block chance (PP 614); endurance mode
+  "everything" (PP 310) or "…and mana" (PP 309). Converted dodge or block no longer dodges or blocks.
+- `ApplyConditionalDefenses` (the conditions not modelled as unique stats): within 4 m (PP 257/258; melee attacks count as
+  near — D?), ≥ 400 current mana (262), DoT per 8% over-capped cold resistance (677), attacker Slowed / Time Rotted /
+  Shocked (252, crit avoidance 321, armor per Shock stack 323) / Ignited (251, threshold per Ignite 322 and per Shock 549) /
+  Ignited·Damned·Bleeding (346) / Chilled·Bleeding (711) / Cursed (347, per curse 356, armor per curse 354) / Withering (373),
+  damage redirected to minions (496 passive part, 562, 670 — the minion is assumed alive), block effectiveness against DoT
+  (524), the delayed share f7 = `1 − (1 − pp564)·(rare/boss ? 1 − pp498 : 1)·(Spirit Plague ? 1 − pp671 : 1)` for hits,
+  extra endurance f8 (525) while hits are delayed, fire damage per 10% over-capped fire resistance (436/437) and Knight
+  "Battle Hardened" (physical per 5% over-capped physical resistance, tree field). The attacker's ailments are the enemy of
+  the Conditions tab; the attacker is a boss for boss presets, a normal monster for the average monster, the Conditions
+  enemy for the custom hit. Trackers the planner cannot see (Hail of Arrows, Drain Life: PP 619, 650) go to "Not counted".
+- **Damage taken as another type** (SP 31–37, `convert_damage`, 07n §1): SP = target type, stat tags = source type;
+  the first source type in the order Phys, Lightning, Cold, Fire, Void, Necrotic, Poison with damage; share = min(Σ added
+  per (SP, tags), 1), no normalisation, no chaining (each share reads the original damage); applied to the attack before
+  every per-type layer, hits and DoT.
+Slot values: f0 → `hit_more` / `dot_more` (per type × `type_more`), f1 → block chance (× the block chance multiplier),
+f2 → armor × (1 + f2), f3/f4 → endurance threshold, f5 → crit avoidance.
+**Pool** (`take_damage`, 06c §1 steps 3, 10–16): the delayed share f7 (taken over 4 s as direct damage that only ward
+absorbs), mana before ward SP 94, endurance on the whole hit in the mode "everything", ward, mana before health SP 24
+(1 mana = 5 damage; × (1 − e) in the mode "…and mana"), endurance below the threshold;
+`e = 1 − (1 − f8)(1 − min(SP 75, 0.6))`, in modes 0/1 only with base endurance above 0 (`endurance_of`).
+
+### 10.3 Recovery between hits — `engine/defense_recovery.gd` (`class_name DefenseRecovery`)
+
+`collect(build, layers, avoid, interval)` → sources `{resource: health|ward, timing: rate|enemy_hit, base: flat|max|missing|current, k}`:
+health regen SP 17, ward regen SP 92; the selected skill (`Build.selected_skill`, `SkillCalc.compute`: `rates` = uses/s,
+hits/s, crit chance, mana cost; the "Sustain" rows tagged `sustain` — leech, health / ward on hit, ward from mana spent);
+resource models of the skill tree, uniques (`result.resources`, recorded by `BuildMods._apply_model`) and character
+passives (`passive_resources`). A resource model counts when it has `amount` (`flat`, `max_health`, `missing_health`,
+`current_health`, `max_mana`, `current_mana` (full mana), `mana_cost`, `damage` (× DPS vs enemy); `none` = not counted,
+listed in "Not counted"), optional `amount_factor`, `amount_chance`, `per_second_cap`, `costs_health` (never counted).
+Own events: `use` × uses/s, `hit` × hits/s, `crit` × hits/s × crit, `second`; enemy events per enemy hit: `dodge`, `block`,
+`hit_taken` (not dodged or parried). `kill` and other events are not counted (one target).
+Interval between enemy hits: the "Seconds between hits" parameter, else the attack's `every`, else 1 s.
+`hits_to_die` simulates average hits every `interval` seconds with recovery in 0.05 s steps (ward decay 06c §3.2, health
+capped at its maximum, delayed damage ticks); ∞ when a full cycle leaves health and ward no lower (or after 2000 hits).
+`seconds_to_die` does the same for damage over time (ward, mana before health and endurance apply to it).
+
+### 10.4 Results
+
+`lethal_damage` — the smallest post-layer damage that kills from full health (binary search); "Maximum hit taken" =
+lethal / (post-layer share of the attack mix), "Maximum crit taken" = that / crit multiplier; "Hits to die" (with recovery
+when it is on); "Effective health" = hits to die × raw damage per hit; "Worst hit" = post-layer damage × crit multiplier ×
+1.2 (variance) — the tab warns when it kills from full health. DoT attacks show damage taken per second and seconds to
+die. "Maximum hit taken by damage type" divides the lethal damage by the hit multiplier of each type without attack
+penetration. Not counted (`notes`): boss mechanics without damage numbers, resource models without an amount.
+Check — `tests/defense_test.tscn` (06c §2.7/§2.9 vectors, endurance modes, delayed damage, recovery, scaling, presets,
+the average monster, an imported build, the build code).

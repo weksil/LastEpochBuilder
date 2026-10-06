@@ -77,6 +77,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	var comp_results: Array[Dictionary] = []
 	var ail_notes: Array[String] = []
 	var sustain_hits: Array[Dictionary] = []
+	var main_crit: float = 0.0
 	if components.is_empty():
 		notes.push_front(LE.t("The skill has no hit damage in its main component (damage is set by code or sub-skills) — speed, mana and ailments are shown."))
 		if not head_ctx["conversion_rows"].is_empty():
@@ -98,6 +99,8 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": LE.t("damage events") if is_curse else LE.t("uses")}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
+		if idx == 0 and not is_dot:
+			main_crit = clampf(float(ds["cc"]), 0.0, 1.0)
 		var damage_title: String = LE.t("Damage per use (before enemy)")
 		if is_dot:
 			comp_speed["dot_duration"] = float(comp["duration"])
@@ -185,6 +188,13 @@ Corruption does not change your DPS.") % [
 	result["inputs"] = _inputs_result(build, slot, inputs)
 	result["hits"] = hits
 	result["projectiles"] = proj
+	# numbers for the Defense tab (recovery between enemy hits): events per second of the skill and its resource effects
+	var hit_rate: float = 0.0
+	for hs: Dictionary in sustain_hits:
+		if bool(hs["ctx"].get("hit", false)):
+			hit_rate += float(hs["gain_events"])
+	result["rates"] = {"uses": uses, "hits": hit_rate, "crit": main_crit, "mana": float(speed["mana"])}
+	result["resources"] = s.get("resources", [])
 	return result
 
 
@@ -1093,16 +1103,19 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 			LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_num(duration)])
 		leech_lines.append(LE.t("Healing runs while health is not full and is limited by the target's remaining health (06c §5.1–5.2): not counted in the calculation (D?)."))
 		leech_lines.append(LE.t("The scale of the stat value (×0.1 of the mod value) is D?; check against the game tooltip."))
-		rows.append({"label": LE.t("Health leech per second"), "text": LE.fmt_num(leech_total), "breakdown": "\n".join(leech_lines)})
+		rows.append({"label": LE.t("Health leech per second"), "text": LE.fmt_num(leech_total), "breakdown": "\n".join(leech_lines),
+			"sustain": "leech", "value": leech_total})
 		rows.append({"label": LE.t("Leech payout speed"), "text": "%s s" % LE.fmt_num(duration), "breakdown":
 			LE.t("%s / (1 + %s) — Σ IncreasedLeechRate (SP 102) = %s. Does not affect average healing per second, only the payout speed.") % [
 				LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_pct(rate_q.added)]})
 	var gain_labels: Dictionary = {SP_HEALTH_GAIN: LE.t("Health on hit per second"), SP_WARD_GAIN: LE.t("Ward on hit per second"), SP_MANA_GAIN: LE.t("Mana on hit per second")}
+	var gain_keys: Dictionary = {SP_HEALTH_GAIN: "health_gain", SP_WARD_GAIN: "ward_gain", SP_MANA_GAIN: "mana_gain"}
 	for prop: int in gain_total:
 		if float(gain_total[prop]) != 0.0:
 			var lines: PackedStringArray = gain_lines[prop]
 			lines.append(LE.t("SP %d stats with the skill's tags; sustain boosts (increased health gained etc.) are not counted (D?).") % prop)
-			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "\n".join(lines)})
+			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "\n".join(lines),
+				"sustain": gain_keys[prop], "value": float(gain_total[prop])})
 	var ward_q: StatQuery = head_ctx["store"].query(SP_MANA_SPENT_AS_WARD, int(head_ctx["tags"]), 0, _ability_index(head_ctx))
 	if ward_q.added != 0.0 and mana > 0.0:
 		var per_s_ward: float = mana * uses * ward_q.added
@@ -1111,7 +1124,8 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 		for mod: StatMod in ward_q.mods:
 			b.append("  " + mod.describe())
 		b.append(LE.t("The scale of the SP 99 value (share of mana spent) is D?."))
-		rows.append({"label": LE.t("Ward from mana spent per second"), "text": LE.fmt_num(per_s_ward), "breakdown": "\n".join(b)})
+		rows.append({"label": LE.t("Ward from mana spent per second"), "text": LE.fmt_num(per_s_ward), "breakdown": "\n".join(b),
+			"sustain": "ward_from_mana", "value": per_s_ward})
 	return rows
 
 

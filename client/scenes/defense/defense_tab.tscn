@@ -22,16 +22,21 @@ layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Enemy attack"
 
+[node name="GroupSelect" parent="Header" instance=ExtResource("6_search")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+
 [node name="AttackSelect" parent="Header" instance=ExtResource("6_search")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(460, 0)
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
 [node name="Hint" type="Label" parent="Header"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Boss presets: end bosses of the monolith timelines and pinnacle bosses · \"+\" expands the breakdown"
+text = "Average monster of a level 100 monolith, end bosses of the timelines, pinnacle bosses · \"+\" expands the breakdown"
 autowrap_mode = 3
 horizontal_alignment = 2
 
@@ -133,7 +138,7 @@ autowrap_mode = 3
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 6
-columns = 6
+columns = 8
 
 [node name="AreaLevelLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
 layout_mode = 2
@@ -182,6 +187,28 @@ min_value = 0.0
 max_value = 1000000.0
 step = 1.0
 update_on_text_changed = true
+
+[node name="IntervalLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+layout_mode = 2
+tooltip_text = "Seconds between two enemy hits for the recovery between them; 0 = the attack timing"
+mouse_filter = 1
+text = "Seconds between hits"
+
+[node name="IntervalSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+tooltip_text = "Seconds between two enemy hits for the recovery between them; 0 = the attack timing"
+max_value = 600.0
+step = 0.1
+update_on_text_changed = true
+
+[node name="RecoveryCheck" type="CheckBox" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+button_pressed = true
+text = "Count recovery between hits: regeneration, ward, leech and gains of the skill selected on Calculations"
 
 [node name="CustomPanel" type="PanelContainer" parent="Scroll/Sections"]
 unique_name_in_owner = true

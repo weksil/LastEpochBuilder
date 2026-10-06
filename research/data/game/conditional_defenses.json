@@ -1,0 +1,1793 @@
+{
+ "gameVersion": "1.5.0",
+ "source": "dump/decomp/LE.dll/ProtectionClass.c (ConvertDamageTaken @0x181124B30, ApplyDamage @0x181120140, updateHasDamageTakenAndLeechBools @0x181128DA0), dump/decomp/LE.dll/CharacterMutator.c (ApplyConditionalDefenses @0x18261D5C0, ISIL for lost float args), dump/decomp_extra/CharacterMutator__applyModifiersBeforeExternalStatsCalculation.c, LeechTracker.c, PlayerLeechTracker.c, ResourceGainEvents.c, BaseHealth.c, research/data/game/player_property_fields.json",
+ "schema": {
+  "convertDamageTaken": "formula text + tests",
+  "conversions": "[{field,offset,values,setter,formula,sources[],confidence}] sources.kind = playerProperty | treeField | other",
+  "conditions": "[{order,name,field,offset,extraFields[],slot f0..f9 | damageArray[..],formula,condition,appliesTo hit|dot|both,sources[],confidence}] in code order of CharacterMutator.ApplyConditionalDefenses",
+  "slots": "f0 damage multiplier, f1 extra block chance, f2 armour increase (armour*(1+f2)), f3/f4 endurance threshold additions, f5 crit avoidance addition, f6 parry (always 0), f7 delayed fraction, f8 extra endurance, f9 thorns increase",
+  "delayedDamage": "f7 mechanics",
+  "leech": "leech accrual, scale and gain-on-hit mechanics"
+ },
+ "slotMap": {
+  "f0": "ValueTuple.Item1 (damage multiplier M, start 1.0)",
+  "f1": "Item2 (block chance add)",
+  "f2": "Item3 (armour increase)",
+  "f3": "Item4 (endurance threshold add, ignite/shock stacks)",
+  "f4": "Item5 (endurance threshold add, missing mana)",
+  "f5": "Item6 (crit avoidance add)",
+  "f6": "Item7 (parry add, constant 0)",
+  "f7": "Rest.Item1 (delayed damage fraction)",
+  "f8": "Rest.Item2 (extra endurance)",
+  "f9": "Rest.Item3 (thorns increase)"
+ },
+ "convertDamageTaken": {
+  "function": "ProtectionClass.ConvertDamageTaken(DamageStats) @0x181124B30; called from ProtectionClass.ApplyDamage @0x181120140 only when ProtectionClass.hasDamageTakenConversion (0x176) is true",
+  "flagSetter": "ProtectionClass.updateHasDamageTakenAndLeechBools(Stats) @0x181128DA0 sets 0x176 if ANY Stat of SP 31..37 exists in Actor.stats.stats (also 0x177 for SP6 DamageTaken, 0x178 for SP51 HealthLeech, 0x179 for SP129 ability retaliation)",
+  "formula": "out = copy(damageArray_in[7]) ; for each Stat s in Actor.stats(BaseStats).stats (raw List<Stat>, list order) with s.property in SP31..SP37 (target type t = SP-31, array order Phys,Fire,Cold,Light,Necro,Void,Poison): pick the FIRST source type i in the fixed order Phys(AT 1), Lightning(AT 2), Cold(AT 4), Fire(AT 8), Void(AT 16), Necrotic(AT 32), Poison(AT 64) such that (s.tags & bit_i) != 0 AND damage_in[i] != 0; then m = min(s.addedValue, 1.0) * damage_in[i]; out[t] += m; out[i] -= m. Afterwards ApplyDamage multiplies every out[k] by (1 + damageModifier) (param_5).",
+  "details": {
+   "tagMeaning": "stat.tags is the SOURCE damage type (the type being converted), SP is the TARGET: DamageTakenAsFire + tags=Physical = \"Physical damage taken as Fire\". Confirmed by affix/unique data (e.g. \"Fire Damage Taken As Physical\" = SP31 + tags Fire).",
+   "valueUsed": "Stat.addedValue (+0x1C) only; increased (+0x20), moreValues, specialTag and extraTag are ignored. Entries with the same (SP,tags,specialTag,extraTag) are collapsed by BaseStats.addStat (sum of added), so the 1.0 cap acts on the sum per (SP,tags) key.",
+   "scale": "fraction (0.4 = 40%), no extra scaling",
+   "normalisation": "none. Each stat is clamped to <=1.0 individually but several stats from the same source are not normalised: shares can exceed 100% in total (source goes negative, negative entries are skipped by the per-type `M*damage[i] > 0` test of ApplyDamage so the extra shares become extra damage).",
+   "noChaining": "every stat reads the ORIGINAL damage array (param DamageStats.damage), never the partially converted one; A->B and B->C do not chain.",
+   "negativeValues": "not clamped below: a negative added value moves damage the other way.",
+   "whichDamage": "all 7 types, hits and DoT alike (no isHit/DoT condition).",
+   "inertTags": "only AT bits 1,2,4,8,16,32,64 are tested. Stats whose tags carry no damage-type bit never convert anything: KnightTree \"Abyssal Fluctuation\" (kn-1 id 64, SP36 DamageTakenAsVoid, tags=Elemental 0x80) and AcolyteTree \"Decaying Form\" (ac-1, >=6 pts, SP37 DamageTakenAsPoison, tags=DoT 0x1000, value 0.5) are therefore inert in this code (D). SP31-37 have no other reader in the dll (grep of all Stats.Get* call sites). Whether the game ships these nodes as bugs cannot be seen from code.",
+   "tagsUsedForStatQuery": "none: this function scans the stat list directly (no Stats.GetStatValue call, no tag filter, no hitEvents).",
+   "orderInApplyDamage": "(1) ConvertDamageTaken or plain copy, times (1+damageModifier); (2) DamageConditionalEffect.apply of attacker and ability; (3) IDefensiveConditionalProvider.ApplyConditionalDefenses(damageStats, damageArray, attacker, attackerExists) which may still scale damageArray entries (resistance-above-cap conditions); (4) per-type resist/penetration, then DamageTaken stat query with the CONVERTED type tag (tags = (otherTags & ~0xFF) | typeTag(i)), etc. So conversion happens before resistances: converted damage is mitigated by the resistance of the NEW type, and DamageTaken(type) mods of the new type apply.",
+   "sources": "affixes (idol/sentinel suffixes: Idol X Damage Taken As Physical 2-3%, Sentinel Void/Poison Taken As Physical 18-19%, Idol Sentinel Cold/Fire ... 8-20%), uniques (The Ashen Crown phys->fire 40-80%, Orians Eye void->fire 100%, Bane of Winter cold->phys 100%, Blossom of Immortal Stone necro/poison/void->phys 100%, Ravenous Void phys->void 10-15%), Sabertooth skill node Shatterhide (SP33 cold, tags Physical, 1.0)"
+  },
+  "tests": [
+   {
+    "desc": "40% physical taken as fire (affix/unique style: SP32 DamageTakenAsFire, tags=Physical)",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      0.4
+     ]
+    ],
+    "result": [
+     600.0,
+     400.0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "share >100% is clamped per stat to 1.0",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      1.5
+     ]
+    ],
+    "result": [
+     0.0,
+     1000.0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "two stats of 60% from the same source type are NOT normalised: phys goes negative (skipped later because M*damage[i] > 0 test fails), total of positive entries = 120%",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      0.6
+     ],
+     [
+      2,
+      1,
+      0.6
+     ]
+    ],
+    "result": [
+     -200.0,
+     600.0,
+     600.0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "no chaining: stats use the ORIGINAL damage of the source type. phys->fire 100%, fire->cold 100% with fire=500 originally",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     500,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      1.0
+     ],
+     [
+      2,
+      8,
+      1.0
+     ]
+    ],
+    "result": [
+     0.0,
+     1000.0,
+     500.0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "fire->cold with fire=0 originally is skipped (damage[idx]==0)",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      1.0
+     ],
+     [
+      2,
+      8,
+      1.0
+     ]
+    ],
+    "result": [
+     0.0,
+     1000.0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "tags with several type bits: only the first match in order Phys,Light,Cold,Fire,Void,Necro,Poison is used (tags=Phys|Fire acts as Phys)",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      5,
+      9,
+      0.5
+     ]
+    ],
+    "result": [
+     500.0,
+     1000,
+     0,
+     0,
+     0,
+     500.0,
+     0
+    ]
+   },
+   {
+    "desc": "negative value moves damage backwards (target loses, source gains)",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      1,
+      1,
+      -0.2
+     ]
+    ],
+    "result": [
+     1200.0,
+     -200.0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "desc": "tags without a damage-type bit (Elemental 0x80, DoT 0x1000) never match -> no conversion",
+    "damageArray[Phys,Fire,Cold,Light,Necro,Void,Poison]": [
+     1000,
+     500,
+     500,
+     500,
+     0,
+     0,
+     0
+    ],
+    "stats[targetIndex, tagsBitmask, addedValue]": [
+     [
+      5,
+      128,
+      0.1
+     ],
+     [
+      6,
+      4096,
+      0.5
+     ]
+    ],
+    "result": [
+     1000,
+     500,
+     500,
+     500,
+     0,
+     0,
+     0
+    ]
+   }
+  ],
+  "confidence": "D"
+ },
+ "conversions": [
+  {
+   "field": "dodgeConversion",
+   "holder": "PrecalculatedStatsHolder",
+   "offset": "0x58",
+   "values": {
+    "0": "None",
+    "1": "Armour (dodgeRating added to armour before (1+f2))",
+    "2": "GlancingBlow (glancing chance += 2*dodgeChance(dodgeRating); dodge roll disabled)",
+    "3": "EnduranceThreshold (threshold += dodgeRating)"
+   },
+   "setter": "PrecalculatedStatsHolder.setDodgeConversion @0x1804EE5F0 has NO callers; the write is inlined in CharacterMutator.applyModifiersBeforeExternalStatsCalculation @0x182601FE0 (decomp_extra/CharacterMutator__applyModifiersBeforeExternalStatsCalculation.c ~8873-8895, ISIL after [rax+58h]) each stats update on ProtectionClass (CharacterMutator+0x20A0)",
+   "formula": "mode = dodgeConvertedToEnduranceThreshold(0xF18) ? 3 : dodgeConvertedToGlancingBlow(0x11D9) ? 2 : dodgeConvertedToArmor(0x11D8) ? 1 : 0   (priority 3 > 2 > 1)",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 425,
+     "field": "dodgeConvertedToEnduranceThreshold",
+     "offset": "0xf18",
+     "note": "flag added>0.1; PlayerPropertyList \"Dodge Rating converted to Endurance Threshold\"; holder not found in extracted data (Foot of the Mountain description says it but uses PP 213) : D?"
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 194,
+     "field": "dodgeConvertedToGlancingBlow",
+     "offset": "0x11d9",
+     "note": "Rogue passive rg-1 \"Apostasy\" (1 pt, flat 1.0)"
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 177,
+     "field": "dodgeConvertedToArmor",
+     "offset": "0x11d8",
+     "note": "Knight passive kn-1 \"Iron Reflexes\" (>=5 pts, flat 1.0) and a skill-tree node (PlayerPropertyStat)"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "blockConversion",
+   "holder": "PrecalculatedStatsHolder",
+   "offset": "0x6C",
+   "values": {
+    "0": "None",
+    "1": "GlancingBlow (glancing chance += min(maxBlock,blockChance)+f1*mult; block roll disabled)",
+    "2": "Parry (parry chance += min(maxBlock,blockChance); block roll disabled)"
+   },
+   "setter": "setBlockConversion @0x1805EBE20 has NO callers; inlined in applyModifiersBeforeExternalStatsCalculation (ISIL: cmp byte [rdi+1BD0h]; ...; mov [rcx+6Ch],eax)",
+   "formula": "mode = (blockChanceConvertedToParryWithoutShield(0x1BD0) AND weaponInfoHolder(0x20D8) exists AND NOT weaponInfoHolder.hasShield) ? 2 : (blockChanceConvertedToGlancingBlow(0x1668) ? 1 : 0)   (Parry wins over Glancing)",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 531,
+     "field": "blockChanceConvertedToParryWithoutShield",
+     "offset": "0x1bd0",
+     "note": "flag|=; unique Clothos Needle"
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 392,
+     "field": "blockChanceConvertedToGlancingBlow",
+     "offset": "0x1668",
+     "note": "Rogue passive rg-1 \"Deflect and Weave\" (>=5 pts, flat 1.0)"
+    }
+   ],
+   "confidence": "D (mode value 0 default read from ISIL registers: esi=0, r13d=1)"
+  },
+  {
+   "field": "maximumBlockChance",
+   "holder": "PrecalculatedStatsHolder",
+   "offset": "0x68",
+   "values": {
+    "0": "no cap",
+    "x>0": "block chance capped at x (fraction) in GetBlockChance and in the conversion formulas"
+   },
+   "setter": "SetMaximumBlockChance @0x1805E1950 has no callers; inlined: *(ProtectionClass+0x68) = CharacterMutator.maximumBlockChanceFromTheSlab(0x1F14) every update (applyModifiersBefore..., decomp_extra line 3447)",
+   "formula": "value = Sum of added of PP 614 (op add)",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 614,
+     "field": "maximumBlockChanceFromTheSlab",
+     "offset": "0x1f14",
+     "note": "unique The Monolith (value 0.75)"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "enduranceMode",
+   "holder": "ProtectionClass (PrecalculatedStatsHolder)",
+   "offset": "0xC8",
+   "values": {
+    "0": "HealthBelowThreshold",
+    "1": "HealthBelowThresholdAndMana (endurance also reduces the mana-before-health cost: mana cost factor 1-0.2*(1-e))",
+    "2": "Everything (endurance applied to the whole damage before ward)"
+   },
+   "setter": "inline write *(ProtectionClass+200) = iStack_4c8 at the end of applyModifiersBefore... (decomp_extra line 8919); iStack_4c8 is a local computed in the stat switch: case PP 309 (0x135): if added>0.1 and mode==0 -> 1; case PP 310 (0x136): if added>0.1 -> 2",
+   "formula": "mode = PP310>0.1 ? 2 : (PP309>0.1 ? 1 : 0)",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 309,
+     "field": "(local, no CharacterMutator field)",
+     "note": "PlayerPropertyList name \"Endurance applies to all damage dealt to mana\" (-> mode 1); unique Seed of Ekkidrasil 0.4-0.56 (the value is only used as a flag)"
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 310,
+     "field": "(local)",
+     "note": "\"Endurance applies to All Damage\" (-> mode 2); holder not found in extracted data"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "dotsBypassWard",
+   "holder": "ProtectionClass",
+   "offset": "0x1A0",
+   "values": {
+    "false": "DoT damage hits ward normally",
+    "true": "DoT damage skips ward (full amount goes to health, ward not consumed)"
+   },
+   "setter": "inline write in applyModifiersBefore... (decomp_extra line 9621): ProtectionClass.dotsBypassWard = CharacterMutator.dotsBypassWard (0x675)",
+   "formula": "bool",
+   "sources": [
+    {
+     "kind": "treeField",
+     "field": "CharacterMutator.dotsBypassWard (0x675)",
+     "note": "Acolyte passive ac-1 node 44 \"Impact Ward\" (Lich Less DoT Taken), enabled at >= 3 points; written by AcolyteTree.updateMutator (decomp_extra/AcolyteTree__updateMutator.c:3432); no PlayerProperty"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "hitsBypassWard",
+   "holder": "ProtectionClass",
+   "offset": "0x1A1",
+   "values": {
+    "false": "normal",
+    "true": "hit damage skips ward"
+   },
+   "setter": "inline write: ProtectionClass.hitsBypassWard = CharacterMutator.hitsBypassWard (0xDF4)",
+   "formula": "bool (flag|= added>0.1)",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 685,
+     "field": "hitsBypassWard",
+     "offset": "0xdf4",
+     "note": "unique Vestige of Imprisonment"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "maxHealthCapForWard",
+   "holder": "ProtectionClass",
+   "offset": "0x19C",
+   "values": {
+    "0": "no cap",
+    "x>0": "ward can never exceed maxHealth*x (GainWard clamp); when the value changes GainWard is called to re-clamp"
+   },
+   "setter": "inline write in applyModifiersBefore... (decomp_extra ~9590-9600): value = min over the NON-ZERO of {CharacterMutator.maxHealthCapForWardFromAcolyteTree(0x670), CharacterMutator.maxHealthCapForWardFromArchitectsOfAncestralBlood(0x1EE8)}",
+   "formula": "v = 0x1EE8; if 0x670!=0 and (0x1EE8==0 or 0x1EE8>0x670) then v = 0x670",
+   "sources": [
+    {
+     "kind": "treeField",
+     "field": "maxHealthCapForWardFromAcolyteTree (0x670)",
+     "note": "Acolyte passive ac-1 node 115 \"Corrupted Form\" (Lich Half Health) >=2 pts: 0.5. The same node also sets maxHealthCapForCurrentHealth (0x66C = 0.5, BaseHealth current-health cap) and alwaysLowLife (0x674)"
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 609,
+     "field": "maxHealthCapForWardFromArchitectsOfAncestralBlood",
+     "offset": "0x1ee8",
+     "note": "unique Architects of Astral Blood, 2.0-2.4 (= 200-240% of max health)"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "field": "canBeUnableToBlock / unableToBlockSources",
+   "holder": "ProtectionClass",
+   "offset": "0x1A2 / 0x1A8",
+   "values": {
+    "rule": "in ApplyDamage block roll: if canBeUnableToBlock(0x1A2) then the block is cancelled when any registered UnableToBlockSource.unableToBlock() is true (the Block flag 0x20 is then not set)"
+   },
+   "setter": "ProtectionClass.addUnableToBlockSource(UnableToBlockSource) @0x181127960 (copy-on-write array) / removeUnableToBlockSource @0x181128360. The only caller in the dll is ShieldThrowMutator (registers itself in Start, decomp/LE.dll/ShieldThrowMutator.c:206). ShieldThrowMutator.unableToBlock() @0x1822C10C0 = noBlockDuringThrow(0x179) AND (activeShields count > 0 after pruning, or the ability is on cooldown for the non-noCooldown variant).",
+   "formula": "bool",
+   "sources": [
+    {
+     "kind": "treeField",
+     "field": "ShieldThrowMutator.noBlockDuringThrow (0x179)",
+     "note": "Shield Throw skill-tree node; the bool ProtectionClass.canBeUnableToBlock(0x1A2) is never written in the dll (serialised prefab field): D?"
+    }
+   ],
+   "confidence": "D? (0x1A2 writer not found)"
+  },
+  {
+   "field": "sourcesOfNoWardGain",
+   "holder": "ProtectionClass",
+   "offset": "0x198",
+   "values": {
+    ">=1": "GainWard does nothing; ward-on-hit roll is skipped"
+   },
+   "setter": "CharacterMutator.UpdateSourcesOfNoWardGain @0x18266E7B0 (called at the end of applyModifiersBefore...): sourcesOfNoWardGain += 1 while CharacterMutator.noWard(0x1AE8); UpdateSourcesOfNoWardGainFromBeingInCombat @0x18266E6E0: +1 while noWardGainInCombat(0x1AF0) and the player is in combat (UsingAbilityPlayer.isOutOfCombat==false)",
+   "formula": "counter",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 471,
+     "field": "noWard",
+     "offset": "0x1ae8",
+     "note": "PP 471 \"No Ward\" flag|= (noWard 0x1AE8); noWardGainInCombat(0x1AF0) PP not looked up"
+    }
+   ],
+   "confidence": "D"
+  }
+ ],
+ "conditions": [
+  {
+   "order": 1,
+   "name": "chanceToTakeNoDamageWhenHitPer10Guile",
+   "field": "chanceToTakeNoDamageWhenHitPer10Guile",
+   "offset": "0x1ff4",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "roll(attr3Value/10 * pp) -> f0 = 0",
+   "condition": "pp!=0 AND Stats.AttributeIsCorrupted(attribute 3) [Dexterity converted to Guile, PP 652] AND DamageStats.isHit; attr3Value = Stats.GetAttributeValue(3); one RngElement roll per hit",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 657,
+     "field": "chanceToTakeNoDamageWhenHitPer10Guile",
+     "propertyName": "Chance to take 0 damage when hit per 10 Guile",
+     "op": "add",
+     "holders": [
+      "unique:Exulis"
+     ],
+     "note": "pp = chance per 10 points of attribute 3"
+    }
+   ],
+   "confidence": "D (vtable slot +0x2A8 = AttributeIsCorrupted, +0x298 = GetAttributeValue inferred from signatures: D?)"
+  },
+  {
+   "order": 2,
+   "name": "takesLessHitDamageFromEnemiesInHailOfArrows",
+   "field": "takesLessHitDamageFromEnemiesInHailOfArrows",
+   "offset": "0x1798",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 - TrackerStat(attacker.stats, HailOfArrowsLessHitDamage=3))",
+   "condition": "flag AND attackerExists AND isHit; the tracker value is a debuff the attacker carries from the Hail of Arrows skill",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 619,
+     "field": "takesLessHitDamageFromEnemiesInHailOfArrows",
+     "propertyName": "playerPropertyTakesLessHitDamageFromEnemiesInHailOfArrows",
+     "op": "flag|=(added>eps)",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": "flag = added>0.1"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 3,
+   "name": "takesLessDamageFromEnemiesDamagedByDrainLife",
+   "field": "takesLessDamageFromEnemiesDamagedByDrainLife",
+   "offset": "0x17c4",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 - TrackerStat(attacker.stats, DrainLifeLessDamageFromRecentlyDamaged=7))",
+   "condition": "flag AND attackerExists (no isHit test)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 650,
+     "field": "takesLessDamageFromEnemiesDamagedByDrainLife",
+     "propertyName": "Strength Converted to Brutality",
+     "op": "flag|=(added>eps)",
+     "holders": [
+      "affix:Strength converted to Brutality"
+     ],
+     "note": "code name of PP 650; the PlayerPropertyList display name of index 650 is \"Strength Converted to Brutality\" (attribute-corruption flag, affix). Name/semantic mismatch: D?"
+    }
+   ],
+   "confidence": "D? (condition D, meaning of PP 650 D?)"
+  },
+  {
+   "order": 4,
+   "name": "moreDamageTakenWhileLeeching",
+   "field": "moreDamageTakenWhileLeeching",
+   "offset": "0x15a8",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 + pp)",
+   "condition": "LeechTracker.getTotalCurrentLeech() of the player > 0",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 340,
+     "field": "moreDamageTakenWhileLeeching",
+     "propertyName": "Damage Taken while Leeching",
+     "op": "more-combine",
+     "holders": [
+      "unique:Merophage"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 5,
+   "name": "moreHitDamageTakenFromRareBoss",
+   "field": "moreHitDamageTakenFromRareBoss",
+   "offset": "0xe34",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 + pp)",
+   "condition": "attackerExists AND attacker.isRareOrBoss AND isHit",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 682,
+     "field": "moreHitDamageTakenFromRareBoss",
+     "propertyName": "Hit Damage taken from Bosses and Rare Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Effusive Oath"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 6,
+   "name": "moreDamageTakenWithoutFrenzy",
+   "field": "moreDamageTakenWithoutFrenzy",
+   "offset": "0x1f84",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 + pp)",
+   "condition": "player does NOT have ailment Frenzy (34)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 638,
+     "field": "moreDamageTakenWithoutFrenzy",
+     "propertyName": "Damage Taken while you don't have Frenzy",
+     "op": "more-combine",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 7,
+   "name": "moreDamageTakenPerRecentMeteorCast",
+   "field": "moreDamageTakenPerRecentMeteorCast",
+   "offset": "0x1328",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "n=min(18, MeteorMutator.GetRecentCasts()); if n>0: f0 = max(0, f0*(1+n*pp))",
+   "condition": "pp!=0 AND hasMeteorMutator (Meteor skill equipped)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 246,
+     "field": "moreDamageTakenPerRecentMeteorCast",
+     "propertyName": "Damage Taken for each Meteor you have cast recently (up to 18)",
+     "op": "more-combine",
+     "holders": [
+      "unique:Harbinger of Stars"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 8,
+   "name": "moreReflectDamageToBossesAndRares",
+   "field": "moreReflectDamageToBossesAndRares",
+   "offset": "0x1d60",
+   "extraFields": [],
+   "slot": "f9",
+   "formula": "f9 = Maths.combineModifiers(0, pp) (= pp)",
+   "condition": "pp!=0 AND attackerExists AND attacker.isRareOrBoss (f9 = thorns/reflect increase, read in the ApplyDamage thorns code)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 575,
+     "field": "moreReflectDamageToBossesAndRares",
+     "propertyName": "Damage Reflected to Bosses and Rare Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Thicket of Blinding Light"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D (combineModifiers body not read: D?)"
+  },
+  {
+   "order": 9,
+   "name": "bonusDamageReductionToHealthBelowEnduranceThresholdWithDelayedDamage",
+   "field": "bonusDamageReductionToHealthBelowEnduranceThresholdWithDelayedDamage",
+   "offset": "0x17dc",
+   "extraFields": [],
+   "slot": "f8",
+   "formula": "f8 = pp (extra endurance, combined e = 1-(1-f8)(1-min(endurance,0.6)))",
+   "condition": "pp!=0 AND LeechTracker.GetSlowDamageRemaining() > 0.1 * maxHealth",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 525,
+     "field": "bonusDamageReductionToHealthBelowEnduranceThresholdWithDelayedDamage",
+     "propertyName": "Damage Reduction to Health below Endurance Threshold with Delayed Damage",
+     "op": "add",
+     "holders": [
+      "unique:Immortal Vise"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 10,
+   "name": "enemiesWithin4m",
+   "field": "moreDamageTakenFromEnemiesWithin4m",
+   "offset": "0x1380",
+   "extraFields": [
+    {
+     "field": "blockChanceAgainstEnemiesWithin4m",
+     "offset": "0x1384"
+    }
+   ],
+   "slot": "f0 / f1",
+   "formula": "f0 *= (1 + pp257); f1 = pp258 (block chance; f1 is later multiplied by precalculatedBlockChanceMultiplier)",
+   "condition": "(pp257!=0 OR pp258!=0) AND attackerExists AND distance(player, attacker) < 4.0 m (Maths.distanceLessThan, constant 0x40800000)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 257,
+     "field": "moreDamageTakenFromEnemiesWithin4m",
+     "propertyName": "Damage Taken from enemies within 4 metres",
+     "op": "more-combine",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 258,
+     "field": "blockChanceAgainstEnemiesWithin4m",
+     "propertyName": "Block Chance against enemies within 4 metres",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 11,
+   "name": "blockChanceWhileMoving",
+   "field": "blockChanceWhileMoving",
+   "offset": "0x1f48",
+   "extraFields": [],
+   "slot": "f1",
+   "formula": "f1 += pp",
+   "condition": "pp!=0 AND StateController.IsMoving",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 625,
+     "field": "blockChanceWhileMoving",
+     "propertyName": "chance to Block hits taken while Moving",
+     "op": "add",
+     "holders": [
+      "unique:Unbroken Charge"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 12,
+   "name": "moreDamageTakenWithAtLeast1000Ward",
+   "field": "moreDamageTakenWithAtLeast1000Ward",
+   "offset": "0x138c",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 + pp)",
+   "condition": "pp!=0 AND ProtectionClass.ward >= 1000",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 259,
+     "field": "moreDamageTakenWithAtLeast1000Ward",
+     "propertyName": "Damage Taken if you have at least 1000 Ward",
+     "op": "more-combine",
+     "holders": [
+      "unique:Aergon Refuge"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 13,
+   "name": "moreDamageTakenWithAtLeast400CurrentMana",
+   "field": "moreDamageTakenWithAtLeast400CurrentMana",
+   "offset": "0x139c",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 + pp)",
+   "condition": "pp!=0 AND BaseMana.currentMana >= 400",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 262,
+     "field": "moreDamageTakenWithAtLeast400CurrentMana",
+     "propertyName": "Damage Taken with at least 400 Current Mana",
+     "op": "more-combine",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 14,
+   "name": "moreDamageOverTimeTakenWhileYouHaveHaste",
+   "field": "moreDamageOverTimeTakenWhileYouHaveHaste",
+   "offset": "0x13fc",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "x = max(-0.75, (1 + GetTotalIncreased(SP120 EffectOfAilmentOnYou, specialTag=33 Haste)) * pp); f0 *= (1 + x)",
+   "condition": "pp!=0 AND (DamageStats.otherTags & DoT 0x1000) AND player has ailment Haste (33)",
+   "appliesTo": "dot",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 275,
+     "field": "moreDamageOverTimeTakenWhileYouHaveHaste",
+     "propertyName": "Damage over Time taken while you have Haste",
+     "op": "more-combine",
+     "holders": [
+      "affix:Increased Haste Effect and Less Damage over Time taken during Haste",
+      "unique:Advent of the Erased",
+      "unique:Gift of the Eidolon"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 15,
+   "name": "moreDamageOverTimeTakenPer8OvercappedCold",
+   "field": "moreDamageOverTimeTakenPer8OvercappedCold",
+   "offset": "0xe70",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "over = min(2.0, coldUncappedRes - 0.75); f0 *= (1 + over*pp*0.125*100) i.e. pp per 8% over cap, max 200% over cap",
+   "condition": "pp!=0 AND DoT AND uncappedColdResistance > 0.75",
+   "appliesTo": "dot",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 677,
+     "field": "moreDamageOverTimeTakenPer8OvercappedCold",
+     "propertyName": "Damage Over Time Taken per 8% Overcapped Cold Resistance (up to 200% Overcapped Cold Resistance)",
+     "op": "more-combine",
+     "holders": [
+      "affix:Damage Over Time Taken per 8% Overcapped Cold Resistance"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 16,
+   "name": "morePhysDamageTakenPer5OvercappedPhysResUpTo10Percent",
+   "field": "morePhysDamageTakenPer5OvercappedPhysResUpTo10Percent",
+   "offset": "0xcd8",
+   "extraFields": [],
+   "slot": "damageArray[phys]",
+   "formula": "damageArray[0] *= (1 + max(-0.1, (physUncappedRes - 0.75)/0.05 * field)) (modifies the damage array in place, NOT a return slot)",
+   "condition": "field!=0 AND uncappedPhysicalResistance > 0.75; hits and DoT",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "treeField",
+     "field": "passive Knight kn-1 node 28 \"Battle Hardened\" (FG Armour If Hit Recently), field = -0.01 flat at >= 7 points",
+     "note": "written by KnightTree.updateMutator (decomp_extra/KnightTree__updateMutator.c:6531); no PlayerProperty"
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 17,
+   "name": "moreDamageTakenPerActiveShadow1in6Chance",
+   "field": "moreDamageTakenPerActiveShadow1in6Chance",
+   "offset": "0x1420",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "n=CreateShadowMutator.GetNumberOfShadows(); if n>0: f0 = max(0, f0*(1+n*pp))",
+   "condition": "pp!=0 AND Roll(1/6 = 0.1667) AND hasShadowMutator (Shadow skill active)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 281,
+     "field": "moreDamageTakenPerActiveShadow1in6Chance",
+     "propertyName": "Damage Taken per Active Shadow (1 in 6 chance)",
+     "op": "more-combine",
+     "holders": [
+      "unique:Gambit of an Erased Rogue"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 18,
+   "name": "effectiveBonusEnduranceThresholdPer10MissingMana",
+   "field": "effectiveBonusEnduranceThresholdPer10MissingMana",
+   "offset": "0x1410",
+   "extraFields": [],
+   "slot": "f4",
+   "formula": "f4 = BaseMana.missingMana * pp * 0.1",
+   "condition": "pp!=0 AND mana component exists AND missingMana != 0",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 278,
+     "field": "effectiveBonusEnduranceThresholdPer10MissingMana",
+     "propertyName": "Effective Endurance Threshold per 10 Missing Mana",
+     "op": "add",
+     "holders": [
+      "unique:Knowledge of an Erased Mage"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 19,
+   "name": "moreDamageTakenFromChilledEnemies",
+   "field": "moreDamageTakenFromChilledEnemies",
+   "offset": "0x133c",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "GATE for the whole attacker-ailment group: attackerExists AND attacker.ailmentReceiver exists AND at least one of the 13 group fields (0x133C,0x1340,0x1344,0x1474,0x1528,0x1524,0x134C,0x1348,0x16C8,0x16B8,0x1358,0x1350,0xE44) != 0 (0x1C30 is NOT in the gate). Both hit and DoT. Attacker has Chill (3).",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 250,
+     "field": "moreDamageTakenFromChilledEnemies",
+     "propertyName": "Damage Taken from Chilled Enemies",
+     "op": "more-combine",
+     "holders": [
+      "skillTreeNode(PlayerPropertyStat)",
+      "unique:Oceareon"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 20,
+   "name": "moreDamageTakenFromSlowedEnemies",
+   "field": "moreDamageTakenFromSlowedEnemies",
+   "offset": "0x1350",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "(group gate) attacker has Slow (6)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 561,
+     "field": "moreDamageTakenFromSlowedEnemies",
+     "propertyName": "Damage taken from slowed enemies",
+     "op": "more-combine",
+     "holders": [
+      "passive:kn-1/Singular Purpose"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 21,
+   "name": "moreDamageTakenFromTimeRottedEnemies",
+   "field": "moreDamageTakenFromTimeRottedEnemies",
+   "offset": "0x1358",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "(group gate) attacker has TimeRot (9)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 490,
+     "field": "moreDamageTakenFromTimeRottedEnemies",
+     "propertyName": "Damage Taken from Time Rotting Enemies",
+     "op": "more-combine",
+     "holders": [
+      "passive:kn-1/Singular Purpose"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 22,
+   "name": "shockedEnemies",
+   "field": "moreDamageTakenFromShockedEnemies",
+   "offset": "0x1344",
+   "extraFields": [
+    {
+     "field": "critAvoidanceVsShocked",
+     "offset": "0x1524"
+    }
+   ],
+   "slot": "f0 / f5",
+   "formula": "f0 *= (1+pp252); f5 = pp321 (critAvoidanceVsShocked)",
+   "condition": "(group gate) (pp252!=0 OR pp321!=0) AND attacker has Shock (5)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 252,
+     "field": "moreDamageTakenFromShockedEnemies",
+     "propertyName": "Damage Taken from Shocked Enemies",
+     "op": "more-combine",
+     "holders": [
+      "passive:pr-1/Conflux",
+      "skillTreeNode(PlayerPropertyStat)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 321,
+     "field": "critAvoidanceVsShocked",
+     "propertyName": "Critical Strike Avoidance against Shocked Enemies",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 23,
+   "name": "ignitedEnemies",
+   "field": "moreDamageTakenFromIgnitedEnemies",
+   "offset": "0x1340",
+   "extraFields": [
+    {
+     "field": "enduranceThresholdPerIgniteOnTarget",
+     "offset": "0x1528"
+    },
+    {
+     "field": "enduranceThresholdPerShockOnTarget",
+     "offset": "0x1c30"
+    }
+   ],
+   "slot": "f0 / f3",
+   "formula": "f0 *= (1+pp251); f3 = igniteStacks*pp322; and (only inside this block) if pp549!=0: f3 = igniteStacks*pp322 + shockStacks*pp549",
+   "condition": "(group gate) (pp251!=0 OR pp322!=0) AND attacker has Ignite (1). The Shock-stack threshold (0x1C30) is evaluated ONLY inside this ignited block (code structure verified on raw lines 4158-4178; whether intended: D?)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 251,
+     "field": "moreDamageTakenFromIgnitedEnemies",
+     "propertyName": "Damage Taken from Ignited Enemies",
+     "op": "more-combine",
+     "holders": [
+      "skillTreeNode(PlayerPropertyStat)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 322,
+     "field": "enduranceThresholdPerIgniteOnTarget",
+     "propertyName": "Endurance Threshold per stack of Ignite on the Attacker",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 549,
+     "field": "enduranceThresholdPerShockOnTarget",
+     "propertyName": "Endurance Threshold against Shocked enemies",
+     "op": "add",
+     "holders": [
+      "affix:Idol Shock duration and Endurance threshold against shocked enemies"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D (0x1C30 nesting: D?)"
+  },
+  {
+   "order": 24,
+   "name": "moreDamageTakenFromIgnitedShockedOrChilledEnemies",
+   "field": "moreDamageTakenFromIgnitedShockedOrChilledEnemies",
+   "offset": "0x1474",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "(group gate) attacker has Shock OR Chill OR Ignite (any, applied once)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 291,
+     "field": "moreDamageTakenFromIgnitedShockedOrChilledEnemies",
+     "propertyName": "Damage Taken from Ignited Shocked or Chilled Enemies",
+     "op": "more-combine",
+     "holders": [
+      "passive:mg-1/Sphere of Protection",
+      "unique:Crest of Unity"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 25,
+   "name": "moreDamageTakenFromIgnitedDamnedOrBleedingEnemies",
+   "field": "moreDamageTakenFromIgnitedDamnedOrBleedingEnemies",
+   "offset": "0x1348",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "(group gate) attacker has Ignite OR Damned (39) OR Bleed (2)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 346,
+     "field": "moreDamageTakenFromIgnitedDamnedOrBleedingEnemies",
+     "propertyName": "Damage Taken from Ignited Damned or Bleeding Enemies",
+     "op": "add",
+     "holders": [
+      "skillTreeNode(PlayerPropertyStat)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 26,
+   "name": "moreDamageTakenFromChilledOrBleeding",
+   "field": "moreDamageTakenFromChilledOrBleeding",
+   "offset": "0xe44",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "(group gate) attacker has Chill (3) OR Bleed (2)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 711,
+     "field": "moreDamageTakenFromChilledOrBleeding",
+     "propertyName": "Damage Taken from Chilled or Bleeding Enemies",
+     "op": "more-combine",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 27,
+   "name": "cursedAttacker",
+   "field": "moreDamageTakenFromCursedEnemies",
+   "offset": "0x134c",
+   "extraFields": [
+    {
+     "field": "moreDamageTakenPerCurseOnAttacker",
+     "offset": "0x16c8"
+    },
+    {
+     "field": "moreArmorPerCurseOnAttacker",
+     "offset": "0x16b8"
+    }
+   ],
+   "slot": "f0 / f2",
+   "formula": "f0 *= (1+pp347); f0 *= (1 + curses*pp356); f2 = curses*pp354 (more armour per curse; f2 later becomes armour*(1+f2))",
+   "condition": "(group gate) AilmentReceiver.isCursed(attacker); curses = AilmentReceiver+0x134 (int)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 347,
+     "field": "moreDamageTakenFromCursedEnemies",
+     "propertyName": "Damage Taken from Cursed Enemies\t",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 356,
+     "field": "moreDamageTakenPerCurseOnAttacker",
+     "propertyName": "Damage Taken per Curse on attacker",
+     "op": "add",
+     "holders": [
+      "passive:ac-1/Dark Protections"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 354,
+     "field": "moreArmorPerCurseOnAttacker",
+     "propertyName": "More Armor per Curse on the attacker",
+     "op": "add",
+     "holders": [
+      "passive:ac-1/Harrowing Armor"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D (+0x134 = curse count: D?)"
+  },
+  {
+   "order": 28,
+   "name": "moreDamageOverTimeTakenFromSlowedEnemies",
+   "field": "moreDamageOverTimeTakenFromSlowedEnemies",
+   "offset": "0x1424",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "pp!=0 AND DoT AND attackerExists AND attacker has Slow (6)",
+   "appliesTo": "dot",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 282,
+     "field": "moreDamageOverTimeTakenFromSlowedEnemies",
+     "propertyName": "Damage over Time Taken from Slowed Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Dedication of an Erased Primalist"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 29,
+   "name": "moreDamageTakenFromWitheringEnemies",
+   "field": "moreDamageTakenFromWitheringEnemies",
+   "offset": "0x16e4",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "pp!=0 AND attackerExists AND attacker has Withering (115)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 373,
+     "field": "moreDamageTakenFromWitheringEnemies",
+     "propertyName": "Damage Taken from Withered enemies",
+     "op": "add",
+     "holders": [
+      "passive:ac-1/Wither"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 30,
+   "name": "armourVsShocked",
+   "field": "moreArmourAgainstShockedEnemies",
+   "offset": "0x1444",
+   "extraFields": [
+    {
+     "field": "moreArmourPerShockOnAttacker",
+     "offset": "0x152c"
+    },
+    {
+     "field": "blockChancePerShockOnAttacker",
+     "offset": "0x1448"
+    }
+   ],
+   "slot": "f2 / f1",
+   "formula": "f2 = (1+pp286)(1+f2)-1; f2 = (1+shockStacks*pp323)(1+f2)-1; f1 += shockStacks*pp287",
+   "condition": "(pp286 or pp323 or pp287 != 0) AND attackerExists AND attacker has Shock (5); stacks = AilmentReceiver.getStacks(Shock)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 286,
+     "field": "moreArmourAgainstShockedEnemies",
+     "propertyName": "Armor against Shocked Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Static Shell"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 323,
+     "field": "moreArmourPerShockOnAttacker",
+     "propertyName": "Armor per stack of Shock on the Attacker",
+     "op": "more-combine",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 287,
+     "field": "blockChancePerShockOnAttacker",
+     "propertyName": "Block Chance per Shock on the Attacker",
+     "op": "add",
+     "holders": [
+      "unique:Coral Aegis"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 31,
+   "name": "moreArmourAgainstChilledAttackers",
+   "field": "moreArmourAgainstChilledAttackers",
+   "offset": "0x1aa8",
+   "extraFields": [],
+   "slot": "f2",
+   "formula": "f2 = (1+pp)(1+f2)-1",
+   "condition": "pp!=0 AND attackerExists AND attacker has Chill (3)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 454,
+     "field": "moreArmourAgainstChilledAttackers",
+     "propertyName": "Armor against Chilled Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Snowblind"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 32,
+   "name": "moreArmourAgainstBlindedAttackers",
+   "field": "moreArmourAgainstBlindedAttackers",
+   "offset": "0x1aac",
+   "extraFields": [],
+   "slot": "f2",
+   "formula": "f2 = (1+pp)(1+f2)-1",
+   "condition": "pp!=0 AND attackerExists AND attacker has Blind (14)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 455,
+     "field": "moreArmourAgainstBlindedAttackers",
+     "propertyName": "Armor against Blinded Enemies",
+     "op": "more-combine",
+     "holders": [
+      "unique:Snowblind",
+      "unique:Thicket of Blinding Light"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 33,
+   "name": "resAboveCap2p",
+   "field": "moreDamageTakenPer2pResAboveCap",
+   "offset": "0x1360",
+   "extraFields": [
+    {
+     "field": "maxLessDamageTakenPer2pResAboveCap",
+     "offset": "0x1364"
+    }
+   ],
+   "slot": "damageArray[i]",
+   "formula": "for each damage type i with uncappedRes_i > 0.75: damageArray[i] *= (1 + max(-pp255, (res_i-0.75)/0.02 * pp254)); pp255 = maxLessDamageTakenPer2pResAboveCap (positive number = max reduction)",
+   "condition": "pp254!=0; all 7 types (damageArray order Phys,Fire,Cold,Light,Necro,Void,Poison each with its own resistance); hits and DoT",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 254,
+     "field": "moreDamageTakenPer2pResAboveCap",
+     "propertyName": "Damage Taken per 2% Resistance above the normal cap",
+     "op": "more-combine",
+     "holders": [
+      "unique:Null Portent"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 255,
+     "field": "maxLessDamageTakenPer2pResAboveCap",
+     "propertyName": "Maximum Less Damage Taken per 2% Resistance above the normal cap",
+     "op": "more-combine",
+     "holders": [
+      "unique:Null Portent"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 34,
+   "name": "fireResAboveCap10p",
+   "field": "moreFireDamageTakenPer10PercentFireResAboveCap",
+   "offset": "0x19ac",
+   "extraFields": [
+    {
+     "field": "minMoreFireDamageTakenPer10PercentFireResAboveCap",
+     "offset": "0x19b0"
+    }
+   ],
+   "slot": "damageArray[fire]",
+   "formula": "damageArray[1] *= (1 + max(minMore, (fireRes-0.75)/0.1 * pp436)); minMore = pp437 (negative number)",
+   "condition": "pp436!=0 AND fire uncapped res > 0.75",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 436,
+     "field": "moreFireDamageTakenPer10PercentFireResAboveCap",
+     "propertyName": "Less Fire Damage taken per 10% Fire Resistance above cap",
+     "op": "more-combine",
+     "holders": [
+      "passive:kn-1/Osprixbane"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 437,
+     "field": "minMoreFireDamageTakenPer10PercentFireResAboveCap",
+     "propertyName": "Maximum less fire damage taken from fire resistance above cap",
+     "op": "more-combine",
+     "holders": [
+      "passive:kn-1/Osprixbane"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 35,
+   "name": "minionRedirect",
+   "field": "percentDamageRedirectedToHighestHealthMinion",
+   "offset": "0x1b88",
+   "extraFields": [
+    {
+     "field": "percentDamageRedirectedToLowestHealthMinion",
+     "offset": "0x1b9c"
+    }
+   ],
+   "slot": "f0",
+   "formula": "h=min(pp496,0.75); l=min(pp562, 0.75-h); f0 *= (1 - h - l)",
+   "condition": "(h!=0 OR l!=0) AND SummonTracker.HasLivingMinion(...,1). Only removed from the player here; no redirect to a minion is applied in this function",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 496,
+     "field": "percentDamageRedirectedToHighestHealthMinion",
+     "propertyName": "Damage Redirected to your Highest Health Minion",
+     "op": "add",
+     "holders": [
+      "passive:pr-1/Primal Aspects",
+      "unique:Mantle of the Pale Ox"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 562,
+     "field": "percentDamageRedirectedToLowestHealthMinion",
+     "propertyName": "Damage Redirected to your Lowest Health Minion",
+     "op": "add",
+     "holders": [
+      "passive:ac-1/Effigies"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D (redirect target handling elsewhere or absent: D?)"
+  },
+  {
+   "order": 36,
+   "name": "percentageOfDamageRedirectedToBearWhileBearAboveHalfHealth",
+   "field": "percentageOfDamageRedirectedToBearWhileBearAboveHalfHealth",
+   "offset": "0xb10",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 - pp)",
+   "condition": "pp>0 AND a living minion of AbilityID 56 (0x38) exists and its BaseHealth.getHealthPercent() > 0.5",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 670,
+     "field": "percentageOfDamageRedirectedToBearWhileBearAboveHalfHealth",
+     "propertyName": "Damage Taken is redirected to your Summoned Bear while it is above half health",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 37,
+   "name": "delayedDamage",
+   "field": "slowDamagePercentFromHits",
+   "offset": "0x1b38",
+   "extraFields": [
+    {
+     "field": "slowDamagePercentFromRareAndBossHits",
+     "offset": "0x1b34"
+    },
+    {
+     "field": "slowDamagePercentFromSpiritPlaguedHits",
+     "offset": "0x1b3c"
+    }
+   ],
+   "slot": "f7",
+   "formula": "x = (attacker rare/boss AND pp498!=0) ? (1-pp498) : 1; if pp671!=0 AND attacker has SpiritPlague (59): x *= (1-pp671); f7 = 1 - (1-pp564)*x",
+   "condition": "isHit AND attackerExists AND any of pp498/pp564/pp671 != 0",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 498,
+     "field": "slowDamagePercentFromRareAndBossHits",
+     "propertyName": "Hit Damage Taken from Bosses and Rare enemies is dealt over 4 seconds instead",
+     "op": "add",
+     "holders": [
+      "passive:ac-1/Spectral Wounds",
+      "unique:Effusive Oath",
+      "unique:Grasp of the Blood Mage",
+      "unique:Immortal Vise"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 564,
+     "field": "slowDamagePercentFromHits",
+     "propertyName": "Hit Damage Taken is dealt over 4 seconds instead",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    },
+    {
+     "kind": "playerProperty",
+     "ppIndex": 671,
+     "field": "slowDamagePercentFromSpiritPlaguedHits",
+     "propertyName": "Hit Damage taken from Enemies that are afflicted by Spirit Plague is dealt over 4 seconds instead",
+     "op": "add",
+     "holders": [
+      "(none found in extracted data)"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 38,
+   "name": "chanceToTake0DamageFromHits",
+   "field": "chanceToTake0DamageFromHits",
+   "offset": "0x1ac4",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "roll(pp) -> f0 = 0",
+   "condition": "isHit (rolled after all earlier f0 factors; no attackerExists needed)",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 462,
+     "field": "chanceToTake0DamageFromHits",
+     "propertyName": "chance to take 0 Damage when Hit",
+     "op": "add",
+     "holders": [
+      "unique:Seed of Ekkidrasil",
+      "unique:Wall of Nothing"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D (roll argument read in ISIL [rdi+1AC4h])"
+  },
+  {
+   "order": 39,
+   "name": "moreDamageTakenFromFirstHitFromEnemies",
+   "field": "moreDamageTakenFromFirstHitFromEnemies",
+   "offset": "0x1e08",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "if attacker not in enemiesHitBy: add it, f0 *= (1+pp)",
+   "condition": "pp!=0 AND isHit AND attackerExists AND f0>0. List enemiesHitBy is pruned of destroyed actors every 3 s (b__2665_3 predicate); otherwise never reset",
+   "appliesTo": "hit",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 587,
+     "field": "moreDamageTakenFromFirstHitFromEnemies",
+     "propertyName": "Damage Taken from the First Hit Received from each enemy",
+     "op": "more-combine",
+     "holders": [
+      "unique:Wings of Discord"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 40,
+   "name": "moreDamageTakenFromBossesAndRareEnemiesWhileBelowHalfMana",
+   "field": "moreDamageTakenFromBossesAndRareEnemiesWhileBelowHalfMana",
+   "offset": "0x1eb0",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1+pp)",
+   "condition": "pp!=0 AND attackerExists AND attacker.isRareOrBoss AND BaseMana.percentCurrentMana <= 0.5 (no isHit test)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 598,
+     "field": "moreDamageTakenFromBossesAndRareEnemiesWhileBelowHalfMana",
+     "propertyName": "Damage Taken from Bosses and Rare Enemies while below half mana",
+     "op": "more-combine",
+     "holders": [
+      "unique:Spirit Xylem"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 41,
+   "name": "blockEffectivenessAppliedToDoT",
+   "field": "blockEffectivenessAppliedToDoT",
+   "offset": "0x1cf8",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 - blockMitigation(blockProtection)*pp)",
+   "condition": "pp>0 AND DoT",
+   "appliesTo": "dot",
+   "sources": [
+    {
+     "kind": "playerProperty",
+     "ppIndex": 524,
+     "field": "blockEffectivenessAppliedToDoT",
+     "propertyName": "Block Effectiveness applies to Damage over Time as if it had been Blocked",
+     "op": "add",
+     "holders": [
+      "affix:Less Damage Taken on Block and Block Effectiveness applies to Damage over Time",
+      "unique:Countenance of Majasa"
+     ],
+     "note": ""
+    }
+   ],
+   "confidence": "D"
+  },
+  {
+   "order": 42,
+   "name": "ringOfShieldsDistance",
+   "field": "AbilityStatsMutatorManager.lessHitDamageTakenFromEnemiesOutsideRingOfShields",
+   "offset": "0xecc (mgr); radius field 0xed0 ringOfShieldsOrbitDistanceForDamageReduction",
+   "extraFields": [],
+   "slot": "f0",
+   "formula": "f0 *= (1 - field)",
+   "condition": "mgr.field!=0 AND mgr.radius>0 AND attackerExists AND distance(player, attacker) > radius (no isHit test, so also DoT despite the name)",
+   "appliesTo": "both",
+   "sources": [
+    {
+     "kind": "treeField",
+     "field": "AbilityProperty (AbilityID 172 ringOfShields, index 12 more-combine -> 0xECC, index 13 add -> 0xED0) in AbilityStatsMutatorManager.UpdateAbilityStats",
+     "note": "comes from Ring of Shields skill-tree stats (probably nodes with creatorBuffStats such as Defensive Shields); exact node not resolved: D?"
+    }
+   ],
+   "confidence": "D (source node D?)"
+  }
+ ],
+ "delayedDamage": {
+  "fieldsAndSources": "f7 comes from CharacterMutator.slowDamagePercentFromRareAndBossHits(0x1B34, PP 498), slowDamagePercentFromHits(0x1B38, PP 564), slowDamagePercentFromSpiritPlaguedHits(0x1B3C, PP 671); see condition \"delayedDamage\".",
+  "f7Formula": "x = (attacker is rare/boss and pp498!=0) ? (1-pp498) : 1; if pp671!=0 and attacker has SpiritPlague(59): x *= (1-pp671); f7 = 1 - (1-pp564)*x. Evaluated only for hits (isHit) with an attacker.",
+  "immediatePart": "ApplyDamage: M = f0; if f7>0: M = max(0, (1-f7)*M). The immediate part is the normal pipeline with this reduced multiplier (so armour, resist, block, endurance, ward all apply to the immediate part).",
+  "delayedPart": "After the health/ward step, if f7>0 AND damage D>0 AND the target survived (currentHealth>0) AND the target has a LeechTracker: LeechTracker.slowDamageInstances.Add(SlowDamageInstance{ totalDamage = remainingDamage = D/(1-f7)*f7, remainingDuration = 4.0 s (0x40800000), damage type = lethal-damage-properties of the hit, damageSource }). D is the damage value at the ward stage after armour/resist/block/damageTakenBuff/mana-before-ward/endurance-Everything/minimum-health, reduced by the endurance-threshold absorption (if applied) but NOT by ward or mana-before-health absorption.",
+  "tick": "LeechTracker.OnUpdateTick @0x18111C3F0: per frame each instance pays remaining*dt/remainingDuration (linear); the paid amount is applied with ProtectionClass.SurvivesDirectDamage(amount, hitEvent=false, out, applyUntagged=false): the untaggedDamageTakenModifier (SP6 untagged) is only used for the invulnerability test (<= -1 skips), the value is NOT scaled; minimumHealth (0x210/0x214) caps it; ward absorbs first (ward is consumed, wardGainModifier<0 branch for negative ward), the rest goes to BaseHealth.HealthDamage (boss ward TryGainBossWard in between). dotsBypassWard/hitsBypassWard are NOT consulted.",
+  "mitigatedAgain": "No. Armour, resistances, block, glancing, endurance, mana-before-health are applied only once (at hit time, shared proportionally with the immediate part). The delayed ticks bypass them; ward still absorbs ticks.",
+  "relatedReaders": "LeechTracker.GetSlowDamageRemaining feeds f8 (PP 525: extra endurance when delayed damage > 10% max health). BuffParent / DeathSealMutator call ClearRemainingSlowDamagePercent to cancel part of it.",
+  "confidence": "D (which exact variable equals D at the add site: D?, read from Ghidra control flow)"
+ },
+ "leech": {
+  "accrual": "ProtectionClass.ApplyDamage (victim side) accumulates leechAmount after each damage type i has been fully mitigated (d = after resist, DamageTaken, DR, nearby, glancing, moving, armour): if attacker.ProtectionClass.hasLeechStats(0x178) is false: leechAmount += d * ProtectionClass.additionalLeech(0x1D4); else leechAmount += d * 0.1 * Stats.GetStatValueForHitEvents(attacker.stats, HealthLeech(SP51), tags=(otherTags with low byte = type tag i), hitEvents, added=10*additionalLeech, increased=0, more=0, extraTag=attacker primary AbilityID index, treatExtraTagZeroAsMatching=true).",
+  "formulaPerType": "leech_i = d_i * 0.1 * (10*additionalLeech + SumAdded(HealthLeech matching)) * (1 + SumIncreased) * Prod(1+more)   [= d_i * (additionalLeech + 0.1*SumAdded) when no increased/more]",
+  "additionalLeech": "ProtectionClass.additionalLeech(0x1D4) = DamageStats.additionalLeech(+0x40) + (victim is a player actor(+0x1CD) ? DamageStats.leechVsPlayers(+0x44) : 0)",
+  "scale": "CONFIRMED x0.1: the constant is 0x184561DB8 = 0.1 (readconst) in ISIL line 1357 and the base passed in is additionalLeech*10 (0x184561DDC = 10.0), so ability leech is 1:1 and the HealthLeech stat counts 0.1 per point. Data check: unique tooltip \"3% of melee damage leeched as health\" has HealthLeech value 0.3; Immortal Vise 0.1-0.2 = 1-2%; affix \"Melee Health Leech\" T1 0.23-0.29 = 2.3-2.9%. So a stat value v means v*10 percent of damage dealt.",
+  "afterAccrual": "(1) block/damageTakenBuff: leech *= D_after/D_before (ApplyDamage step 9, only if they differ); (2) after BaseHealth.HealthDamage returns the overkill amount: leech *= (D - overkill)/D where D is the total damage including the part absorbed by ward; (3) overkill leech: if isHit and overkill>0 and attacker.overkillLeech(PrecalculatedStatsHolder+0xF0, SP93)>0: leech += overkill*overkillLeech*0.1; (4) conditions: attacker != victim, attacker not dying, leech>0; then attacker.LeechTracker (created on demand) .AddLifeLeech(leech) (virtual; PlayerLeechTracker override).",
+  "capByTargetHealth": "Yes: only the share of D that is not overkill leeches (leech *= (D-overkill)/D). Ward-absorbed damage still leeches (D includes ward). No other cap.",
+  "payout": "LeechTracker.AddLifeLeech: ignored while the leech-disabled timer(0xBC)>0; otherwise appends leech and a duration 3/(1+IncreasedLeechRate(BaseStats+0xF8, SP102)) s; OnUpdateTick pays linearly; PlayerLeechTracker (player) can instead convert leech to damage of the nearest enemy within 6 m when CharacterMutator.leechDamagesEnemiesInstead(0x658) (PP/tree) or add percentLeechAlsoDealtAsDamage(0x1EB4, PP 599). The heal is a plain addition to BaseHealth.currentHealth with caps (ApplyLeechTick, same body as restoreHealth).",
+  "increasedHealing": "SP44 IncreasedHealing does NOT affect leech (LeechTracker/PlayerLeechTracker/ApplyLeechTick contain no SP44 read), nor HealthGain/ManaGain/WardGain on hit/crit/kill/block/stun/freeze (ResourceGainEvents calls BaseHealth.restoreHealth directly), nor health regen (BaseHealth.OnUpdateTick). SP44 readers found by exhaustive grep of Stats.Get*(..,0x2c,..): ability components that scale a heal (GiveSelfResourcesOnKill/OnAbilityUse, GiveCreatorResources*, GiveNearbyAlliesResourcesOnDeath, HealAlliesOnHit, HealParent, RepeatedlyHealAlliesWithinRadius, RepeatedlyGiveCreatorResources, CreateResourceReturnAbilityObject*; most gated by their bool healthScalesWithIncreasedHealing), skill mutators (Judgement uses BaseHealth.HealWithIncreasedHealingEffectiveness, ConsecratedGround, FlameTrail, EterrasBlessing, FuryLeap, RadiantLance, RingOfShields, RipBlood, Warcry, SummonRaptor, SummonVolatileZombie) and three CharacterMutator sites (potion/other heals, some with +0.04 per point of attribute 4). All are of the form heal*(1+SP44 value).",
+  "healthGainOnHit": {
+   "storage": "ResourceGainEvents.UpdateResourceGainTotals @0x18115B3A0 (runs on every BaseStats.updateStatsEvent): scans BaseStats.stats for SP38 HealthGain / SP39 WardGain / SP40 ManaGain stats with tags==0 AND extraTag==0 and sums their addedValue (ONLY added) by specialTag: 1=OnHit (stored in both the \"on hit\" slot 0x20/0x24/0x28 and the \"on melee hit\" slot 0x68/0x6C/0x70), 2=OnCrit(0x2C..), 3=OnKill(0x44..), 4=OnFreeze(0x50..), 5=OnStun(0x5C..), 6=OnBlock(0x38..), 7=OnMeleeHit only (0x68..). Stats with tags!=0 or extraTag!=0 (tagged/ability-specific, also minion-tagged) are handled by GainResourcesFromTaggedOrAbilitySpecificStats.",
+   "application": "AbilityEventListener.onHitEventDetailed -> GainResourcesOnHit(dae): if the detailed event is NOT a melee hit (dae.tags & 0x200 == 0): restoreHealth(healthOnHit), gainMana(manaOnHit), ProtectionClass.GainWard(wardOnHit); if melee: restoreHealth(healthOnMeleeHit), gainMana, GainWard(wardOnMeleeHit) (these include the specialTag-1 amount). OnKill/OnCrit/OnStun/OnFreeze/OnBlock analogous (GainResourcesOnKill @0x18115A1C0 ...). Block uses GainResourcesExceptWardOnBlock + GainWardOnBlock (own GainWard replica with moreWardGenerated). Tagged stats: per detailed event, each matching stat (CheckRegularTagsOnly, extraTag==0 or matches the ability index, event flag per specialTag, ICD via ResourceGainEvents.CanProc/ProcTimeTracker) adds its addedValue; the sum is applied once per event.",
+   "perHit": "per detailed ability hit event, i.e. per hit instance per enemy target; no division by number of hits; no scaling by IncreasedHealing, no scaling by any stat except what GainWard does for ward",
+   "wardGain": "ProtectionClass.GainWard(x) (06c 3.3): skipped if sourcesOfNoWardGain>=1; W += (1+t)*x where t = quirky combination of moreWardGeneratedValues; then wardGainModifier (from SP119 inc/more, 06c D?), then clamp to maxHealth*maxHealthCapForWard. No separate multiplier from SP39.",
+   "healthGain": "BaseHealth.restoreHealth(x): +x current health, capped at maxHealth, at BaseHealth healthCap (0xCA/0xCC) and at maxHealth*cap(0xA4) (e.g. Corrupted Form 50%); no scaling."
+  },
+  "confidence": "D (scale confirmed by ISIL constants + data)"
+ }
+}

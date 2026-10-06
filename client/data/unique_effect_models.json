@@ -550,7 +550,8 @@
    "resource": "ward",
    "on": "second",
    "label": "Ward/sec = v × missing health",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "missing_health"
   },
   "451": {
    "kind": "flag",
@@ -562,7 +563,8 @@
    "resource": "ward",
    "on": "dodge",
    "label": "Ward on dodge (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "186": {
    "kind": "trigger",
@@ -617,21 +619,26 @@
    "resource": "health",
    "on": "dodge",
    "label": "Health on dodge (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "130": {
    "kind": "resource",
    "resource": "ward",
    "on": "crit",
    "label": "Ward on crit (flat, v), 30% chance, up to 4 times/sec",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat",
+   "amount_chance": 0.3,
+   "per_second_cap": 4.0
   },
   "232": {
    "kind": "resource",
    "resource": "ward",
    "on": "hit",
    "label": "Ward 75 on hit vs shocked enemy, chance v (3 times per 2 sec)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "131": {
    "kind": "resource",
@@ -887,21 +894,25 @@
    "resource": "ward",
    "on": "hit_taken",
    "label": "Ward (flat, v), when hit leaves you at low health, 5 sec cooldown",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat",
+   "per_second_cap": 0.2
   },
   "90": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
    "label": "Ward = v × current mana on stop (2 sec cooldown)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "96": {
    "kind": "resource",
    "resource": "health",
    "on": "hit_taken",
    "label": "Health on sliding hit (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "133": {
    "kind": "trigger",
@@ -925,7 +936,8 @@
    "resource": "ward",
    "on": "block",
    "label": "Ward = v × current mana on block",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "current_mana"
   },
   "139": {
    "kind": "flag",
@@ -937,7 +949,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward = v × current mana on fire spell cast",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "137": {
    "kind": "flag",
@@ -1098,14 +1111,16 @@
    "resource": "ward",
    "on": "use",
    "label": "Current health (fraction v) converts to ward on necrotic spell cast",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "168": {
    "kind": "resource",
    "resource": "ward",
    "on": "use",
    "label": "Current health (fraction v) converts to ward on elemental spell cast",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "169": {
    "kind": "flag",
@@ -1316,7 +1331,8 @@
    "resource": "ward",
    "on": "hit",
    "label": "Ward on hit: 2 per Ignite/Curse on target, 30 to you (up to 2000, 2 sec cooldown), chance v",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "221": {
    "kind": "flag",
@@ -1414,7 +1430,8 @@
    "on": "use",
    "label": "Ward on transformation",
    "scope": "global",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "238": {
    "kind": "stat",
@@ -1437,7 +1454,8 @@
    "on": "dodge",
    "label": "Ward on dodge while channelling",
    "scope": "global",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "242": {
    "kind": "resource",
@@ -1548,7 +1566,8 @@
     "default": 10
    },
    "note": "only if current ward < missing health",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "270": {
    "kind": "flag",
@@ -1577,7 +1596,8 @@
    "when": [
     "player:haste"
    ],
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "273": {
    "kind": "flag",
@@ -1654,7 +1674,8 @@
    "resource": "ward",
    "on": "hit",
    "label": "Ward per Hydrahedron hit (max 2000)",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "339": {
    "kind": "flag",
@@ -2419,7 +2440,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward per 3 free abilities in a row (3 sec cooldown)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "591": {
    "kind": "flag",
@@ -2490,7 +2512,8 @@
    "resource": "ward",
    "on": "hit",
    "label": "Ward = endurance threshold × v on Ancestral Pack stack receive",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "609": {
    "kind": "flag",
@@ -2648,7 +2671,8 @@
    "resource": "ward",
    "on": "second",
    "label": "Ward = v × current mana per second",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "current_mana"
   },
   "669": {
    "kind": "stat",
@@ -3299,7 +3323,8 @@
    "resource": "health",
    "on": "use",
    "label": "Health from Blood Burst (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "318:0": {
    "kind": "trigger",
@@ -3378,7 +3403,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward on Fire Ward cast (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "120:5": {
    "kind": "trigger",
@@ -3821,7 +3847,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward on Shift use (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "340:3": {
    "kind": "cooldown",
@@ -3839,7 +3866,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward on Smoke Bomb use (flat, v)",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "153:5": {
    "kind": "stat",
@@ -3859,7 +3887,8 @@
    "resource": "ward",
    "on": "second",
    "label": "Ward/sec per Wandering Spirit",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "199:0": {
    "kind": "flag",
@@ -3896,7 +3925,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward on Transplant use",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "370:1": {
    "kind": "stat",
@@ -4095,7 +4125,8 @@
    "resource": "ward",
    "on": "hit",
    "label": "Ward from golem missing health (6% chance, 1 sec cooldown)",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "157:6": {
    "kind": "cooldown",
@@ -4129,7 +4160,8 @@
     "label": "Maelstrom stacks",
     "default": 1
    },
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "12:2": {
    "kind": "param",
@@ -4361,7 +4393,8 @@
    "label": "Ward per second per 1% unlimited phys resistance",
    "per": "res:0",
    "factor": 100,
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "489:0": {
    "kind": "stat",
@@ -4451,7 +4484,8 @@
     "default": 1,
     "max": 3
    },
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "689:4": {
    "kind": "stat",
@@ -4668,7 +4702,8 @@
    "resource": "ward",
    "on": "crit",
    "label": "Ward on Frost Claw crit",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "694:0": {
    "kind": "resource",
@@ -4683,7 +4718,8 @@
     "label": "Stand on Glyph of Dominion",
     "default": true
    },
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "694:3": {
    "kind": "conversion",
@@ -4866,7 +4902,8 @@
    "label": "Health per Dexterity on falcon hit",
    "per": "attr:dex",
    "note": "falcon hit",
-   "confidence": "D?"
+   "confidence": "D?",
+   "amount": "none"
   },
   "481:3": {
    "kind": "stat",
@@ -5371,7 +5408,8 @@
    "resource": "health",
    "on": "use",
    "label": "Health on Shadow creation",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "flat"
   },
   "469:6": {
    "kind": "flag",
@@ -5853,7 +5891,8 @@
    "resource": "ward",
    "on": "use",
    "label": "Ward = 100% max mana at full mana",
-   "confidence": "D"
+   "confidence": "D",
+   "amount": "none"
   },
   "34:2": {
    "kind": "flag",
