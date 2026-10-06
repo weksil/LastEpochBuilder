@@ -241,17 +241,12 @@ static func _add_class_base(build: Node, store: StatStore) -> void:
 ## phase "pre": plain stats and models without store-dependent sources; "post": models read after items and attributes
 ## (EffectModels.phase). Effects without a model are listed in the notes once, in the "pre" phase.
 static func _add_passives(build: Node, store: StatStore, notes: Array[String], phase: String = "pre") -> void:
-	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
-	var effects: Dictionary = GameData.passive_effects(str(tree.get("treeID", "")))
 	var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": ""}
-	for node_id: Variant in build.passives:
-		var points: int = int(build.passives[node_id])
-		var node: Dictionary = effects.get(int(node_id), {})
-		if points <= 0 or node.is_empty():
-			continue
-		var title: String = GameData.display_name(node)
-		var source: String = LE.t("Passive \"%s\" ×%d") % [title, points]
-		for effect: Dictionary in node.get("effects", []):
+	for entry: Dictionary in _passive_entries(build):
+		var points: int = entry["points"]
+		var title: String = entry["title"]
+		var source: String = entry["source"]
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
 			if points < int(effect.get("minPoints", 0)):
 				continue
 			var target: String = str(effect.get("target", ""))
@@ -276,19 +271,34 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String], p
 			_apply_passive_model(model, effect, target, points, source, title, store, notes, ctx)
 
 
-## Passive effects aimed at the mutators of this ability (target "LungeMutator.field" ↔ ability, BUFF_SKILLS.owns_mutator):
-## through the same field models as skill tree nodes (docs/ENGINE.md §9.7).
-static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictionary) -> void:
-	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
-	var effects: Dictionary = GameData.passive_effects(str(tree.get("treeID", "")))
+## Allocated passive nodes plus the base bonus of the chosen mastery (one "point", research/07f §2):
+## [{node, points, title, source}].
+static func _passive_entries(build: Node) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var tree_id: String = str(GameData.get_passive_tree(build.class_id).get("treeID", ""))
+	var effects: Dictionary = GameData.passive_effects(tree_id)
 	for node_id: Variant in build.passives:
 		var points: int = int(build.passives[node_id])
 		var node: Dictionary = effects.get(int(node_id), {})
 		if points <= 0 or node.is_empty():
 			continue
 		var title: String = GameData.display_name(node)
-		var source: String = LE.t("Passive \"%s\" ×%d") % [title, points]
-		for effect: Dictionary in node.get("effects", []):
+		entries.append({"node": node, "points": points, "title": title, "source": LE.t("Passive \"%s\" ×%d") % [title, points]})
+	var bonus: Dictionary = GameData.mastery_bonus(tree_id, build.mastery)
+	if not bonus.is_empty():
+		var title: String = LE.t("%s mastery bonus") % GameData.display_name(bonus)
+		entries.append({"node": bonus, "points": 1, "title": title, "source": title})
+	return entries
+
+
+## Passive effects aimed at the mutators of this ability (target "LungeMutator.field" ↔ ability, BUFF_SKILLS.owns_mutator):
+## through the same field models as skill tree nodes (docs/ENGINE.md §9.7).
+static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictionary) -> void:
+	for entry: Dictionary in _passive_entries(build):
+		var points: int = entry["points"]
+		var title: String = entry["title"]
+		var source: String = entry["source"]
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
 			var target: String = str(effect.get("target", ""))
 			if points < int(effect.get("minPoints", 0)) or target.begins_with("CharacterMutator."):
 				continue

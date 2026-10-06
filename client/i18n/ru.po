@@ -9048,6 +9048,9 @@ msgstr "Передач ловушки"
 msgid "Passive \"%s\" ×%d"
 msgstr "Пассивка «%s» ×%d"
 
+msgid "%s mastery bonus"
+msgstr "Бонус мастерства %s"
+
 msgid "Passive \"%s\" — counted when: %s"
 msgstr "Пассивка «%s» — учитывается при условии: %s"
 

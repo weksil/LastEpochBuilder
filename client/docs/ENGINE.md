@@ -118,6 +118,9 @@ Methods:
 - `get_skill_tree(tree_id) -> Dictionary` — `trees.json`, `kind == "skill"`, `treeID == tree_id`.
 - `passive_effects(tree_id) -> Dictionary` (node_id → node from `passive_node_effects`),
   `skill_effects(tree_id) -> Dictionary` (the same from `skill_node_effects`).
+- `mastery_bonus(tree_id, mastery) -> Dictionary` — the base bonus of a mastery (`mastery_bonuses` of `passive_node_effects`,
+  research/07f §2) as a node-like `{displayName, effects[]}`: stats become `{target, op: "add_stat", stat}`, mutator fields
+  `{target, value: {flat}}`; `{}` for no mastery.
 - `affix(id) -> Dictionary`, `item_base(base_type_id) -> Dictionary`, `item_sub(base, sub) -> Dictionary`,
   `affixes_for_type(type_id: int) -> Array` — `rollsOn == "Equipment"`, `specialAffixType == "Standard"`, `type_id in canRollOn`.
 - `ailment(id) -> Dictionary`, `enemy_ailments() -> Array` — `inList`, `positive == 0`, and (`buffs` is not empty or `dealsDamage`), sorted by name.
@@ -147,6 +150,8 @@ For a node with `p > 0` points, for every `effect` with `op == "add_stat"`:
 - `kind == "conditional_more_damage"` → property 117, special = the index of ConditionalDamageProperty by the name `stat.condition`, more.
 - Everything else (other targets, `player_property`, `ability_property`, `stat` without kind…) → `notes`: `Node "displayName": <target or kind> — not counted`.
 Value `v(x)`: `x.per_point·p + x.flat`; if `x.expr` is present, evaluate an `Expression` with the variable `p`.
+The base bonus of the chosen mastery (`GameData.mastery_bonus`, e.g. Falconer +12 Dexterity, Forge Guard +35% Fire and
+Physical Resistance) is applied as one more node with `p = 1`, source "<Mastery> mastery bonus" (**D**, 07f §2).
 
 ### 5.3 Attributes (after all other sources)
 `N = round_half_even(Σadded SP_attr + Σadded SP 46)` over **all** mods (tags are not checked).

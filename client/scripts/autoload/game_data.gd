@@ -20,6 +20,7 @@ var _items_by_id: Dictionary = {}        # baseTypeID -> base
 var _ailments_by_id: Dictionary = {}     # id -> ailment
 var _ailment_names: Dictionary = {}      # normalised name -> id (lazy)
 var _passive_effects: Dictionary = {}    # treeID -> {node_id -> node}
+var _mastery_bonuses: Dictionary = {}    # treeID -> {mastery -> node-like {displayName, effects[]}}
 var _skill_effects: Dictionary = {}      # treeID -> {node_id -> node}
 var _sp_id_map: Dictionary = {}
 var _sp_name_map: Dictionary = {}
@@ -89,7 +90,9 @@ func _ready() -> void:
 	if attributes_json is Dictionary:
 		attributes = attributes_json.get("data", [])
 
-	_passive_effects = _index_effects(_load_json(data_dir.path_join("passive_node_effects.json")))
+	var passive_json: Variant = _load_json(data_dir.path_join("passive_node_effects.json"))
+	_passive_effects = _index_effects(passive_json)
+	_mastery_bonuses = _index_mastery_bonuses(passive_json)
 	_skill_effects = _index_effects(_load_json(data_dir.path_join("skill_node_effects.json")))
 
 	var sp_json: Variant = _load_json(parent_dir.path_join("sp_enum.json"))
@@ -189,6 +192,33 @@ func _index_effects(json: Variant) -> Dictionary:
 			by_node[int(node["id"])] = node
 		result[str(tree.get("treeID", ""))] = by_node
 	return result
+
+
+## Base mastery bonuses of the passive trees (`mastery_bonuses`, research/07f §2) as node-like records with the effect
+## format of passive nodes: stats -> {target, op: "add_stat", stat}, mutator fields -> {target, value: {flat}}.
+func _index_mastery_bonuses(json: Variant) -> Dictionary:
+	var result: Dictionary = {}
+	if not json is Array:
+		return result
+	for tree: Dictionary in json:
+		var by_mastery: Dictionary = {}
+		var bonuses: Dictionary = tree.get("mastery_bonuses", {})
+		for mastery: Variant in bonuses:
+			var bonus: Dictionary = bonuses[mastery]
+			var effects: Array = []
+			for entry: Dictionary in bonus.get("stats", []):
+				effects.append({"target": str(entry.get("target", "")), "op": "add_stat", "stat": entry.get("stat", {})})
+			var fields: Dictionary = bonus.get("fields", {})
+			for field: Variant in fields:
+				effects.append({"target": str(field), "value": {"per_point": 0, "flat": float(str(fields[field]))}})
+			by_mastery[int(mastery)] = {"displayName": str(bonus.get("mastery", "")), "effects": effects}
+		result[str(tree.get("treeID", ""))] = by_mastery
+	return result
+
+
+## Node-like record of the base bonus of a mastery ({} for none): {displayName (mastery name), effects[]}.
+func mastery_bonus(tree_id: String, mastery: int) -> Dictionary:
+	return _mastery_bonuses.get(tree_id, {}).get(mastery, {})
 
 
 ## Human-readable name of a data record: displayName → abilityName → name.
