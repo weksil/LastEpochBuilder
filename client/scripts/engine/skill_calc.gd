@@ -229,6 +229,8 @@ static func projectile_hits(build: Node, slot: int, ab: Dictionary, s: Dictionar
 		lines.append(LE.t("One projectile hits the target"))
 	if str(info.get("confidence", "D")) != "D":
 		lines.append(LE.t("Projectile count is an estimate: %s") % str(info.get("evidence", "")))
+	lines.insert(0, LE.t("Shotgun (several projectiles of one use hit one target): %s") % (LE.t("yes") if shotgun else LE.t("no")))
+	lines.insert(1, LE.t("Max projectiles per use: %s") % LE.fmt_num(count))
 	var row: Dictionary = {"label": LE.t("Projectiles hitting the target"), "text": "%s / %s" % [LE.fmt_num(factor), LE.fmt_num(count)],
 		"value": factor, "breakdown": "
 ".join(lines)}

@@ -14165,11 +14165,7 @@ msgstr "Среднее"
 msgid "All projectiles"
 msgstr "Все снаряды"
 
-msgid "%s of %s per use"
-msgstr "%s из %s за применение"
 
-msgid "%s per use, cannot hit one target twice"
-msgstr "%s за применение, одну цель дважды не поражают"
 
 msgid "Projectiles hitting the target"
 msgstr "Снарядов попадает в цель"
@@ -14197,3 +14193,24 @@ msgstr "Число снарядов — оценка: %s"
 
 msgid "chance to cast %s"
 msgstr "шанс применить %s"
+
+msgid "Shotgun (several projectiles of one use hit one target): %s"
+msgstr "Шотган (несколько снарядов одного применения бьют одну цель): %s"
+
+msgid "Max projectiles per use: %s"
+msgstr "Максимум снарядов за применение: %s"
+
+msgid "in the calculation %s of max %s per use · shotgun: yes"
+msgstr "в расчёте %s из максимум %s за применение · шотган: да"
+
+msgid "max %s per use · shotgun: no, one projectile per target"
+msgstr "максимум %s за применение · шотган: нет, по цели попадает один снаряд"
+
+msgid "%s (%s proj)"
+msgstr "%s (%s снар.)"
+
+msgid "Projectiles: %s in the calculation, max %s per use, shotgun: %s"
+msgstr "Снаряды: в расчёте %s, максимум %s за применение, шотган: %s"
+
+msgid "no"
+msgstr "нет"

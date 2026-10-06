@@ -69,9 +69,9 @@ func _show_projectiles(proj: Dictionary) -> void:
 		button.disabled = not shotgun
 		button.tooltip_text = tip
 	if shotgun:
-		_projectile_count.text = tr("%s of %s per use") % [LE.fmt_num(float(proj["factor"])), LE.fmt_num(float(proj["count"]))]
+		_projectile_count.text = tr("in the calculation %s of max %s per use · shotgun: yes") % [LE.fmt_num(float(proj["factor"])), LE.fmt_num(float(proj["count"]))]
 	else:
-		_projectile_count.text = tr("%s per use, cannot hit one target twice") % LE.fmt_num(float(proj["count"]))
+		_projectile_count.text = tr("max %s per use · shotgun: no, one projectile per target") % LE.fmt_num(float(proj["count"]))
 	_projectile_count.tooltip_text = tip
 
 

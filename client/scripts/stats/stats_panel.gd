@@ -127,7 +127,16 @@ func _update_skill_summary() -> void:
 		if not (value is float or value is int) or float(value) <= 0.0:
 			continue
 		total += float(value)
-		parts.append({"title": str(result.get("title", "")), "value": float(value), "breakdown": str(dps.get("breakdown", ""))})
+		var title: String = str(result.get("title", ""))
+		var breakdown: String = str(dps.get("breakdown", ""))
+		var proj: Dictionary = result.get("projectiles", {})
+		if not proj.is_empty():
+			# projectiles hitting the target used for the DPS, then shotgun and the max per use in the tooltip
+			title = tr("%s (%s proj)") % [title, LE.fmt_num(float(proj["factor"]))]
+			breakdown = tr("Projectiles: %s in the calculation, max %s per use, shotgun: %s") % [LE.fmt_num(float(proj["factor"])),
+				LE.fmt_num(float(proj["count"])), tr("yes") if bool(proj["shotgun"]) else tr("no")] + "
+" + breakdown
+		parts.append({"title": title, "value": float(value), "breakdown": breakdown})
 	summary_card.visible = not parts.is_empty()
 	if parts.is_empty():
 		return
