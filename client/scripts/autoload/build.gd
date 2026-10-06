@@ -79,6 +79,7 @@ static func default_enemy() -> Dictionary:
 		"kind": "dummy",
 		"res": [0, 0, 0, 0, 0, 0, 0],
 		"armour": 0,
+		"corruption": 0,
 		"ailments": {},
 		"flags": {
 			"moving": false,

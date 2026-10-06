@@ -79,6 +79,11 @@ func _vectors() -> void:
 	_check("fmt_pct 9.8298%", 1.0 if LE.fmt_pct(0.098298) == "9.83%" else 0.0, 1.0)
 	_check("level DR boss 75", Enemy.level_dr({"kind": "boss", "level": 75}), 0.7625)
 	_check("level DR normal 50", Enemy.level_dr({"kind": "normal", "level": 50}), 0.54)
+	# corruption power (06c §7): f(50) = 30, f(100) = 60, f(300) = 280.455; DoT more is half of health/hit
+	_check("corruption f(50)", Enemy.corruption_power(50), 30.0)
+	_check("corruption f(100)", Enemy.corruption_power(100), 60.0)
+	_check("corruption f(300)", Enemy.corruption_power(300), 280.455, 0.01)
+	_check("corruption 300 DoT more", float(Enemy.corruption_more({"corruption": 300})["dot"]), 1.402275, 0.0001)
 
 	# 06a T1
 	var store := StatStore.new()

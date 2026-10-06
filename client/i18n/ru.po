@@ -6224,10 +6224,10 @@ msgstr "Скрытая база персонажа"
 
 msgid ""
 "Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\n"
-"Target type and level are set on the Conditions tab."
+"Target type, level and corruption are set on the Conditions tab."
 msgstr ""
 "Скрытое снижение урона по уровню цели: %s (таблица из кода игры; у босса и мини-босса + 5%% остатка).\n"
-"Тип и уровень цели — во вкладке «Условия»."
+"Тип, уровень и порча цели — во вкладке «Условия»."
 
 msgid "Hidden level-based damage reduction: %s → ×%s"
 msgstr "Скрытое снижение урона по уровню: %s → ×%s"
@@ -14214,3 +14214,24 @@ msgstr "Снаряды: в расчёте %s, максимум %s за прим�
 
 msgid "no"
 msgstr "нет"
+
+msgid "%s, corruption %d"
+msgstr "%s, порча %d"
+
+msgid "Corruption"
+msgstr "Порча"
+
+msgid "Monolith corruption: more enemy health and hit damage, half as much more DoT damage. Does not change your DPS."
+msgstr "Порча монолита: у врага больше здоровья и урона от ударов, прибавка к урону DoT вдвое меньше. На ваш DPS не влияет."
+
+msgid "health and hits +%s more, DoT +%s more"
+msgstr "здоровье и удары +%s more, DoT +%s more"
+
+msgid ""
+"Corruption %d: f(c) = %s (0.6c up to 100, 0.002·c^1.52 + 1.055c − 47.69 above).\n"
+"The enemy gets %s more health and hit damage and %s more DoT damage.\n"
+"Corruption does not change your DPS."
+msgstr ""
+"Порча %d: f(c) = %s (0.6c до 100, 0.002·c^1.52 + 1.055c − 47.69 выше).\n"
+"Враг получает %s more к здоровью и урону от ударов и %s more к урону DoT.\n"
+"Порча не меняет ваш DPS."

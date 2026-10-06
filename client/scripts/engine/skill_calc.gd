@@ -156,7 +156,16 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			enemy_rows.append({"label": LE.t("DPS vs enemy: %s") % cr["name"], "text": LE.fmt_num(float(cr["hit_enemy"]) + float(cr["ail"]["enemy_dps"])), "breakdown":
 				LE.t("Damage events per second: %s.\nHit %s + ailments %s.") % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
 	enemy_rows.push_front({"label": LE.t("Target"), "text": Enemy.describe(build.enemy), "breakdown":
-		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type and level are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
+		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type, level and corruption are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
+	var corruption: int = int(build.enemy.get("corruption", 0))
+	if corruption > 0:
+		var more: Dictionary = Enemy.corruption_more(build.enemy)
+		enemy_rows.append({"label": LE.t("Corruption"), "text": LE.t("health and hits +%s more, DoT +%s more") % [
+			LE.fmt_pct(more["health"]), LE.fmt_pct(more["dot"])], "breakdown":
+			LE.t("Corruption %d: f(c) = %s (0.6c up to 100, 0.002·c^1.52 + 1.055c − 47.69 above).
+The enemy gets %s more health and hit damage and %s more DoT damage.
+Corruption does not change your DPS.") % [
+			corruption, LE.fmt_num(Enemy.corruption_power(corruption)), LE.fmt_pct(more["health"]), LE.fmt_pct(more["dot"])]})
 	enemy_rows.append_array(proj_rows)
 	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "value": total_enemy, "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else LE.t("Hit %s + ailments %s = %s") % [

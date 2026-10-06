@@ -40,6 +40,7 @@ var _ailments_shown: int = 0
 @onready var _kind_select: OptionButton = %KindSelect
 @onready var _level_spin: SpinBox = %LevelSpin
 @onready var _armour_spin: SpinBox = %ArmourSpin
+@onready var _corruption_spin: SpinBox = %CorruptionSpin
 
 
 func _ready() -> void:
@@ -47,6 +48,7 @@ func _ready() -> void:
 	_kind_select.item_selected.connect(_on_kind_selected)
 	_level_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("level", int(value)))
 	_armour_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("armour", int(value)))
+	_corruption_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("corruption", int(value)))
 	_show_all.toggled.connect(func(_on: bool) -> void: _refresh())
 	_filter.text_changed.connect(func(_text: String) -> void: _apply_ailments())
 	%ResetAilmentsButton.pressed.connect(func() -> void: Build.clear_enemy_ailments())
@@ -144,6 +146,7 @@ func _sync_values() -> void:
 		_kind_select.select(kind_index)
 	_set_spin(_level_spin, float(int(Build.enemy.get("level", 100))))
 	_set_spin(_armour_spin, float(int(Build.enemy.get("armour", 0))))
+	_set_spin(_corruption_spin, float(int(Build.enemy.get("corruption", 0))))
 	var res: Array = Build.enemy.get("res", [0, 0, 0, 0, 0, 0, 0]) as Array
 	for spin: SpinBox in _resistance_spins:
 		var index: int = int(spin.get_meta("res_index"))

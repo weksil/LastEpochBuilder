@@ -3,7 +3,7 @@ class_name Enemy
 
 
 ## Build a StatStore from enemy configuration with ailment effects.
-## enemy config: {level, kind, res[], armour, ailments{}, flags{}}
+## enemy config: {level, kind, res[], armour, corruption, ailments{}, flags{}}
 static func store(enemy: Dictionary) -> StatStore:
 	var s := StatStore.new()
 
@@ -146,13 +146,32 @@ const KIND_NAMES: Dictionary = {"dummy": "training dummy", "normal": "normal", "
 	"miniboss": "miniboss", "boss": "boss"}
 
 
-## Short description of the target for summaries: "boss lvl 100", "training dummy".
+## Short description of the target for summaries: "boss lvl 100", "boss lvl 100, corruption 300", "training dummy".
 static func describe(enemy: Dictionary) -> String:
 	var kind: String = str(enemy.get("kind", "dummy"))
 	var kind_name: String = LE.t(str(KIND_NAMES.get(kind, kind)))
-	if kind == "dummy":
-		return kind_name
-	return LE.t("%s lvl %d") % [kind_name, int(enemy.get("level", 100))]
+	var text: String = kind_name if kind == "dummy" else LE.t("%s lvl %d") % [kind_name, int(enemy.get("level", 100))]
+	var corruption: int = int(enemy.get("corruption", 0))
+	if corruption > 0:
+		text = LE.t("%s, corruption %d") % [text, corruption]
+	return text
+
+
+## Monster power from corruption (EchoWeb.GetMonsterPowerMultiplierFromCorruption, research/06c §7):
+## f(c) = 0.6c up to 100, 0.002·c^1.52 + 1.055c − 47.692955 above.
+static func corruption_power(corruption: int) -> float:
+	var c: float = float(maxi(corruption, 0))
+	if c <= 100.0:
+		return 0.6 * c
+	return 0.002 * pow(c, 1.52) + 1.055 * c - 47.692955
+
+
+## "Monster Power From Corruption" mod (research/07a §4.1): Health and Damage(Hit) MORE 0.01·f(c),
+## Damage(DoT) MORE 0.005·f(c). Returns {health, hit, dot} as "more" fractions (0.6 = 60% more).
+## It does not change the damage the player deals.
+static func corruption_more(enemy: Dictionary) -> Dictionary:
+	var f: float = corruption_power(int(enemy.get("corruption", 0)))
+	return {"health": 0.01 * f, "hit": 0.01 * f, "dot": 0.005 * f}
 
 
 ## Calculate level-based damage reduction.

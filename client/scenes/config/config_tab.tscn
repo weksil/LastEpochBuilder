@@ -329,6 +329,22 @@ max_value = 110.0
 value = 100.0
 update_on_text_changed = true
 
+[node name="CorruptionLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Monolith corruption: more enemy health and hit damage, half as much more DoT damage. Does not change your DPS."
+mouse_filter = 1
+theme_type_variation = &"MutedLabel"
+text = "Corruption"
+
+[node name="CorruptionSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 5000.0
+step = 10.0
+rounded = true
+update_on_text_changed = true
+
 [node name="ArmourLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
