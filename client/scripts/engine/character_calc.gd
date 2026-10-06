@@ -45,7 +45,12 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 		var value: int = LE.round_half_even(added_sum)
 
 		var mods: Array[StatMod] = store.untagged_mods(properties)
-		var breakdown: String = _format_breakdown(mods, float(value), "")
+		var breakdown: String = _format_breakdown(mods, str(value))
+		var converted: String = BuildMods.converted_attribute(store, _attribute_record(i))
+		if converted != "":
+			# the game shows the converted attribute in place of the original one
+			attr_name = LE.t(converted)
+			breakdown += "\n" + LE.t("100%% of %s converted to %s") % [attr_names[i], attr_name]
 
 		rows.append({
 			"group": LE.t("Attributes"),
@@ -56,6 +61,14 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 		})
 
 	return rows
+
+
+## attributes.json record of an attribute index (0 Strength … 4 Attunement), {} if absent.
+static func _attribute_record(index: int) -> Dictionary:
+	for attr: Dictionary in GameData.attributes:
+		if int(attr.get("attribute", -1)) == index:
+			return attr
+	return {}
 
 
 ## Resources: Health, Mana, Health Regen, Mana Regen
@@ -208,7 +221,7 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 		"label": LE.t("Endurance"),
 		"value": endurance_value,
 		"text": LE.fmt_pct(endurance_value),
-		"breakdown": _format_breakdown(endurance_mods, endurance_value * 100.0, "min(0.6,)")
+		"breakdown": _format_breakdown(endurance_mods, "min(0.6, %s)" % LE.fmt_pct(endurance_sum))
 	})
 
 	# Endurance Threshold (76)
@@ -458,15 +471,9 @@ static func _compute_resistances(store: StatStore) -> Array[Dictionary]:
 	return rows
 
 
-## Format breakdown with mods
-static func _format_breakdown(mods: Array[StatMod], percent_value: float, prefix: String) -> String:
-	var lines: Array[String] = []
-
-	if prefix != "":
-		lines.append(prefix + " " + LE.fmt_pct(percent_value))
-	else:
-		lines.append(LE.fmt_pct(percent_value))
-
+## Breakdown: the header line (the formatted value or its formula), then one line per mod.
+static func _format_breakdown(mods: Array[StatMod], header: String) -> String:
+	var lines: Array[String] = [header]
 	for mod in mods:
 		lines.append(mod.describe())
 

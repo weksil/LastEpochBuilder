@@ -492,16 +492,38 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 
 # --- 5.3 attributes -----------------------------------------------------------
 
-static func _add_attributes(store: StatStore, _notes: Array[String]) -> void:
+## Per-point stats of every attribute. A corrupted attribute ("Vitality Converted to Rampancy": SP 98 with the tags of
+## corruptedFlag, e.g. a corrupted amulet affix) gives corruptedPerPoint instead of perPoint (07a §2.2); its special
+## PlayerProperty / AbilityProperty stats have no model and go to the notes.
+static func _add_attributes(store: StatStore, notes: Array[String]) -> void:
 	var all_attr: float = _sum_added_any_tags(store, LE.ALL_ATTRIBUTES)
 	for attr: Dictionary in GameData.attributes:
 		var index: int = int(attr.get("attribute", 0))
 		var n: int = LE.round_half_even(_sum_added_any_tags(store, int(attr["statProperty"])) + all_attr)
 		if n == 0:
 			continue
-		for per_point: Dictionary in attr.get("perPoint", []):
-			var mod: StatMod = stat_from_record(per_point, "%s ×%d" % [LE.t(ATTRIBUTE_NAMES[index]), n])
+		var converted: String = converted_attribute(store, attr)
+		var name: String = LE.t(converted if converted != "" else ATTRIBUTE_NAMES[index])
+		var source: String = "%s ×%d" % [name, n]
+		for per_point: Dictionary in attr.get("corruptedPerPoint" if converted != "" else "perPoint", []):
+			var prop_id: int = int(per_point.get("property", 0))
+			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
+				var label: String = str(per_point.get("playerPropertyName", per_point.get("propertyName", prop_id)))
+				notes.append(LE.t("%s: special stat (%s) — not counted") % [source, label])
+				continue
+			var mod: StatMod = stat_from_record(per_point, source)
 			store.add(mod.scaled(float(n)))
+
+
+## Name of the attribute this one is converted to ("Rampancy" for "Vitality Converted to Rampancy"), "" if it is not.
+static func converted_attribute(store: StatStore, attr: Dictionary) -> String:
+	var flag: Dictionary = attr.get("corruptedFlag", {})
+	if flag.is_empty():
+		return ""
+	for mod: StatMod in store.all_mods():
+		if mod.property == int(flag.get("property", LE.PLAYER_PROPERTY)) and mod.tags == int(flag.get("tags", -1)) and mod.added > 0.0:
+			return str(flag.get("playerPropertyName", "")).get_slice(" Converted to ", 1)
+	return ""
 
 
 static func _sum_added_any_tags(store: StatStore, property: int) -> float:

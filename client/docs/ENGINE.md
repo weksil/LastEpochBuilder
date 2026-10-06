@@ -156,7 +156,10 @@ Physical Resistance) is applied as one more node with `p = 1`, source "<Mastery>
 ### 5.3 Attributes (after all other sources)
 `N = round_half_even(Σadded SP_attr + Σadded SP 46)` over **all** mods (tags are not checked).
 For every `attributes[i].perPoint` add the mod × N (`scaled(N)`), source `Strength ×N`.
-Corrupted attributes are not supported (a note if SP 98 tags 650–654 occurs).
+Corrupted attributes (07a §2.2): when the store holds SP 98 with the tags of `corruptedFlag` (650–654, e.g. the corrupted
+amulet affix "Vitality converted to Rampancy"), the attribute gives `corruptedPerPoint` instead of `perPoint`, the source and
+the Stats row are named after the new attribute (`BuildMods.converted_attribute`: "Rampancy ×N"). Its PlayerProperty /
+AbilityProperty entries have no model and go to `notes`.
 
 ### 5.4 Items — `engine/item_mods.gd` (`class_name ItemMods`)
 `static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]`.

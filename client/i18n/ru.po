@@ -14137,3 +14137,24 @@ msgstr "Загрузка персонажа %s…"
 
 msgid "The character could not be loaded (HTTP %d)."
 msgstr "Не удалось загрузить персонажа (HTTP %d)."
+
+msgid "Rampancy"
+msgstr "Неистовство"
+
+msgid "Brutality"
+msgstr "Brutality"
+
+msgid "Madness"
+msgstr "Madness"
+
+msgid "Guile"
+msgstr "Guile"
+
+msgid "Apathy"
+msgstr "Apathy"
+
+msgid "100%% of %s converted to %s"
+msgstr "100%% атрибута %s преобразуется в %s"
+
+msgid "%s: special stat (%s) — not counted"
+msgstr "%s: особый стат (%s) — не учитывается"
