@@ -592,4 +592,8 @@ Tree params: `projectiles` (added extra projectiles), `projectile_limit` (cap of
 the nodes above). `Build.skills[slot].projectile_mode` = `one | average | all` (default `average`): the number of
 projectiles hitting one target is 1 / (1 + N) / 2 / N with shotgun, always 1 without. The factor multiplies the hits per
 use of every component (with the "Hits on the target per use" input); row "Projectiles hitting the target" in
-"Against enemy", `result.projectiles = {count, shotgun, mode, factor, row}`. Check — `tests/engine_test.tscn` (`_projectiles`).
+"Against enemy", `result.projectiles = {count, shotgun, mode, factor, row}`.
+Minions (§9.4) whose ability is in the file (Thorn Totem thorns, Skeleton Rogue shurikens, Cryomancer Woven Ice …): the
+rate of their `minion` component is multiplied by the same factor, with the summoning skill's mode and tree params; one
+row per minion ability ("<minion>: Projectiles hitting the target"). Without own projectiles `result.projectiles` is the
+minion's (a shotgun one preferred), so the selector is shown for such summons too. Check — `tests/engine_test.tscn` (`_projectiles`).

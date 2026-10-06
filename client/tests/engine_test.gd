@@ -1041,4 +1041,12 @@ func _projectiles() -> void:
 	print("  Umbral Blades DPS one %s, all %s" % [dps_one, dps_all])
 	_check("Umbral Blades: all / one = 2", dps_all / maxf(dps_one, 0.0001), 2.0, 0.01)
 	_check("mode survives save/load", 1.0 if str(BuildCodec.to_dict(Build)["skills"][0]["projectile_mode"]) == "all" else 0.0, 1.0)
+	Build.set_skill(0, "th39")  # Summon Thorn Totem: the totem fires 4 thorns that share one hit list
+	var totem: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Thorn Totem: minion projectiles found", float(totem["projectiles"].get("count", 0.0)), 4.0)
+	_check("Thorn Totem: no shotgun, 1 thorn hits", float(totem["projectiles"].get("factor", 0.0)), 1.0)
+	var shotgun_minion: Dictionary = {"params": {"Arrows can hit one target multiple times": {"param": "shotgun", "added": 0.0,
+		"increased": 0.0, "more": 1.0, "set": 1.0, "sources": []}}}
+	Build.set_skill_projectile_mode(0, "all")
+	_check("minion thorns with shotgun, all", float(SkillCalc.projectile_hits(Build, 0, GameData.ability_by_name("ThornTotemAttack"), shotgun_minion)["factor"]), 4.0)
 	Build.set_skill(0, "")

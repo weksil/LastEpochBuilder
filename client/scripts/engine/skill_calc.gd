@@ -49,6 +49,21 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, target_hits, inputs, notes)
 	var comp_notes: Array[String] = []
 	var components: Array[Dictionary] = SkillComponents.collect(build, slot, ab, s_comp, comp_notes)
+	# minions that fire projectiles: their attack rate is multiplied the same way (the skill's mode and tree params)
+	var proj_rows: Array = []
+	if not proj.is_empty():
+		proj_rows.append(proj["row"])
+	for comp: Dictionary in components:
+		if comp["kind"] != "minion":
+			continue
+		var mp: Dictionary = projectile_hits(build, slot, comp["ab"], s)
+		if mp.is_empty():
+			continue
+		comp["rate"] = float(comp["rate"]) * float(mp["factor"])
+		mp["row"]["label"] = "%s: %s" % [comp["name"], mp["row"]["label"]]
+		proj_rows.append(mp["row"])
+		if proj.is_empty() or (mp["shotgun"] and not proj["shotgun"]):
+			proj = mp
 	# inputs declared while collecting components (e.g. the number of minions)
 	for inp: Variant in s.get("inputs", []):
 		if inp is Dictionary:
@@ -142,8 +157,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 				LE.t("Damage events per second: %s.\nHit %s + ailments %s.") % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
 	enemy_rows.push_front({"label": LE.t("Target"), "text": Enemy.describe(build.enemy), "breakdown":
 		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type and level are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
-	if not proj.is_empty():
-		enemy_rows.append(proj["row"])
+	enemy_rows.append_array(proj_rows)
 	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "value": total_enemy, "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else LE.t("Hit %s + ailments %s = %s") % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})

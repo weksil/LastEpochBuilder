@@ -1,6 +1,7 @@
 {
  "ChannelledHungeringSouls": {
   "abilityName": "Hungering Souls",
+  "category": "player",
   "projectiles": 5,
   "shotgun": false,
   "confidence": "D",
@@ -8,6 +9,7 @@
  },
  "DetonatingArrow": {
   "abilityName": "Detonating Arrow",
+  "category": "player",
   "projectiles": 1,
   "shotgun": true,
   "confidence": "D",
@@ -15,6 +17,7 @@
  },
  "Fireball": {
   "abilityName": "Fireball",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -22,6 +25,7 @@
  },
  "HammerThrow": {
   "abilityName": "Hammer Throw",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -29,6 +33,7 @@
  },
  "HungeringSouls": {
   "abilityName": "Hungering Souls",
+  "category": "player",
   "projectiles": 5,
   "shotgun": false,
   "confidence": "D",
@@ -36,6 +41,7 @@
  },
  "IceBolt": {
   "abilityName": "Ice Bolt",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -43,6 +49,7 @@
  },
  "IceRune": {
   "abilityName": "Ice Rune",
+  "category": "player",
   "projectiles": 5,
   "shotgun": false,
   "confidence": "D",
@@ -50,6 +57,7 @@
  },
  "IceThorns": {
   "abilityName": "Ice Thorns",
+  "category": "player",
   "projectiles": 5,
   "shotgun": false,
   "confidence": "D",
@@ -57,6 +65,7 @@
  },
  "Javelin": {
   "abilityName": "Javelin",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -64,6 +73,7 @@
  },
  "MarrowShards": {
   "abilityName": "Marrow Shards",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -71,6 +81,7 @@
  },
  "RogueMultishot": {
   "abilityName": "Multishot",
+  "category": "player",
   "projectiles": 5,
   "shotgun": false,
   "confidence": "D",
@@ -78,6 +89,7 @@
  },
  "Runemaster 05c1 Runebolt Fire": {
   "abilityName": "Runebolt",
+  "category": "player",
   "projectiles": 1,
   "shotgun": false,
   "confidence": "D",
@@ -85,6 +97,7 @@
  },
  "Shurikens": {
   "abilityName": "Shurikens",
+  "category": "player",
   "projectiles": 3,
   "shotgun": false,
   "confidence": "D",
@@ -92,6 +105,7 @@
  },
  "StaticOrb": {
   "abilityName": "Static Orb",
+  "category": "player",
   "projectiles": 1,
   "shotgun": true,
   "confidence": "D",
@@ -99,6 +113,7 @@
  },
  "Umbral Blades 1": {
   "abilityName": "Umbral Blades",
+  "category": "player",
   "projectiles": 2,
   "shotgun": true,
   "confidence": "D",
@@ -106,6 +121,7 @@
  },
  "VolcanicOrb": {
   "abilityName": "Volcanic Orb",
+  "category": "player",
   "projectiles": 1,
   "shotgun": true,
   "confidence": "D",
@@ -117,5 +133,85 @@
   "projectiles": 5,
   "confidence": "D?",
   "evidence": "ChaosBoltsMutator: damage x (additionalProjectiles + 5) in single-projectile mode"
+ },
+ "BallistaBolt": {
+  "abilityName": "Ballista Bolt",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "BallistaBolt: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "FireArrow": {
+  "abilityName": "Fire Arrow",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "FireArrow: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "FireWraith_Fireball": {
+  "abilityName": "Fireball",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "FireWraith_Fireball: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "IceArrow": {
+  "abilityName": "Ice Arrow",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "IceArrow: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "MultiShot": {
+  "abilityName": "Arrowstorm",
+  "category": "minion",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "MultiShot: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Skeletal Mages Necrotic Projectile": {
+  "abilityName": "Dread Bolt",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Skeletal Mages Necrotic Projectile: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Skeleton Rogue Shurikens": {
+  "abilityName": "Bone Shurikens",
+  "category": "minion",
+  "projectiles": 3,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Skeleton Rogue Shurikens: sharedHitDetector=1, ExtraProjectiles=2, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Summon Skeleton Archer Bow Attack": {
+  "abilityName": "Bow Attack",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Summon Skeleton Archer Bow Attack: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "ThornTotemAttack": {
+  "abilityName": "Mystic Thorns",
+  "category": "minion",
+  "projectiles": 4,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "ThornTotemAttack: sharedHitDetector=1, ExtraProjectiles=3, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "WovenIce": {
+  "abilityName": "Woven Ice",
+  "category": "minion",
+  "projectiles": 1,
+  "shotgun": true,
+  "confidence": "D",
+  "evidence": "WovenIce: sharedHitDetector=0, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
  }
 }
