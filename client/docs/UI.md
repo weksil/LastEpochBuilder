@@ -162,6 +162,12 @@ First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scen
 `%SkillSummary` — the sum over the bar (`HeroValueMain`), `%SkillBreakdown` — one line "<skill> — <DPS>" per contributing skill, highest first (`HeroSkillList`),
 `%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is every skill's breakdown.
 
+## Calculations headline — `scripts/calcs/calc_summary.gd`
+`%ProjectileRow` above the tiles (visible only when `result.projectiles` is not empty, i.e. the skill fires projectiles,
+docs/ENGINE.md §9.9): `%ProjectileOne` / `%ProjectileAverage` / `%ProjectileAll` — toggle buttons in one `ButtonGroup`
+(`metadata/mode` = `one|average|all`) → `Build.set_skill_projectile_mode(Build.selected_skill, mode)`; disabled when the
+projectiles cannot hit one target twice. `%ProjectileCount` — "<factor> of <count> per use", the tooltip is the row's breakdown.
+
 ## Idols — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Scene `scenes/idols/idols_tab.tscn`: `%Grid` holds 25 ready-made `IdolCell` buttons with `metadata/row`, `metadata/col`;
 on the right `%EditorScroll` > `%ItemEditor` (the same `ItemEditor`, it understands idol keys itself; it offers only idol bases and

@@ -228,6 +228,8 @@ The models in `client/data/field_models.json` are built by the local pipeline `t
 
 The conversion rules in `research/data/game/skill_conversions.json` are built by the local scripts
 `tools/extract/conversions/` (`prefilter.py` → annotation of batches → `merge.py` with checks and manual fixes).
+The projectile counts and shotgun flags in `research/data/game/ability_projectiles.json` are built by
+`tools/extract/extract_projectiles.py` from the AssetRipper export (client/docs/ENGINE.md §9.9).
 An editor in which the autoloads were added without a restart shows false errors
 `Identifier not found: Build/GameData` — they go away after the editor is restarted.
 

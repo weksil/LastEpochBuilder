@@ -1,0 +1,121 @@
+{
+ "ChannelledHungeringSouls": {
+  "abilityName": "Hungering Souls",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "HungeringSouls: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "DetonatingArrow": {
+  "abilityName": "Detonating Arrow",
+  "projectiles": 1,
+  "shotgun": true,
+  "confidence": "D",
+  "evidence": "DetonatingArrow: sharedHitDetector=0, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Fireball": {
+  "abilityName": "Fireball",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Fireball: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "HammerThrow": {
+  "abilityName": "Hammer Throw",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "HammerThrow: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "HungeringSouls": {
+  "abilityName": "Hungering Souls",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "HungeringSouls: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "IceBolt": {
+  "abilityName": "Ice Bolt",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "IceBolt: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "IceRune": {
+  "abilityName": "Ice Rune",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "IceThorns: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "IceThorns": {
+  "abilityName": "Ice Thorns",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "IceThorns: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Javelin": {
+  "abilityName": "Javelin",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Javelin: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "MarrowShards": {
+  "abilityName": "Marrow Shards",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "MarrowShards: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "RogueMultishot": {
+  "abilityName": "Multishot",
+  "projectiles": 5,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "RogueMultishot: sharedHitDetector=1, ExtraProjectiles=4, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Runemaster 05c1 Runebolt Fire": {
+  "abilityName": "Runebolt",
+  "projectiles": 1,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Runemaster 05c1 Runebolt Fire: sharedHitDetector=1, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Shurikens": {
+  "abilityName": "Shurikens",
+  "projectiles": 3,
+  "shotgun": false,
+  "confidence": "D",
+  "evidence": "Shurikens: sharedHitDetector=1, ExtraProjectiles=2, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "StaticOrb": {
+  "abilityName": "Static Orb",
+  "projectiles": 1,
+  "shotgun": true,
+  "confidence": "D",
+  "evidence": "StaticOrb: sharedHitDetector=0, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Umbral Blades 1": {
+  "abilityName": "Umbral Blades",
+  "projectiles": 2,
+  "shotgun": true,
+  "confidence": "D",
+  "evidence": "Umbral Blades 1: sharedHitDetector=0, ExtraProjectiles=1, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "VolcanicOrb": {
+  "abilityName": "Volcanic Orb",
+  "projectiles": 1,
+  "shotgun": true,
+  "confidence": "D",
+  "evidence": "VolcanicOrb: sharedHitDetector=0, ExtraProjectiles=-, HitDetector cannotHaveShared=0 bypass=0"
+ },
+ "Warlock 01 Chaos Bolts": {
+  "abilityName": "Chaos Bolts",
+  "shotgun": true,
+  "projectiles": 5,
+  "confidence": "D?",
+  "evidence": "ChaosBoltsMutator: damage x (additionalProjectiles + 5) in single-projectile mode"
+ }
+}

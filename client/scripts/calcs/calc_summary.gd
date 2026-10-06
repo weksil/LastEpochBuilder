@@ -21,6 +21,19 @@ const CRIT_SECTION: String = "Crit"
 @onready var _hit: CalcTile = %HitTile
 @onready var _uses: CalcTile = %UsesTile
 @onready var _crit: CalcTile = %CritTile
+@onready var _projectile_row: HBoxContainer = %ProjectileRow
+@onready var _projectile_buttons: Array[Button] = [%ProjectileOne, %ProjectileAverage, %ProjectileAll]
+@onready var _projectile_count: Label = %ProjectileCount
+
+
+func _ready() -> void:
+	for button: Button in _projectile_buttons:
+		button.toggled.connect(_on_projectile_toggled.bind(str(button.get_meta("mode"))))
+
+
+func _on_projectile_toggled(pressed: bool, mode: String) -> void:
+	if pressed:
+		Build.set_skill_projectile_mode(Build.selected_skill, mode)
 
 
 ## result: SkillCalc.compute output. Empty sections (no skill in the slot) clear the strip.
@@ -40,6 +53,26 @@ func show_result(result: Dictionary) -> void:
 	if crit.is_empty():
 		crit = find_row(result, CRIT_LABEL)
 	_crit.show_value(str(crit.get("text", "")), "", str(crit.get("breakdown", "")))
+	_show_projectiles(result.get("projectiles", {}))
+
+
+## Selector "how many projectiles of one use hit the target", only for skills that fire projectiles. Without shotgun
+## every mode means one projectile per target, so the buttons are disabled.
+func _show_projectiles(proj: Dictionary) -> void:
+	_projectile_row.visible = not proj.is_empty()
+	if proj.is_empty():
+		return
+	var shotgun: bool = bool(proj.get("shotgun", false))
+	var tip: String = str(proj.get("row", {}).get("breakdown", ""))
+	for button: Button in _projectile_buttons:
+		button.set_pressed_no_signal(str(button.get_meta("mode")) == str(proj.get("mode", "")))
+		button.disabled = not shotgun
+		button.tooltip_text = tip
+	if shotgun:
+		_projectile_count.text = tr("%s of %s per use") % [LE.fmt_num(float(proj["factor"])), LE.fmt_num(float(proj["count"]))]
+	else:
+		_projectile_count.text = tr("%s per use, cannot hit one target twice") % LE.fmt_num(float(proj["count"]))
+	_projectile_count.tooltip_text = tip
 
 
 ## First row with this label in the section titled exactly `section` (any section when empty); {} if none.

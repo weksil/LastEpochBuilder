@@ -29,6 +29,7 @@ static func to_dict(build: Node) -> Dictionary:
 			"tree": _string_keys(skill["tree"]),
 			"inputs": (skill["inputs"] as Dictionary).duplicate(true),
 			"hits": float(skill["hits"]),
+			"projectile_mode": str(skill.get("projectile_mode", "average")),
 		})
 	var blessings: Dictionary = {}
 	for timeline: Variant in build.blessings:
@@ -200,6 +201,8 @@ static func _skills(raw_skills: Variant, warnings: Array[String]) -> Array:
 		if raw.get("inputs") is Dictionary:
 			skill["inputs"] = (raw["inputs"] as Dictionary).duplicate(true)
 		skill["hits"] = maxf(float(raw.get("hits", 1.0)), 0.0)
+		var mode: String = str(raw.get("projectile_mode", "average"))
+		skill["projectile_mode"] = mode if SkillCalc.PROJECTILE_MODES.has(mode) else "average"
 	return skills
 
 
@@ -248,6 +251,7 @@ static func apply(build: Node, doc: Dictionary) -> void:
 		build.skills[i]["level"] = int(skill["level"])
 		build.skills[i]["inputs"] = (skill["inputs"] as Dictionary).duplicate(true)
 		build.skills[i]["hits"] = float(skill["hits"])
+		build.skills[i]["projectile_mode"] = str(skill["projectile_mode"])
 	build.items = (doc["items"] as Dictionary).duplicate(true)
 	build.stash.assign((doc["stash"] as Array).duplicate(true))
 	build.stash_changed.emit()

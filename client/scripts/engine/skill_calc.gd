@@ -15,6 +15,10 @@ const EVENT_NAMES: Dictionary = {
 
 
 ## {title, sections: [{title, rows: [{label, text, breakdown}]}], notes: [String]}
+## Values of Build.skills[slot].projectile_mode: how many projectiles of one use hit the target (default "average").
+const PROJECTILE_MODES: Array[String] = ["one", "average", "all"]
+
+
 static func compute(build: Node, slot: int) -> Dictionary:
 	var result: Dictionary = {"title": "", "sections": [], "notes": [], "inputs": [], "hits": 1.0}
 	if slot < 0 or slot >= build.skills.size():
@@ -37,9 +41,12 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	var speed: Dictionary = _speed(build, ab, head_ctx, s)
 	var uses: float = float(speed["uses"])
 	var hits: float = float(build.skills[slot].get("hits", 1.0))
+	# projectiles of one use that hit the target multiply the hits per use of every component (docs/ENGINE.md §9.9)
+	var proj: Dictionary = projectile_hits(build, slot, ab, s)
+	var target_hits: float = hits * float(proj.get("factor", 1.0))
 	var inputs: Array[Dictionary] = []
 	var s_comp: Dictionary = s.duplicate()
-	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, hits, inputs, notes)
+	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, target_hits, inputs, notes)
 	var comp_notes: Array[String] = []
 	var components: Array[Dictionary] = SkillComponents.collect(build, slot, ab, s_comp, comp_notes)
 	# inputs declared while collecting components (e.g. the number of minions)
@@ -72,7 +79,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var is_dot: bool = comp["kind"] == "dot"
 		var events: float = float(comp["rate"])
 		if events <= 0.0 and not is_curse:
-			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else hits)
+			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else target_hits)
 		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": LE.t("damage events") if is_curse else LE.t("uses")}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
@@ -84,7 +91,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			damage_rows = _dot_damage_rows(comp, ds, uses)
 			damage_title = LE.t("Effect damage over its whole duration (before enemy)")
 		elif idx > 0 or is_curse or not is_equal_approx(events, uses):
-			damage_rows = [_events_row(comp, events, uses, hits)] + damage_rows
+			damage_rows = [_events_row(comp, events, uses, target_hits)] + damage_rows
 		if is_curse:
 			damage_title = LE.t("Damage per hit on the cursed target (before enemy)")
 		sections.append({"title": prefix + damage_title, "rows": damage_rows})
@@ -135,6 +142,8 @@ static func compute(build: Node, slot: int) -> Dictionary:
 				LE.t("Damage events per second: %s.\nHit %s + ailments %s.") % [LE.fmt_num(cr["events"]), LE.fmt_num(cr["hit_enemy"]), LE.fmt_num(cr["ail"]["enemy_dps"])]})
 	enemy_rows.push_front({"label": LE.t("Target"), "text": Enemy.describe(build.enemy), "breakdown":
 		LE.t("Hidden level-based damage reduction of the target: %s (table from the game code; boss and mini-boss keep + 5%% of the remainder).\nTarget type and level are set on the Conditions tab.") % LE.fmt_pct(Enemy.level_dr(build.enemy))})
+	if not proj.is_empty():
+		enemy_rows.append(proj["row"])
 	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "value": total_enemy, "breakdown":
 		"\n".join(enemy_lines) if comp_results.size() > 1 else LE.t("Hit %s + ailments %s = %s") % [
 			LE.fmt_num(main["hit_enemy"]), LE.fmt_num(main["ail"]["enemy_dps"]), LE.fmt_num(total_enemy)]})
@@ -152,7 +161,64 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	result["notes"] = notes
 	result["inputs"] = _inputs_result(build, slot, inputs)
 	result["hits"] = hits
+	result["projectiles"] = proj
 	return result
+
+
+## Projectiles of a projectile skill (ability_projectiles.json plus the tree params "projectiles", "projectile_limit",
+## "shotgun") and how many of them hit one target, by the slot's `projectile_mode` (one | average | all, default
+## average). {} for skills without projectiles, else {count, shotgun, mode, factor, row}.
+## Projectiles of one use share a hit list unless the skill can shotgun (research: Ability.sharedHitDetector), so then
+## only one of them damages a given target, and the explosions they spawn inherit the same list.
+static func projectile_hits(build: Node, slot: int, ab: Dictionary, s: Dictionary) -> Dictionary:
+	var info: Dictionary = GameData.projectile_info(str(ab.get("name", "")))
+	if info.is_empty():
+		return {}
+	var count: float = float(info.get("projectiles", 1))
+	var shotgun: bool = bool(info.get("shotgun", false))
+	var limit: float = -1.0
+	var lines: PackedStringArray = [LE.t("Base projectiles per use: %s") % LE.fmt_num(count)]
+	var params: Variant = s.get("params", {})
+	if params is Dictionary:
+		for label: Variant in params:
+			var p: Dictionary = params[label]
+			var value: float = (float(p["set"]) if p.get("set") != null else float(p.get("added", 0.0))) 				* (1.0 + float(p.get("increased", 0.0))) * float(p.get("more", 1.0))
+			match str(p.get("param", "")):
+				"projectiles":
+					count += value
+					lines.append("%s: %s" % [label, LE.fmt_num(value)])
+				"projectile_limit":
+					limit = value
+				"shotgun":
+					if value > 0.0:
+						shotgun = true
+						lines.append(str(label))
+	if limit >= 0.0 and count > 1.0 + limit:
+		count = 1.0 + limit
+		lines.append(LE.t("Limited to %s extra projectiles") % LE.fmt_num(limit))
+	count = maxf(count, 1.0)
+	var mode: String = PROJECTILE_MODES[1]
+	if slot >= 0 and slot < build.skills.size():
+		mode = str(build.skills[slot].get("projectile_mode", mode))
+	if not PROJECTILE_MODES.has(mode):
+		mode = PROJECTILE_MODES[1]
+	var factor: float = 1.0
+	if not shotgun:
+		lines.append(LE.t("Projectiles of one use cannot hit the same target: one projectile per target (their explosions share the same hit list)."))
+	elif mode == "all":
+		factor = count
+		lines.append(LE.t("All projectiles hit the target: %s") % LE.fmt_num(factor))
+	elif mode == "average":
+		factor = (1.0 + count) / 2.0
+		lines.append(LE.t("Average of one and all projectiles: (1 + %s) / 2 = %s") % [LE.fmt_num(count), LE.fmt_num(factor)])
+	else:
+		lines.append(LE.t("One projectile hits the target"))
+	if str(info.get("confidence", "D")) != "D":
+		lines.append(LE.t("Projectile count is an estimate: %s") % str(info.get("evidence", "")))
+	var row: Dictionary = {"label": LE.t("Projectiles hitting the target"), "text": "%s / %s" % [LE.fmt_num(factor), LE.fmt_num(count)],
+		"value": factor, "breakdown": "
+".join(lines)}
+	return {"count": count, "shotgun": shotgun, "mode": mode, "factor": factor, "row": row}
 
 
 # --- triggers, inputs, parameters (docs/ENGINE.md §9.6) ----------------------------

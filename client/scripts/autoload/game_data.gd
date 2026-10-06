@@ -14,6 +14,7 @@ var _abilities: Dictionary = {}          # playerAbilityID -> ability
 var _abilities_by_name: Dictionary = {}  # name -> record (every category; players' records win)
 var _ability_children: Dictionary = {}   # parent name -> [records listing it in `parents`]
 var _code_damage: Dictionary = {}        # ability name -> {ability, kind, components[]} (abilities_code_damage.json)
+var _projectiles: Dictionary = {}        # ability name -> {abilityName, projectiles, shotgun, confidence, evidence}
 var _affixes_by_id: Dictionary = {}      # affixId -> affix
 var _affixes_list: Array = []
 var _items_by_id: Dictionary = {}        # baseTypeID -> base
@@ -68,6 +69,10 @@ func _ready() -> void:
 	if code_damage_json is Dictionary:
 		for entry: Dictionary in code_damage_json.get("abilities", []):
 			_code_damage[str(entry.get("ability", ""))] = entry
+
+	var projectiles_json: Variant = _load_json(data_dir.path_join("ability_projectiles.json"))
+	if projectiles_json is Dictionary:
+		_projectiles = projectiles_json
 
 	var affixes_json: Variant = _load_json(data_dir.path_join("affixes.json"))
 	if affixes_json is Dictionary:
@@ -261,6 +266,12 @@ func get_node_stats(tree_id: String, node_id: int) -> Dictionary:
 
 func get_ability(pid: String) -> Dictionary:
 	return _abilities.get(pid, {})
+
+
+## Projectiles of a player skill by its record `name` (ability_projectiles.json): {abilityName, projectiles (per use),
+## shotgun (several projectiles of one use can hit the same target), confidence, evidence}; {} if it fires none.
+func projectile_info(ability_name: String) -> Dictionary:
+	return _projectiles.get(ability_name, {})
 
 
 ## Any ability record by its `name` (every category, not only player abilities).

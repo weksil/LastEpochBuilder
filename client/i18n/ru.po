@@ -14152,3 +14152,45 @@ msgstr "%s: %s — учитывается, когда: %s"
 
 msgid "Rampancy: more damage taken while you don't have Frenzy"
 msgstr "Неистовство: больше получаемого урона, пока на вас нет Frenzy"
+
+msgid "Projectiles hitting the target:"
+msgstr "Снарядов попадает в цель:"
+
+msgid "One projectile"
+msgstr "Один снаряд"
+
+msgid "Average"
+msgstr "Среднее"
+
+msgid "All projectiles"
+msgstr "Все снаряды"
+
+msgid "%s of %s per use"
+msgstr "%s из %s за применение"
+
+msgid "%s per use, cannot hit one target twice"
+msgstr "%s за применение, одну цель дважды не поражают"
+
+msgid "Projectiles hitting the target"
+msgstr "Снарядов попадает в цель"
+
+msgid "Base projectiles per use: %s"
+msgstr "Базовое число снарядов за применение: %s"
+
+msgid "Limited to %s extra projectiles"
+msgstr "Ограничено %s дополнительными снарядами"
+
+msgid "Projectiles of one use cannot hit the same target: one projectile per target (their explosions share the same hit list)."
+msgstr "Снаряды одного применения не могут поразить одну цель: по цели попадает один снаряд (их взрывы используют тот же список поражённых целей)."
+
+msgid "All projectiles hit the target: %s"
+msgstr "Все снаряды попадают в цель: %s"
+
+msgid "Average of one and all projectiles: (1 + %s) / 2 = %s"
+msgstr "Среднее между одним и всеми снарядами: (1 + %s) / 2 = %s"
+
+msgid "One projectile hits the target"
+msgstr "В цель попадает один снаряд"
+
+msgid "Projectile count is an estimate: %s"
+msgstr "Число снарядов — оценка: %s"

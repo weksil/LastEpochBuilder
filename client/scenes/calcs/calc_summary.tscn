@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/calcs/calc_summary.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/calcs/calc_tile.tscn" id="2_tile"]
+
+[sub_resource type="ButtonGroup" id="projectile_group"]
 
 [node name="CalcSummary" type="PanelContainer"]
 script = ExtResource("1_script")
@@ -27,6 +29,51 @@ size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
 text = ""
 horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ProjectileRow" type="HBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ProjectileLabel" type="Label" parent="VBox/ProjectileRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Projectiles hitting the target:"
+
+[node name="ProjectileOne" type="Button" parent="VBox/ProjectileRow"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("projectile_group")
+text = "One projectile"
+metadata/mode = "one"
+
+[node name="ProjectileAverage" type="Button" parent="VBox/ProjectileRow"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("projectile_group")
+text = "Average"
+metadata/mode = "average"
+
+[node name="ProjectileAll" type="Button" parent="VBox/ProjectileRow"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("projectile_group")
+text = "All projectiles"
+metadata/mode = "all"
+
+[node name="ProjectileCount" type="Label" parent="VBox/ProjectileRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = ""
 clip_text = true
 text_overrun_behavior = 3
 

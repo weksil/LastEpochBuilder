@@ -22,6 +22,7 @@ func _ready() -> void:
 	_high_health_vs_dummy()
 	_detonations_and_maintained_dot()
 	_item_compare()
+	_projectiles()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -1013,3 +1014,31 @@ func _first_base(slot: String) -> int:
 		if ItemCompare.fits_slot(slot, base):
 			return int(base["baseTypeID"])
 	return -1
+
+
+## Projectiles per use and how many hit one target (docs/ENGINE.md §9.7).
+func _projectiles() -> void:
+	print("--- projectiles")
+	Build.set_skill(0, "mush9")  # Multishot: 5 arrows, shared hit list
+	var r: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Multishot: 5 arrows", float(r["projectiles"]["count"]), 5.0)
+	_check("Multishot: no shotgun, 1 arrow hits", float(r["projectiles"]["factor"]), 1.0)
+	var ab: Dictionary = GameData.get_ability("mush9")
+	var shotgun_node: Dictionary = {"params": {"Arrows can hit one target multiple times": {"param": "shotgun", "added": 0.0,
+		"increased": 0.0, "more": 1.0, "set": 1.0, "sources": []},
+		"Extra arrows": {"param": "projectiles", "added": 2.0, "increased": 0.0, "more": 1.0, "set": null, "sources": []}}}
+	_check("Multishot + shotgun node + 2 arrows, average (1+7)/2", float(SkillCalc.projectile_hits(Build, 0, ab, shotgun_node)["factor"]), 4.0)
+	Build.set_skill(0, "ub5d9")  # Umbral Blades: 2 blades, can hit one target with both
+	var avg: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Umbral Blades: shotgun", 1.0 if avg["projectiles"]["shotgun"] else 0.0, 1.0)
+	_check("Umbral Blades: average (1+2)/2", float(avg["projectiles"]["factor"]), 1.5)
+	Build.set_skill_projectile_mode(0, "one")
+	var one: Dictionary = SkillCalc.compute(Build, 0)
+	Build.set_skill_projectile_mode(0, "all")
+	var all: Dictionary = SkillCalc.compute(Build, 0)
+	var dps_one: float = float(CalcSummary.find_row(one, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+	var dps_all: float = float(CalcSummary.find_row(all, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+	print("  Umbral Blades DPS one %s, all %s" % [dps_one, dps_all])
+	_check("Umbral Blades: all / one = 2", dps_all / maxf(dps_one, 0.0001), 2.0, 0.01)
+	_check("mode survives save/load", 1.0 if str(BuildCodec.to_dict(Build)["skills"][0]["projectile_mode"]) == "all" else 0.0, 1.0)
+	Build.set_skill(0, "")

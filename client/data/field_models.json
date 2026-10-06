@@ -20067,8 +20067,10 @@
 },
 "MultishotMutator.canShotgun": {
 "confidence": "D",
-"kind": "flag",
-"text": "Arrows can hit one target multiple times"
+"kind": "param",
+"label": "Arrows can hit one target multiple times",
+"mod": "set",
+"param": "shotgun"
 },
 "MultishotMutator.chanceForHasteOnUseOrProc": {
 "ailment": "Haste",
@@ -27100,8 +27102,10 @@
 },
 "ShurikensMutator.shotgun": {
 "confidence": "D",
-"kind": "flag",
-"text": "Shurikens in line can hit one target multiple times"
+"kind": "param",
+"label": "Shurikens in line can hit one target multiple times",
+"mod": "set",
+"param": "shotgun"
 },
 "ShurikensMutator.straightLine": {
 "confidence": "D",

@@ -69,7 +69,7 @@ func _init_defaults() -> void:
 
 ## Empty skill slot.
 static func default_skill() -> Dictionary:
-	return {"ability": "", "level": 20, "tree": {}, "inputs": {}, "hits": 1.0}
+	return {"ability": "", "level": 20, "tree": {}, "inputs": {}, "hits": 1.0, "projectile_mode": "average"}
 
 
 ## Enemy config by default: the training dummy, so the numbers match in-game dummy hits.
@@ -508,6 +508,14 @@ func set_skill_hits(slot: int, hits: float) -> void:
 		return
 
 	skills[slot]["hits"] = maxf(hits, 0.0)
+	changed.emit()
+
+
+## How many projectiles of one use hit the target: one of SkillCalc.PROJECTILE_MODES.
+func set_skill_projectile_mode(slot: int, mode: String) -> void:
+	if slot < 0 or slot >= skills.size() or not SkillCalc.PROJECTILE_MODES.has(mode):
+		return
+	skills[slot]["projectile_mode"] = mode
 	changed.emit()
 
 

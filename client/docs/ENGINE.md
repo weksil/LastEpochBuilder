@@ -571,3 +571,25 @@ Sources:
   conversions (SP 100 and `ailment_convert` of tree rules);
 - Haste / Frenzy on the player: `HasteOnHitChance` and the ailment effect on you SP 120 with `special` = 33 / 34.
 Cost is ~12 ms, called only while the tab is visible. Check — `tests/relevance_test.tscn`.
+
+### 9.9 Projectiles and shotgun — `SkillCalc.projectile_hits`
+Data: `research/data/game/ability_projectiles.json` (local script `tools/extract/extract_projectiles.py`, from the
+AssetRipper prefabs and Ability assets): ability record name → `{abilityName, projectiles, shotgun, confidence, evidence}`.
+`projectiles` = 1 + `ExtraProjectiles.numberOfExtraProjectiles` of the projectile object (the root prefab, or a damaging
+sub-ability with ExtraProjectiles: Hungering Souls); Chaos Bolts is code-driven (5 bolts, D?).
+`shotgun` — several projectiles of one use can damage the same target. Game logic (ISIL):
+- `Ability.sharedHitDetector` (overridable by `AbilityMutator.useSharedHitDetector`: Multishot `canShotgun`, Shurikens
+  `shotgun`) gives the first object of a use a `SharedHitDetector`; `HitDetector.hitActor` then checks the shared
+  "enemies hit" list instead of its own unless `bypassSharedHitDetection`.
+- `AbilityObjectConstructor.constructAbilityObject(..., InheritSharedHitDetector = true)`: a new object takes its creator's
+  shared detector; without one it gets a new detector if its own ability uses one. `ExtraProjectiles`,
+  `CreateAbilityObjectOnDeath` and `CastAfterDuration` all pass `true`, so extra projectiles **and the explosions they
+  spawn** share one hit list per use: with a shared detector the explosions of one use cannot stack on one target either.
+  `HitDetector.cannotHaveSharedhitDetector` skips the assignment (the object hits independently).
+- Without a shared detector on the skill (Umbral Blades, Chaos Bolts, Volcanic Orb, Detonating Arrow, Static Orb) every
+  projectile and every explosion hits on its own.
+Tree params: `projectiles` (added extra projectiles), `projectile_limit` (cap of extra projectiles), `shotgun` (set 1 by
+the nodes above). `Build.skills[slot].projectile_mode` = `one | average | all` (default `average`): the number of
+projectiles hitting one target is 1 / (1 + N) / 2 / N with shotgun, always 1 without. The factor multiplies the hits per
+use of every component (with the "Hits on the target per use" input); row "Projectiles hitting the target" in
+"Against enemy", `result.projectiles = {count, shotgun, mode, factor, row}`. Check — `tests/engine_test.tscn` (`_projectiles`).
