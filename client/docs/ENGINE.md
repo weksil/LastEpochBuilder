@@ -158,8 +158,9 @@ Physical Resistance) is applied as one more node with `p = 1`, source "<Mastery>
 For every `attributes[i].perPoint` add the mod × N (`scaled(N)`), source `Strength ×N`.
 Corrupted attributes (07a §2.2): when the store holds SP 98 with the tags of `corruptedFlag` (650–654, e.g. the corrupted
 amulet affix "Vitality converted to Rampancy"), the attribute gives `corruptedPerPoint` instead of `perPoint`, the source and
-the Stats row are named after the new attribute (`BuildMods.converted_attribute`: "Rampancy ×N"). Its PlayerProperty /
-AbilityProperty entries have no model and go to `notes`.
+the Stats row are named after the new attribute (`BuildMods.converted_attribute`: "Rampancy ×N"). Its PlayerProperty
+entries go through `player[ppIndex]` of `unique_effect_models.json` (§5.4.3) with `pp = per point × N` (Rampancy: PP 638,
+more damage taken without Frenzy); entries without a model and the AbilityProperty ones go to `notes`.
 
 ### 5.4 Items — `engine/item_mods.gd` (`class_name ItemMods`)
 `static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]`.
@@ -211,7 +212,9 @@ AbilityProperty. The value `pp` is the roll of the carrier mod: SP 98 with `tags
 `specialTag = index` (`AffixMath.unique_value`).
 - Model → StatMod: `x = pp · (source − offset) · factor` (without `per`: `pp · factor`), then `min`/`max`; `stat` is the SP name,
   `mod`, `tags`, `ailment` → specialTag. Sources: attributes, the sum of attributes, added/value/increased SP, uncapped
-  resistances, max health/mana, endurance threshold, ailment stacks on the enemy, player numbers (`Build.player_state`), complete sets.
+  resistances, max health/mana, endurance threshold, ailment stacks on the enemy, player numbers (`Build.player_state`), complete sets,
+  `converted_attr:<str|vit|int|dex|att>` — the hidden attribute of a corrupted attribute (Brutality, Rampancy, Madness, Guile,
+  Apathy; Exulis "per 10 Rampancy"): the attribute value while it is converted (§5.3), otherwise 0.
 - Conditions (`when`, `at_least`, `below`): enemy ailments and flags, enemy type, player flags, two weapons / a two-handed melee
   weapon (by the bases in the slots), item slot. An unmet condition → the note "counted when: …".
 - Order in `global_store`: sets → `apply_global("pre")` (sources that do not read the store) → attributes → the player's Haste/Frenzy

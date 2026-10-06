@@ -5,6 +5,8 @@ class_name EffectModels
 
 const ATTR_SP: Dictionary = {"str": LE.STRENGTH, "vit": LE.VITALITY, "int": LE.INTELLIGENCE, "dex": LE.DEXTERITY, "att": LE.ATTUNEMENT}
 const ATTR_NAMES: Dictionary = {"str": "Strength", "vit": "Vitality", "int": "Intelligence", "dex": "Dexterity", "att": "Attunement"}
+## Hidden attributes of a corrupted attribute ("Vitality Converted to Rampancy", 07a §2.2), by attribute key.
+const CONVERTED_NAMES: Dictionary = {"str": "Brutality", "vit": "Rampancy", "int": "Madness", "dex": "Guile", "att": "Apathy"}
 const TWO_HANDED_MELEE_TYPES: Array[int] = [12, 13, 14, 15, 16]  # 2H axes, maces, polearms, staffs, swords
 const PLAYER_FLAG_NAMES: Dictionary = {
 	"hit_recently": "Hit recently", "crit_recently": "Crit recently", "moving": "Moving",
@@ -15,7 +17,7 @@ const PLAYER_VALUE_NAMES: Dictionary = {
 	"ward": "Current ward", "curses": "Curses on me", "ignite_stacks": "Ignite stacks on me", "damned_stacks": "Damned stacks on me",
 }
 const STORE_SOURCES: Array[String] = ["attr", "total_attr", "added", "value", "increased", "added_exact", "res", "ele_res",
-	"total_res", "max_health", "max_mana", "endurance_threshold"]
+	"total_res", "max_health", "max_mana", "endurance_threshold", "converted_attr"]
 
 
 ## "" if the model applies now, otherwise the unmet condition (translated).
@@ -89,6 +91,12 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 	match kind:
 		"attr":
 			return float(_attribute(store, int(ATTR_SP.get(arg, -1))))
+		"converted_attr":
+			# the hidden attribute exists only while the attribute is converted; it then has the attribute's value
+			var sp: int = int(ATTR_SP.get(arg, -1))
+			if BuildMods.converted_attribute(store, GameData.attribute_by_property(sp)) == "":
+				return 0.0
+			return float(_attribute(store, sp))
 		"total_attr":
 			var total: int = 0
 			for key: String in ATTR_SP:
@@ -149,6 +157,8 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 	match kind:
 		"attr":
 			return LE.t(str(ATTR_NAMES.get(arg, arg)))
+		"converted_attr":
+			return LE.t(str(CONVERTED_NAMES.get(arg, arg)))
 		"total_attr":
 			return LE.t("sum of attributes")
 		"added", "increased":

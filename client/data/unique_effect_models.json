@@ -2564,19 +2564,24 @@
    "text": "Chance not to spend potion recovering at least 20% max health",
    "confidence": "D"
   },
+  "638": {
+   "kind": "stat",
+   "stat": "DamageTaken",
+   "mod": "more",
+   "confidence": "A",
+   "when": [
+    "player:!frenzy"
+   ],
+   "note": "Rampancy: more damage taken while you don't have Frenzy"
+  },
   "656": {
    "kind": "stat",
    "stat": "IncreasedAreaForAreaSkills",
    "mod": "added",
    "confidence": "D",
    "tags": "Spell",
-   "per": "input:madness",
+   "per": "converted_attr:int",
    "factor": 0.1,
-   "input": {
-    "key": "madness",
-    "label": "Madness (hidden Exulis attribute)",
-    "default": 10
-   },
    "note": "Per 10 Madness"
   },
   "657": {
@@ -2585,13 +2590,8 @@
    "mod": "more",
    "confidence": "D?",
    "tags": "Hit",
-   "per": "input:guile",
+   "per": "converted_attr:dex",
    "factor": -0.1,
-   "input": {
-    "key": "guile",
-    "label": "Guile (hidden Exulis attribute)",
-    "default": 10
-   },
    "note": "Chance to take 0 damage counted as average damage reduction from hits; per 10 Guile"
   },
   "658": {
@@ -2599,13 +2599,8 @@
    "stat": "Health",
    "mod": "increased",
    "confidence": "D",
-   "per": "input:brutality",
+   "per": "converted_attr:str",
    "factor": 0.1,
-   "input": {
-    "key": "brutality",
-    "label": "Brutality (hidden Exulis attribute)",
-    "default": 10
-   },
    "note": "Per 10 Brutality"
   },
   "659": {
@@ -2614,13 +2609,8 @@
    "mod": "increased",
    "confidence": "D",
    "ailment": "Haste",
-   "per": "input:rampancy",
+   "per": "converted_attr:vit",
    "factor": 0.1,
-   "input": {
-    "key": "rampancy",
-    "label": "Rampancy (hidden Exulis attribute)",
-    "default": 10
-   },
    "note": "Per 10 Rampancy"
   },
   "660": {
@@ -2629,13 +2619,8 @@
    "mod": "more",
    "confidence": "D",
    "tags": "Necrotic|Void|Poison",
-   "per": "input:apathy",
+   "per": "converted_attr:att",
    "factor": 0.1,
-   "input": {
-    "key": "apathy",
-    "label": "Apathy (hidden Exulis attribute)",
-    "default": 10
-   },
    "note": "Per 10 Apathy"
   },
   "666": {

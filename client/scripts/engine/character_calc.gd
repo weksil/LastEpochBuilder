@@ -46,7 +46,7 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 
 		var mods: Array[StatMod] = store.untagged_mods(properties)
 		var breakdown: String = _format_breakdown(mods, str(value))
-		var converted: String = BuildMods.converted_attribute(store, _attribute_record(i))
+		var converted: String = BuildMods.converted_attribute(store, GameData.attribute_by_property(attr_id))
 		if converted != "":
 			# the game shows the converted attribute in place of the original one
 			attr_name = LE.t(converted)
@@ -61,14 +61,6 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 		})
 
 	return rows
-
-
-## attributes.json record of an attribute index (0 Strength … 4 Attunement), {} if absent.
-static func _attribute_record(index: int) -> Dictionary:
-	for attr: Dictionary in GameData.attributes:
-		if int(attr.get("attribute", -1)) == index:
-			return attr
-	return {}
 
 
 ## Resources: Health, Mana, Health Regen, Mana Regen

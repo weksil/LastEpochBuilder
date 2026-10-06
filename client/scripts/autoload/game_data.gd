@@ -221,6 +221,14 @@ func mastery_bonus(tree_id: String, mastery: int) -> Dictionary:
 	return _mastery_bonuses.get(tree_id, {}).get(mastery, {})
 
 
+## attributes.json record of an attribute by its stat property (19 Strength … 23 Attunement), {} if absent.
+func attribute_by_property(property: int) -> Dictionary:
+	for attr: Dictionary in attributes:
+		if int(attr.get("statProperty", -1)) == property:
+			return attr
+	return {}
+
+
 ## Human-readable name of a data record: displayName → abilityName → name.
 func display_name(rec: Dictionary) -> String:
 	for key: String in ["displayName", "abilityName", "name"]:

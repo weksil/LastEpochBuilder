@@ -1110,9 +1110,6 @@ msgstr "Только Предковый саблезуб"
 msgid "Ancient Flight for v sec on move after attack"
 msgstr "Древний полёт на v с при движении после атаки"
 
-msgid "Apathy (hidden Exulis attribute)"
-msgstr "Apathy (скрытый атрибут Exulis)"
-
 msgid "Application area"
 msgstr "Область применения"
 
@@ -2061,9 +2058,6 @@ msgstr "Привязан к тотему"
 
 msgid "Bow ability repeat (chance)"
 msgstr "Повтор лучного умения (шанс)"
-
-msgid "Brutality (hidden Exulis attribute)"
-msgstr "Brutality (скрытый атрибут Exulis)"
 
 msgid "Bubble effects after exit, s"
 msgstr "Эффекты пузыря после выхода, с"
@@ -5667,9 +5661,6 @@ msgstr "Стаки Прорастания в форме Сприггана"
 msgid "Guaranteed echo after long jump (>4 m)"
 msgstr "Гарантированное эхо после дальнего прыжка (>4 м)"
 
-msgid "Guile (hidden Exulis attribute)"
-msgstr "Guile (скрытый атрибут Exulis)"
-
 msgid "Half of healing over time (4 s)"
 msgstr "Половина лечения идёт со временем (4 с)"
 
@@ -7189,9 +7180,6 @@ msgstr "Булава в руках"
 
 msgid "Mace in hands"
 msgstr "В руках булава"
-
-msgid "Madness (hidden Exulis attribute)"
-msgstr "Madness (скрытый атрибут Exulis)"
 
 msgid "Maelstrom active"
 msgstr "Мальстрём активен"
@@ -9606,9 +9594,6 @@ msgstr "Эффект Rampage"
 
 msgid "Rampage resets Fire Breath cooldown"
 msgstr "Rampage сбрасывает откат Fire Breath"
-
-msgid "Rampancy (hidden Exulis attribute)"
-msgstr "Rampancy (скрытый атрибут Exulis)"
 
 msgid "Range f + 2"
 msgstr "Дальность f + 2"
@@ -14158,3 +14143,9 @@ msgstr "100%% атрибута %s преобразуется в %s"
 
 msgid "%s: special stat (%s) — not counted"
 msgstr "%s: особый стат (%s) — не учитывается"
+
+msgid "%s: %s — counted when: %s"
+msgstr "%s: %s — учитывается, когда: %s"
+
+msgid "Rampancy: more damage taken while you don't have Frenzy"
+msgstr "Неистовство: больше получаемого урона, пока на вас нет Frenzy"

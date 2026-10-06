@@ -31,7 +31,7 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	_add_blessings(build, store, notes)
 	_add_set_bonuses(build, store, notes)
 	UniqueEffects.apply_global(build, store, notes, "pre")
-	_add_attributes(store, notes)
+	_add_attributes(build, store, notes)
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
@@ -494,8 +494,9 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 
 ## Per-point stats of every attribute. A corrupted attribute ("Vitality Converted to Rampancy": SP 98 with the tags of
 ## corruptedFlag, e.g. a corrupted amulet affix) gives corruptedPerPoint instead of perPoint (07a §2.2); its special
-## PlayerProperty / AbilityProperty stats have no model and go to the notes.
-static func _add_attributes(store: StatStore, notes: Array[String]) -> void:
+## PlayerProperty stats go through the player models of unique_effect_models.json, those without a model (and the
+## AbilityProperty ones) go to the notes.
+static func _add_attributes(build: Node, store: StatStore, notes: Array[String]) -> void:
 	var all_attr: float = _sum_added_any_tags(store, LE.ALL_ATTRIBUTES)
 	for attr: Dictionary in GameData.attributes:
 		var index: int = int(attr.get("attribute", 0))
@@ -508,11 +509,31 @@ static func _add_attributes(store: StatStore, notes: Array[String]) -> void:
 		for per_point: Dictionary in attr.get("corruptedPerPoint" if converted != "" else "perPoint", []):
 			var prop_id: int = int(per_point.get("property", 0))
 			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
-				var label: String = str(per_point.get("playerPropertyName", per_point.get("propertyName", prop_id)))
-				notes.append(LE.t("%s: special stat (%s) — not counted") % [source, label])
+				_add_attribute_special(build, store, notes, per_point, n, source)
 				continue
 			var mod: StatMod = stat_from_record(per_point, source)
 			store.add(mod.scaled(float(n)))
+
+
+## Special per-point stat of a corrupted attribute: the player model of its PlayerProperty index with value = per point × N.
+static func _add_attribute_special(build: Node, store: StatStore, notes: Array[String], per_point: Dictionary, n: int, source: String) -> void:
+	var label: String = str(per_point.get("playerPropertyName", per_point.get("propertyName", "")))
+	var model: Dictionary = {}
+	if int(per_point.get("property", 0)) == LE.PLAYER_PROPERTY:
+		model = GameData.unique_player_model(int(per_point.get("tags", -1)))
+	if str(model.get("kind", "")) != "stat":
+		notes.append(LE.t("%s: special stat (%s) — not counted") % [source, label])
+		return
+	var ctx: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": ""}
+	var reason: String = EffectModels.blocked(model, ctx)
+	if reason != "":
+		notes.append(LE.t("%s: %s — counted when: %s") % [source, label, reason])
+		return
+	var more: Array = per_point.get("more", [])
+	var v: float = (float(more[0]) if not more.is_empty() else float(per_point.get("added", 0.0)) + float(per_point.get("increased", 0.0))) * n
+	var mod: StatMod = EffectModels.make_mod(model, v, ctx, source)
+	if mod != null:
+		store.add(mod)
 
 
 ## Name of the attribute this one is converted to ("Rampancy" for "Vitality Converted to Rampancy"), "" if it is not.
