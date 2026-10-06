@@ -34,7 +34,6 @@ func _prepare_build() -> void:
 	Build.set_enemy_ailment(3, 2)
 	Build.set_player_state("haste", true)
 	Build.set_skill_input(0, "buff_active", false)
-	Build.set_skill_hits(1, 2.5)
 	Build.selected_skill = 2
 	for unique: Dictionary in GameData.uniques:
 		if ItemCompare.target_slot({"base": int(unique.get("baseType", -1))}, "") != "":
@@ -81,7 +80,11 @@ func _roundtrip() -> void:
 	_check(not ailments.is_empty(), "enemy ailments are empty")
 	for key: Variant in ailments:
 		_check(key is int and ailments[key] is int, "ailments must be int -> int")
-	_check(Build.skills[1]["hits"] is float and Build.skills[1]["hits"] == 2.5, "hits must be float 2.5")
+	# the hidden "hits per use" field: a saved value other than 1 is reset on load
+	var saved: Dictionary = BuildCodec.to_dict(Build)
+	saved["skills"][1]["hits"] = 2.5
+	var reloaded: Dictionary = BuildCodec.from_dict(saved)
+	_check(reloaded["ok"] and float(reloaded["skills"][1]["hits"]) == 1.0, "saved hits must be reset to 1.0")
 	_check(Build.skills[0]["inputs"].get("buff_active") == false, "skill input lost")
 	_check(Build.enemy["armour"] is int and Build.enemy["armour"] == 500, "enemy armour must be int 500")
 	_check(Build.player_state["haste"] == true, "player haste lost")

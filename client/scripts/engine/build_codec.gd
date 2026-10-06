@@ -200,7 +200,7 @@ static func _skills(raw_skills: Variant, warnings: Array[String]) -> Array:
 			warnings.append(LE.t("Skill %d (%s): %d unknown nodes skipped.") % [i + 1, ability_id, tree["unknown"]])
 		if raw.get("inputs") is Dictionary:
 			skill["inputs"] = (raw["inputs"] as Dictionary).duplicate(true)
-		skill["hits"] = maxf(float(raw.get("hits", 1.0)), 0.0)
+		skill["hits"] = 1.0  # the "hits per use" field is hidden (projectile selector instead): old saved values are reset
 		var mode: String = str(raw.get("projectile_mode", "average"))
 		skill["projectile_mode"] = mode if SkillCalc.PROJECTILE_MODES.has(mode) else "average"
 	return skills

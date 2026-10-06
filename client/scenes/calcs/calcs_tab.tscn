@@ -81,6 +81,7 @@ theme_override_constants/v_separation = 6
 columns = 2
 
 [node name="HitsRow" type="HBoxContainer" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
