@@ -28,9 +28,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # LFS objects come from a cache keyed on the client's LFS file list, so a build only spends
+      # LFS bandwidth when client assets change; research/** LFS files are not needed by the export.
       - uses: actions/checkout@v4
+
+      - name: List LFS objects of the client
+        run: git lfs ls-files --long --include="client/**" | cut -d' ' -f1 | sort > .lfs-ids
+
+      - name: Cache LFS objects
+        uses: actions/cache@v4
         with:
-          lfs: true
+          path: .git/lfs/objects
+          key: lfs-client-${{ hashFiles('.lfs-ids') }}
+          restore-keys: lfs-client-
+
+      - name: Pull LFS files of the client
+        run: |
+          git lfs pull --include="client/**"
+          rm .lfs-ids
 
       - uses: actions/setup-python@v5
         with:

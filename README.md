@@ -4,7 +4,7 @@
 
 Runs in any desktop browser with WebGL 2; saved builds stay in that browser. A Windows version is also available:
 
-## [⬇ Download Last Epoch Builder 0.1.2 for Windows x64](https://github.com/weksil/LastEpochBuilder/releases/download/v0.1.2/LastEpochBuilder-0.1.2-windows-x64.zip)
+## [⬇ Download Last Epoch Builder 0.1.4 for Windows x64](https://github.com/weksil/LastEpochBuilder/releases/download/v0.1.4/LastEpochBuilder-0.1.4-windows-x64.zip)
 
 All versions and release notes: [Releases](https://github.com/weksil/LastEpochBuilder/releases/latest).
 No installation: unzip and run `LastEpochBuilder.exe`.

@@ -1,4 +1,4 @@
-Last Epoch Builder 0.1.2 for Windows x64
+Last Epoch Builder 0.1.4 for Windows x64
 ========================================
 
 A Path of Building style planner for Last Epoch (game version 1.5.0, Season 5): exact numbers with a breakdown

@@ -257,7 +257,7 @@ On first launch, Claude Code will ask for permission to use the project MCP serv
 ### Release build
 
 ```
-.uild_windows.ps1 -Version 0.1.2
+.uild_windows.ps1 -Version 0.1.4
 ```
 Needs Godot 4.7 with the 4.7 export templates: the console exe is taken from `-Godot <path>`, else the `GODOT` environment variable,
 else `godot` on `PATH`. The script copies
