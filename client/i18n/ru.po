@@ -14194,3 +14194,6 @@ msgstr "В цель попадает один снаряд"
 
 msgid "Projectile count is an estimate: %s"
 msgstr "Число снарядов — оценка: %s"
+
+msgid "chance to cast %s"
+msgstr "шанс применить %s"

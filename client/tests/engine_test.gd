@@ -23,6 +23,7 @@ func _ready() -> void:
 	_detonations_and_maintained_dot()
 	_item_compare()
 	_projectiles()
+	_item_triggers()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -862,13 +863,17 @@ func _detonations_and_maintained_dot() -> void:
 	var uses: float = _section_value(r, "Speed and mana", "Uses per second")
 	_check("Transplant: one damage component", _count_sections(r, HEAD), 1.0)
 	_check("Transplant: no duplicate DetonateBody sections", _count_prefixed_sections(r, "DetonateBody:"), 0.0)
-	_check("Transplant: no duplicate per-component DPS rows", _count_rows(r, "Against enemy", "DPS vs enemy: DetonateBody"), 0.0)
+	# the helmet affix «Chance to cast Marrow Shards when you cast Transplant» adds a trigger component, so the
+	# per-component DPS rows are listed: DetonateBody once
+	_check("Transplant: no duplicate per-component DPS rows", _count_rows(r, "Against enemy", "DPS vs enemy: DetonateBody"), 1.0)
+	var marrow: float = _section_value(r, "Against enemy", "DPS vs enemy: Marrow Shards")
+	_check("Transplant: Marrow Shards affix trigger counted", 1.0 if marrow > 0.0 else 0.0, 1.0)
 	var avg: float = _section_value(r, "Against enemy", "Average hit vs enemy")
 	var ail: float = _section_value(r, "Against enemy", "Ailment DPS vs enemy")
 	# the sample build has «Reign of Blood» (explodes at arrival): the prefab detonation + 1 extra per cast
 	_check("Transplant: 2 detonations per cast with the node", _section_value(r, HEAD, "Damage events per second"), uses * 2.0, 0.005)
 	_check("Transplant: hit DPS = average hit × casts/s × 2", _section_value(r, "Against enemy", "Hit DPS vs enemy"), avg * uses * 2.0, 0.05)
-	_check("Transplant: DPS = hit DPS + ailments once", _section_value(r, "Against enemy", "DPS vs enemy"), avg * uses * 2.0 + ail, 0.05)
+	_check("Transplant: DPS = hit DPS + ailments once + Marrow Shards", _section_value(r, "Against enemy", "DPS vs enemy"), avg * uses * 2.0 + ail + marrow, 0.05)
 	# without the node there is one detonation per cast: the same average hit, half the hit DPS
 	var tree: Dictionary = Build.skills[3]["tree"]
 	var node_points: Variant = tree.get(17)
@@ -1050,3 +1055,34 @@ func _projectiles() -> void:
 	Build.set_skill_projectile_mode(0, "all")
 	_check("minion thorns with shotgun, all", float(SkillCalc.projectile_hits(Build, 0, GameData.ability_by_name("ThornTotemAttack"), shotgun_minion)["factor"]), 4.0)
 	Build.set_skill(0, "")
+
+
+## Skills cast by item affixes count in the DPS of the skill that triggers them (docs/ENGINE.md §5.4.3).
+func _item_triggers() -> void:
+	print("--- item triggers")
+	var items_before: Dictionary = Build.items.duplicate(true)
+	Build.set_class(4)  # Rogue
+	Build.set_skill(0, "mush9")  # Multishot (Bow)
+	Build.items.erase("weapon")
+	var plain: Dictionary = SkillCalc.compute(Build, 0)
+	Build.items["weapon"] = {"base": 23, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 966, "kind": "prefix", "tier": 1, "roll": 255}]}
+	var with_bow: Dictionary = SkillCalc.compute(Build, 0)
+	var shuriken_row: Dictionary = CalcSummary.find_row(with_bow, "DPS vs enemy: %s" % "Shurikens")
+	print("  rows: %s" % [shuriken_row])
+	_check("affix 966: Shurikens on bow crit is a DPS component", 0.0 if shuriken_row.is_empty() else 1.0, 1.0)
+	var dps_plain: float = float(CalcSummary.find_row(plain, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+	var dps_bow: float = float(CalcSummary.find_row(with_bow, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+	_check("affix 966: the total DPS grows", 1.0 if dps_bow > dps_plain else 0.0, 1.0)
+	# a character-event trigger (Fire Aura when hit) is counted in one slot only
+	Build.set_skill(1, "srk21")
+	Build.items["helmet"] = {"base": 0, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 396, "kind": "prefix", "tier": 1, "roll": 255}]}
+	var keys: Array[String] = []
+	for slot: int in [0, 1]:
+		var found: bool = false
+		for inp: Dictionary in SkillCalc.compute(Build, slot)["inputs"]:
+			found = found or str(inp.get("key", "")) == "events_hit_taken"
+		keys.append("%d:%s" % [slot, found])
+	_check("Fire Aura when hit: only the first slot", 1.0 if keys == ["0:true", "1:false"] else 0.0, 1.0)
+	Build.set_skill(0, "")
+	Build.set_skill(1, "")
+	Build.items = items_before

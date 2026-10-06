@@ -12,6 +12,7 @@ var _trees: Array = []
 var _tree_node_stats: Dictionary = {}
 var _abilities: Dictionary = {}          # playerAbilityID -> ability
 var _abilities_by_name: Dictionary = {}  # name -> record (every category; players' records win)
+var _abilities_by_index: Dictionary = {}  # AbilityID enum value -> record (a player record wins)
 var _ability_children: Dictionary = {}   # parent name -> [records listing it in `parents`]
 var _code_damage: Dictionary = {}        # ability name -> {ability, kind, components[]} (abilities_code_damage.json)
 var _projectiles: Dictionary = {}        # ability name -> {abilityName, projectiles, shotgun, confidence, evidence}
@@ -165,6 +166,11 @@ func _index_ability_name(ab: Dictionary) -> void:
 		return
 	if not _abilities_by_name.has(ab_name) or (ab.get("category") == "player" and _abilities_by_name[ab_name].get("category") != "player"):
 		_abilities_by_name[ab_name] = ab
+	var enum_value: Variant = ab.get("abilityIDEnum", {}).get("value") if ab.get("abilityIDEnum") is Dictionary else null
+	if enum_value != null:
+		var index: int = int(enum_value)
+		if not _abilities_by_index.has(index) or (ab.get("category") == "player" and _abilities_by_index[index].get("category") != "player"):
+			_abilities_by_index[index] = ab
 	for parent: Variant in ab.get("parents", []):
 		if not _ability_children.has(str(parent)):
 			_ability_children[str(parent)] = []
@@ -272,6 +278,11 @@ func get_ability(pid: String) -> Dictionary:
 ## shotgun (several projectiles of one use can hit the same target), confidence, evidence}; {} if it fires none.
 func projectile_info(ability_name: String) -> Dictionary:
 	return _projectiles.get(ability_name, {})
+
+
+## Ability record by its AbilityID enum value (affix "chance to cast" mods name the skill by it), {} if unknown.
+func ability_by_index(index: int) -> Dictionary:
+	return _abilities_by_index.get(index, {})
 
 
 ## Any ability record by its `name` (every category, not only player abilities).

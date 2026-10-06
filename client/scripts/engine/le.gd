@@ -117,6 +117,8 @@ const THORNS: int = 85
 const WARD_REGEN: int = 92
 const MAX_HEALTH_AS_ET: int = 96
 const PLAYER_PROPERTY: int = 98
+## SP 127: chance to cast the skill extraTag (AbilityID) on specialTag 1 = hit / 2 = crit with skills of `tags`.
+const CHANCE_TO_CAST_FOR_TAGS: int = 127
 const PHYS_VOID_RES: int = 106
 const NECRO_POISON_RES: int = 107
 const DAMAGE_TAKEN_BUFF: int = 108

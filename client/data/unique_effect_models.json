@@ -2767,6 +2767,79 @@
    "per": "res:2",
    "factor": 5,
    "note": "Per 20% cold resistance (no limit)"
+  },
+  "11": {
+   "kind": "trigger",
+   "ability": "AvalancheSnowballAoE",
+   "on": "use",
+   "chance": "v",
+   "icd": 0.3333,
+   "skill_any": "Spell",
+   "note": "Avalanche Boulder on spell cast, up to 3 per second",
+   "confidence": "D?"
+  },
+  "12": {
+   "kind": "trigger",
+   "ability": "AvalancheSnowballAoE",
+   "on": "use",
+   "chance": "v",
+   "icd": 0.3333,
+   "skill_any": "Melee",
+   "note": "Avalanche Boulder on melee attack, up to 3 per second",
+   "confidence": "D?"
+  },
+  "26": {
+   "kind": "trigger",
+   "ability": "FireAura",
+   "on": "crit",
+   "chance": "v",
+   "icd": 0.3333,
+   "note": "Fire Aura on crit, up to 3 per second",
+   "confidence": "D"
+  },
+  "31": {
+   "kind": "trigger",
+   "ability": "ElementalNova",
+   "on": "hit_taken",
+   "chance": "v",
+   "note": "Elemental Nova when hit",
+   "confidence": "D"
+  },
+  "44": {
+   "kind": "trigger",
+   "ability": "FireAura",
+   "on": "kill",
+   "chance": "v",
+   "icd": 0.3333,
+   "skill_any": "Fire",
+   "note": "Fire Aura on kill with fire skills, up to 3 per second",
+   "confidence": "D"
+  },
+  "49": {
+   "kind": "trigger",
+   "ability": "VoidRift",
+   "on": "kill",
+   "chance": "v",
+   "note": "Void Rift on kill",
+   "confidence": "D"
+  },
+  "54": {
+   "kind": "trigger",
+   "ability": "Smite",
+   "on": "hit",
+   "chance": "v",
+   "icd": 0.2,
+   "skill_any": "Throwing",
+   "note": "Smite on throwing hit, up to 10 per 2 seconds",
+   "confidence": "D"
+  },
+  "73": {
+   "kind": "trigger",
+   "ability": "PoisonNova",
+   "on": "hit_taken",
+   "chance": "v",
+   "note": "Poison Nova when hit",
+   "confidence": "D"
   }
  },
  "ability": {
@@ -5552,6 +5625,14 @@
   },
   "923:12": {
    "kind": "conversion",
+   "confidence": "D"
+  },
+  "253:1": {
+   "kind": "trigger",
+   "ability": "MarrowShards",
+   "on": "use",
+   "chance": "v",
+   "note": "Marrow Shards when you cast Transplant",
    "confidence": "D"
   }
  },

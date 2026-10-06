@@ -5,6 +5,11 @@ class_name UniqueEffects
 
 const SKILL_KINDS: Array[String] = ["trigger", "component", "minion_stat", "param", "resource", "speed", "mana", "cooldown"]
 const DERIVED_SOURCES: Array[String] = ["GlobalConditionalDamage(more)", "DamagePerStackOfAilment", "AilmentConversion"]
+## Trigger events of the character, not of a skill's own uses or hits: such an item trigger is attached to one skill
+## only (the first filled slot), otherwise every skill on the bar would count it again.
+const CHARACTER_EVENTS: Array[String] = ["second", "hit_taken", "block", "dodge", "potion"]
+## Event of SP 127 ChanceToCastForTags by its specialTag.
+const CAST_FOR_TAGS_EVENTS: Dictionary = {1: "hit", 2: "crit"}
 
 
 ## Every special effect of the equipped uniques: {slot, unique, effect, model, pp, label, ability_index}.
@@ -30,6 +35,40 @@ static func entries(build: Node) -> Array[Dictionary]:
 				"slot": slot, "item": item, "unique": u, "effect": effect, "model": model, "ability_index": ability_index,
 				"pp": _effect_value(u, item, effect),
 				"label": "%s: %s — %s" % [ItemMods.slot_label(slot, item), GameData.display_name(u), str(effect.get("name", src))],
+			})
+	out.append_array(_affix_triggers(build))
+	return out
+
+
+## "Chance to cast X" affixes of items and idols (SP 98 / 58 with a trigger model, SP 127 ChanceToCastForTags): entries
+## in the format of `entries`. Only trigger models are taken: other SP 98 / 58 affix effects are not modelled for affixes.
+static func _affix_triggers(build: Node) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for slot: String in build.items:
+		if not (BuildMods.SLOTS.has(slot) or IdolGrid.is_idol_key(slot)):
+			continue
+		var item: Dictionary = build.items[slot]
+		for mod: StatMod in ItemMods.item_mods(slot, item):
+			var model: Dictionary = {}
+			var ability_index: int = -1
+			if mod.property == LE.PLAYER_PROPERTY:
+				model = GameData.unique_player_model(mod.tags)
+			elif mod.property == LE.ABILITY_PROPERTY:
+				ability_index = mod.tags
+				model = GameData.unique_ability_model(mod.tags, mod.special)
+			elif mod.property == LE.CHANCE_TO_CAST_FOR_TAGS and CAST_FOR_TAGS_EVENTS.has(mod.special):
+				var cast: Dictionary = GameData.ability_by_index(mod.extra)
+				if not cast.is_empty():
+					model = {"kind": "trigger", "ability": str(cast.get("name", "")), "on": CAST_FOR_TAGS_EVENTS[mod.special],
+						"chance": "v", "skill_mask": mod.tags}
+			if str(model.get("kind", "")) != "trigger":
+				continue
+			var cast_name: String = str(model.get("ability", ""))
+			var cast_title: String = str(GameData.ability_by_name(cast_name).get("abilityName", cast_name))
+			out.append({
+				"slot": slot, "item": item, "unique": {}, "effect": {"source": "Affix", "ability": cast_name}, "model": model,
+				"ability_index": ability_index, "pp": mod.added,
+				"label": "%s — %s" % [mod.source, LE.t("chance to cast %s") % cast_title],
 			})
 	return out
 
@@ -77,12 +116,16 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			if e["ability_index"] != ability_index:
 				continue
 			routed = kind != "mana_added"
-		elif model.has("skill_any"):
-			if (ability_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
+		elif model.has("skill_any") or model.has("skill_mask"):
+			var mask: int = int(model["skill_mask"]) if model.has("skill_mask") else LE.tag_mask(str(model["skill_any"]))
+			if (ability_tags & mask) == 0:
 				continue
+			routed = kind == "trigger"
 		elif SKILL_KINDS.has(kind) or (kind == "stat" and _is_skill_scoped(model)):
 			routed = true
 		else:
+			continue
+		if routed and kind == "trigger" and CHARACTER_EVENTS.has(str(model.get("on", ""))) 				and int(result["ctx"].get("slot", -1)) != first_skill_slot(build):
 			continue
 		if routed:
 			var ctx: Dictionary = result["ctx"]
@@ -103,6 +146,14 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 		var mod: StatMod = EffectModels.make_mod(model, e["pp"], ctx2, e["label"])
 		if mod != null:
 			store.add(mod)
+
+
+## First slot of the bar that holds a skill (-1 if none): character-event item triggers are counted there.
+static func first_skill_slot(build: Node) -> int:
+	for slot: int in range(build.skills.size()):
+		if str((build.skills[slot] as Dictionary).get("ability", "")) != "":
+			return slot
+	return -1
 
 
 ## Stat model that belongs to the skill (minion or damage-component scope), not to the character.

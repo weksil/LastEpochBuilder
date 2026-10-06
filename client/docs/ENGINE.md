@@ -225,6 +225,14 @@ AbilityProperty. The value `pp` is the roll of the carrier mod: SP 98 with `tags
 - No model → a note with the reason: "does not affect damage or defenses" (flag/util), "trigger or a separate mechanic" (proc,
   components), "not modeled" (with the formula from the code); idol altars are not supported.
 
+**Item triggers.** "Chance to cast X" affixes of items and idols (`_affix_triggers`) join `entries` with trigger models
+only: SP 98 (`player[ppIndex]` of `unique_effect_models.json`), SP 58 (`ability["AbilityID:index"]`) and SP 127
+ChanceToCastForTags (specialTag 1 = hit, 2 = crit; `tags` = the skill tags it needs → model `skill_mask`; `extraTag` =
+AbilityID of the cast skill, `GameData.ability_by_index`). A trigger becomes a damage component (§9.3) of every bar skill
+that matches (`skill_any` / `skill_mask`), so its DPS is part of that skill's "DPS vs enemy" and of the total on the stats
+panel. Triggers on character events (`second`, `hit_taken`, `block`, `dodge`, `potion`) are attached to the first filled
+slot only, so the total does not count them once per skill.
+
 ### 5.5 Skill tree — `BuildMods.skill_store(build, slot, global) -> Dictionary`
 → `{store: StatStore (parent = global), notes, use_speed_inc: float, use_speed_more: float, mana_inc: float, mana_added: float}`.
 For a node with `p > 0` from `skill_effects(treeID)`:
