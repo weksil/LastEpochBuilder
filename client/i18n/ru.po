@@ -14235,3 +14235,288 @@ msgstr ""
 "Порча %d: f(c) = %s (0.6c до 100, 0.002·c^1.52 + 1.055c − 47.69 выше).\n"
 "Враг получает %s more к здоровью и урону от ударов и %s more к урону DoT.\n"
 "Порча не меняет ваш DPS."
+
+msgid "damage modifier of the attack %s"
+msgstr "модификатор урона атаки %s"
+
+msgid "%s: damage more %s%s"
+msgstr "%s: больше урона %s%s"
+
+msgid "Custom hit"
+msgstr "Свой удар"
+
+msgid "Custom hit: the numbers are the final enemy damage, no level or corruption scaling"
+msgstr "Свой удар: числа — итоговый урон врага, без масштабирования уровнем и порчей"
+
+msgid "Base damage of the attack: %s (boss authored at level %d)"
+msgstr "Базовый урон атаки: %s (босс создан для уровня %d)"
+
+msgid "× %s level damage modifier: (damageModifier[%d] + 1)·1.06"
+msgstr "× %s модификатор урона уровня: (damageModifier[%d] + 1)·1.06"
+
+msgid "× %s damage approximation: original[%d] / original[%d]"
+msgstr "× %s приближение урона: original[%d] / original[%d]"
+
+msgid "× %s corruption %d: 1 + %s·f(c), f(c) = %s"
+msgstr "× %s порча %d: 1 + %s·f(c), f(c) = %s"
+
+msgid "× %s: damage every %s s, shown per second"
+msgstr "× %s: урон каждые %s с, показан в секунду"
+
+msgid "Resistance: 1 − min(%s, 75%%) + %s area penetration + %s attack penetration = ×%s"
+msgstr "Сопротивление: 1 − min(%s, 75%%) + %s пробивание от уровня зоны + %s пробивание атаки = ×%s"
+
+msgid "Damage taken: ×%s"
+msgstr "Получаемый урон: ×%s"
+
+msgid "More damage taken while moving: ×%s"
+msgstr "Больше получаемого урона в движении: ×%s"
+
+msgid "Armor %s: ×%s"
+msgstr "Броня %s: ×%s"
+
+msgid " (DoT: armor mitigation × %s)"
+msgstr " (урон со временем: снижение бронёй × %s)"
+
+msgid "Damage taken buff: ×%s"
+msgstr "Бафф получаемого урона: ×%s"
+
+msgid "Attack"
+msgstr "Атака"
+
+msgid "Kind"
+msgstr "Вид"
+
+msgid "Hit"
+msgstr "Удар"
+
+msgid "Damage over time"
+msgstr "Урон со временем"
+
+msgid "%s damage"
+msgstr "%s: урон"
+
+msgid "Total damage per hit"
+msgstr "Весь урон за удар"
+
+msgid "Total damage per second"
+msgstr "Весь урон в секунду"
+
+msgid "Enemy crit chance against you"
+msgstr "Шанс крита врага по вам"
+
+msgid "(%s attack + %s added chance to be crit) × (1 − %s crit avoidance)"
+msgstr "(%s атака + %s доп. шанс получить крит) × (1 − %s избежание крита)"
+
+msgid "Enemy crit multiplier against you"
+msgstr "Множитель крита врага по вам"
+
+msgid "Attack crit multiplier ×%s, reduced bonus damage taken from crits %s"
+msgstr "Множитель крита атаки ×%s, снижение доп. урона от критов %s"
+
+msgid "Area level"
+msgstr "Уровень зоны"
+
+msgid "Sets the enemy penetration (1% per level, max 75%) and the armor, dodge and block formulas"
+msgstr "Задаёт пробивание врага (1% за уровень, макс. 75%) и формулы брони, уклонения и блока"
+
+msgid "Enemy attack"
+msgstr "Атака врага"
+
+msgid "%s: damage taken"
+msgstr "%s: получаемый урон"
+
+msgid "After resistances, armor and damage taken"
+msgstr "После сопротивлений, брони и получаемого урона"
+
+msgid "%s of the raw %s"
+msgstr "%s от исходных %s"
+
+msgid "Mitigation by damage type"
+msgstr "Снижение урона по типам"
+
+msgid "After per-type layers: %s"
+msgstr "После слоёв по типам: %s"
+
+msgid "Dodge rating %s at area level %d"
+msgstr "Рейтинг уклонения %s на уровне зоны %d"
+
+msgid "A parried hit deals no damage; max 75%"
+msgstr "Парированный удар не наносит урона; максимум 75%"
+
+msgid "Glancing blow chance"
+msgstr "Шанс скользящего удара"
+
+msgid "A glancing blow takes 35% less damage"
+msgstr "Скользящий удар наносит на 35% меньше урона"
+
+msgid "Block effectiveness %s at area level %d"
+msgstr "Эффективность блока %s на уровне зоны %d"
+
+msgid "× %s not dodged and not parried: (1 − %s)·(1 − %s)"
+msgstr "× %s без уклонения и парирования: (1 − %s)·(1 − %s)"
+
+msgid "× %s glancing: 1 − 35%%·%s"
+msgstr "× %s скользящий удар: 1 − 35%%·%s"
+
+msgid "× %s block: 1 − %s·%s"
+msgstr "× %s блок: 1 − %s·%s"
+
+msgid "× %s crit: 1 + %s·(%s − 1)"
+msgstr "× %s крит: 1 + %s·(%s − 1)"
+
+msgid "Average damage per hit"
+msgstr "Средний урон за удар"
+
+msgid "Avoidance"
+msgstr "Избежание урона"
+
+msgid "Current ward from the fight parameters. Ward your regeneration holds against decay: %s"
+msgstr "Текущий ward из параметров боя. Ward, который держит ваша регенерация против распада: %s"
+
+msgid "Less damage taken for the part of a hit below the endurance threshold"
+msgstr "Меньше урона для части удара ниже порога выносливости"
+
+msgid "1 mana absorbs 5 damage"
+msgstr "1 мана поглощает 5 урона"
+
+msgid "Damage taken from mana before health"
+msgstr "Урон по мане до здоровья"
+
+msgid "Damage taken from mana before ward"
+msgstr "Урон по мане до ward"
+
+msgid "Pool"
+msgstr "Запас"
+
+msgid "Full health %s, ward %s, endurance %s under the threshold %s"
+msgstr "Полное здоровье %s, ward %s, выносливость %s ниже порога %s"
+
+msgid "Damage that kills from full health"
+msgstr "Урон, убивающий с полного здоровья"
+
+msgid "After every per-type layer, without avoidance. %s"
+msgstr "После всех слоёв по типам, без избежания. %s"
+
+msgid "Maximum hit taken"
+msgstr "Максимальный удар"
+
+msgid "The largest raw hit of this attack's damage mix you survive without dodge, block, glancing or crit:\n%s / %s = %s"
+msgstr "Самый большой исходный удар с составом урона этой атаки, который вы переживёте без уклонения, блока, скользящего удара и крита:\n%s / %s = %s"
+
+msgid "Maximum crit taken"
+msgstr "Максимальный крит"
+
+msgid "Maximum hit taken / crit multiplier ×%s"
+msgstr "Максимальный удар / множитель крита ×%s"
+
+msgid "Worst hit of this attack"
+msgstr "Худший удар этой атаки"
+
+msgid "%s × crit ×%s × variance 1.2, no dodge or block"
+msgstr "%s × крит ×%s × разброс 1.2, без уклонения и блока"
+
+msgid "It kills you from full health"
+msgstr "Он убивает вас с полного здоровья"
+
+msgid "Hits to die"
+msgstr "Ударов до смерти"
+
+msgid "Average hits of %s from a full pool, no regeneration between hits"
+msgstr "Средние удары по %s с полного запаса, без регенерации между ударами"
+
+msgid "Effective health"
+msgstr "Эффективное здоровье"
+
+msgid "Hits to die × raw damage per hit: %s × %s"
+msgstr "Ударов до смерти × исходный урон удара: %s × %s"
+
+msgid "Damage taken per second"
+msgstr "Получаемый урон в секунду"
+
+msgid "Endurance and block do not apply to this calculation of damage over time"
+msgstr "Выносливость и блок в этом расчёте урона со временем не учитываются"
+
+msgid "Net health loss per second"
+msgstr "Чистая потеря здоровья в секунду"
+
+msgid "Damage taken per second − health regen %s"
+msgstr "Получаемый урон в секунду − регенерация здоровья %s"
+
+msgid "Seconds to die"
+msgstr "Секунд до смерти"
+
+msgid "(Health + ward) / damage taken per second, no regeneration"
+msgstr "(Здоровье + ward) / получаемый урон в секунду, без регенерации"
+
+msgid "%s maximum hit"
+msgstr "%s: максимальный удар"
+
+msgid "%s / ×%s (resistance, area penetration, damage taken, armor)"
+msgstr "%s / ×%s (сопротивление, пробивание от уровня зоны, получаемый урон, броня)"
+
+msgid "Maximum hit taken by damage type"
+msgstr "Максимальный удар по типам урона"
+
+msgid "Damage taken as another type (SP 31–37)"
+msgstr "Получение урона как другого типа (SP 31–37)"
+
+msgid "Dodge and block conversions (to armor, glancing blow, parry, endurance threshold)"
+msgstr "Преобразование уклонения и блока (в броню, скользящий удар, парирование, порог выносливости)"
+
+msgid "Conditional defenses of the character mutator (less damage taken, delayed damage by conditions)"
+msgstr "Условная защита мутатора персонажа (меньше получаемого урона, отложенный урон по условиям)"
+
+msgid "Health, ward and mana regenerated or leeched between hits"
+msgstr "Здоровье, ward и мана от регенерации и вампиризма между ударами"
+
+msgid "Boss mechanics without damage numbers (adds, phases, arenas)"
+msgstr "Механики боссов без чисел урона (помощники, фазы, арены)"
+
+msgid "Damage over time is shown per second: endurance, block and crit do not apply to it"
+msgstr "Урон со временем показан в секунду: выносливость, блок и крит к нему не применяются"
+
+msgid "Boss presets: end bosses of the monolith timelines and pinnacle bosses · \"+\" expands the breakdown"
+msgstr "Пресеты боссов: финальные боссы линий монолита и пиковые боссы · «+» раскрывает расчёт"
+
+msgid "The worst hit of this attack (crit, +20% variance, no dodge or block) kills you from full health"
+msgstr "Худший удар этой атаки (крит, +20% разброса, без уклонения и блока) убивает вас с полного здоровья"
+
+msgid "Fight parameters"
+msgstr "Параметры боя"
+
+msgid "Empowered monoliths and pinnacle bosses are area level 100. Corruption is the same value as on the \"Conditions\" tab: it raises boss hit damage by 1%·f(c) and damage over time by 0.5%·f(c)."
+msgstr "Усиленные монолиты и пиковые боссы — уровень зоны 100. Порча — то же значение, что во вкладке «Условия»: она повышает урон ударов босса на 1%·f(c), а урон со временем на 0.5%·f(c)."
+
+msgid "Enemy penetration (1% per level, max 75%) and the level used by the armor, dodge and block formulas"
+msgstr "Пробивание врага (1% за уровень, макс. 75%) и уровень в формулах брони, уклонения и блока"
+
+msgid "Enemy corruption, shared with the Conditions tab"
+msgstr "Порча врага, общая со вкладкой «Условия»"
+
+msgid "Ward you have when the hit lands, shared with the Conditions tab"
+msgstr "Ward в момент удара, общий со вкладкой «Условия»"
+
+msgid "Final enemy damage of one hit by type, before your defenses. Level and corruption do not scale it."
+msgstr "Итоговый урон одного удара врага по типам до вашей защиты. Уровень и порча его не масштабируют."
+
+msgid "Crit chance, %"
+msgstr "Шанс крита, %"
+
+msgid "Area level %d · corruption %d"
+msgstr "Уровень зоны %d · порча %d"
+
+msgid "raw damage you can take"
+msgstr "исходного урона вы выдержите"
+
+msgid "one hit, no avoidance"
+msgstr "один удар, без избежания"
+
+msgid "average hits from full health"
+msgstr "средних ударов с полного здоровья"
+
+msgid "seconds of the damage over time"
+msgstr "секунд урона со временем"
+
+msgid "of the raw damage, on average"
+msgstr "от исходного урона, в среднем"

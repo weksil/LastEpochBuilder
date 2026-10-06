@@ -59,6 +59,15 @@ breakdown: base damage, every "added", "increased" and "more" modifier with its 
 buff), the enemy's resistances and penetration. What the planner does not model is listed in **Not counted** at the bottom.
 The target and its state are set in **Conditions**.
 
+### Effective health against bosses
+
+**Defense** runs one enemy attack through your defenses, like "Maximum hit taken" and "Total EHP" in Path of Building.
+Pick an attack of a monolith timeline end boss or a pinnacle boss (Aberroth, Uber Aberroth, Morditas, Majasa, the
+Observer…) or type a custom hit. The attack is scaled to the area level and the corruption, then the tab shows your
+effective health, the maximum hit you survive, hits to die and the share of damage you take, with the breakdown of every
+layer: resistances against the enemy's area penetration, armor, damage taken, dodge, parry, glancing blow, block, enemy crits,
+ward, endurance and mana before health. It warns when the worst roll of the attack kills you from full health.
+
 ### Stat diff while editing an item
 
 ![Item editor: the unsaved changes diff follows the affix roll slider](docs/screenshots/item_diff.gif)

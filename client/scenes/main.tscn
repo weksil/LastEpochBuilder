@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/idols/idols_tab.tscn" id="10_idols"]
 [ext_resource type="PackedScene" path="res://scenes/import/letools_import_dialog.tscn" id="11_import"]
 [ext_resource type="PackedScene" path="res://scenes/builds/builds_dialog.tscn" id="12_builds"]
+[ext_resource type="PackedScene" path="res://scenes/defense/defense_tab.tscn" id="13_defense"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -170,10 +171,15 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 5
 
-[node name="Conditions" parent="Margin/Layout/Split/Tabs" instance=ExtResource("9_config")]
+[node name="Defense" parent="Margin/Layout/Split/Tabs" instance=ExtResource("13_defense")]
 visible = false
 layout_mode = 2
 metadata/_tab_index = 6
+
+[node name="Conditions" parent="Margin/Layout/Split/Tabs" instance=ExtResource("9_config")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 7
 
 [node name="StatsPanel" parent="Margin/Layout/Split" instance=ExtResource("6_stats")]
 layout_mode = 2

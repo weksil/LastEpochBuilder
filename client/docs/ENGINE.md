@@ -84,6 +84,7 @@ selected_skill: int = 0
 items: Dictionary          # slot:String -> {base: int, sub: int, implicit_rolls: Array[int], affixes: Array[{id:int, tier:int, roll:int}]}
 enemy: Dictionary          # see §6.1
 player_state: Dictionary   # {health: "full"|"high"|"normal"|"low"}
+defense: Dictionary        # the Defense tab settings, see §10
 ```
 Item slots and the allowed base `typeName` values:
 `helmet:HELMET, body:BODY_ARMOR, belt:BELT, boots:BOOTS, gloves:GLOVES, amulet:AMULET, ring1:RING, ring2:RING, relic:RELIC,
@@ -102,7 +103,7 @@ Methods: `set_skill(slot, ability_id)` (resets tree, level=20), `set_skill_level
 D, `LocalTreeData.ArePassiveNodeRequirementsMet`), `maxPoints`, the sum of points ≤ level; removing a point is forbidden if some
 node would stop being connected to the root (`Build.all_connected`); the `masteryRequirement` threshold is not used for skill nodes),
 `skill_points_spent(slot)`, `set_item(slot, dict)`, `clear_item(slot)`, `set_enemy(key, value)`,
-`set_enemy_ailment(ailment_id, stacks)`, `set_player_state(key, value)`.
+`set_enemy_ailment(ailment_id, stacks)`, `set_player_state(key, value)`, `set_defense(key, value)`.
 
 ## 4. Data — autoload `GameData` (to add)
 
@@ -605,3 +606,45 @@ Minions (§9.4) whose ability is in the file (Thorn Totem thorns, Skeleton Rogue
 rate of their `minion` component is multiplied by the same factor, with the summoning skill's mode and tree params; one
 row per minion ability ("<minion>: Projectiles hitting the target"). Without own projectiles `result.projectiles` is the
 minion's (a shotgun one preferred), so the selector is shown for such summons too. Check — `tests/engine_test.tscn` (`_projectiles`).
+
+## 10. Effective health — `engine/defense_calc.gd` (`class_name DefenseCalc`)
+
+The "Defense" tab, in the spirit of Path of Building's "Maximum hit taken" / "Total EHP": one enemy attack is run through
+the player side of `ProtectionClass.ApplyDamage` (research/06c §1). There is no EHP in the game client (06c §6).
+
+Settings: `Build.defense = {attack, area_level, custom_damage[7], custom_crit_chance, custom_crit_multi}`
+(`default_settings()`, saved in the build code; `settings_of(build)` merges the defaults). The enemy corruption is the
+Conditions value `Build.enemy.corruption`, the current ward is `Build.player_state.ward`.
+
+**Attacks.** `presets()` reads `research/data/game/boss_attacks.json` (built by the local `tools/extract/extract_boss_attacks.py`:
+the 10 monolith timeline end bosses and the pinnacle bosses — Aberroth, Herald of Oblivion (Uber Aberroth), Morditas,
+Majasa, Vision of the Observer, The Observer, the Uber Aberroth Harbingers; every ability found in the boss prefab or by the
+boss's asset name prefix, with its damage components). A preset is one damage component with non-zero damage; abilities
+of actors the boss spawns (`viaActor`) are skipped. `key = "<actorData>|<ability asset>|<component index>"`.
+Damage of a preset at area level L (the monster level), **D?** for the whole chain:
+- base `damage[7]` × `(1 + damageModifier)` of the component × the boss's own `Damage MORE` stats (`actorStats`, matched
+  with `LE.tags_match` against the component tags + Hit/DoT + the damage type);
+- × `(damageModifier[L] + 1)·1.06` × `originalDamageApproximation[L] / originalDamageApproximation[L0]` (ActorScaler, 06c §7,
+  `actor_scaler.json`; L0 = `actorLevel`);
+- × `1 + 0.01·f(c)` for hits, `1 + 0.005·f(c)` for damage over time (`Enemy.corruption_more`);
+- a non-hit component that repeats every `timing.damageInterval` seconds is shown per second (× 1/interval).
+The custom hit is the final damage, without level or corruption scaling.
+
+**Per-type layers** (`type_multiplier`, 06c §1 step 7): `1 − min(res, 0.75) + zonePen + pen` with
+`zonePen = min(0.01·L, 0.75)` (enemies penetrate players by area level, guide "Penetrations"), × damage taken SP 6
+(`HIT|DOT | type | health tags`), × more damage taken while moving SP 113 (only with the "moving" condition),
+× `1 − armour_mitigation(armor, L, type ≠ Physical)` (DoT: × min(SP 118, 1)), × `1 + damageTakenBuff` SP 108.
+**Avoidance** (hits only): average factor `(1 − dodge)(1 − parry)(1 − 0.35·glancing)(1 − block·blockDR)(1 + critChance·(critMulti − 1))`
+with dodge and block at area level L; enemy crit `(attack crit + SP 112)·(1 − SP 89)`, multiplier
+`max(1, 1 + (1 − SP 114)(cm − 1))` (06c §2.8).
+**Pool** (`take_damage`, 06c §1 steps 10–16): mana before ward SP 94, ward, mana before health SP 24 (1 mana = 5 damage),
+endurance (min(0.6, SP 75)) for the part below the endurance threshold (mode "health below threshold").
+Results: `lethal_damage` — the smallest post-layer damage that kills from full health (binary search);
+"Maximum hit taken" = lethal / (post-layer share of the attack mix), "Maximum crit taken" = that / crit multiplier;
+"Hits to die" — repeated average hits from a full pool without regeneration (fractional last hit); "Effective health" =
+hits to die × raw damage per hit; "Worst hit" = post-layer damage × crit multiplier × 1.2 (variance) — the tab warns when
+it kills from full health. DoT presets show damage taken per second and seconds to die instead. "Maximum hit taken by
+damage type" divides the lethal damage by the hit multiplier of each type without attack penetration.
+Not counted (`notes`): damage taken as another type (SP 31–37), dodge/block conversions, the conditional defenses of the
+character mutator (06c §0 f-slots), regeneration and leech between hits, boss mechanics without damage numbers.
+Check — `tests/defense_test.tscn` (06c §2.7/§2.9 vectors, scaling, presets, an imported build, the build code).

@@ -162,6 +162,16 @@ First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scen
 `%SkillSummary` — the sum over the bar (`HeroValueMain`), `%SkillBreakdown` — one line "<skill> — <DPS>" per contributing skill, highest first (`HeroSkillList`),
 `%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is every skill's breakdown.
 
+## Defense — `scripts/defense/defense_tab.gd` (`class_name DefenseTab extends VBoxContainer`)
+Scene `scenes/defense/defense_tab.tscn`, `@export section_scene, row_scene` (the `calc_section` / `calc_row` scenes of Calculations).
+`%AttackSelect` (`SearchSelect`): item 0 "Custom hit", then every `DefenseCalc.presets()` entry "<boss>: <attack>" (id = index + 1)
+→ `Build.set_defense("attack", key)`. The headline: `%AttackTitle`, `%ContextLabel` (area level and corruption), `%OneShotLabel`
+(`NoSourceLabel`, visible when the worst hit kills from full health), tiles `%EhpTile` (main), `%MaxHitTile`, `%HitsTile`, `%TakenTile`
+(`CalcTile`) from `result.summary`. "Fight parameters": `%AreaLevelSpin` → `set_defense("area_level")`, `%CorruptionSpin` →
+`Build.set_enemy("corruption")` (the same value as on Conditions), `%WardSpin` → `Build.set_player_state("ward")`. `%CustomPanel`
+(shown for the custom hit): `%Dmg0…%Dmg6`, `%CritChanceSpin` (percent), `%CritMultiSpin`. Sections of `DefenseCalc.compute` go into
+`%Left` / `%Right` in their order and are updated in place like Calculations; `%Notes` is the "Not counted" block.
+
 ## Calculations headline — `scripts/calcs/calc_summary.gd`
 `%ProjectileRow` above the tiles (visible only when `result.projectiles` is not empty, i.e. the skill fires projectiles,
 docs/ENGINE.md §9.9): `%ProjectileOne` / `%ProjectileAverage` / `%ProjectileAll` — toggle buttons in one `ButtonGroup`

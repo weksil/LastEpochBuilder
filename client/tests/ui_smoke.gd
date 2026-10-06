@@ -315,7 +315,7 @@ func _ready() -> void:
 			print("idol %s: %s" % [item_slot, str(Build.items[item_slot])])
 
 	# config tab: shock stacks and boss
-	tabs.current_tab = 6
+	tabs.current_tab = 7
 	await _frames(1)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 10)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "ArmourShred"), 20)
@@ -358,8 +358,29 @@ func _ready() -> void:
 		print("FAIL: headline DPS is empty")
 	# buffs panel lists the equipped skills
 	print("buff rows: %d" % calcs.get_node("%Buffs").get_node("%List").get_child_count())
-	# conditions: reset buttons and the show-all switch
+	# defense tab: a boss preset through the dropdown, corruption typed in the tab goes to the enemy, tiles filled
 	tabs.current_tab = 6
+	await _frames(3)
+	var defense: Node = tabs.get_child(6)
+	var attack_select: SearchSelect = defense.get_node("%AttackSelect")
+	attack_select.select(1)
+	attack_select.item_selected.emit(1)
+	await _frames(2)
+	if str(Build.defense["attack"]) == DefenseCalc.CUSTOM_KEY:
+		failed = true
+		print("FAIL: defense preset was not applied")
+	var corruption_edit: LineEdit = (defense.get_node("%CorruptionSpin") as SpinBox).get_line_edit()
+	corruption_edit.text = "200"
+	corruption_edit.text_changed.emit("200")
+	await _frames(3)
+	var ehp_text: String = defense.get_node("%EhpTile").get_node("%Value").text
+	print("defense: %s, corruption %d, EHP %s" % [str(Build.defense["attack"]), int(Build.enemy["corruption"]), ehp_text])
+	if int(Build.enemy["corruption"]) != 200 or ehp_text == "—":
+		failed = true
+		print("FAIL: defense tab corruption or EHP tile")
+	Build.set_enemy("corruption", 0)
+	# conditions: reset buttons and the show-all switch
+	tabs.current_tab = 7
 	await _frames(3)
 	Build.set_enemy_ailment(GameData.enum_value("AilmentID", "Shock"), 4)
 	await _frames(2)

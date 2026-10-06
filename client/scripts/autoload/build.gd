@@ -42,6 +42,9 @@ var enemy: Dictionary = {}
 # Player state
 var player_state: Dictionary = {}
 
+# Defense tab: the enemy attack and the area level (DefenseCalc.default_settings)
+var defense: Dictionary = {}
+
 # Cached "+N to skill level" totals per slot from items (reset on every change)
 var _skill_bonus_cache: Dictionary = {}
 
@@ -63,6 +66,7 @@ func _init_defaults() -> void:
 		_skill_nodes.append({})
 	enemy = default_enemy()
 	player_state = default_player_state()
+	defense = DefenseCalc.default_settings()
 	items = {}
 	stash.clear()
 
@@ -654,6 +658,15 @@ func set_enemy_ailment(ailment_id: int, stacks: int) -> void:
 		ailments.erase(ailment_id)
 
 	enemy["ailments"] = ailments
+	changed.emit()
+
+
+# ============================================================================
+# DEFENSE
+# ============================================================================
+
+func set_defense(key: String, value: Variant) -> void:
+	defense[key] = value
 	changed.emit()
 
 

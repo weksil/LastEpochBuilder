@@ -51,6 +51,7 @@ static func to_dict(build: Node) -> Dictionary:
 		"blessings": blessings,
 		"enemy": enemy,
 		"player": (build.player_state as Dictionary).duplicate(true),
+		"defense": DefenseCalc.normalized(build.defense),
 	}
 
 
@@ -67,7 +68,7 @@ static func _string_keys(source: Dictionary) -> Dictionary:
 
 ## Snapshot (usually parsed from JSON: numbers are floats, keys are strings) -> normalized document for apply().
 ## {"ok": false, "warnings"} when the data cannot be used at all; otherwise {"ok": true, "warnings", class_id, mastery,
-## level, quest_points, passives, skills, selected_skill, items, stash, blessings, enemy, player}.
+## level, quest_points, passives, skills, selected_skill, items, stash, blessings, enemy, player, defense}.
 static func from_dict(data: Variant) -> Dictionary:
 	var warnings: Array[String] = []
 	if not data is Dictionary or data.get("format") != FORMAT:
@@ -131,6 +132,7 @@ static func from_dict(data: Variant) -> Dictionary:
 		"blessings": blessings,
 		"enemy": _enemy(data.get("enemy")),
 		"player": _merged(BuildScript.default_player_state(), data.get("player")),
+		"defense": DefenseCalc.normalized(data.get("defense")),
 	}
 
 
@@ -258,6 +260,7 @@ static func apply(build: Node, doc: Dictionary) -> void:
 	build.blessings = (doc["blessings"] as Dictionary).duplicate(true)
 	build.enemy = (doc["enemy"] as Dictionary).duplicate(true)
 	build.player_state = (doc["player"] as Dictionary).duplicate(true)
+	build.defense = (doc["defense"] as Dictionary).duplicate(true)
 	build.selected_skill = int(doc["selected_skill"])
 	build.changed.emit()
 

@@ -1,0 +1,348 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/defense/defense_tab.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_section.tscn" id="2_section"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_row.tscn" id="3_row"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_tile.tscn" id="4_tile"]
+[ext_resource type="PackedScene" path="res://scenes/calcs/calc_notes.tscn" id="5_notes"]
+[ext_resource type="PackedScene" path="res://scenes/common/search_select.tscn" id="6_search"]
+
+[node name="Defense" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+section_scene = ExtResource("2_section")
+row_scene = ExtResource("3_row")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackLabel" type="Label" parent="Header"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Enemy attack"
+
+[node name="AttackSelect" parent="Header" instance=ExtResource("6_search")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="Hint" type="Label" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Boss presets: end bosses of the monolith timelines and pinnacle bosses · \"+\" expands the breakdown"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="Summary" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Summary"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="HBoxContainer" parent="Summary/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AttackTitle" type="Label" parent="Summary/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Attack"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ContextLabel" type="Label" parent="Summary/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+horizontal_alignment = 2
+
+[node name="OneShotLabel" type="Label" parent="Summary/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"NoSourceLabel"
+text = "The worst hit of this attack (crit, +20% variance, no dodge or block) kills you from full health"
+autowrap_mode = 3
+
+[node name="Tiles" type="HBoxContainer" parent="Summary/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EhpTile" parent="Summary/VBox/Tiles" instance=ExtResource("4_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.6
+caption = "Effective health"
+main_tile = true
+
+[node name="MaxHitTile" parent="Summary/VBox/Tiles" instance=ExtResource("4_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Maximum hit taken"
+
+[node name="HitsTile" parent="Summary/VBox/Tiles" instance=ExtResource("4_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Hits to die"
+
+[node name="TakenTile" parent="Summary/VBox/Tiles" instance=ExtResource("4_tile")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caption = "Damage taken"
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Sections" type="VBoxContainer" parent="Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ParamsPanel" type="PanelContainer" parent="Scroll/Sections"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="ParamsContent" type="VBoxContainer" parent="Scroll/Sections/ParamsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ParamsTitle" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+text = "Fight parameters"
+
+[node name="ParamsHint" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Empowered monoliths and pinnacle bosses are area level 100. Corruption is the same value as on the \"Conditions\" tab: it raises boss hit damage by 1%·f(c) and damage over time by 0.5%·f(c)."
+autowrap_mode = 3
+
+[node name="Inputs" type="GridContainer" parent="Scroll/Sections/ParamsPanel/ParamsContent"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 6
+
+[node name="AreaLevelLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+layout_mode = 2
+tooltip_text = "Enemy penetration (1% per level, max 75%) and the level used by the armor, dodge and block formulas"
+mouse_filter = 1
+text = "Area level"
+
+[node name="AreaLevelSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+tooltip_text = "Enemy penetration (1% per level, max 75%) and the level used by the armor, dodge and block formulas"
+min_value = 1.0
+max_value = 100.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="CorruptionLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+layout_mode = 2
+tooltip_text = "Enemy corruption, shared with the Conditions tab"
+mouse_filter = 1
+text = "Corruption"
+
+[node name="CorruptionSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+tooltip_text = "Enemy corruption, shared with the Conditions tab"
+min_value = 0.0
+max_value = 5000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="WardLabel" type="Label" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+layout_mode = 2
+tooltip_text = "Ward you have when the hit lands, shared with the Conditions tab"
+mouse_filter = 1
+text = "Current ward"
+
+[node name="WardSpin" type="SpinBox" parent="Scroll/Sections/ParamsPanel/ParamsContent/Inputs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+tooltip_text = "Ward you have when the hit lands, shared with the Conditions tab"
+min_value = 0.0
+max_value = 1000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="CustomPanel" type="PanelContainer" parent="Scroll/Sections"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="CustomContent" type="VBoxContainer" parent="Scroll/Sections/CustomPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CustomTitle" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+text = "Custom hit"
+
+[node name="CustomHint" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Final enemy damage of one hit by type, before your defenses. Level and corruption do not scale it."
+autowrap_mode = 3
+
+[node name="CustomGrid" type="GridContainer" parent="Scroll/Sections/CustomPanel/CustomContent"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 8
+
+[node name="Dmg0Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Physical"
+
+[node name="Dmg0" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg1Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Fire"
+
+[node name="Dmg1" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg2Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Cold"
+
+[node name="Dmg2" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg3Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Lightning"
+
+[node name="Dmg3" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg4Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Necrotic"
+
+[node name="Dmg4" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg5Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Void"
+
+[node name="Dmg5" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="Dmg6Label" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Poison"
+
+[node name="Dmg6" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 10000000.0
+step = 1.0
+update_on_text_changed = true
+
+[node name="CritChanceLabel" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Crit chance, %"
+
+[node name="CritChanceSpin" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 100.0
+step = 0.1
+update_on_text_changed = true
+
+[node name="CritMultiLabel" type="Label" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+layout_mode = 2
+text = "Crit multiplier"
+
+[node name="CritMultiSpin" type="SpinBox" parent="Scroll/Sections/CustomPanel/CustomContent/CustomGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 20.0
+step = 0.05
+value = 2.0
+update_on_text_changed = true
+
+[node name="Columns" type="HBoxContainer" parent="Scroll/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Left" type="VBoxContainer" parent="Scroll/Sections/Columns"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Right" type="VBoxContainer" parent="Scroll/Sections/Columns"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Notes" parent="Scroll/Sections" instance=ExtResource("5_notes")]
+unique_name_in_owner = true
+layout_mode = 2

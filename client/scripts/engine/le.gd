@@ -133,6 +133,10 @@ const PARRY: int = 121
 const CONDITIONAL_PEN: int = 131
 const CONDITIONAL_CRIT_CHANCE: int = 132
 const CONDITIONAL_CRIT_MULTI: int = 133
+const MANA_BEFORE_HEALTH: int = 24
+const MANA_BEFORE_WARD: int = 94
+const MORE_DAMAGE_TAKEN_WHILE_MOVING: int = 113
+const ARMOUR_VS_DOT: int = 118
 
 
 # Damage type data
