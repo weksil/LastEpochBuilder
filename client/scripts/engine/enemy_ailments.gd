@@ -14,8 +14,13 @@ class_name EnemyAilments
 ## The effective enemy keeps the stacks in `ailments` and the uptimes in `uptime` (Enemy.presence reads them).
 ## Buffs on you («Buffs on me», GameData.player_buffs) work the same way (`buffs`): positive ailments of the skill's hits
 ## (AilmentCalc `self` applications), «on you» prefab ailments per use (ApplyAilmentToCreator), PlayerProperty chances
-## (PP_BUFFS: per use of a melee or throwing attack that hits — CharacterMutator.OnFirstMeleeOrThrowingHit —, per enemy hit
-## taken, per dodge; the enemy hits come from the Defense tab attack), Dusk Shroud per consumed shadow (CreateShadow 6).
+## (PP_BUFFS: per use of a melee or throwing attack that hits — CharacterMutator.OnFirstMeleeOrThrowingHit —, per spell
+## cast, per direct use of a skill of an element, per crit, per companion skill use, per enemy hit taken, per dodge; the
+## enemy hits come from the Defense tab attack), timed PlayerProperty buffs (Apocalypse every 3 s at high health, Damage
+## Immunity after a hit on a 15 s cooldown), skill parameters (PARAM_BUFFS), unique AbilityProperty chances
+## (ABILITY_PROPERTY_BUFFS) and Dusk Shroud per consumed shadow (CreateShadow 6).
+## Not modelled (no such event in a single-target calculation, or no rate known): kills, stuns, arrow pickups, dropping
+## below high health, moving after attacking.
 
 ## Marks an enemy dictionary that already holds the automatic values (nested calculations do not add them again).
 const APPLIED_KEY: String = "auto_applied"
@@ -34,19 +39,60 @@ const CONSUMERS: Dictionary = {
 }
 ## PlayerProperty index -> buff and event (CharacterMutator constants playerPropertyDuskShroudWhenHitChance = 97,
 ## …OnMeleeOrThrowingThatHits = 102, …CrimsonShroudOnMeleeOrThrowingAttackThatHits = 107, duskShroudOnDodgeChance = 470).
+## `flag`: the property switches the gain on (chance 1); `duration`: PlayerProperty of increased duration; `tag`: the
+## damage tag of the skill used directly (CharacterMutator.OnStartedUsingAbilityOrBeforeInstantAbilityUse).
 const PP_BUFFS: Dictionary = {
+	27: {"ailment": "CriticalEffluence", "event": "spell_use"},
 	97: {"ailment": "DuskShroud", "event": "hit_taken"},
 	102: {"ailment": "DuskShroud", "event": "melee_throwing_use"},
 	107: {"ailment": "CrimsonShroud", "event": "melee_throwing_use"},
+	315: {"ailment": "Runeword Cataclysm", "event": "crit", "duration": 319},
+	316: {"ailment": "Runeword Hurricane", "event": "tag_use", "tag": LE.LIGHTNING, "duration": 319},
+	317: {"ailment": "Runeword Avalanche", "event": "tag_use", "tag": LE.COLD, "duration": 319},
+	318: {"ailment": "Runeword Inferno", "event": "tag_use", "tag": LE.FIRE, "duration": 319},
 	470: {"ailment": "DuskShroud", "event": "dodge"},
+	680: {"ailment": "AspectOfTheGroleVisuals", "event": "companion_use", "flag": true},
 }
+## Event labels of PP_BUFFS (translated in ru.po).
+const PP_EVENT_TEXT: Dictionary = {
+	"melee_throwing_use": "melee or throwing attack that hits", "spell_use": "spell cast", "crit": "critical strike",
+	"companion_use": "companion skill use", "hit_taken": "hit taken", "dodge": "dodge",
+}
+const TAG_USE_TEXT: Dictionary = {2: "direct use of a lightning skill", 4: "direct use of a cold skill", 8: "direct use of a fire skill"}
+## «Every 3 seconds if you are on high health you lose 25% of your current health and gain Apocalypse for 3 seconds».
+const APOCALYPSE_PROPERTY: int = 80
+const APOCALYPSE_PERIOD: float = 3.0
+## «Seconds of Damage Immunity After being Hit (15 second cooldown)».
+const IMMUNITY_PROPERTY: int = 217
+const IMMUNITY_COOLDOWN: float = 15.0
 ## Skill parameters (field_models.json `param`) that give buffs on you: stacks per use (Smoke Bomb «Moonlight Bomb»: Silver
 ## Shroud on the initial burst) or stacks per second while you stand in the skill's zone (Smoke Bomb «Smoke Blades»: the
 ## cloud lasts `zone` seconds, «Lasts 4 seconds»). `spent_by_hits`: one stack is spent by every enemy hit (Silver Shroud
 ## «Dodge your next hit»; PlayerProperty 534 = chance not to spend it).
+## Other kinds: `chance` (the value is a chance, at most 1) per use, hit or crit; `interval_in_zone`: one stack every
+## `value` seconds while in the zone, faster by the `frequency` parameter (Smoke Bomb Dusk Shroud); `interval`: one stack
+## every `value` seconds of use (Drain Life Contempt per seconds of channel); `unless_flag`: a node flag that limits the
+## gain to an event the calculation does not have (Void Cleave «only on hit vs own minion»).
+## Per use: Umbral Blades (on use), Shadow Rend (the hit of its shadow, once per use), Rebuke (final hit), Volatile
+## Reversal, Devouring Orb (orb expiry), Vengeance (its hit).
 const PARAM_BUFFS: Dictionary = {
 	"silver_shroud_stacks": {"ailment": "SilverShroud", "per": "use", "spent_by_hits": true},
 	"smoke_blades_stacks": {"ailment": "SmokeBlades", "per": "second_in_zone", "zone": 4.0},
+	"dusk_shroud_interval": {"ailment": "DuskShroud", "per": "interval_in_zone", "zone": 4.0, "frequency": "dusk_shroud_frequency"},
+	"dusk_shroud_chance": {"ailment": "DuskShroud", "per": "use", "chance": true},
+	"crimson_shroud_stacks": {"ailment": "CrimsonShroud", "per": "use"},
+	"void_essence_chance": {"ailment": "VoidEssence", "per": "use", "chance": true},
+	"void_essence_crit_chance": {"ailment": "VoidEssence", "per": "crit", "chance": true},
+	"molten_stacks": {"ailment": "MoltenInfusion", "per": "hit", "unless_flag": "Molten Infusion only on hit vs own minion"},
+	"contempt_interval": {"ailment": "Contempt", "per": "interval"},
+}
+## AbilityProperty chances of uniques (item_procs.json) per use or per hit of the ability:
+## Lament of the Lost Refuge — Corrupted Heraldry on Volcanic Orb cast (7) and on a hit of its shrapnel (8).
+const ABILITY_PROPERTY_BUFFS: Dictionary = {
+	"VolcanicOrb": [
+		{"ability_id": "volcanicOrb", "ability_index": 78, "index": 7, "ailment": "CorruptedHeraldry", "per": "use"},
+		{"ability_id": "volcanicOrb", "ability_index": 78, "index": 8, "ailment": "CorruptedHeraldry", "per": "hit"},
+	],
 }
 const KEEP_SILVER_PROPERTY: int = 534
 ## Chance of Dusk Shroud per consumed shadow: AbilityProperty 6 of CreateShadow.
@@ -147,11 +193,13 @@ static func _raw(build: Node) -> Dictionary:
 		var r: Dictionary = SkillCalc.compute(build, slot)
 		var uses: float = float(r.get("rates", {}).get("uses", 0.0))
 		var applied: Array = (r.get("ailments_applied", []) as Array).duplicate()
-		applied.append_array(_self_sources(build, ab, uses, float(r.get("rates", {}).get("hits", 0.0))))
-		applied.append_array(_param_sources(build, r.get("params", {}), uses))
+		var rates: Dictionary = r.get("rates", {})
+		applied.append_array(_self_sources(build, ab, uses, float(rates.get("hits", 0.0)), float(rates.get("crit", 0.0))))
+		applied.append_array(_param_sources(build, r.get("params", {}), rates, r.get("flag_keys", [])))
 		out[slot] = {"name": GameData.display_name(ab), "applied": applied, "uses": uses,
 			"cooldown": bool(r.get("cooldown", false)), "flag_keys": r.get("flag_keys", [])}
 	out["defense"] = _defense_sources(build)
+	out["defense"].append_array(_timed_sources(build))
 	_busy = false
 	if _cache.size() >= CACHE_LIMIT:
 		_cache.clear()
@@ -189,9 +237,11 @@ static func buffs(build: Node, slot: int) -> Dictionary:
 		if not listed.has(id) or float(a["rate"]) <= 0.0:
 			continue
 		if not sums.has(id):
-			sums[id] = {"rate": 0.0, "load": 0.0, "max": int(a["max"]), "sources": {}}
+			sums[id] = {"rate": 0.0, "load": 0.0, "periodic": 0.0, "max": int(a["max"]), "sources": {}}
 		sums[id]["rate"] += float(a["rate"])
 		sums[id]["load"] += float(a["rate"]) * float(a["duration"])
+		if bool(a.get("periodic", false)):
+			sums[id]["periodic"] += float(a["rate"]) * float(a["duration"])
 		sums[id]["sources"][g[1]] = float(sums[id]["sources"].get(g[1], 0.0)) + float(a["rate"])
 	var out: Dictionary = {}
 	for id: int in sums:
@@ -200,7 +250,9 @@ static func buffs(build: Node, slot: int) -> Dictionary:
 		if load <= 0.0:
 			continue
 		var max_inst: int = int(sums[id]["max"])
-		var uptime: float = 1.0 - exp(-load)
+		# periodic gains (a fixed timer) cover their share of the time exactly; random ones as independent applications
+		var periodic: float = minf(float(sums[id]["periodic"]), 1.0)
+		var uptime: float = 1.0 - (1.0 - periodic) * exp(-(load - float(sums[id]["periodic"])))
 		var stacks: float = load
 		if max_inst == 1:
 			stacks = uptime
@@ -212,8 +264,9 @@ static func buffs(build: Node, slot: int) -> Dictionary:
 
 
 ## Gains of buffs on you from one bar skill that are not ailment chances of its hits: «on you» prefab ailments per use,
-## the PlayerProperty chances per use of a melee or throwing attack that hits, Dusk Shroud per consumed shadow.
-static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float) -> Array[Dictionary]:
+## the PlayerProperty chances of the skill's events (PP_BUFFS), unique AbilityProperty chances, Dusk Shroud per consumed
+## shadow. `crit`: the crit chance of the skill's hits.
+static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float, crit: float = 0.0) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for entry: Dictionary in ab.get("ailmentsOnHit", []):
 		if str(entry.get("class", "")) != "ApplyAilmentToCreator":
@@ -223,14 +276,39 @@ static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float)
 			if id >= 0 and int(GameData.ailment(id).get("positive", 0)) != 0:
 				out.append(_gain(id, uses * float(a.get("chance", 1.0)), float(a.get("increasedDuration", 0.0)), LE.t("on use")))
 	var tags: int = int(ab.get("tags", 0))
-	if hits > 0.0 and (tags & (LE.MELEE | LE.THROWING)) != 0:
-		for index: int in PP_BUFFS:
-			if str(PP_BUFFS[index]["event"]) != "melee_throwing_use":
-				continue
-			var chance: float = float(player_property(build, index)["value"])
-			if chance > 0.0:
-				out.append(_gain(GameData.ailment_id_by_name(str(PP_BUFFS[index]["ailment"])), uses * minf(chance, 1.0), 0.0,
-					LE.t("melee or throwing attack that hits, %s per use") % LE.fmt_pct(chance)))
+	for index: int in PP_BUFFS:
+		var spec: Dictionary = PP_BUFFS[index]
+		var events: float = 0.0
+		match str(spec["event"]):
+			"melee_throwing_use":
+				events = uses if hits > 0.0 and (tags & (LE.MELEE | LE.THROWING)) != 0 else 0.0
+			"spell_use":
+				events = uses if (tags & LE.SPELL) != 0 else 0.0
+			"tag_use":
+				events = uses if (tags & int(spec["tag"])) != 0 else 0.0
+			"crit":
+				events = hits * clampf(crit, 0.0, 1.0)
+			"companion_use":
+				events = uses if bool(ab.get("companion", false)) else 0.0
+		if events <= 0.0:
+			continue
+		var chance: float = float(player_property(build, index)["value"])
+		if bool(spec.get("flag", false)):
+			chance = 1.0 if chance > 0.0 else 0.0
+		var id: int = GameData.ailment_id_by_name(str(spec["ailment"]))
+		if chance <= 0.0 or id < 0:
+			continue
+		var inc: float = float(player_property(build, int(spec["duration"]))["value"]) if spec.has("duration") else 0.0
+		var what: String = str(TAG_USE_TEXT[int(spec["tag"])]) if spec.has("tag") else str(PP_EVENT_TEXT[str(spec["event"])])
+		out.append(_gain(id, events * minf(chance, 1.0), inc, LE.t("%s, chance %s") % [LE.t(what), LE.fmt_pct(chance)]))
+	for prop: Dictionary in ABILITY_PROPERTY_BUFFS.get(str(ab.get("name", "")), []):
+		var chance_p: float = float(ShadowCalc.ability_property(build, str(prop["ability_id"]), int(prop["ability_index"]), int(prop["index"]))["value"])
+		var id_p: int = GameData.ailment_id_by_name(str(prop["ailment"]))
+		if chance_p <= 0.0 or id_p < 0:
+			continue
+		var per_hit: bool = str(prop["per"]) == "hit"
+		out.append(_gain(id_p, (hits if per_hit else uses) * minf(chance_p, 1.0), 0.0,
+			(LE.t("%s per hit") if per_hit else LE.t("%s per use")) % LE.fmt_pct(chance_p)))
 	if ShadowCalc.imitates(ab) and ShadowCalc.count(build) > 0.0:
 		var chance_s: float = float(ShadowCalc.property(build, SHADOW_SHROUD_PROPERTY)["value"])
 		if chance_s > 0.0:
@@ -240,20 +318,46 @@ static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float)
 	return out
 
 
-## Buff gains from skill parameters (PARAM_BUFFS). A buff spent by enemy hits lives min(duration, k / hits per second) for
-## its k-th stack of a burst (the stacks are spent one per hit), so its average lifetime replaces the duration.
-static func _param_sources(build: Node, params: Dictionary, uses: float) -> Array[Dictionary]:
+## Buff gains from skill parameters (PARAM_BUFFS); `rates` = SkillCalc rates {uses, hits, crit}. A buff spent by enemy hits
+## lives min(duration, k / hits per second) for its k-th stack of a burst (the stacks are spent one per hit), so its
+## average lifetime replaces the duration.
+static func _param_sources(build: Node, params: Dictionary, rates: Dictionary, flag_keys: Array = []) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	var uses: float = float(rates.get("uses", 0.0))
+	var by_param: Dictionary = {}
+	for label: Variant in params:
+		by_param[str(params[label].get("param", ""))] = params[label]
 	for label: Variant in params:
 		var p: Dictionary = params[label]
 		var spec: Dictionary = PARAM_BUFFS.get(str(p.get("param", "")), {})
-		if spec.is_empty():
+		if spec.is_empty() or flag_keys.has(str(spec.get("unless_flag", ""))):
 			continue
 		var n: float = _param_value(p)
 		var id: int = GameData.ailment_id_by_name(str(spec["ailment"]))
 		if n <= 0.0 or id < 0:
 			continue
-		if str(spec["per"]) == "use":
+		if bool(spec.get("chance", false)):
+			var events: float = uses
+			match str(spec["per"]):
+				"hit":
+					events = float(rates.get("hits", 0.0))
+				"crit":
+					events = float(rates.get("hits", 0.0)) * clampf(float(rates.get("crit", 0.0)), 0.0, 1.0)
+			out.append(_gain(id, events * minf(n, 1.0), 0.0, LE.t("%s: chance %s per %s") % [str(label), LE.fmt_pct(n),
+				LE.t({"use": "use", "hit": "hit", "crit": "critical strike"}[str(spec["per"])])]))
+		elif str(spec["per"]) == "hit":
+			out.append(_gain(id, float(rates.get("hits", 0.0)) * n, 0.0, LE.t("%s: %s stacks per hit") % [str(label), LE.fmt_num(n)]))
+		elif str(spec["per"]) == "interval":
+			out.append(_gain(id, 1.0 / n, 0.0, LE.t("%s: a stack every %s s of use") % [str(label), LE.fmt_num(n)]))
+		elif str(spec["per"]) == "interval_in_zone":
+			var freq: float = 0.0
+			if spec.has("frequency") and by_param.has(str(spec["frequency"])):
+				freq = float(by_param[str(spec["frequency"])].get("increased", 0.0)) + float(by_param[str(spec["frequency"])].get("added", 0.0))
+			var every: float = n / (1.0 + freq)
+			var zone_share: float = minf(1.0, uses * float(spec["zone"]))
+			out.append(_gain(id, zone_share / every, 0.0, LE.t("%s: a stack every %s s in the zone, %s of the time") % [
+				str(label), LE.fmt_num(every), LE.fmt_pct(zone_share)]))
+		elif str(spec["per"]) == "use":
 			var g: Dictionary = _gain(id, uses * n, 0.0, LE.t("%s: %s stacks per use") % [str(label), LE.fmt_num(n)])
 			if bool(spec.get("spent_by_hits", false)):
 				var hits: Dictionary = _enemy_hits(build)
@@ -321,6 +425,32 @@ static func _defense_sources(build: Node) -> Array[Dictionary]:
 		out.append(_gain(GameData.ailment_id_by_name(str(PP_BUFFS[index]["ailment"])), events * minf(float(chances[index]), 1.0), 0.0,
 			LE.t("Defense tab attack: every %s s, dodge chance %s, %s per %s") % [LE.fmt_num(interval), LE.fmt_pct(dodge),
 				LE.fmt_pct(float(chances[index])), LE.t("dodge") if on_dodge else LE.t("hit taken")]))
+	return out
+
+
+## Buffs on a timer of PlayerProperties: Apocalypse every 3 s while on high health (the Health select of the Conditions
+## tab is full or high); Damage Immunity for `value` seconds after a hit, then 15 s of cooldown and the wait for the next
+## landed hit of the Defense tab attack.
+static func _timed_sources(build: Node) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var health: String = str(build.player_state.get("health", "full"))
+	var id_a: int = GameData.ailment_id_by_name("Apocalypse")
+	if id_a >= 0 and float(player_property(build, APOCALYPSE_PROPERTY)["value"]) > 0.0 and (health == "full" or health == "high"):
+		var g: Dictionary = _gain(id_a, 1.0 / APOCALYPSE_PERIOD, 0.0, LE.t("every %s s while on high health") % LE.fmt_num(APOCALYPSE_PERIOD))
+		g["duration"] = APOCALYPSE_PERIOD
+		g["periodic"] = true
+		out.append(g)
+	var seconds: float = float(player_property(build, IMMUNITY_PROPERTY)["value"])
+	var id_i: int = GameData.ailment_id_by_name("DamageImmunity")
+	if seconds > 0.0 and id_i >= 0:
+		var hits: Dictionary = _enemy_hits(build)
+		if float(hits["rate"]) > 0.0:
+			var period: float = IMMUNITY_COOLDOWN + 1.0 / float(hits["rate"])
+			var g_i: Dictionary = _gain(id_i, 1.0 / period, 0.0, LE.t("%s s after a hit, once per %s s (15 s cooldown + the next enemy hit, Defense tab)") % [
+				LE.fmt_num(seconds), LE.fmt_num(period)])
+			g_i["duration"] = seconds
+			g_i["periodic"] = true
+			out.append(g_i)
 	return out
 
 

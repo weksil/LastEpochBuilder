@@ -14971,17 +14971,12 @@ msgstr " × снарядов попадает в цель %s (режим «%s»)
 msgid "on use"
 msgstr "при применении"
 
-msgid "melee or throwing attack that hits, %s per use"
-msgstr "попавшая атака ближнего боя или метательная, %s за применение"
-
 msgid "consumed shadows, %s each"
 msgstr "поглощённые тени, %s за каждую"
 
 msgid "Defense tab attack: every %s s, dodge chance %s, %s per %s"
 msgstr "Атака вкладки «Защита»: раз в %s с, шанс уклонения %s, %s за %s"
 
-msgid "hit taken"
-msgstr "полученный удар"
 
 msgid "%s: %s stacks per use"
 msgstr "%s: %s стаков за применение"
@@ -14991,3 +14986,51 @@ msgstr ", расходуется %s ударами врага в секунду 
 
 msgid "%s: %s stacks per second in the zone, %s of the time"
 msgstr "%s: %s стаков в секунду в зоне, %s времени"
+
+msgid "melee or throwing attack that hits"
+msgstr "атака ближнего боя или метательная, которая попала"
+
+msgid "spell cast"
+msgstr "применение заклинания"
+
+msgid "critical strike"
+msgstr "критический удар"
+
+msgid "companion skill use"
+msgstr "применение умения компаньона"
+
+msgid "direct use of a lightning skill"
+msgstr "прямое применение умения молнии"
+
+msgid "direct use of a cold skill"
+msgstr "прямое применение умения холода"
+
+msgid "direct use of a fire skill"
+msgstr "прямое применение умения огня"
+
+msgid "%s, chance %s"
+msgstr "%s, шанс %s"
+
+msgid "%s per hit"
+msgstr "%s за попадание"
+
+msgid "%s per use"
+msgstr "%s за применение"
+
+msgid "%s: chance %s per %s"
+msgstr "%s: шанс %s за %s"
+
+msgid "%s: %s stacks per hit"
+msgstr "%s: %s стаков за попадание"
+
+msgid "%s: a stack every %s s of use"
+msgstr "%s: стак каждые %s с применения"
+
+msgid "%s: a stack every %s s in the zone, %s of the time"
+msgstr "%s: стак каждые %s с в зоне, %s времени"
+
+msgid "every %s s while on high health"
+msgstr "каждые %s с при высоком здоровье"
+
+msgid "%s s after a hit, once per %s s (15 s cooldown + the next enemy hit, Defense tab)"
+msgstr "%s с после удара, раз в %s с (перезарядка 15 с + следующий удар врага, вкладка «Защита»)"

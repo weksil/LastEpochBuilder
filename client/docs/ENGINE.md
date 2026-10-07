@@ -709,13 +709,28 @@ to automatic) work the same way through `EnemyAilments.buffs(build, slot)`. Gain
 - «on you» prefab ailments per use (`ApplyAilmentToCreator`);
 - PlayerProperty chances (`PP_BUFFS`, summed by `player_property` over passives, the mastery bonus, affixes and unique
   effects): 102 Dusk Shroud and 107 Crimson Shroud once per use of a melee or throwing attack that hits
-  (`CharacterMutator.OnFirstMeleeOrThrowingHit`), 97 Dusk Shroud per enemy hit taken, 470 per dodge (the attack, interval and
-  dodge chance of the Defense tab);
-- Dusk Shroud per consumed shadow (CreateShadow property 6; shadows consumed per second as in `ShadowCalc.sustain_rows`).
+  (`CharacterMutator.OnFirstMeleeOrThrowingHit`), 27 Critical Effluence per spell cast, 316 / 317 / 318 Runeword
+  Hurricane / Avalanche / Inferno per direct use of a lightning / cold / fire skill and 315 Runeword Cataclysm per crit
+  (hits × crit chance; 319 = increased Runeword duration), 680 Aspect of the Grole per use of a companion skill (a flag),
+  97 Dusk Shroud per enemy hit taken, 470 per dodge (the attack, interval and dodge chance of the Defense tab);
+- timed PlayerProperties (`_timed_sources`, a fixed timer: uptime = its share of the time, not 1 − e^(−load)): 80
+  Apocalypse for 3 s every 3 s while the Health select is full or high; 217 Damage Immunity for `value` s after a hit, once
+  per 15 s cooldown + 1 / landed enemy hits per second;
+- Dusk Shroud per consumed shadow (CreateShadow property 6; shadows consumed per second as in `ShadowCalc.sustain_rows`);
+- unique AbilityProperty chances (`ABILITY_PROPERTY_BUFFS`, item_procs.json): Lament of the Lost Refuge — Corrupted
+  Heraldry per Volcanic Orb cast (property 7) and per hit of the skill (8, its shrapnel);
 - skill parameters (`PARAM_BUFFS`, `SkillCalc` result `params`): Smoke Bomb «Moonlight Bomb» `silver_shroud_stacks` per
   use — Silver Shroud dodges your next hit, so the k-th stack of a burst lives min(10 s, k / landed enemy hits per second)
   (the Defense tab attack, PlayerProperty 534 = chance not to spend it); «Smoke Blades» `smoke_blades_stacks` per second
-  while you stand in the cloud (4 s per bomb: min(1, uses × 4) of the time).
+  while you stand in the cloud (4 s per bomb: min(1, uses × 4) of the time); Smoke Bomb Dusk Shroud on you every
+  `dusk_shroud_interval` / (1 + `dusk_shroud_frequency`) s in the cloud (a RepeatedlyApplyAilmentsInRadius added in
+  `SmokeBombMutator`); Dusk Shroud chance per use (Umbral Blades, Shadow Rend's shadow hit); Synchronized Strikes Crimson
+  Shroud stacks per use; Void Essence chance per use (Rebuke, Volatile Reversal, Devouring Orb expiry, Vengeance) or per
+  crit (Erasing Strike); Void Cleave Molten Infusion stacks per hit (none with «only on hit vs own minion»); Drain Life
+  Contempt, a stack every `contempt_interval` s of channel.
+Not modelled (no such event in a single-target calculation, or no rate known): gains on kill (Void Essence, Inspiration,
+Smoke Bomb Crimson Shroud), on stun (Inspiration), on arrow pickup (Dark Quiver), on dropping below high health (Silver
+Shroud, PP 104), on moving after attacking (Ancient Flight), Swiftness, buffs given to minions only.
 Stacks = min(Σ gains/s × duration, maxInstances) with the same parallel sources as the enemy ailments.
 `EnemyAilments.apply(build, slot)` / `restore` put both the enemy ailments and the buffs into the build around
 `SkillCalc.compute`, `DefenseCalc.compute` and the character stats panel (the selected skill).

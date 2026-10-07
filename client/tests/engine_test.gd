@@ -1198,7 +1198,12 @@ func _automatic_enemy_ailments() -> void:
 	var buffs: Dictionary = EnemyAilments.buffs(Build, 0)
 	var dusk: Dictionary = buffs.get(GameData.ailment_id_by_name("DuskShroud"), {})
 	var uses: float = float(SkillCalc.compute(Build, 0)["rates"]["uses"])
-	_check("Dusk Shroud on you = 60% × uses/s × 4 s", float(dusk.get("stacks", 0.0)), 0.6 * uses * 4.0, 0.001)
+	_check("Dusk Shroud 60% per use of a melee / throwing attack that hits", float(dusk.get("sources", {}).get(
+		"Umbral Blades: melee or throwing attack that hits, chance 60%", 0.0)), 0.6 * uses, 0.001)
+	_check("Dusk Shroud 12% on use (Umbral Blades node)", float(dusk.get("sources", {}).get(
+		"Umbral Blades: Dusk Shroud chance on use: chance 12% per use", 0.0)), 0.12 * uses, 0.001)
+	_flag("Dusk Shroud from the Smoke Bomb cloud", str(dusk.get("sources", {}).keys()).contains("Smoke Bomb"))
+	_check("Dusk Shroud on you = all gains/s × 4 s", float(dusk.get("stacks", 0.0)), float(dusk.get("rate", 0.0)) * 4.0, 0.001)
 	_check("Crimson Shroud on you: its limit of 3", float(buffs.get(GameData.ailment_id_by_name("CrimsonShroud"), {}).get("stacks", 0.0)), 3.0, 0.001)
 	_flag("Dusk Shroud is not an enemy ailment", not auto.has(GameData.ailment_id_by_name("DuskShroud")))
 	# Smoke Bomb params: Smoke Blades 1 stack/s while in the 4 s cloud, Silver Shroud stacks per use spent by enemy hits
@@ -1206,6 +1211,16 @@ func _automatic_enemy_ailments() -> void:
 	_check("Smoke Blades = 1/s × min(1, uses × 4 s) × 4 s", float(buffs.get(GameData.ailment_id_by_name("SmokeBlades"), {}).get("stacks", 0.0)),
 		minf(1.0, smoke_uses * 4.0) * 4.0, 0.001)
 	_flag("Silver Shroud from Moonlight Bomb", float(buffs.get(GameData.ailment_id_by_name("SilverShroud"), {}).get("stacks", 0.0)) > 0.0)
+	# other skill parameters that give buffs on you
+	var rates: Dictionary = {"uses": 0.1, "hits": 2.0, "crit": 0.4}
+	var g: Array[Dictionary] = EnemyAilments._param_sources(Build, {"Erasing Strike": {"param": "void_essence_crit_chance", "added": 0.5}}, rates)
+	_check("Void Essence on crit: hits × crit × chance", float(g[0]["rate"]) if g.size() == 1 else -1.0, 0.4, 0.0001)
+	g = EnemyAilments._param_sources(Build, {"Void Cleave": {"param": "molten_stacks", "added": 1.0}}, rates, ["Molten Infusion only on hit vs own minion"])
+	_flag("Molten Infusion only on minion hits: no gain", g.is_empty())
+	g = EnemyAilments._param_sources(Build, {"A": {"param": "dusk_shroud_interval", "set": 2.0}, "B": {"param": "dusk_shroud_frequency", "increased": 1.0}}, rates)
+	_check("Smoke Bomb Dusk Shroud: every 2 / (1 + 100%) s, 40% of the time in the cloud", float(g[0]["rate"]) if g.size() == 1 else -1.0, 0.4, 0.0001)
+	g = EnemyAilments._param_sources(Build, {"Drain Life": {"param": "contempt_interval", "set": 0.5}}, rates)
+	_check("Contempt: a stack every 0.5 s of channel", float(g[0]["rate"]) if g.size() == 1 else -1.0, 2.0, 0.0001)
 	for id: int in buffs:
 		Build.set_player_buff(id, 0.0)
 	var bdoc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))

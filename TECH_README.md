@@ -182,7 +182,8 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   Essence, Divine Essence, Sharpshooter … — any positive ailment of `ailments.json`, its stats go to the character), enemy type/level/armor/resistances, flags (including "frozen") and stacks of ailments,
   shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for); an enemy ailment
   or a buff on you with "auto" on shows the average kept while the selected skill is used (gains per second × duration,
-  uptime, sources), a number typed in replaces it, "Reset" returns all of them to auto. As in Path of Building, only the conditions
+  uptime, sources: skill hits and nodes, passive / item / unique chances on use, cast, crit, hit taken or dodge, timed
+  buffs such as Apocalypse and Damage Immunity), a number typed in replaces it, "Reset" returns all of them to auto. As in Path of Building, only the conditions
   that have a source in the build (skill, item, passive; `ConfigRelevance`) are shown, labeled with the source; the "Show all conditions" checkbox opens the full list,
   and enabled conditions without a source are highlighted in red. Each group has an "Active: …" line and a "Reset" button; ailments are shown with readable names.
 - **Builds** (the "Builds…" button in the top bar) — save the current build under a name (`user://builds/<name>.json`), load or delete a saved one,
