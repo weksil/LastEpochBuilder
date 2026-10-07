@@ -499,8 +499,17 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   speed (SP 2/3, base 1) × 1.1 / `useDuration` from `castSpeedOverrides` (or the ability).
 - Number of minions (`engine/minion_count.gd`, `class_name MinionCount`): one global count per minion type summoned by
   the bar skills — the card «Active minions» of the Conditions tab (`Build.player_state.minions`, keyed by actor name), by
-  default the `limit` of the summoning skill's `summonSettings` entry (`numberToSummon` when unlimited; limit increases of
-  passives and nodes are not read, D?); DPS = DPS of one × the number. The models that scale with a minion count
+  default the summon limit `MinionCount.limit_of`: the base (the `limit` of the summoning skill's `summonSettings` entry,
+  `numberToSummon` when unlimited; `GROUPS` for summons whose minions the tree chooses — Summon Skeleton 3, Summon Skeletal
+  Mage 2, the constants of `getSkeletonLimit` / `getSkeletonMageLimit`), then the skill's «Max …» parameters
+  (`LIMIT_LABELS`: tree nodes and passives aimed at the summon's mutator, e.g. `additionalSkeletonsFromPassives`; set,
+  added, increased, more), the AbilityProperties of passives, items and uniques (`LIMIT_PROPERTIES`, the
+  AbilityStatsMutatorManager fields `addedSkeletonSummonCap`, `additionalMaxSkeletalMages`, `boneGolemAdditionalMaxGolem`,
+  `additionalMaxWraiths`, `extraAddedMaxForgedWeapons`, `addedMaximumThornTotem`, `addedMaximumBallistae`,
+  `stormTotemAdditionalTotem`, `extraNonCompanionCapSpriggans`, `maxLocusts`; `doubledMaxSkeletons` ×2; wolves / raptors
+  «up to your maximum number of companions» = Round((2 + SP MaximumCompanions) …), research 07d §1.4), rounded. Not read:
+  the shared companion cap across companion skills, Bone Golem's extra golems per skeleton and its tree flag (D?).
+  DPS = DPS of one × the number. The models that scale with a minion count
   (`per: input:<key>` of `MinionCount.COUNT_KEYS`: `minions` = all minions but totems, `totems`, `wolves`, `raptors`,
   `crows` = `storm_crows`) read the same card: a number set by hand, else the sum of the summoned types it covers. These
   keys are never per-skill fields (`EffectModels.inputs` drops them), so passives and uniques («per minion you control»,

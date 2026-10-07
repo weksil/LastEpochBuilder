@@ -3,8 +3,10 @@ class_name MinionCount
 ## Active minions of the build (docs/ENGINE.md §9.4): one count per minion type summoned by the bar skills and the
 ## counts the models scale with (field_models `per: input:<key>` of COUNT_KEYS — «per minion», «per totem», «per wolf» …).
 ## A number set on the Conditions tab (Build.player_state.minions, keyed by actor name or count key) wins; otherwise:
-## - a minion type: its summon limit (summonSettings `limit`, or `numberToSummon` when unlimited) — limit increases of
-##   passives and nodes are not read (D?), so type the real number when the build raises it;
+## - a minion type: its summon limit (`limit_of`): the base (summonSettings `limit`, or `numberToSummon` when unlimited;
+##   GROUPS for summons whose minions are chosen by the tree), the skill's «Max …» parameters (tree nodes and passives aimed
+##   at the summon's mutator: added, increased, more, set), the AbilityProperties of passives, items and uniques
+##   (LIMIT_PROPERTIES), «doubled» flags, «up to your maximum number of companions» (base 2 + SP MaximumCompanions);
 ## - a count key: the sum of the types it covers (all minions but totems / totems / one actor).
 
 ## Count keys of the models -> {label, kind: all | totems | actor, actors}. «storm_crows» is the same count as «crows».
@@ -16,6 +18,38 @@ const COUNT_KEYS: Dictionary = {
 	"crows": {"label": "Storm Crows", "kind": "actor", "actors": ["Storm Crow"]},
 }
 const ALIASES: Dictionary = {"storm_crows": "crows"}
+## Summons whose minion records are chosen by the tree (no `summonedBy` of their own): one type with the base limit of
+## the code (SummonSkeletonMutator.getSkeletonLimit: 3 + additional; SummonMageMutator.getSkeletonMageLimit: 2 + …).
+const GROUPS: Dictionary = {
+	"SummonSkeleton": {"actor": "Skeletons", "base": 3.0},
+	"SummonMage": {"actor": "Skeletal Mages", "base": 2.0},
+}
+## «Max …» parameters of the summon skills (field_models labels, untranslated): tree nodes and passives such as
+## SummonSkeletonMutator.additionalSkeletonsFromPassives.
+const LIMIT_LABELS: Array[String] = ["Max skeleton count", "Max skeleton mages", "Max spectres", "Max forged weapons",
+	"Max number of Thorn-totems", "Max crows", "Max wolves", "Max locusts", "Max locust count (multiplier)"]
+## AbilityProperties that raise a summon limit (ability_property_fields*.json; AbilityStatsMutatorManager fields):
+## ability name -> [{id, index, special, kind: add | double | companions}].
+const LIMIT_PROPERTIES: Dictionary = {
+	"SummonSkeleton": [{"id": "summonSkeleton", "index": 120, "special": 4, "kind": "add"},
+		{"id": "summonSkeleton", "index": 120, "special": 21, "kind": "double"}],
+	"SummonMage": [{"id": "summonMage", "index": 291, "special": 6, "kind": "add"}],
+	"SummonBoneGolem": [{"id": "summonBoneGolem", "index": 157, "special": 9, "kind": "add"}],
+	"SummonWraith": [{"id": "summonWraith", "index": 146, "special": 2, "kind": "add"}],
+	"SummonWeapon": [{"id": "summonWeapon", "index": 220, "special": 0, "kind": "add"}],
+	"SummonThornTotem": [{"id": "summonThornTotem", "index": 58, "special": 6, "kind": "add"}],
+	"SummonBallista": [{"id": "summonBallista", "index": 379, "special": 0, "kind": "add"}],
+	"SummonStormTotem": [{"id": "summonStormTotem", "index": 195, "special": 13, "kind": "add"}],
+	"SummonSpriggan": [{"id": "summonSpriggan", "index": 75, "special": 1, "kind": "add"}],
+	"SummonLocust": [{"id": "summonLocust", "index": 582, "special": 4, "kind": "add"}],
+	"SummonWolf": [{"id": "summonWolf", "index": 8, "special": 3, "kind": "companions"}],
+	"SummonRaptor": [{"id": "summonRaptor", "index": 321, "special": 0, "kind": "companions"}],
+}
+## CharacterStats.getMaximumCompanions: Round(SP MaximumCompanions with added 2); 1 with «Limited to one companion».
+const BASE_COMPANIONS: float = 2.0
+
+static var _cache: Dictionary = {}
+static var _busy: bool = false
 
 
 ## A model input that is a global minion count (never a per-skill field).
@@ -27,8 +61,12 @@ static func canonical(key: String) -> String:
 	return str(ALIASES.get(key, key))
 
 
-## Minion types summoned by the bar skills: [{actor, ability (name), skill (display name), totem, limit}], one per actor.
+## Minion types summoned by the bar skills: [{actor, ability (name), skill (display name), totem, limit, limit_text}],
+## one per actor. While a limit is being computed (the summon's store reads the counts) the bases are used.
 static func types(build: Node) -> Array[Dictionary]:
+	var key: String = "" if _busy else _signature(build)
+	if key != "" and _cache.has(key):
+		return _cache[key]
 	var out: Array[Dictionary] = []
 	var seen: Dictionary = {}
 	for slot: int in range(build.skills.size()):
@@ -36,18 +74,30 @@ static func types(build: Node) -> Array[Dictionary]:
 		if ab.is_empty():
 			continue
 		var ab_name: String = str(ab.get("name", ""))
+		var entries: Array[Array] = []  # [actor, base]
+		if GROUPS.has(ab_name):
+			entries.append([str(GROUPS[ab_name]["actor"]), float(GROUPS[ab_name]["base"])])
 		for minion: Dictionary in MinionCalc.minions_for(ab_name):
-			var actor: String = str(minion.get("actorName", ""))
+			entries.append([str(minion.get("actorName", "")), base_limit(minion, ab_name)])
+		for e: Array in entries:
+			var actor: String = str(e[0])
 			if actor == "" or seen.has(actor):
 				continue
 			seen[actor] = true
+			var lim: Dictionary = {"value": float(e[1]), "text": LE.fmt_num(float(e[1]))}
+			if not _busy:
+				lim = limit_of(build, slot, ab, float(e[1]))
 			out.append({"actor": actor, "ability": ab_name, "skill": GameData.display_name(ab),
-				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": limit(minion, ab_name)})
+				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": lim["value"], "limit_text": lim["text"]})
+	if key != "":
+		if _cache.size() >= 16:
+			_cache.clear()
+		_cache[key] = out
 	return out
 
 
-## Summon limit of the minion for the ability that summons it (its own summonSettings entry, else the first).
-static func limit(minion: Dictionary, ability_name: String) -> float:
+## Base summon limit of the minion for the ability that summons it (its own summonSettings entry, else the first).
+static func base_limit(minion: Dictionary, ability_name: String) -> float:
 	var chosen: Dictionary = {}
 	for entry: Variant in minion.get("summonSettings", []):
 		if entry is Dictionary and (chosen.is_empty() or str(entry.get("ability", "")) == ability_name):
@@ -58,6 +108,68 @@ static func limit(minion: Dictionary, ability_name: String) -> float:
 		return 1.0
 	var lim: float = float(chosen.get("limit", 0.0))
 	return lim if lim > 0.0 else maxf(float(chosen.get("numberToSummon", 1.0)), 1.0)
+
+
+## Summon limit of the skill in `slot` from `base`: {value, text} — text lists the steps.
+static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dictionary:
+	_busy = true
+	var s: Dictionary = BuildMods.skill_store(build, slot, BuildMods.global_store(build)["store"])
+	var companions: Dictionary = max_companions(build)
+	_busy = false
+	var value: float = base
+	var parts: PackedStringArray = [LE.t("base %s") % LE.fmt_num(base)]
+	var labels: Array = LIMIT_LABELS.map(func(l: String) -> String: return LE.t(l))
+	var params: Dictionary = s.get("params", {})
+	for label: Variant in params:
+		if not labels.has(str(label)):
+			continue
+		var p: Dictionary = params[label]
+		var sources: Array = (p.get("sources", []) as Array).map(func(x: Variant) -> String: return str(x).replace("  (", " ("))
+		var added: float = float(p.get("added", 0.0))
+		var inc: float = float(p.get("increased", 0.0))
+		var more: float = float(p.get("more", 1.0))
+		if p.get("set") == null and inc == 0.0 and more == 1.0:
+			value += added
+			for src: String in sources:
+				parts.append("+ " + src)
+			continue
+		if p.get("set") != null:
+			value = float(p["set"])
+			parts.append(LE.t("set to %s") % LE.fmt_num(value))
+		if added != 0.0:
+			value += added
+			parts.append("%+d" % int(added))
+		if inc != 0.0 or more != 1.0:
+			value *= (1.0 + inc) * more
+			parts.append("× %s" % LE.fmt_num((1.0 + inc) * more))
+		parts.append("(%s)" % ", ".join(sources))
+	for prop: Dictionary in LIMIT_PROPERTIES.get(str(ab.get("name", "")), []):
+		var pp: Dictionary = ShadowCalc.ability_property(build, str(prop["id"]), int(prop["index"]), int(prop["special"]))
+		var v: float = float(pp["value"])
+		if v == 0.0:
+			continue
+		match str(prop["kind"]):
+			"add":
+				value += v
+				parts.append("+ %s (%s)" % [LE.fmt_num(v), ", ".join(pp["lines"])])
+			"double":
+				value *= 2.0
+				parts.append(LE.t("× 2 (%s)") % ", ".join(pp["lines"]))
+			"companions":
+				value = maxf(value, float(companions["value"]))
+				parts.append(LE.t("up to the maximum number of companions %s (%s)") % [LE.fmt_num(float(companions["value"])), ", ".join(pp["lines"])])
+	value = maxf(float(roundi(value)), 0.0)
+	return {"value": value, "text": "%s = %s" % [" ".join(parts), LE.fmt_num(value)]}
+
+
+## Maximum number of companions: {value}.
+static func max_companions(build: Node) -> Dictionary:
+	var store: StatStore = BuildMods.global_store(build)["store"]
+	var sp: int = GameData.sp_id("MaximumCompanions")
+	if sp < 0:
+		return {"value": BASE_COMPANIONS}
+	var q: StatQuery = store.query_untagged(sp)
+	return {"value": float(roundi((BASE_COMPANIONS + q.added) * (1.0 + q.increased) * q.more))}
 
 
 ## Explicit numbers of the Conditions tab: {actor or count key: count}.
@@ -102,4 +214,13 @@ static func count(build: Node, key: String) -> Dictionary:
 
 ## Count of an actor summoned by `ability_name` (the minion components of the summon skill).
 static func of_minion(build: Node, minion: Dictionary, ability_name: String) -> float:
-	return float(type_count(build, str(minion.get("actorName", "")), limit(minion, ability_name))["value"])
+	var actor: String = str(minion.get("actorName", ""))
+	for t: Dictionary in types(build):
+		if str(t["actor"]) == actor:
+			return float(type_count(build, actor, float(t["limit"]))["value"])
+	return float(type_count(build, actor, base_limit(minion, ability_name))["value"])
+
+
+static func _signature(build: Node) -> String:
+	return var_to_str([build.class_id, build.mastery, build.level, build.passives, build.skills, build.items, build.blessings,
+		build.player_state])

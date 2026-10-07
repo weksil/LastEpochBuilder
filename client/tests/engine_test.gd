@@ -296,6 +296,35 @@ func _minion_skill() -> void:
 	Build.clear_minion_counts()
 	_flag("relevance lists the summoned wolf", ConfigRelevance.compute(Build)["minions"].has("Primal Wolf"))
 	Build.set_skill(3, "")
+	_minion_limits()
+
+
+## Summon limits: the base of the code plus passives aimed at the summon's mutator (Unbound Necromancy, Tyrant's Legion:
+## SummonSkeletonMutator.additionalSkeletonsFromPassives +1 at 3 points each).
+func _minion_limits() -> void:
+	var class_id: int = Build.class_id
+	var saved_passives: Dictionary = Build.passives.duplicate()
+	var saved_skills: Array[Dictionary] = Build.skills.duplicate(true)
+	Build.set_class(3)  # Acolyte
+	Build.set_skill(0, "ss37kl")  # Summon Skeleton
+	_check("Summon Skeleton: base limit 3", _type_limit("Skeletons"), 3.0)
+	Build.passives[12] = 3
+	Build.passives[61] = 3
+	Build.changed.emit()
+	_check("Unbound Necromancy + Tyrant's Legion: 3 + 1 + 1", _type_limit("Skeletons"), 5.0)
+	_check("all minions follow the raised limit", float(MinionCount.count(Build, "minions")["value"]), 5.0)
+	Build.set_class(class_id)
+	Build.passives = saved_passives
+	for i: int in range(saved_skills.size()):
+		Build.skills[i] = saved_skills[i]
+	Build.changed.emit()
+
+
+func _type_limit(actor: String) -> float:
+	for t: Dictionary in MinionCount.types(Build):
+		if str(t["actor"]) == actor:
+			return float(t["limit"])
+	return -1.0
 
 
 ## Special effects of uniques (unique_effect_models.json, docs/ENGINE.md §5.4.3).

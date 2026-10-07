@@ -406,11 +406,11 @@ func _apply_buffs() -> void:
 func _apply_minions() -> void:
 	var show_all: bool = _show_all.button_pressed
 	var given: Dictionary = MinionCount.explicit(Build)
-	var wanted: Array[Array] = []  # [key, title, is_type, limit]
+	var wanted: Array[Array] = []  # [key, title, is_type, limit, limit text]
 	for t: Dictionary in MinionCount.types(Build):
-		wanted.append([str(t["actor"]), "%s (%s)" % [str(t["actor"]), str(t["skill"])], true, float(t["limit"])])
+		wanted.append([str(t["actor"]), "%s (%s)" % [str(t["actor"]), str(t["skill"])], true, float(t["limit"]), str(t["limit_text"])])
 	for key: String in MinionCount.COUNT_KEYS:
-		wanted.append([key, tr(str(MinionCount.COUNT_KEYS[key]["label"])), false, 0.0])
+		wanted.append([key, tr(str(MinionCount.COUNT_KEYS[key]["label"])), false, 0.0, ""])
 	var keys: Array = wanted.map(func(w: Array) -> String: return str(w[0]))
 	if keys != _minion_rows.keys():
 		for child: Node in _minion_list.get_children():
@@ -435,7 +435,7 @@ func _apply_minions() -> void:
 		var auto_text: String = ""
 		if bool(w[2]):
 			value = float(MinionCount.type_count(Build, key, float(w[3]))["value"])
-			auto_text = tr("summon limit: %s") % LE.fmt_num(float(w[3]))
+			auto_text = tr("summon limit: %s") % str(w[4])
 		else:
 			var c: Dictionary = MinionCount.count(Build, key)
 			value = float(c["value"])

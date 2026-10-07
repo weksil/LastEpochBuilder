@@ -180,7 +180,7 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
 - **Conditions** — health and player state (hit recently / crit recently, movement, leech, mana below 50%, Haste, Frenzy,
   ward, curses and stacks on yourself, active shadows, kills / stuns / arrows picked up / drops below high health per second for
   buffs gained on those events — shown only when the build has such a buff source), "Active minions" (each minion type
-  summoned by the bar skills, its summon limit by default, and the counts that "per minion / per totem / per wolf …" nodes,
+  summoned by the bar skills, its summon limit by default — with the limit increases of passives, skill nodes, items and uniques —, and the counts that "per minion / per totem / per wolf …" nodes,
   passives and uniques scale with — the sum of the summoned minions by default, shown only when the build has such a source), "Buffs on me" with stacks (Dusk / Crimson / Silver Shroud, Void
   Essence, Divine Essence, Sharpshooter … — any positive ailment of `ailments.json`, its stats go to the character), enemy type/level/armor/resistances, flags (including "frozen") and stacks of ailments,
   shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for); an enemy ailment

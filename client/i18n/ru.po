@@ -15115,3 +15115,15 @@ msgstr "сумма призванных миньонов: %s"
 
 msgid "no such minion is summoned by the bar skills"
 msgstr "такие миньоны не призываются скиллами с панели"
+
+msgid "base %s"
+msgstr "база %s"
+
+msgid "set to %s"
+msgstr "задано %s"
+
+msgid "× 2 (%s)"
+msgstr "× 2 (%s)"
+
+msgid "up to the maximum number of companions %s (%s)"
+msgstr "до максимума компаньонов %s (%s)"
