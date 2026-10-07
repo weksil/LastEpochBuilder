@@ -119,6 +119,9 @@ static func _add_code_damage(result: Array[Dictionary], build: Node, slot: int, 
 		var label: String = id if id != "" else ab_name
 		if not comp.get("damage") is Dictionary or (comp["damage"] as Dictionary).is_empty():
 			continue
+		# a zone that applies ailments every interval (Aura of Decay's poison): counted from the prefab by SkillCalc
+		if str(comp.get("source", "")).begins_with("RepeatedlyApplyAilmentsInRadius"):
+			continue
 		var damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 		var numeric: bool = true
 		for type_name: String in comp["damage"]:

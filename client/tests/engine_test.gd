@@ -1108,9 +1108,15 @@ func _shadows_echoes_buffs() -> void:
 	EnemyAilments.enabled = false
 	var ub: Dictionary = SkillCalc.compute(Build, 0)
 	# "Only 1 Blade" writes +250% into three combo-part mutators: counted once (it was ×3.5³)
-	_check("Umbral Blades DPS with the combo parts counted once", _dps(ub), 136298.7, 150.0)
+	_check("Umbral Blades throw DPS with the combo parts counted once", _row_value(ub, "DPS vs enemy: Umbral Blades"), 68149.37, 80.0)
+	# Shadow Daggers strike at 4 stacks: one strike per 4 applications of the skill's own hits
+	var daggers: float = _row_value(ub, "Damage events per second", "Shadow Daggers: ")
+	_flag("Shadow Daggers strikes counted", daggers > 0.0)
+	_check("Umbral Blades DPS with the Shadow Daggers strikes", _dps(ub), 614489.05, 700.0)
 	EnemyAilments.enabled = true
 	_automatic_enemy_ailments()
+	_zones()
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(bd))
 	_check("no shadow components without shadows", _count_prefixed_sections(ub, "Shadows: "), 0.0)
 	_check("max shadows: 3 + Shadow Master + mastery + Doppelganger's", ShadowCalc.max_shadows(Build), 6.0)
 	_check("increased damage of shadows (passives, idols, set, Tabi)", float(ShadowCalc.property(Build, 2)["value"]), 3.07, 0.001)
@@ -1175,13 +1181,19 @@ func _automatic_enemy_ailments() -> void:
 	_check("Umbral Blades keeps 10 physical resistance shreds (limit)", float(auto.get(shred, {}).get("stacks", 0.0)), 10.0, 0.001)
 	var a: Dictionary = auto.get(armour, {})
 	_check("armor shred stacks = applications/s × duration", float(a.get("stacks", 0.0)), float(a.get("rate", 0.0)) * 4.0, 0.001)
+	var daggers: int = GameData.ailment_id_by_name("ShadowDaggers")
+	_check("Shadow Daggers strike at 4 stacks: on average 1.5 on the target", float(auto.get(daggers, {}).get("stacks", 0.0)), 1.5, 0.001)
+	var blind: Dictionary = auto.get(GameData.ailment_id_by_name("Blind"), {})
+	_flag("Smoke Bomb (cooldown, other slot) blinds through its zone", str(blind.get("sources", {}).keys()).contains("Smoke Bomb"))
+	_check("stacks wiped every 1 s, applied 4/s for 4 s: 4 × 1 / 2", EnemyAilments.consumed_load(4.0, 4.0, 1.0), 2.0)
+	_check("stacks wiped every 4 s, applied 1/s for 2 s: 2 − 4 / 8", EnemyAilments.consumed_load(1.0, 2.0, 4.0), 1.5)
 	var with_auto: float = _dps(SkillCalc.compute(Build, 0))
-	_flag("automatic shreds raise the DPS", with_auto > 136298.7 * 1.5)
+	_flag("automatic shreds raise the DPS", with_auto > 614489.05 * 1.5)
 	for id: int in auto:
 		Build.set_enemy_ailment(id, 0.0)
-	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 136298.7, 150.0)
+	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 614489.05, 700.0)
 	Build.clear_enemy_ailment(shred)
-	_check("one ailment back to auto: physical shred only", _dps(SkillCalc.compute(Build, 0)), 202979.4, 300.0)
+	_check("one ailment back to auto: physical shred only", _dps(SkillCalc.compute(Build, 0)), 915166.7, 1000.0)
 	var doc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
 	_check("an explicit 0 survives the build code", float(doc["enemy"]["ailments"].get(armour, -1.0)), 0.0)
 	Build.clear_enemy_ailments()
@@ -1189,6 +1201,21 @@ func _automatic_enemy_ailments() -> void:
 	var e: Dictionary = EnemyAilments.effective({"ailments": {}}, {7: {"stacks": 0.4, "uptime": 0.33}})
 	_check("presence of an automatic ailment = its uptime", Enemy.presence_id(e, 7), 0.33)
 	_check("presence of a value set by hand = 1", Enemy.presence_id({"ailments": {7: 2.0}}, 7), 1.0)
+
+
+## Zones that apply ailments every interval without a hit (RepeatedlyApplyAilmentsInRadius): Aura of Decay poisons every
+## 0.25 s; the build's node converts its poison into bleed.
+func _zones() -> void:
+	print("--- zones")
+	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/maxroll_char_chudlet.json"))
+	LEToolsImportScript.apply(Build, MaxrollImport.to_build(d))
+	var r: Dictionary = SkillCalc.compute(Build, 3)
+	var zone_rate: float = 0.0
+	for a: Dictionary in r["ailments_applied"]:
+		if str(a.get("kind", "")) == "zone" and int(a["id"]) == GameData.ailment_id_by_name("Bleed"):
+			zone_rate += float(a["rate"])
+	_check("Aura of Decay: 4 applications per second, poison converted to bleed", zone_rate, 4.0, 0.001)
+	_flag("Aura of Decay: the zone has damage sections", _count_prefixed_sections(r, LE.t("Zone \"%s\"") % "AuraOfDecay") > 0.0)
 
 
 ## Value of the first row with this label (in a section whose title starts with `prefix`, when given).

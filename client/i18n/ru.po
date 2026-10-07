@@ -14922,3 +14922,24 @@ msgstr ", время действия %s"
 
 msgid " (present %s of the time)"
 msgstr " (действует %s времени)"
+
+msgid "zone applications"
+msgstr "наложений зоны"
+
+msgid "The zone \"%s\" applies it every %s s to the enemies in it (no hit); the target is assumed to stay in the zone (D?)."
+msgstr "Зона «%s» накладывает его каждые %s с на врагов в ней (без удара); считается, что цель всё время в зоне (D?)."
+
+msgid "Zone \"%s\""
+msgstr "Зона «%s»"
+
+msgid "strikes and resets at %d stacks: on average (%d − 1) / 2"
+msgstr "срабатывает и сбрасывается на %d стаках: в среднем (%d − 1) / 2"
+
+msgid "spent by hits every %s s"
+msgstr "поглощается ударами каждые %s с"
+
+msgid "%s at %d stacks: applications %s/s / %d = %s strikes/s"
+msgstr "%s на %d стаках: наложений %s/с / %d = %s ударов/с"
+
+msgid "More damage against rares and bosses (%s)"
+msgstr "Больше урона по редким и боссам (%s)"

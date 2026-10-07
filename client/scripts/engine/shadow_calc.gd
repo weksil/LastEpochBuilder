@@ -34,6 +34,12 @@ static func imitates(ab: Dictionary) -> bool:
 ## Sum of a CreateShadow property: passives plus item / idol mods (AbilityProperty, tags 469, specialTag = index).
 ## {value, lines}
 static func property(build: Node, index: int) -> Dictionary:
+	return ability_property(build, ABILITY_ID, ABILITY_INDEX, index)
+
+
+## Sum of an AbilityProperty of any ability (`ability_id` = abilityIDName, `ability_index` = AbilityID value): passives and
+## the mastery bonus, item / idol affixes, unique effects. {value, lines}
+static func ability_property(build: Node, ability_id: String, ability_index: int, index: int) -> Dictionary:
 	var lines: PackedStringArray = []
 	var total: float = 0.0
 	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
@@ -52,7 +58,7 @@ static func property(build: Node, index: int) -> Dictionary:
 		var points: int = entry[1]
 		for effect: Dictionary in node.get("effects", []):
 			var stat: Variant = effect.get("stat")
-			if not stat is Dictionary or str(stat.get("abilityID", "")) != ABILITY_ID:
+			if not stat is Dictionary or str(stat.get("abilityID", "")) != ability_id:
 				continue
 			if int(str(stat.get("abilityPropertyIndex", "-1"))) != index or points < int(effect.get("minPoints", 0)):
 				continue
@@ -64,12 +70,12 @@ static func property(build: Node, index: int) -> Dictionary:
 		if not (BuildMods.SLOTS.has(slot) or IdolGrid.is_idol_key(slot)):
 			continue
 		for mod: StatMod in ItemMods.item_mods(slot, build.items[slot]):
-			if mod.property == LE.ABILITY_PROPERTY and mod.tags == ABILITY_INDEX and mod.special == index:
+			if mod.property == LE.ABILITY_PROPERTY and mod.tags == ability_index and mod.special == index:
 				total += mod.added
 				lines.append("%s: %s" % [mod.source, LE.fmt_num(mod.added)])
 	# special effects of the equipped uniques (unique mods are not affixes: UniqueEffects reads their rolls)
 	for e: Dictionary in UniqueEffects.entries(build):
-		if int(e["ability_index"]) == ABILITY_INDEX and int(e["effect"].get("propertyIndex", -1)) == index:
+		if int(e["ability_index"]) == ability_index and int(e["effect"].get("propertyIndex", -1)) == index:
 			total += float(e["pp"])
 			lines.append("%s: %s" % [e["label"], LE.fmt_num(float(e["pp"]))])
 	return {"value": total, "lines": lines}
@@ -98,11 +104,19 @@ static func shadow_mods(build: Node) -> Array[StatMod]:
 	return out
 
 
-## True if a passive effect is a CreateShadow property counted here.
+## True if a passive effect is an ability property counted by the engine (CreateShadow here, the Shadow Daggers finisher
+## by EnemyAilments).
 static func handles_effect(effect: Dictionary) -> bool:
 	var stat: Variant = effect.get("stat")
-	return stat is Dictionary and str(stat.get("abilityID", "")) == ABILITY_ID \
-		and HANDLED.has(int(str(stat.get("abilityPropertyIndex", "-1"))))
+	if not stat is Dictionary:
+		return false
+	var index: int = int(str(stat.get("abilityPropertyIndex", "-1")))
+	match str(stat.get("abilityID", "")):
+		ABILITY_ID:
+			return HANDLED.has(index)
+		EnemyAilments.FINISHER_ID:
+			return index == 0
+	return false
 
 
 ## Shadow components of a skill: a copy of every hit component (primary / sub) with per_use × shadows, computed on the

@@ -13,11 +13,17 @@ const ENEMY_TICK_K: float = 0.4
 ## `uses` is the number of hits per second that roll the chances. `curse_hit`: the hits are hits on a cursed enemy
 ## (docs/ENGINE.md §9.3): only chances that the skill tree attaches to «when the cursed enemy is hit» apply to them
 ## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
-static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[String], curse_hit: bool = false) -> Dictionary:
+## `zone` (one entry of `zones()`): the applications of a zone that applies ailments every `interval` seconds to the
+## enemies in it (RepeatedlyApplyAilmentsInRadius, no hit); `uses` is then ignored.
+static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[String], curse_hit: bool = false,
+		zone: Dictionary = {}) -> Dictionary:
 	var health: int = SkillCalc._health_tags(build)
 	var ability_tags: int = int(ctx["tags"]) | health
-	var chances: Dictionary = _chances(ctx, ability_tags, curse_hit)
+	var chances: Dictionary = _chances(ctx, ability_tags, curse_hit, zone)
 	var unit: String = LE.t("hits on the cursed target") if curse_hit else LE.t("uses")
+	if not zone.is_empty():
+		uses = 1.0 / float(zone["interval"])
+		unit = LE.t("zone applications")
 	var sections: Array = []
 	var applied_rows: Array = []
 	var enemy_total: float = 0.0
@@ -37,7 +43,10 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst})
 		var chance_text: PackedStringArray = [LE.t("Chance per hit: %s (expected number of stacks = chance, 06d §1.1)") % LE.fmt_pct(c["chance"])]
 		chance_text.append_array(c["lines"])
-		if curse_hit:
+		if not zone.is_empty():
+			chance_text.append(LE.t("The zone \"%s\" applies it every %s s to the enemies in it (no hit); the target is assumed to stay in the zone (D?).") % [
+				str(zone["name"]), LE.fmt_num(float(zone["interval"]))])
+		elif curse_hit:
 			chance_text.append(LE.t("Every hit on the cursed target counts (yours and others\'); the generic \"chance on hit\" from items and passives does not apply to them."))
 		else:
 			chance_text.append(LE.t("One hit on the target per skill use counts."))
@@ -59,13 +68,19 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 
 
 ## AilmentID -> {name, chance, lines, inc_dur, inc_eff, more}: prefab chances + AilmentChance stats + conversions.
-static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false) -> Dictionary:
+## For a zone: its own ailments per application plus `zone.mods` (the AilmentChance stats of the skill's own store when
+## the zone is the skill itself).
+static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false, zone: Dictionary = {}) -> Dictionary:
 	var out: Dictionary = {}
 	var base: Dictionary = ctx["base"]
-	for entry: Dictionary in ctx["ab"].get("ailmentsOnHit", []):
-		if curse_hit or str(entry.get("class", "")) != "ChanceToApplyAilmentsOnHit":
+	var entries: Array = ctx["ab"].get("ailmentsOnHit", [])
+	if not zone.is_empty():
+		entries = [{"class": "zone", "ailments": zone["ailments"]}]
+	for entry: Dictionary in entries:
+		var zone_entry: bool = str(entry.get("class", "")) == "zone"
+		if curse_hit or not (zone_entry or str(entry.get("class", "")) == "ChanceToApplyAilmentsOnHit"):
 			continue
-		if not base.is_empty() and str(entry.get("go", "")) != str(base.get("go", "")):
+		if not zone_entry and not base.is_empty() and str(entry.get("go", "")) != str(base.get("go", "")):
 			continue
 		for a: Dictionary in entry.get("ailments", []):
 			var id: int = GameData.ailment_id_by_name(str(a.get("ailment", "")))
@@ -77,7 +92,9 @@ static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false
 			c["inc_eff"] += float(a.get("increasedEffect", 0.0))
 			c["more"] *= 1.0 + float(a.get("damageModifier", 0.0))
 			c["lines"].append(LE.t("  +%s  (skill base chance)") % LE.fmt_pct(float(a.get("chance", 0.0))))
-	for mod: StatMod in ctx["mods"]:
+	# a zone has no hits: only the chances its own skill writes into it (tree nodes, skill specials), never «on hit» ones
+	var chance_mods: Array = ctx["mods"] if zone.is_empty() else zone.get("mods", [])
+	for mod: StatMod in chance_mods:
 		if mod.special <= 0 or mod.added == 0.0 or not LE.tags_match(mod.tags, ability_tags):
 			continue
 		# chances of the «when the cursed enemy is hit» nodes belong to the curse hits only; generic ones to ordinary hits only
@@ -117,6 +134,25 @@ static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false
 			elif mod.property == 43:
 				c["inc_eff"] += mod.added
 				c["eff_lines"].append("  +%s  (%s)" % [LE.fmt_pct(mod.added), mod.source])
+	return out
+
+
+## Zones of an ability that apply negative ailments every `interval` seconds without a hit (RepeatedlyApplyAilmentsInRadius):
+## [{name, interval, ailments}]; an interval of 0 (every frame) counts as 0.1 s.
+static func zones(ab: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for entry: Dictionary in ab.get("ailmentsOnHit", []):
+		if str(entry.get("class", "")) != "RepeatedlyApplyAilmentsInRadius":
+			continue
+		var ailments: Array = []
+		for a: Dictionary in entry.get("ailments", []):
+			var id: int = GameData.ailment_id_by_name(str(a.get("ailment", "")))
+			if id >= 0 and int(GameData.ailment(id).get("positive", 0)) == 0:
+				ailments.append(a)
+		if ailments.is_empty():
+			continue
+		var interval: float = float(entry.get("other", {}).get("applicationInterval", 1.0))
+		out.append({"name": str(entry.get("go", ab.get("name", ""))), "interval": maxf(interval, 0.1), "ailments": ailments})
 	return out
 
 

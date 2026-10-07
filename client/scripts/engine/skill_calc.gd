@@ -99,10 +99,15 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		if not head_ctx["conversion_rows"].is_empty():
 			sections.append({"title": LE.t("Conversions and tags"), "rows": head_ctx["conversion_rows"]})
 		sections.append({"title": LE.t("Speed and mana"), "rows": speed["rows"]})
-		var head_ail: Dictionary = AilmentCalc.compute(build, head_ctx, uses, ail_notes)
-		sections.append_array(head_ail["sections"])
-		comp_results.append({"name": "", "hit_enemy": 0.0, "ail": head_ail, "events": uses})
-	for idx in range(components.size()):
+		# a skill that is a zone (Aura of Decay) applies its ailments through the zone below, not per use
+		if AilmentCalc.zones(ab).is_empty():
+			var head_ail: Dictionary = AilmentCalc.compute(build, head_ctx, uses, ail_notes)
+			sections.append_array(head_ail["sections"])
+			_tag_applied(head_ail, "use", "")
+			comp_results.append({"name": "", "hit_enemy": 0.0, "ail": head_ail, "events": uses})
+	var own_count: int = components.size()
+	var idx: int = 0
+	while idx < components.size():
 		var comp: Dictionary = components[idx]
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
 		var comp_store: StatStore = _component_store(store, s, comp)
@@ -149,6 +154,7 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else (uses if is_dot else events)
 		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed, "gain_events": hit_events})
 		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse)
+		_tag_applied(ail, str(comp["kind"]), str(comp["name"]))
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
 		if idx == 0:
@@ -157,6 +163,17 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 			extra_enemy_sections.append({"title": prefix + LE.t("Against enemy"), "rows": comp_enemy})
 		comp_results.append({"name": str(comp["name"]), "hit_enemy": float(comp_speed["enemy_dps"]),
 			"ail": ail, "events": events})
+		idx += 1
+		# after the skill's own components: the strikes of threshold ailments it builds up (Shadow Daggers at 4 stacks)
+		if idx == own_count:
+			components.append_array(EnemyAilments.threshold_components(build, store, comp_results, notes))
+	# zones of the skill, its parts and the abilities its nodes grant that apply ailments every interval without a hit
+	for zr: Dictionary in _zone_results(build, ab, s, components, store, notes, ail_notes):
+		for section: Dictionary in zr["ail"]["sections"]:
+			sections.append({"title": "%s: %s" % [zr["name"], section["title"]], "rows": section["rows"]})
+		comp_results.append(zr)
+	if comp_results.is_empty():
+		comp_results.append({"name": "", "hit_enemy": 0.0, "ail": {"sections": [], "enemy_dps": 0.0, "applied": []}, "events": uses})
 	for n: String in ail_notes:
 		if not notes.has(n):
 			notes.append(n)
@@ -211,6 +228,8 @@ Corruption does not change your DPS.") % [
 		if bool(hs["ctx"].get("hit", false)):
 			hit_rate += float(hs["gain_events"])
 	result["rates"] = {"uses": uses, "hits": hit_rate, "crit": main_crit, "mana": float(speed["mana"])}
+	result["cooldown"] = bool(speed.get("cooldown", false))
+	result["flag_keys"] = s.get("flag_keys", [])
 	var applied: Array[Dictionary] = []
 	for cr: Dictionary in comp_results:
 		applied.append_array(cr["ail"].get("applied", []))
@@ -373,6 +392,45 @@ static func _inputs_result(build: Node, slot: int, inputs: Array[Dictionary]) ->
 
 
 ## Store with the mods meant for this component only (component_mods of the skill, matched by ability name).
+## Marks the applications of an AilmentCalc result with the kind and the name of their source (EnemyAilments: parallel
+## sources of the other bar skills, the breakdown on the Conditions tab).
+static func _tag_applied(ail: Dictionary, kind: String, source: String) -> void:
+	for a: Dictionary in ail.get("applied", []):
+		a["kind"] = kind
+		a["source"] = source
+
+
+## Zones (AilmentCalc.zones) of the skill, of the abilities of its components and of the abilities its tree grants as
+## components or triggers (with or without damage). Each zone is assumed to stand on the target all the time (D?).
+## [{name, hit_enemy: 0, ail, events}]
+static func _zone_results(build: Node, ab: Dictionary, s: Dictionary, components: Array[Dictionary], store: StatStore,
+		notes: Array[String], ail_notes: Array[String]) -> Array[Dictionary]:
+	var abilities: Array[Dictionary] = [ab]
+	for comp: Dictionary in components:
+		if comp["kind"] != "minion" and comp["ab"] is Dictionary:
+			abilities.append(comp["ab"])
+	for key: String in ["components", "triggers"]:
+		for extra: Variant in s.get(key, []):
+			if extra is Dictionary:
+				abilities.append(GameData.ability_by_name(str(extra.get("ability", ""))))
+	var out: Array[Dictionary] = []
+	var seen: Dictionary = {}
+	for zab: Dictionary in abilities:
+		var zab_name: String = str(zab.get("name", ""))
+		if zab_name == "" or seen.has(zab_name):
+			continue
+		seen[zab_name] = true
+		for zone: Dictionary in AilmentCalc.zones(zab):
+			zone["mods"] = (s["store"] as StatStore).mods if zab_name == str(ab.get("name", "")) else []
+			var ctx: Dictionary = _context(build, zab, store, s["conversions"], notes, {})
+			var ail: Dictionary = AilmentCalc.compute(build, ctx, 0.0, ail_notes, false, zone)
+			var label: String = LE.t("Zone \"%s\"") % str(zone["name"])
+			_tag_applied(ail, "zone", label)
+			if not ail["applied"].is_empty():
+				out.append({"name": label, "hit_enemy": 0.0, "ail": ail, "events": 1.0 / float(zone["interval"])})
+	return out
+
+
 static func _component_store(store: StatStore, s: Dictionary, comp: Dictionary) -> StatStore:
 	if comp.get("store") is StatStore:
 		return comp["store"]
@@ -813,7 +871,7 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			rows[0]["text"] = LE.fmt_num(cap)
 			rows[0]["breakdown"] += LE.t("\nCapped by cooldown: min(%s, 1 / %s s) = %s") % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
 			uses = cap
-	return {"uses": uses, "rows": rows, "mana": mana}
+	return {"uses": uses, "rows": rows, "mana": mana, "cooldown": bool(cd["has"])}
 
 
 ## Uses per second of the skill in `slot` from its speed pipeline only (no damage, no components: cheap and never recursive).

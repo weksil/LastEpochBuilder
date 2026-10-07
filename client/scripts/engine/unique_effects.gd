@@ -176,6 +176,8 @@ static func add_notes(build: Node, notes: Array[String]) -> void:
 			continue  # ordinary mods of the item (SP 100 / 115 / 117), computed by the engine
 		if e["ability_index"] == ShadowCalc.ABILITY_INDEX and ShadowCalc.HANDLED.has(int(effect.get("propertyIndex", -1))):
 			continue  # CreateShadow properties: counted by the shadow components (ShadowCalc)
+		if e["ability_index"] == EnemyAilments.FINISHER_INDEX and int(effect.get("propertyIndex", -1)) == 0:
+			continue  # Shadow Daggers more damage vs rares and bosses: counted by the finisher component
 		if not e["model"].is_empty():
 			if str(e["model"].get("kind", "")) == "flag":
 				notes.append("%s — %s" % [e["label"], LE.t(str(e["model"].get("text", "")))])
