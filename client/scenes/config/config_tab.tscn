@@ -611,7 +611,7 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Reset"
-tooltip_text = "Zero the stacks of all ailments, shreds and curses"
+tooltip_text = "Return all ailments, shreds and curses to the automatic values of the selected skill"
 
 [node name="AilmentSummary" type="Label" parent="Root/Columns/Right/AilmentCard/VBox"]
 unique_name_in_owner = true

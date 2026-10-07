@@ -8,7 +8,8 @@ class_name AilmentCalc
 const ENEMY_TICK_K: float = 0.4
 
 
-## {sections: Array, enemy_dps: float}
+## {sections: Array, enemy_dps: float, applied: Array[{id, rate, duration, max}]} — `applied` feeds the automatic enemy
+## ailments (EnemyAilments).
 ## `uses` is the number of hits per second that roll the chances. `curse_hit`: the hits are hits on a cursed enemy
 ## (docs/ENGINE.md §9.3): only chances that the skill tree attaches to «when the cursed enemy is hit» apply to them
 ## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
@@ -20,6 +21,7 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 	var sections: Array = []
 	var applied_rows: Array = []
 	var enemy_total: float = 0.0
+	var applied: Array[Dictionary] = []
 	var ids: Array = chances.keys()
 	ids.sort()
 	for id: int in ids:
@@ -32,6 +34,7 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		var duration: float = float(ail.get("duration", 0.0)) * (1.0 + float(c["inc_dur"]))
 		var max_inst: int = int(ail.get("maxInstances", 0))
 		var stacks: float = rate * duration if max_inst <= 0 else minf(rate * duration, float(max_inst))
+		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst})
 		var chance_text: PackedStringArray = [LE.t("Chance per hit: %s (expected number of stacks = chance, 06d §1.1)") % LE.fmt_pct(c["chance"])]
 		chance_text.append_array(c["lines"])
 		if curse_hit:
@@ -40,7 +43,7 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 			chance_text.append(LE.t("One hit on the target per skill use counts."))
 		if not _deals_periodic_damage(ail):
 			applied_rows.append({"label": LE.t("%s: stacks on target") % name, "text": LE.fmt_num(stacks),
-				"breakdown": "\n".join(chance_text) + LE.t("\nApplications per second: %s × %s = %s; duration %s s%s → on average %s stacks.\nThe effect on the enemy is set on the Conditions tab as a number of stacks.") % [
+				"breakdown": "\n".join(chance_text) + LE.t("\nApplications per second: %s × %s = %s; duration %s s%s → on average %s stacks.\nUsed as the enemy's stacks unless a number is set on the Conditions tab.") % [
 					LE.fmt_num(uses), LE.fmt_pct(c["chance"]), LE.fmt_num(rate), LE.fmt_num(duration),
 					"" if max_inst <= 0 else LE.t(", maximum %d") % max_inst, LE.fmt_num(stacks)]})
 			continue
@@ -52,7 +55,7 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 	for conv: Dictionary in ctx.get("ailment_conversions", []):
 		if GameData.ailment_id_by_name(str(conv["from"])) < 0 or GameData.ailment_id_by_name(str(conv["to"])) < 0:
 			notes.append(LE.t("Node \"%s\": conversion %s → %s not recognised") % [conv["node"], conv["from"], conv["to"]])
-	return {"sections": sections, "enemy_dps": enemy_total}
+	return {"sections": sections, "enemy_dps": enemy_total, "applied": applied}
 
 
 ## AilmentID -> {name, chance, lines, inc_dur, inc_eff, more}: prefab chances + AilmentChance stats + conversions.

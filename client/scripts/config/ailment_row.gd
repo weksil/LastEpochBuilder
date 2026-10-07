@@ -1,9 +1,11 @@
 class_name AilmentRow extends PanelContainer
 
 ## One ailment / shred / curse of the enemy in "Conditions" (docs/UI.md): readable name, kind, where it comes from, stacks.
+## Enemy rows (enable_auto) can follow the automatic value of EnemyAilments: the «auto» box is on while no number is set.
 ## show_state() updates everything in place without emitting signals.
 
-signal stacks_changed(ailment_id: int, stacks: int)
+signal stacks_changed(ailment_id: int, stacks: float)
+signal auto_toggled(ailment_id: int, on: bool)
 
 var ailment_id: int = -1
 var display_name: String = ""
@@ -14,10 +16,22 @@ var search_text: String = ""
 @onready var _kind_label: Label = %KindLabel
 @onready var _reason_label: Label = %ReasonLabel
 @onready var _spin: SpinBox = %StacksSpin
+@onready var _auto_check: CheckBox = %AutoCheck
 
 
 func _ready() -> void:
-	_spin.value_changed.connect(func(value: float) -> void: stacks_changed.emit(ailment_id, int(value)))
+	_spin.value_changed.connect(func(value: float) -> void: stacks_changed.emit(ailment_id, value))
+	_auto_check.toggled.connect(func(on: bool) -> void: auto_toggled.emit(ailment_id, on))
+
+
+## The row can hold the automatic (fractional) average instead of a number set by hand.
+func enable_auto() -> void:
+	_auto_check.visible = true
+	_spin.step = 0.01
+
+
+func value() -> float:
+	return _spin.value
 
 
 ## data: one element of GameData.enemy_ailments().
@@ -44,19 +58,25 @@ func setup(data: Dictionary) -> void:
 	tooltip_text = _tooltip(data, max_instances)
 
 
-## stacks: current value; reason: short source text ("" if unknown); has_source: false marks an active row without a source.
-func show_state(stacks: int, reason: String, has_source: bool) -> void:
-	if int(_spin.value) != stacks:
-		_spin.set_value_no_signal(float(stacks))
-	_reason_label.text = reason
-	_reason_label.visible = reason != ""
-	if stacks > 0:
+## stacks: current value; reason: short source text ("" if unknown); has_source: false marks an active row without a source;
+## auto: the value is automatic, auto_text explains it.
+func show_state(stacks: float, reason: String, has_source: bool, auto: bool = false, auto_text: String = "") -> void:
+	if not is_equal_approx(_spin.value, stacks):
+		_spin.set_value_no_signal(stacks)
+	_auto_check.set_pressed_no_signal(auto)
+	var text: String = reason
+	if auto and auto_text != "":
+		text = auto_text if reason == "" else auto_text + "\n" + reason
+	_reason_label.text = text
+	_reason_label.visible = text != ""
+	if stacks > 0.0:
 		theme_type_variation = &"RowActive" if has_source else &"RowNoSource"
-		_reason_label.text = reason if has_source else tr("no source in the build — does not affect the calculation")
+		if not has_source:
+			_reason_label.text = tr("no source in the build — does not affect the calculation")
 		_reason_label.visible = true
 	else:
 		theme_type_variation = &"RowIdle"
-	_name_label.theme_type_variation = &"ValueLabel" if stacks > 0 else &""
+	_name_label.theme_type_variation = &"ValueLabel" if stacks > 0.0 else &""
 
 
 func has_edit_focus() -> bool:

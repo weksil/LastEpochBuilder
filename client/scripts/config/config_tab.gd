@@ -285,7 +285,9 @@ func _populate_ailments() -> void:
 			var row: AilmentRow = ailment_row_scene.instantiate() as AilmentRow
 			_ailment_list.add_child(row)
 			row.setup(data as Dictionary)
+			row.enable_auto()
 			row.stacks_changed.connect(_on_ailment_stacks_changed)
+			row.auto_toggled.connect(_on_ailment_auto_toggled.bind(row))
 			_ailment_rows[row.ailment_id] = row
 
 
@@ -293,6 +295,8 @@ func _apply_ailments() -> void:
 	var show_all: bool = _show_all.button_pressed
 	var needle: String = _filter.text.strip_edges().to_lower()
 	var ailments: Dictionary = Build.enemy.get("ailments", {}) as Dictionary
+	# ailments without a number set here take the average the selected skill keeps on the target (EnemyAilments)
+	var auto: Dictionary = EnemyAilments.auto(Build, Build.selected_skill)
 	var active: PackedStringArray = []
 	var hidden_count: int = 0
 	var no_source_on: int = 0
@@ -301,11 +305,14 @@ func _apply_ailments() -> void:
 
 	for ailment_id: int in _ailment_rows:
 		var row: AilmentRow = _ailment_rows[ailment_id]
-		var stacks: int = int(ailments.get(ailment_id, 0))
+		var is_auto: bool = not ailments.has(ailment_id)
+		var auto_entry: Dictionary = auto.get(ailment_id, {})
+		var stacks: float = float(auto_entry.get("stacks", 0.0)) if is_auto else float(ailments[ailment_id])
 		var source: Dictionary = _source("ailments", ailment_id)
-		var has_source: bool = bool(source["has"])
-		row.show_state(stacks, str(source["reason"]), has_source)
-		var listed: bool = show_all or has_source or stacks > 0 or row.has_edit_focus()
+		var has_source: bool = bool(source["has"]) or (is_auto and not auto_entry.is_empty())
+		row.show_state(stacks, str(source["reason"]), has_source, is_auto,
+			"" if auto_entry.is_empty() or not is_auto else EnemyAilments.describe(auto_entry))
+		var listed: bool = show_all or has_source or stacks > 0.0 or row.has_edit_focus()
 		if not listed:
 			hidden_count += 1
 		row.visible = listed and (needle == "" or row.search_text.contains(needle))
@@ -313,8 +320,8 @@ func _apply_ailments() -> void:
 			listed_count += 1
 		if _relevance_known and has_source:
 			order.append(str(ailment_id))
-		if stacks > 0:
-			active.append("%s ×%d" % [row.display_name, stacks])
+		if stacks > 0.0:
+			active.append("%s ×%s%s" % [row.display_name, LE.fmt_num(stacks), tr(" (auto)") if is_auto else ""])
 			if not has_source:
 				no_source_on += 1
 
@@ -343,7 +350,7 @@ func _populate_buffs() -> void:
 			var row: AilmentRow = ailment_row_scene.instantiate() as AilmentRow
 			_buff_list.add_child(row)
 			row.setup(data as Dictionary)
-			row.stacks_changed.connect(func(id: int, stacks: int) -> void: Build.set_player_buff(id, stacks))
+			row.stacks_changed.connect(func(id: int, stacks: float) -> void: Build.set_player_buff(id, int(stacks)))
 			_buff_rows[row.ailment_id] = row
 
 
@@ -430,5 +437,13 @@ func _on_player_value_changed(value: float, spin: SpinBox) -> void:
 	Build.set_player_state(str(spin.get_meta("player_value")), int(value))
 
 
-func _on_ailment_stacks_changed(ailment_id: int, stacks: int) -> void:
+func _on_ailment_stacks_changed(ailment_id: int, stacks: float) -> void:
 	Build.set_enemy_ailment(ailment_id, stacks)
+
+
+## «auto» on: back to the automatic value; off: the shown value becomes a number set by hand.
+func _on_ailment_auto_toggled(ailment_id: int, on: bool, row: AilmentRow) -> void:
+	if on:
+		Build.clear_enemy_ailment(ailment_id)
+	else:
+		Build.set_enemy_ailment(ailment_id, row.value())

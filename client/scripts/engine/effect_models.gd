@@ -204,21 +204,25 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 	return per
 
 
+## An on/off model condition «the enemy has the ailment» holds when the ailment is present at least this share of the
+## time (automatic averages, EnemyAilments; D?).
+const PRESENT_SHARE: float = 0.5
+
+
 ## Check if condition holds.
 static func holds(cond: String, ctx: Dictionary) -> bool:
 	var build: Node = ctx["build"]
 	var item_slot: String = ctx.get("item_slot", "")
 	var kind: String = cond.get_slice(":", 0)
 	var arg: String = cond.get_slice(":", 1)
-	var ailments: Dictionary = build.enemy.get("ailments", {})
 	match kind:
 		"enemy":
 			if arg == "boss_or_rare":
 				return str(build.enemy.get("kind", "")) in ["rare", "miniboss", "boss"]
-			return int(ailments.get(GameData.enum_value("AilmentID", arg), 0)) > 0
+			return Enemy.presence_id(build.enemy, GameData.enum_value("AilmentID", arg)) >= PRESENT_SHARE
 		"enemy_any":
 			for a: String in arg.split("|"):
-				if int(ailments.get(GameData.enum_value("AilmentID", a), 0)) > 0:
+				if Enemy.presence_id(build.enemy, GameData.enum_value("AilmentID", a)) >= PRESENT_SHARE:
 					return true
 			return false
 		"enemy_flag":

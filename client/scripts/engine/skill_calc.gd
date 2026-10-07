@@ -19,7 +19,19 @@ const EVENT_NAMES: Dictionary = {
 const PROJECTILE_MODES: Array[String] = ["one", "average", "all"]
 
 
+## The enemy ailments the calculation sees: the Conditions values plus the averages the skill keeps on the target
+## (EnemyAilments, docs/ENGINE.md §9.11); `auto_ailments` of the result lists the averages.
 static func compute(build: Node, slot: int) -> Dictionary:
+	var saved: Dictionary = build.enemy
+	var auto: Dictionary = EnemyAilments.auto(build, slot)
+	build.enemy = EnemyAilments.effective(saved, auto)
+	var result: Dictionary = _compute(build, slot)
+	build.enemy = saved
+	result["auto_ailments"] = auto
+	return result
+
+
+static func _compute(build: Node, slot: int) -> Dictionary:
 	var result: Dictionary = {"title": "", "sections": [], "notes": [], "inputs": [], "hits": 1.0}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -199,6 +211,10 @@ Corruption does not change your DPS.") % [
 		if bool(hs["ctx"].get("hit", false)):
 			hit_rate += float(hs["gain_events"])
 	result["rates"] = {"uses": uses, "hits": hit_rate, "crit": main_crit, "mana": float(speed["mana"])}
+	var applied: Array[Dictionary] = []
+	for cr: Dictionary in comp_results:
+		applied.append_array(cr["ail"].get("applied", []))
+	result["ailments_applied"] = applied
 	result["resources"] = s.get("resources", [])
 	return result
 
@@ -1025,7 +1041,9 @@ static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src:
 			var f: float = 1.0 + m * count
 			cond *= f
 			if count > 0.0:
-				var what: String = LE.t("per stack of %s ×%d") % [str(GameData.ailment(mod.special).get("name", mod.special)), int(count)] if per_stack else _cdp_name(mod.special)
+				var what: String = LE.t("per stack of %s ×%s") % [str(GameData.ailment(mod.special).get("name", mod.special)), LE.fmt_num(count)] if per_stack else _cdp_name(mod.special)
+				if not per_stack and count < 1.0:
+					what += LE.t(" (present %s of the time)") % LE.fmt_pct(count)
 				lines.append(LE.t("Condition \"%s\": ×%s  (%s)") % [what, LE.fmt_num(f), mod.source])
 	return cond
 

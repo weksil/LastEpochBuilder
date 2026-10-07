@@ -79,7 +79,7 @@ func _roundtrip() -> void:
 	var ailments: Dictionary = Build.enemy["ailments"]
 	_check(not ailments.is_empty(), "enemy ailments are empty")
 	for key: Variant in ailments:
-		_check(key is int and ailments[key] is int, "ailments must be int -> int")
+		_check(key is int and ailments[key] is float, "ailments must be int -> float (stacks set by hand, fractional allowed)")
 	# the hidden "hits per use" field: a saved value other than 1 is reset on load
 	var saved: Dictionary = BuildCodec.to_dict(Build)
 	saved["skills"][1]["hits"] = 2.5

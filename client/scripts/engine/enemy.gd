@@ -23,8 +23,8 @@ static func store(enemy: Dictionary) -> StatStore:
 	var is_boss: bool = enemy_kind == "boss" or enemy_kind == "miniboss"
 
 	for ailment_id in ailments:
-		var stacks: int = int(ailments[ailment_id])
-		if stacks <= 0:
+		var stacks: float = float(ailments[ailment_id])
+		if stacks <= 0.0:
 			continue
 
 		var ailment_data: Dictionary = GameData.ailment(int(ailment_id))
@@ -34,16 +34,16 @@ static func store(enemy: Dictionary) -> StatStore:
 		var ailment_name: String = ailment_data.get("name", "Unknown")
 
 		# Calculate effective stacks
-		var n_eff: int = stacks
+		var n_eff: float = stacks
 		var max_instances: int = int(ailment_data.get("maxInstances", 0))
 		if max_instances > 0:
-			n_eff = mini(n_eff, max_instances)
+			n_eff = minf(n_eff, float(max_instances))
 
 		var buff_scaling_type: int = int(ailment_data.get("buffScalingType", 0))
 		if buff_scaling_type == 2:
 			var max_stacks_buff: int = int(ailment_data.get("maxStacksThatApplyBuffs", 0))
 			if max_stacks_buff > 0:
-				n_eff = mini(n_eff, max_stacks_buff)
+				n_eff = minf(n_eff, float(max_stacks_buff))
 
 		# Penalty for bosses
 		var penalty: float = 0.0
@@ -62,8 +62,8 @@ static func store(enemy: Dictionary) -> StatStore:
 			mod.increased = float(buff.get("increased", 0.0))
 			for m in buff.get("more", []):
 				mod.more.append(float(m))
-			mod.source = "%s ×%d" % [ailment_name, n_eff]
-			s.add(mod.scaled(float(n_eff) * (1.0 + penalty)))
+			mod.source = "%s ×%s" % [ailment_name, LE.fmt_num(n_eff)]
+			s.add(mod.scaled(n_eff * (1.0 + penalty)))
 
 	return s
 
@@ -195,7 +195,6 @@ static func level_dr(enemy: Dictionary) -> float:
 ## Returns multiplier/count for damage scaling; 0 if condition not met.
 static func has_condition(enemy: Dictionary, cdp: int) -> float:
 	var flags: Dictionary = enemy.get("flags", {})
-	var ailments: Dictionary = enemy.get("ailments", {})
 	var kind: String = enemy.get("kind", "dummy")
 
 	match cdp:
@@ -215,25 +214,25 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 			return 1.0 if (kind in ["rare", "boss", "miniboss"]) else 0.0
 
 		5:  # Ignited
-			return 1.0 if _get_ailment_stacks(ailments, "Ignite") > 0 else 0.0
+			return presence(enemy, "Ignite")
 
 		6:  # PerPoisonStack
-			return float(mini(_get_ailment_stacks(ailments, "Poison"), 30))
+			return minf(stacks_of(enemy, "Poison"), 30.0)
 
 		7:  # PerBleedStack
-			return float(mini(_get_ailment_stacks(ailments, "Bleed"), 30))
+			return minf(stacks_of(enemy, "Bleed"), 30.0)
 
 		8:  # Chilled
-			return 1.0 if _get_ailment_stacks(ailments, "Chill") > 0 else 0.0
+			return presence(enemy, "Chill")
 
 		9:  # Slowed
-			return 1.0 if _get_ailment_stacks(ailments, "Slow") > 0 else 0.0
+			return presence(enemy, "Slow")
 
 		10:  # Shocked
-			return 1.0 if _get_ailment_stacks(ailments, "Shock") > 0 else 0.0
+			return presence(enemy, "Shock")
 
 		13:  # Cursed (any isCurse ailment)
-			return 1.0 if _has_curse(ailments) else 0.0
+			return _curse_presence(enemy)
 
 		16:  # Moving
 			return 1.0 if flags.get("moving", false) else 0.0
@@ -242,66 +241,77 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 			return 1.0 if (kind in ["boss", "miniboss"]) else 0.0
 
 		18:  # PerArmourShred
-			return float(mini(_get_ailment_stacks(ailments, "ArmourShred"), 14))
+			return minf(stacks_of(enemy, "ArmourShred"), 14.0)
 
 		19:  # Bleeding
-			return 1.0 if _get_ailment_stacks(ailments, "Bleed") > 0 else 0.0
+			return presence(enemy, "Bleed")
 
 		20:  # Frozen (a state, not an AilmentID: enemy flag)
 			return 1.0 if flags.get("frozen", false) else 0.0
 
 		21:  # PerNegAilment (count of different ailments)
-			return float(_count_ailments(ailments))
+			return _ailment_count(enemy)
 
 		25:  # Damned
-			return 1.0 if _get_ailment_stacks(ailments, "Damned") > 0 else 0.0
+			return presence(enemy, "Damned")
 
 		26:  # PerNegAilment<=8
-			return float(mini(_count_ailments(ailments), 8))
+			return minf(_ailment_count(enemy), 8.0)
 
 		32:  # Frozen|Chilled
-			return 1.0 if (flags.get("frozen", false) or _get_ailment_stacks(ailments, "Chill") > 0) else 0.0
+			return 1.0 if flags.get("frozen", false) else presence(enemy, "Chill")
 
 		33:  # Ignited|Shocked
-			return 1.0 if (_get_ailment_stacks(ailments, "Ignite") > 0 or _get_ailment_stacks(ailments, "Shock") > 0) else 0.0
+			return 1.0 - (1.0 - presence(enemy, "Ignite")) * (1.0 - presence(enemy, "Shock"))
 
 		36:  # Electrified
-			return 1.0 if _get_ailment_stacks(ailments, "Electrify") > 0 else 0.0
+			return presence(enemy, "Electrify")
 
 		44:  # Poisoned
-			return 1.0 if _get_ailment_stacks(ailments, "Poison") > 0 else 0.0
+			return presence(enemy, "Poison")
 
 		46:  # Blinded
-			return 1.0 if _get_ailment_stacks(ailments, "Blind") > 0 else 0.0
+			return presence(enemy, "Blind")
 
 		47:  # Frostbitten
-			return 1.0 if _get_ailment_stacks(ailments, "Frostbite") > 0 else 0.0
+			return presence(enemy, "Frostbite")
 
 		_:
 			return 0.0
 
 
-## Helper: get stacks of ailment by name.
-static func _get_ailment_stacks(ailments: Dictionary, ailment_name: String) -> int:
-	var target_id = GameData.enum_value("AilmentID", ailment_name)
-	if target_id < 0:
-		return 0
-	return ailments.get(target_id, 0)
+## Stacks of an ailment by name (fractional for the automatic averages, EnemyAilments).
+static func stacks_of(enemy: Dictionary, ailment_name: String) -> float:
+	var id: int = GameData.enum_value("AilmentID", ailment_name)
+	return float(enemy.get("ailments", {}).get(id, 0.0)) if id >= 0 else 0.0
 
 
-## Helper: check if any ailment with isCurse is present.
-static func _has_curse(ailments: Dictionary) -> bool:
-	for ailment_id in ailments:
-		var ailment_data = GameData.ailment(ailment_id)
-		if not ailment_data.is_empty() and ailment_data.get("isCurse", false):
-			return true
-	return false
+## Share of the time the enemy has the ailment: the uptime of an automatic value (EnemyAilments.effective), else 1 when
+## it has stacks.
+static func presence_id(enemy: Dictionary, id: int) -> float:
+	var uptime: Dictionary = enemy.get("uptime", {})
+	if uptime.has(id):
+		return float(uptime[id])
+	return 1.0 if float(enemy.get("ailments", {}).get(id, 0.0)) > 0.0 else 0.0
 
 
-## Helper: count number of different ailments with stacks > 0.
-static func _count_ailments(ailments: Dictionary) -> int:
-	var count = 0
-	for ailment_id in ailments:
-		if ailments[ailment_id] > 0:
-			count += 1
-	return count
+static func presence(enemy: Dictionary, ailment_name: String) -> float:
+	var id: int = GameData.enum_value("AilmentID", ailment_name)
+	return presence_id(enemy, id) if id >= 0 else 0.0
+
+
+## Share of the time the enemy is cursed: the largest presence of an isCurse ailment.
+static func _curse_presence(enemy: Dictionary) -> float:
+	var best: float = 0.0
+	for id: Variant in enemy.get("ailments", {}):
+		if bool(GameData.ailment(int(id)).get("isCurse", false)):
+			best = maxf(best, presence_id(enemy, int(id)))
+	return best
+
+
+## Average number of different ailments on the enemy: the sum of their presences.
+static func _ailment_count(enemy: Dictionary) -> float:
+	var n: float = 0.0
+	for id: Variant in enemy.get("ailments", {}):
+		n += presence_id(enemy, int(id))
+	return n

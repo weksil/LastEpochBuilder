@@ -665,6 +665,26 @@ The other way round, `BuildMods._add_other_skill_nodes` gives a skill the parts 
 from the trees of the other bar skills (Summon Bear → Swipe damage, Multistrike → Void Cleave damage, Firebrand → Flame
 Reave, Umbral Blades → Shift mana per recalled blade); the source names the other skill.
 
+### 9.11 Automatic enemy ailments — `engine/enemy_ailments.gd` (`class_name EnemyAilments`)
+An ailment, shred or curse of the enemy takes the number set on the Conditions tab when there is one
+(`Build.enemy.ailments` holds only those, an explicit 0 included; `Build.clear_enemy_ailment` returns one to automatic).
+Every other ailment takes the average the skill keeps on the target by itself. `AilmentCalc.compute` returns its
+applications (`applied`: id, applications/s = hits/s × chance, duration × (1 + increased duration), maxInstances) for every
+damage component; `SkillCalc` collects them into `ailments_applied`; `EnemyAilments.auto(build, slot)` runs that skill
+against the Conditions values only and sums them:
+- load = Σ applications/s × duration; stacks = min(load, maxInstances) (uncapped: load), a single-instance ailment counts
+  its uptime;
+- uptime = 1 − e^(−load) (independent applications, the duration refreshed).
+`EnemyAilments.effective` gives a copy of the enemy with the stacks in `ailments` and the uptimes in `uptime`
+(`APPLIED_KEY` marks it, nested calculations add nothing). `SkillCalc.compute` uses the averages of that skill;
+`DefenseCalc.compute` and the Conditions tab use the selected skill's. Readers: `Enemy.store` (ailment buffs × fractional
+stacks), `Enemy.has_condition` (a «vs X» condition is the presence: the uptime of an automatic value, 1 for a number set by
+hand, so `1 + more × presence` is the expected factor; «per stack» reads the stacks; «per ailment» sums the presences),
+`EffectModels` (`enemy_stacks:` per-stack sources; on/off `enemy:` conditions hold from a presence of
+`PRESENT_SHARE` = 0.5, D?). Results are cached by the build state (`_signature`). Applications from minions, from casts
+without a hit and the consumption of stacks by other skills (Shadow Daggers, Damned) are not counted (D?).
+`EnemyAilments.enabled = false` turns it off for tests that compare with in-game measurements on a dummy.
+
 ## 10. Effective health — `engine/defense_calc.gd` (`class_name DefenseCalc`)
 
 The "Defense" tab, in the spirit of Path of Building's "Maximum hit taken" / "Total EHP": one enemy attack is run through

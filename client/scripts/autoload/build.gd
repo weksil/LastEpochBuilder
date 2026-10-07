@@ -647,21 +647,26 @@ func set_enemy(key: String, value: Variant) -> void:
 	changed.emit()
 
 
-## Removes every ailment / shred / curse stack from the enemy (one `changed`).
+## Returns every enemy ailment / shred / curse to its automatic value (one `changed`).
 func clear_enemy_ailments() -> void:
 	enemy["ailments"] = {}
 	changed.emit()
 
 
-func set_enemy_ailment(ailment_id: int, stacks: int) -> void:
+## Sets the enemy's stacks of an ailment by hand (0 included: «never on the enemy»); the automatic value no longer applies.
+func set_enemy_ailment(ailment_id: int, stacks: float) -> void:
 	var ailments: Dictionary = enemy.get("ailments", {}) as Dictionary
-	if stacks > 0:
-		ailments[ailment_id] = stacks
-	elif ailment_id in ailments:
-		ailments.erase(ailment_id)
-
+	ailments[ailment_id] = maxf(stacks, 0.0)
 	enemy["ailments"] = ailments
 	changed.emit()
+
+
+## Returns one enemy ailment to the average the selected skill keeps on the target (EnemyAilments).
+func clear_enemy_ailment(ailment_id: int) -> void:
+	var ailments: Dictionary = enemy.get("ailments", {}) as Dictionary
+	if ailments.erase(ailment_id):
+		enemy["ailments"] = ailments
+		changed.emit()
 
 
 # ============================================================================

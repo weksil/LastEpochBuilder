@@ -10,11 +10,11 @@ msgstr ""
 msgid ""
 "\n"
 "Applications per second: %s × %s = %s; duration %s s%s → on average %s stacks.\n"
-"The effect on the enemy is set on the Conditions tab as a number of stacks."
+"Used as the enemy's stacks unless a number is set on the Conditions tab."
 msgstr ""
 "\n"
 "Наложений в секунду: %s × %s = %s; длительность %s с%s → в среднем %s стаков.\n"
-"Эффект на враге задаётся во вкладке «Условия» числом стаков."
+"Берётся как стаки на враге, если на вкладке «Условия» не задано своё число."
 
 msgid ""
 "\n"
@@ -12971,8 +12971,8 @@ msgstr "Ваших попаданий по проклятой цели: %s/с (�
 msgid "Zap on melee hit"
 msgstr "Zap при ударе ближнего боя"
 
-msgid "Zero the stacks of all ailments, shreds and curses"
-msgstr "Обнулить стаки всех айлментов, шредов и проклятий"
+msgid "Return all ailments, shreds and curses to the automatic values of the selected skill"
+msgstr "Вернуть всем айлментам, шредам и проклятиям автоматические значения выбранного умения"
 
 msgid "Zigzag dash, direction changes randomly"
 msgstr "Рывок зигзагом, направление меняется случайно"
@@ -13547,8 +13547,8 @@ msgstr "за стак яда"
 msgid "per second while directing, free"
 msgstr "раз в секунду во время направления, бесплатно"
 
-msgid "per stack of %s ×%d"
-msgstr "за стак %s ×%d"
+msgid "per stack of %s ×%s"
+msgstr "за стак %s ×%s"
 
 msgid "periodic damage of one instance (abilities_code_damage.json)"
 msgstr "периодический урон одного экземпляра (abilities_code_damage.json)"
@@ -14901,3 +14901,24 @@ msgstr "Шанс эха %s (%s) проверяется раз в %s с, пока
 
 msgid "Event rate: %s per second."
 msgstr "Частота события: %s в секунду."
+
+msgid "Automatic: the average the selected skill keeps on the target"
+msgstr "Авто: среднее, которое выбранное умение держит на цели"
+
+msgid "auto"
+msgstr "авто"
+
+msgid " (auto)"
+msgstr " (авто)"
+
+msgid "auto: %s/s × %s s = %s"
+msgstr "авто: %s/с × %s с = %s"
+
+msgid ", limit %d"
+msgstr ", лимит %d"
+
+msgid ", uptime %s"
+msgstr ", время действия %s"
+
+msgid " (present %s of the time)"
+msgstr " (действует %s времени)"

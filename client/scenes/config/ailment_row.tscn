@@ -40,6 +40,15 @@ theme_type_variation = &"MutedLabel"
 text = ""
 autowrap_mode = 3
 
+[node name="AutoCheck" type="CheckBox" parent="HBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+tooltip_text = "Automatic: the average the selected skill keeps on the target"
+text = "auto"
+
 [node name="StacksSpin" type="SpinBox" parent="HBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(110, 0)

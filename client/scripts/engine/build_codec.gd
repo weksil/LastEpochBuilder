@@ -244,7 +244,7 @@ static func _enemy(saved: Variant) -> Dictionary:
 	var ailments: Dictionary = {}
 	for key: Variant in enemy["ailments"] if enemy["ailments"] is Dictionary else {}:
 		if str(key).is_valid_int():
-			ailments[int(key)] = int(enemy["ailments"][key])
+			ailments[int(key)] = float(enemy["ailments"][key])
 	enemy["ailments"] = ailments
 	return enemy
 

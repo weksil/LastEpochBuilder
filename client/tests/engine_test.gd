@@ -812,6 +812,7 @@ func _count_sections(r: Dictionary, title: String) -> float:
 ## while the target has high (>= 65%) or full health.
 func _high_health_vs_dummy() -> void:
 	print("--- High Health condition (Harvest vs dummy)")
+	EnemyAilments.enabled = false  # measured in game on a dummy without ailments
 	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
 	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
 	for i in range(Build.skills.size()):
@@ -838,6 +839,7 @@ func _high_health_vs_dummy() -> void:
 		_section_value(r, "Against enemy", "Hit without crit"), _section_value(r, "Against enemy", "Hit with crit"),
 		_section_value(r, "Against enemy", "Average hit vs enemy"), _section_value(r, "Against enemy", "Hit DPS vs enemy"),
 		_section_value(r, "Against enemy", "DPS vs enemy")])
+	EnemyAilments.enabled = true
 
 
 ## Sum of the per-type rows of the "Against enemy" section (average non-crit hit against the target).
@@ -857,6 +859,7 @@ func _hit_vs_enemy(r: Dictionary) -> float:
 ## second) of the sample build against the training dummy, docs/ENGINE.md §9.3.
 func _detonations_and_maintained_dot() -> void:
 	print("--- Transplant detonations and Spirit Plague DoT (sample build vs dummy)")
+	EnemyAilments.enabled = false  # the node changes the applications: compare the hits without automatic ailments
 	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/letools_A83KxJq5.json")
 	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(JSON.parse_string(text)))
 	for i in range(Build.skills.size()):
@@ -919,6 +922,7 @@ func _detonations_and_maintained_dot() -> void:
 	var more: Dictionary = SkillCalc.compute(Build, 2)
 	_check("Spirit Plague: node More Damage ×5 → ×1.5", _section_value(more, "Against enemy", "Damage over the whole duration vs enemy (3 s)") / instance, 1.5, 0.005)
 	tree_sp.erase(22)
+	EnemyAilments.enabled = true
 
 
 func _count_source_prefix(store: StatStore, prefix: String) -> float:
@@ -1039,6 +1043,7 @@ func _projectiles() -> void:
 		"increased": 0.0, "more": 1.0, "set": 1.0, "sources": []},
 		"Extra arrows": {"param": "projectiles", "added": 2.0, "increased": 0.0, "more": 1.0, "set": null, "sources": []}}}
 	_check("Multishot + shotgun node + 2 arrows, average (1+7)/2", float(SkillCalc.projectile_hits(Build, 0, ab, shotgun_node)["factor"]), 4.0)
+	EnemyAilments.enabled = false  # more blades also apply more ailments: compare the hits alone
 	Build.set_skill(0, "ub5d9")  # Umbral Blades: 2 blades, can hit one target with both
 	var avg: Dictionary = SkillCalc.compute(Build, 0)
 	_check("Umbral Blades: shotgun", 1.0 if avg["projectiles"]["shotgun"] else 0.0, 1.0)
@@ -1051,6 +1056,7 @@ func _projectiles() -> void:
 	var dps_all: float = float(CalcSummary.find_row(all, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
 	print("  Umbral Blades DPS one %s, all %s" % [dps_one, dps_all])
 	_check("Umbral Blades: all / one = 2", dps_all / maxf(dps_one, 0.0001), 2.0, 0.01)
+	EnemyAilments.enabled = true
 	_check("mode survives save/load", 1.0 if str(BuildCodec.to_dict(Build)["skills"][0]["projectile_mode"]) == "all" else 0.0, 1.0)
 	Build.set_skill(0, "th39")  # Summon Thorn Totem: the totem fires 4 thorns that share one hit list
 	var totem: Dictionary = SkillCalc.compute(Build, 0)
@@ -1099,9 +1105,12 @@ func _shadows_echoes_buffs() -> void:
 	print("--- shadows, echoes, buffs on the player, combo parts")
 	var bd: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/letools_Q0V6XDLG.json"))
 	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(bd))  # Bladedancer: Umbral Blades, Dreamslash, Shadow Cascade
+	EnemyAilments.enabled = false
 	var ub: Dictionary = SkillCalc.compute(Build, 0)
 	# "Only 1 Blade" writes +250% into three combo-part mutators: counted once (it was ×3.5³)
 	_check("Umbral Blades DPS with the combo parts counted once", _dps(ub), 136298.7, 150.0)
+	EnemyAilments.enabled = true
+	_automatic_enemy_ailments()
 	_check("no shadow components without shadows", _count_prefixed_sections(ub, "Shadows: "), 0.0)
 	_check("max shadows: 3 + Shadow Master + mastery + Doppelganger's", ShadowCalc.max_shadows(Build), 6.0)
 	_check("increased damage of shadows (passives, idols, set, Tabi)", float(ShadowCalc.property(Build, 2)["value"]), 3.07, 0.001)
@@ -1150,7 +1159,36 @@ func _shadows_echoes_buffs() -> void:
 	_check("Warpath echo: (1 + 100%) × 22% rolled once per second", _row_value(wr, LE.t("Damage events per second"), LE.t("Echo: %s") % "WarpathHit"), 0.44, 0.001)
 	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
+	EnemyAilments.enabled = false
 	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 27852.5, 30.0)
+	EnemyAilments.enabled = true
+
+
+## Automatic enemy ailments (EnemyAilments): Umbral Blades keeps its own shreds on the target; a number set on the
+## Conditions tab (0 included) wins.
+func _automatic_enemy_ailments() -> void:
+	print("--- automatic enemy ailments")
+	Build.clear_enemy_ailments()
+	var shred: int = GameData.ailment_id_by_name("PhysicalResistanceShred")
+	var armour: int = GameData.ailment_id_by_name("ArmourShred")
+	var auto: Dictionary = EnemyAilments.auto(Build, 0)
+	_check("Umbral Blades keeps 10 physical resistance shreds (limit)", float(auto.get(shred, {}).get("stacks", 0.0)), 10.0, 0.001)
+	var a: Dictionary = auto.get(armour, {})
+	_check("armor shred stacks = applications/s × duration", float(a.get("stacks", 0.0)), float(a.get("rate", 0.0)) * 4.0, 0.001)
+	var with_auto: float = _dps(SkillCalc.compute(Build, 0))
+	_flag("automatic shreds raise the DPS", with_auto > 136298.7 * 1.5)
+	for id: int in auto:
+		Build.set_enemy_ailment(id, 0.0)
+	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 136298.7, 150.0)
+	Build.clear_enemy_ailment(shred)
+	_check("one ailment back to auto: physical shred only", _dps(SkillCalc.compute(Build, 0)), 202979.4, 300.0)
+	var doc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
+	_check("an explicit 0 survives the build code", float(doc["enemy"]["ailments"].get(armour, -1.0)), 0.0)
+	Build.clear_enemy_ailments()
+	# presence: a condition «vs X» counts the share of time the ailment is on the target
+	var e: Dictionary = EnemyAilments.effective({"ailments": {}}, {7: {"stacks": 0.4, "uptime": 0.33}})
+	_check("presence of an automatic ailment = its uptime", Enemy.presence_id(e, 7), 0.33)
+	_check("presence of a value set by hand = 1", Enemy.presence_id({"ailments": {7: 2.0}}, 7), 1.0)
 
 
 ## Value of the first row with this label (in a section whose title starts with `prefix`, when given).

@@ -644,7 +644,16 @@ static func ward_equilibrium(layers: Dictionary) -> float:
 # --- result -------------------------------------------------------------------------------
 
 ## {attack, summary: {ehp, max_hit, hits, taken_share}, sections: [{title, rows: [{label, text, breakdown}]}], notes}
+## The enemy ailments are the Conditions values plus the averages the selected skill keeps on the target (EnemyAilments).
 static func compute(build: Node) -> Dictionary:
+	var saved: Dictionary = build.enemy
+	build.enemy = EnemyAilments.effective(saved, EnemyAilments.auto(build, int(build.selected_skill)))
+	var result: Dictionary = _compute(build)
+	build.enemy = saved
+	return result
+
+
+static func _compute(build: Node) -> Dictionary:
 	var g: Dictionary = BuildMods.global_store(build)
 	var store: StatStore = g["store"]
 	var settings: Dictionary = settings_of(build)
