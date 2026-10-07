@@ -1,11 +1,14 @@
 class_name BuildsDialog extends Window
 
-## Dialog "Builds": named saves in user://builds and the build code (copy / load). All nodes are defined in the scene.
+## Dialog "Builds": named saves in user://builds and the build code (copy / paste / load). All nodes are defined in the scene.
 
 ## Emitted after a build was applied to the Build autoload (main.gd syncs the top bar).
 signal loaded
 
 const WARNINGS_SHOWN: int = 30
+
+## Browser callbacks of navigator.clipboard.readText(); kept here so they live until the promise settles.
+var _web_paste_callbacks: Array[JavaScriptObject] = []
 
 
 func _ready() -> void:
@@ -19,6 +22,7 @@ func _ready() -> void:
 	%OpenFolderButton.pressed.connect(_on_open_folder_pressed)
 	%OpenFolderButton.visible = not OS.has_feature("web")  # saves live in the browser storage there
 	%CopyCodeButton.pressed.connect(_on_copy_code_pressed)
+	%PasteCodeButton.pressed.connect(_on_paste_code_pressed)
 	%LoadCodeButton.pressed.connect(_on_load_code_pressed)
 	%BuildList.item_selected.connect(_on_item_selected)
 	%BuildList.item_activated.connect(func(_index: int) -> void: _load_selected())
@@ -128,11 +132,41 @@ func _on_copy_code_pressed() -> void:
 	_status(tr("The build code is copied to the clipboard (%d characters).") % code.length())
 
 
+## In the browser DisplayServer.clipboard_get() returns only what Godot itself copied or saw pasted, so the system
+## clipboard is read through navigator.clipboard (some browsers ask the user for permission).
+func _on_paste_code_pressed() -> void:
+	if not OS.has_feature("web"):
+		_paste_code(DisplayServer.clipboard_get())
+		return
+	var clipboard: Variant = JavaScriptBridge.get_interface("navigator").clipboard
+	if clipboard == null:
+		_on_web_paste_failed([])
+		return
+	_web_paste_callbacks = [
+		JavaScriptBridge.create_callback(_on_web_paste_read),
+		JavaScriptBridge.create_callback(_on_web_paste_failed),
+	]
+	clipboard.readText().then(_web_paste_callbacks[0], _web_paste_callbacks[1])
+
+
+func _on_web_paste_read(args: Array) -> void:
+	_paste_code(str(args[0]))
+
+
+func _on_web_paste_failed(_args: Array) -> void:
+	_status(tr("The browser does not allow reading the clipboard here; press Ctrl+V in the field."))
+
+
+func _paste_code(text: String) -> void:
+	if text.strip_edges() == "":
+		_status(tr("The clipboard is empty."))
+		return
+	%CodeEdit.text = text.strip_edges()
+	_status("")
+
+
 func _on_load_code_pressed() -> void:
 	var text: String = %CodeEdit.text
-	if text.strip_edges() == "":
-		text = DisplayServer.clipboard_get()
-		%CodeEdit.text = text
 	if text.strip_edges() == "":
 		_status(tr("Paste a build code first."))
 		return

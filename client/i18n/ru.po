@@ -6571,6 +6571,12 @@ msgstr "Импортировано: %s, %s, уровень %d"
 msgid "Import…"
 msgstr "Импорт…"
 
+msgid "Feedback"
+msgstr "Обратная связь"
+
+msgid "Report a bug or suggest a feature on GitHub"
+msgstr "Сообщить об ошибке или предложить идею на GitHub"
+
 msgid "Impulse does not give mana"
 msgstr "Импульс не даёт маны"
 
@@ -13781,14 +13787,14 @@ msgstr "Открыть папку сохранений"
 msgid "Build code"
 msgstr "Код сборки"
 
-msgid "A build code is the whole build packed into one line of text, like in Path of Building. Copy it to share the build; paste someone's code and press \"Load from code\". The current build will be replaced."
-msgstr "Код сборки — вся сборка, упакованная в одну строку текста, как в Path of Building. Скопируйте его, чтобы поделиться сборкой; вставьте чужой код и нажмите «Загрузить из кода». Текущая сборка будет заменена."
+msgid "A build code is the whole build packed into one line of text, like in Path of Building. Copy it to share the build; paste someone's code and press \"Load\". The current build will be replaced."
+msgstr "Код сборки — вся сборка, упакованная в одну строку текста, как в Path of Building. Скопируйте его, чтобы поделиться сборкой; вставьте чужой код и нажмите «Загрузить». Текущая сборка будет заменена."
 
-msgid "Copy the code of the current build"
-msgstr "Скопировать код текущей сборки"
+msgid "Copy code"
+msgstr "Скопировать"
 
-msgid "Load from code"
-msgstr "Загрузить из кода"
+msgid "Paste code"
+msgstr "Вставить"
 
 msgid "Delete the build"
 msgstr "Удаление сборки"
@@ -13837,6 +13843,12 @@ msgstr "Код сборки скопирован в буфер обмена (%d 
 
 msgid "Paste a build code first."
 msgstr "Сначала вставьте код сборки."
+
+msgid "The clipboard is empty."
+msgstr "Буфер обмена пуст."
+
+msgid "The browser does not allow reading the clipboard here; press Ctrl+V in the field."
+msgstr "Браузер не даёт прочитать буфер обмена; нажмите Ctrl+V в поле."
 
 msgid "Build loaded from the code."
 msgstr "Сборка загружена из кода."

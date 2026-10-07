@@ -2,40 +2,20 @@
 
 ## [▶ Open Last Epoch Builder in the browser](https://weksil.github.io/LastEpochBuilder/)
 
-Runs in any desktop browser with WebGL 2; saved builds stay in that browser. A Windows version is also available:
-
-## [⬇ Download Last Epoch Builder 0.1.4 for Windows x64](https://github.com/weksil/LastEpochBuilder/releases/download/v0.1.4/LastEpochBuilder-0.1.4-windows-x64.zip)
-
-All versions and release notes: [Releases](https://github.com/weksil/LastEpochBuilder/releases/latest).
-No installation: unzip and run `LastEpochBuilder.exe`.
+Runs in any desktop browser with WebGL 2, no installation; saved builds stay in that browser.
 
 A build planner for Last Epoch in the spirit of Path of Building: exact numbers with a breakdown of every value, items,
 idols, blessings, skill and passive trees, player and enemy conditions. Game version: **1.5.0 (Season 5)**.
 Interface in English or Russian.
 
-## Import a build from a link
+## Import a character
 
-The planner imports builds from [Last Epoch Tools](https://www.lastepochtools.com/planner/) links
-(`https://www.lastepochtools.com/planner/XXXXXXXX`).
-This import is available in the Windows version only: the browser cannot load Last Epoch Tools pages.
+Press **Import…** in the top bar, enter your Last Epoch account name, press **Find characters** and pick a character.
+Characters are read from the account's [Maxroll](https://maxroll.gg/last-epoch) profile, so the profile must be public.
+Class, mastery, level, passives, skills with their trees, items, idols with the altar and blessings are loaded (the Weaver
+tree is not imported yet). The current build is replaced.
 
-How to get a link to your character:
-
-1. Open the [Last Epoch Tools planner](https://www.lastepochtools.com/planner/) and press the **import** button in the
-   left toolbar.
-2. Import the character:
-   - **online character**: enter your account name and character name;
-   - **offline character**: upload its save file from
-     `C:\Users\<user>\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves`
-     (with Steam cloud saves: `<Steam>\userdata\<Steam user id>\899770\ac\WinAppDataLocalLow\Eleventh Hour Games\Last Epoch\Saves`).
-3. Press **Save/Share** in the left menu and copy the link.
-
-Build guides (Maxroll and others) usually link to a Last Epoch Tools planner too — copy that link.
-
-Then in Last Epoch Builder press **Import…** in the top bar, paste the link and press **Load**. Class, mastery, level,
-passives, skills with their trees, items, idols with the altar and blessings are loaded (the Weaver tree is not imported yet).
-
-To share a build made in Last Epoch Builder, use **Builds… → Copy the code of the current build**; the other person pastes it in the same dialog and presses **Load from code**.
+To share a build made in Last Epoch Builder, use **Builds… → Copy code**; the other person presses **Paste code** in the same dialog, then **Load**.
 
 ## What it shows
 
@@ -89,4 +69,4 @@ The game data, texts and art extracted from the Last Epoch client (`research/dat
 `client/assets/`) belong to Eleventh Hour Games and are included only so that the planner works; the MIT license does not
 cover them. The `client/addons/godot_ai` plugin has its own MIT license.
 
-Developer documentation (formula sources, architecture, tests, release build): [TECH_README.md](TECH_README.md).
+Developer documentation (formula sources, architecture, tests, web build): [TECH_README.md](TECH_README.md).

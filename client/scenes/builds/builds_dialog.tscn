@@ -105,7 +105,7 @@ text = "Build code"
 [node name="CodeHint" type="Label" parent="Panel/Margin/Layout"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "A build code is the whole build packed into one line of text, like in Path of Building. Copy it to share the build; paste someone's code and press \"Load from code\". The current build will be replaced."
+text = "A build code is the whole build packed into one line of text, like in Path of Building. Copy it to share the build; paste someone's code and press \"Load\". The current build will be replaced."
 autowrap_mode = 3
 
 [node name="CodeEdit" type="TextEdit" parent="Panel/Margin/Layout"]
@@ -123,13 +123,19 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Copy the code of the current build"
+text = "Copy code"
+
+[node name="PasteCodeButton" type="Button" parent="Panel/Margin/Layout/CodeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Paste code"
 
 [node name="LoadCodeButton" type="Button" parent="Panel/Margin/Layout/CodeRow"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Load from code"
+text = "Load"
 
 [node name="StatusLabel" type="Label" parent="Panel/Margin/Layout"]
 unique_name_in_owner = true

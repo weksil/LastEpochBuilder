@@ -115,6 +115,16 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
+[node name="FeedbackButton" type="Button" parent="Margin/Layout/TopBar/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Report a bug or suggest a feature on GitHub"
+focus_mode = 0
+text = "Feedback"
+
+[node name="Sep2" type="VSeparator" parent="Margin/Layout/TopBar/Row"]
+layout_mode = 2
+
 [node name="LanguageLabel" type="Label" parent="Margin/Layout/TopBar/Row"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"

@@ -260,7 +260,8 @@ dictionary; double click imports), `%ImportButton`, `%StatusLabel`, `%Http`. The
 The button `%BuildsButton` ("Builds…", top bar) opens `%BuildsDialog`; on its `loaded` signal `main.gd` syncs the top bar like after an import.
 The dialog: `%NameEdit` + `%SaveButton` (save under a name, the same name overwrites), `%BuildList` (newest first; double click loads),
 `%LoadButton`, `%DeleteButton` (asks `%DeleteConfirm` first), `%OpenFolderButton` (hidden in the browser build), `%CodeEdit`, `%CopyCodeButton` (encodes the current build,
-puts the code into the field and the clipboard), `%LoadCodeButton` (decodes the field, or the clipboard when the field is empty), `%StatusLabel`, `%CloseButton`.
+puts the code into the field and the clipboard), `%PasteCodeButton` (puts the clipboard into the field; in the browser it reads
+`navigator.clipboard` through `JavaScriptBridge`, since `DisplayServer.clipboard_get()` there sees only Godot's own copies), `%LoadCodeButton` (decodes the field), `%StatusLabel`, `%CloseButton`.
 - `BuildCodec.to_dict(Build)` — a JSON-safe snapshot `{format: "le-builder", version: 1, class, mastery, level, quest_points, passives, skills[5]
   {ability, level, tree, inputs, hits}, selected_skill, items, stash, blessings, enemy, player}` (`stash` — the unequipped items; older saves have none); dictionary keys that are ids are written as strings.
 - `from_dict(data)` validates and restores the types (JSON numbers are floats, keys are strings): unknown class → error; unknown passive / skill nodes,

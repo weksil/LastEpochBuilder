@@ -1,7 +1,7 @@
 # Last Epoch Builder — technical README
 
 Developer documentation: formula and data sources, architecture, checks, the release build. The user-facing page is
-[README.md](README.md) (download, screenshots); GitHub Pages serves the browser build (see "Web build").
+[README.md](README.md) (link to the web build, screenshots); GitHub Pages serves the browser build (see "Web build").
 
 A build planner for Last Epoch in the spirit of Path of Building: exact numbers with a breakdown
 of every value, items / idols / blessings / skill and passive trees,
@@ -58,7 +58,7 @@ the commands for repeating the extraction are described in the notes `research/0
 ## Repository layout
 
 ```
-README.md        user-facing README shown on GitHub (download, screenshots, license)
+README.md        user-facing README shown on GitHub (web build link, screenshots, license)
 TECH_README.md   this file
 LICENSE          MIT license (for the project code, see "License")
 docs/            screenshots used by README.md (plain git, not LFS)
@@ -341,7 +341,7 @@ the build is kept in the `Build` autoload. Details: [client/docs/UI.md](client/d
 TECH_README.md is updated in the same commit as the change that makes it stale:
 a new folder or tool, a status change in the table above, a new build/run step,
 a change to the git rules. We keep the "Status", "Repository layout" and "Development tools" sections up to date.
-README.md is updated on a release (version, download link) and when a feature worth a screenshot changes
+README.md is updated when a user-facing feature changes and when a feature worth a screenshot changes
 (re-run `readme_screenshots`).
 
 ## License

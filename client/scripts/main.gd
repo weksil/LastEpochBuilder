@@ -1,5 +1,7 @@
 extends Control
 
+const FEEDBACK_URL := "https://github.com/weksil/LastEpochBuilder/issues"
+
 @onready var class_select: OptionButton = %ClassSelect
 @onready var mastery_select: OptionButton = %MasterySelect
 @onready var level_spin: SpinBox = %LevelSpin
@@ -30,6 +32,9 @@ func _ready() -> void:
 	# Saved builds and build codes
 	builds_button.pressed.connect(func() -> void: builds_dialog.popup_centered())
 	builds_dialog.loaded.connect(_on_imported)
+
+	# Bug reports and suggestions: GitHub issues
+	%FeedbackButton.pressed.connect(func() -> void: OS.shell_open(FEEDBACK_URL))
 
 	# Interface language (Settings autoload): item index = index in Settings.LOCALES
 	language_select.select(Settings.LOCALES.find(Settings.locale))
