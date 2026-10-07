@@ -185,6 +185,7 @@ Corruption does not change your DPS.") % [
 	sections.append({"title": LE.t("Against enemy"), "rows": enemy_rows})
 	sections.append_array(extra_enemy_sections)
 	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
+	sustain_rows.append_array(ShadowCalc.sustain_rows(build, ab, s, uses))
 	if not sustain_rows.is_empty():
 		sections.append({"title": LE.t("Sustain"), "rows": sustain_rows})
 	result["sections"] = sections
@@ -408,7 +409,7 @@ static func _events_row(comp: Dictionary, events: float, uses: float, hits: floa
 	if comp["kind"] == "curse_hit":
 		b.append(str(comp["event_text"]))
 	elif float(comp["rate"]) > 0.0:
-		b.append(LE.t("Event rate (trigger): %s per second.") % LE.fmt_num(events))
+		b.append((LE.t("Event rate: %s per second.") if comp["kind"] == "echo" else LE.t("Event rate (trigger): %s per second.")) % LE.fmt_num(events))
 	else:
 		var hits_text: String = LE.t(" × hits %s") % LE.fmt_num(hits) if comp["kind"] != "trigger" and hits != 1.0 else ""
 		b.append(LE.t("Uses/s %s × per use %s%s = %s") % [LE.fmt_num(uses), LE.fmt_num(comp["per_use"]), hits_text, LE.fmt_num(events)])

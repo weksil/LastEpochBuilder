@@ -626,15 +626,26 @@ their «not counted» notes are dropped); Umbral Blades shadows throw one blade 
 single-blade bonus of your throws (`BaseUmbralBladesMutator.getTempStats`: MoreStat 3 when usedByShadow, then
 1 / (1 + singleBladeDamageBonus) − 1; the player's +250% comes from the node's temp stats). Per-shadow node values
 (Shadow Torrent, Figments of Annihilation, Lethal Mirage, Dark Quiver, Careful Assault's minimum) read `player:shadows`.
+A shadow is consumed by the use it imitates and lasts up to 5 s, so keeping N shadows takes N × max(uses/s, 1/5)
+creations per second; health (property 1) and ward (property 3) gained per creation (`CreateShadowMutator.Mutate`:
+`BaseHealth.restoreHealth` / `ProtectionClass.GainWard`) become the skill's sustain rows (`ShadowCalc.sustain_rows`, read
+by the Defense tab). Property 5 is the chance that a used shadow comes back (`RogueShadow.RollResummonChance`, plus the
+Umbral Blades bonus): it only helps keep the Conditions number and is named in the shadow component's note.
 
 **Void Knight echoes** — `engine/echo_calc.gd` (`class_name EchoCalc`, `CharacterMutator.TryToEchoAbility`, pseudo-C):
 chance = Σ `chanceToRepeatMeleeThrowingAttacksAndVoidSpells` (the Void Knight mastery 10%, passives); Rive ×
 (1 + `echoChanceModifierWithRive`); Vengeance + `additionalEchoChanceWithVengeance` and Abyssal Echoes +
 `abyssalEchoesAdditionalEchoChance` when the chance is already above 0; the tree param `echo_chance`. A skill echoes if its
 tags have Melee, Throwing or Void + Spell, it is not a movement skill (Void Cleave is allowed), not Anomaly and not
-channelled (Warpath only with its node; the game checks an ability flag, assumed to be channelling — D?). Components
-"Echo: <name>" with `per_use × chance` on the store of `use:echo`, plus increased damage PlayerProperty 57 (items, idols,
-uniques), Rive's `moreEchoDamageWithRive` (more) and `echoTimeRotChance` (Time Rot chance). The 1 s delay does not change DPS.
+channelled (`AbilityInfo.isChanneled`, interface slot 27 — checked against slots 8 `getUseDelay`, 32
+`getAbilityAnimation`, 80 `GetCastingVFXIndex` of the same call). Components "Echo: <name>" with `per_use × chance` on the
+store of `use:echo`, plus increased damage PlayerProperty 57 (items, idols, uniques), Rive's `moreEchoDamageWithRive`
+(more) and `echoTimeRotChance` (Time Rot chance). The 1 s delay does not change DPS.
+Warpath echoes only with its node «Warpath can echo» and by its own rule (`WarpathHitMutator.OnMutatorUpdate`): once per
+second, when you moved at least 4 units over the last 2 s, it rolls (1 + `WarpathMutator.echoChanceModifier`) × the echo
+chance and casts Warpath with the echo use type where you were. A channelled skill's echo components therefore get a fixed
+`rate = per_use × chance / 1 s` instead of uses/s × chance; the length of an echoed channel is taken as one use (D?).
+Mechanic checks read `skill_store().flag_keys` (the untranslated flag model texts); `flags` holds the shown texts.
 
 **Buffs on the player** — `Build.player_state.buffs: {AilmentID: stacks}` ("Buffs on me" on Conditions:
 `GameData.player_buffs()` = positive ailments with stats plus Silver Shroud, without Haste / Frenzy which are checkboxes).
@@ -650,6 +661,9 @@ writes into the skill's own mutator (`ability.mutator.class`) is counted once, e
 combo part (`reasons` has `Ability.comboAbilities`) or of another player skill (`GameData.ability_by_mutator_class`)
 puts its stats into that ability's damage component (`scope_override`), with a note; they are dropped when the skill has
 no such component. Other sub-ability mutators keep the old behavior (into the skill's store).
+The other way round, `BuildMods._add_other_skill_nodes` gives a skill the parts of node targets aimed at its own mutator
+from the trees of the other bar skills (Summon Bear → Swipe damage, Multistrike → Void Cleave damage, Firebrand → Flame
+Reave, Umbral Blades → Shift mana per recalled blade); the source names the other skill.
 
 ## 10. Effective health — `engine/defense_calc.gd` (`class_name DefenseCalc`)
 

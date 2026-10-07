@@ -5,7 +5,10 @@ class_name ShadowCalc
 ## active (ability description). The number of active shadows is the player value «shadows» of the Conditions tab: every
 ## active shadow repeats a use of an imitated skill, so the skill gets a «Shadows: …» damage component with
 ## per_use × shadows. Properties of CreateShadow (AbilityProperty 469) from passives, items and idols:
-## 0 max shadows, 2 increased damage of skills used by shadows, 4 crit chance of skills used by shadows.
+## 0 max shadows, 1 health on shadow creation, 2 increased damage of skills used by shadows, 3 ward on shadow creation,
+## 4 crit chance of skills used by shadows, 5 chance to recreate a used shadow (RogueShadow.RollResummonChance).
+## Shadows are consumed by the use they imitate and last up to 5 s, so keeping N shadows takes N × max(uses/s, 1/5)
+## creations per second; health / ward on creation (CreateShadowMutator.Mutate) become sustain rows of the skill.
 
 const ABILITY_ID: String = "createShadow"
 const ABILITY_INDEX: int = 469
@@ -13,7 +16,8 @@ const BASE_MAX: float = 3.0
 ## Ability names (abilities.json `name`) that shadows imitate.
 const IMITATED: Array[String] = ["ShadowCascade", "Shurikens", "Umbral Blades 1", "Dreamslash", "AcidFlask"]
 ## AbilityProperty indices of CreateShadow counted here (their «not counted» notes are dropped).
-const HANDLED: Array[int] = [0, 2, 4]
+const HANDLED: Array[int] = [0, 1, 2, 3, 4, 5]
+const LIFETIME: float = 5.0
 ## More damage of a shadow's use by ability name: Umbral Blades shadows throw one blade with 300% more damage (altText;
 ## BaseUmbralBladesMutator.getTempStats adds a MoreStat when usedByShadow).
 const SHADOW_MORE: Dictionary = {"Umbral Blades 1": 3.0}
@@ -109,7 +113,7 @@ static func components(build: Node, slot: int, ab: Dictionary, global: StatStore
 	var out: Array[Dictionary] = []
 	if not imitates(ab):
 		return out
-	for flag: String in s.get("flags", []):
+	for flag: String in s.get("flag_keys", []):
 		if BLOCKING_FLAGS.has(flag):
 			return out
 	var n: float = count(build)
@@ -123,12 +127,42 @@ static func components(build: Node, slot: int, ab: Dictionary, global: StatStore
 		extra.append(StatMod.make(LE.DAMAGE, "more", float(SHADOW_MORE[str(ab.get("name", ""))]), 0,
 			LE.t("Shadows using %s: one blade with more damage (game code)") % GameData.display_name(ab)))
 	var limit_text: String = LE.t("Active shadows %s (Conditions tab, limit %s); each repeats the use.") % [LE.fmt_num(n), LE.fmt_num(max_shadows(build))]
+	var recreate: Dictionary = property(build, 5)
+	if float(recreate["value"]) > 0.0:
+		limit_text += " " + LE.t("A used shadow comes back with chance %s (%s): it helps keep the number of shadows set on the Conditions tab and does not add uses.") % [
+			LE.fmt_pct(float(recreate["value"])), "; ".join(recreate["lines"])]
 	out = repeat_components(build, slot, global, base_components, "shadow", n, LE.t("Shadows: %s"), limit_text, extra)
 	if SINGLE_PROJECTILE.has(str(ab.get("name", ""))):
 		for comp: Dictionary in out:
 			comp["single_projectile"] = true
 			comp["note"] = str(comp["note"]) + " " + LE.t("A shadow throws one blade: the projectiles of your throw do not apply.")
 	return out
+
+
+## Health and ward gained on shadow creation per second, as sustain rows (the Defense tab reads them): the skill keeps
+## its shadows by creating shadows × max(uses/s, 1 / lifetime) per second. [] when the skill is not repeated by shadows.
+static func sustain_rows(build: Node, ab: Dictionary, s: Dictionary, uses: float) -> Array:
+	var rows: Array = []
+	if not imitates(ab):
+		return rows
+	for flag: String in s.get("flag_keys", []):
+		if BLOCKING_FLAGS.has(flag):
+			return rows
+	var n: float = count(build)
+	if n <= 0.0:
+		return rows
+	var created: float = n * maxf(uses, 1.0 / LIFETIME)
+	for entry: Array in [[1, "health_gain", LE.t("Health on shadow creation per second")], [3, "ward_gain", LE.t("Ward on shadow creation per second")]]:
+		var p: Dictionary = property(build, int(entry[0]))
+		var per: float = float(p["value"])
+		if per <= 0.0:
+			continue
+		var b: PackedStringArray = [LE.t("Shadows created per second = active shadows %s × max(uses/s %s, 1 / %s s) = %s") % [
+			LE.fmt_num(n), LE.fmt_num(uses), LE.fmt_num(LIFETIME), LE.fmt_num(created)]]
+		b.append(LE.t("%s per shadow × %s/s = %s/s") % [LE.fmt_num(per), LE.fmt_num(created), LE.fmt_num(per * created)])
+		b.append_array(p["lines"])
+		rows.append({"label": entry[2], "text": LE.fmt_num(per * created), "breakdown": "\n".join(b), "sustain": entry[1], "value": per * created})
+	return rows
 
 
 ## Copies of the hit components (primary / sub) of a skill repeated by something else (shadows, Void Knight echoes):

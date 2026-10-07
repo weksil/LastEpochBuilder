@@ -153,7 +153,8 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 		"mana_sources": [] as Array[String], "conversions": [],
 		# §9: field models of the skill tree
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
-		"flags": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
+		# flags: shown texts; flag_keys: the untranslated model texts, for code that checks a mechanic
+		"flags": [] as Array[String], "flag_keys": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
 		"global_mods": [] as Array[StatMod], "ability_name": "",
 		# resource models that passed their conditions: {model, v, x, source} (the Defense tab turns them into recovery)
 		"resources": [] as Array[Dictionary],
@@ -177,6 +178,7 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 		if points <= 0 or node.is_empty():
 			continue
 		_add_skill_node(node, points, result)
+	_add_other_skill_nodes(build, slot, result)
 
 	_add_skill_passives(build, ability, result)
 	BUFF_SKILLS.apply(build, slot, ability, result)
@@ -620,10 +622,46 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 				_add_skill_effect(effect, points, title, result)
 				continue
 			result["scope_override"] = "component:" + str(other["name"])
-			result["scope_override_note"] = LE.t("Node \"%s\": stats of \"%s\" (another part of the skill) count only for its own damage component") % [title, str(other["name"])]
+			if reasons.has("Ability.comboAbilities"):
+				result["scope_override_note"] = LE.t("Node \"%s\": stats of \"%s\" (another part of the skill) count only for its own damage component") % [title, str(other["name"])]
+			else:
+				result["scope_override_note"] = LE.t("Node \"%s\": stats of the skill \"%s\" count in its own calculation (when it is on the bar) and here only for its damage component") % [title, GameData.display_name(other)]
 		_add_skill_effect(effect, points, title, result)
 		result.erase("scope_override")
 		result.erase("scope_override_note")
+
+
+## Nodes of the other bar skills' trees that write into this skill's mutator (Firebrand → Flame Reave ignite chance,
+## Summon Bear → Swipe damage, Multistrike → Void Cleave damage): only the parts of the target aimed at this skill count
+## here, with the other skill named in the source.
+static func _add_other_skill_nodes(build: Node, slot: int, result: Dictionary) -> void:
+	var own: String = str(result.get("own_mutator", ""))
+	if own == "":
+		return
+	for other_slot: int in range(build.skills.size()):
+		if other_slot == slot:
+			continue
+		var other_ab: Dictionary = GameData.get_ability(str(build.skills[other_slot].get("ability", "")))
+		if other_ab.is_empty() or str(other_ab.get("name", "")) == str(result.get("main_name", "")):
+			continue
+		var effects: Dictionary = GameData.skill_effects(str(other_ab.get("skillTree", "")))
+		var tree: Dictionary = build.skills[other_slot].get("tree", {})
+		for node_id: Variant in tree:
+			var points: int = int(tree[node_id])
+			var node: Dictionary = effects.get(int(node_id), {})
+			if points <= 0 or node.is_empty():
+				continue
+			var title: String = "%s: %s" % [GameData.display_name(other_ab), str(node.get("name", ""))]
+			for effect: Dictionary in node.get("effects", []):
+				var parts: PackedStringArray = []
+				for part: String in str(effect.get("target", "")).split(" & "):
+					if part.strip_edges().begins_with(own + "."):
+						parts.append(part.strip_edges())
+				if parts.is_empty():
+					continue
+				var mine: Dictionary = effect.duplicate()
+				mine["target"] = " & ".join(parts)
+				_add_skill_effect(mine, points, title, result)
 
 
 ## Ability of the mutator of a target that is not the skill's own mutator and belongs to another ability (a combo part,
@@ -817,6 +855,8 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 			var text: String = LE.t("Node \"%s\": %s") % [title, LE.t(str(model.get("text", "")))]
 			if not result["flags"].has(text):
 				result["flags"].append(text)
+			if not result["flag_keys"].has(str(model.get("text", ""))):
+				result["flag_keys"].append(str(model.get("text", "")))
 		_:
 			pass
 

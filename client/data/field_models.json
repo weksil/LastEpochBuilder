@@ -37766,7 +37766,7 @@
 ]
 },
 "WarpathMutator.echoChanceModifier": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "param",
 "label": "Chance of echo",
 "mod": "more",
@@ -38016,7 +38016,7 @@
 "kind": "conversion"
 },
 "WarpathMutator.warpathCanEcho": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "flag",
 "text": "Warpath can echo repeat"
 },

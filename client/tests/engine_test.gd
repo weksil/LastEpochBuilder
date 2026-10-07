@@ -1108,6 +1108,16 @@ func _shadows_echoes_buffs() -> void:
 	Build.set_player_state("shadows", 10)
 	_check("active shadows clamped to the limit", ShadowCalc.count(Build), 6.0)
 	Build.set_player_state("shadows", 3)
+	# health / ward on shadow creation: 3 shadows × 2.61 uses/s created per second (Skiasynthesis 90, ward affixes 211)
+	_check("Umbral Blades: health on shadow creation per second", _row_value(SkillCalc.compute(Build, 0), LE.t("Health on shadow creation per second")), 704.88, 0.5)
+	_check("Umbral Blades: ward on shadow creation per second", _row_value(SkillCalc.compute(Build, 0), LE.t("Ward on shadow creation per second")), 1652.55, 0.5)
+	# a node of another bar skill's tree aimed at this skill: Umbral Blades «No Recall, Shift Recalls» → Shift mana per blade
+	var shift_s: Dictionary = BuildMods.skill_store(Build, 4, BuildMods.global_store(Build)["store"])
+	var shift_mana: float = 0.0
+	for label: Variant in shift_s["params"]:
+		if str(shift_s["params"][label]["param"]) == "mana" and str(shift_s["params"][label]["sources"]).contains("Umbral Blades"):
+			shift_mana += float(shift_s["params"][label]["added"])
+	_check("Shift gets the Umbral Blades node aimed at it", shift_mana, 2.0)
 	var sc: Dictionary = SkillCalc.compute(Build, 3)
 	_flag("Shadow Cascade: shadow component", _count_prefixed_sections(sc, "Shadows: Shadow Cascade") > 0.0)
 	_flag("Shadow Cascade DPS grows with shadows", _dps(sc) > 62039.3 * 2.0)
@@ -1130,8 +1140,28 @@ func _shadows_echoes_buffs() -> void:
 	_check("Void Knight echo chance: mastery 10% + passives", float(EchoCalc.chance(Build, throw_ab, s)["value"]), 0.22)
 	_flag("Shield Throw: echo component", _count_prefixed_sections(SkillCalc.compute(Build, 4), "Echo: ") > 0.0)
 	_flag("Anomaly does not echo", not EchoCalc.eligible(GameData.ability_by_name("Anomaly"), {}))
+	# Warpath (channelled) echoes only with its node, rolled once per second: rate = chance, not uses/s × chance
+	var wp: Dictionary = GameData.ability_by_name("Warpath")
+	var vk_skill: Dictionary = Build.skills[3]
+	Build.skills[3] = {"ability": str(wp["playerAbilityID"]), "tree": {}, "level": 20}
+	_flag("Warpath without its node does not echo", not EchoCalc.eligible(wp, BuildMods.skill_store(Build, 3, BuildMods.global_store(Build)["store"])))
+	Build.skills[3] = {"ability": str(wp["playerAbilityID"]), "tree": {31: 1}, "level": 20}  # Warpath Tree Echoes
+	var wr: Dictionary = SkillCalc.compute(Build, 3)
+	_check("Warpath echo: (1 + 100%) × 22% rolled once per second", _row_value(wr, LE.t("Damage events per second"), LE.t("Echo: %s") % "WarpathHit"), 0.44, 0.001)
+	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
 	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 27852.5, 30.0)
+
+
+## Value of the first row with this label (in a section whose title starts with `prefix`, when given).
+func _row_value(r: Dictionary, label: String, prefix: String = "") -> float:
+	for section: Dictionary in r.get("sections", []):
+		if prefix != "" and not str(section["title"]).begins_with(prefix):
+			continue
+		for row: Dictionary in section["rows"]:
+			if str(row.get("label", "")) == label:
+				return float(row.get("value", str(row.get("text", "0")).to_float()))
+	return -1.0
 
 
 func _dps(r: Dictionary) -> float:

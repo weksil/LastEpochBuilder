@@ -14865,3 +14865,27 @@ msgstr "Умения, используемые тенями (учтено в к�
 
 msgid "A shadow throws one blade: the projectiles of your throw do not apply."
 msgstr "Тень бросает одно лезвие: снаряды вашего броска не учитываются."
+
+msgid "Node \"%s\": stats of the skill \"%s\" count in its own calculation (when it is on the bar) and here only for its damage component"
+msgstr "Узел «%s»: статы умения «%s» учитываются в его собственном расчёте (если оно на панели), а здесь — только для его компонента урона"
+
+msgid "A used shadow comes back with chance %s (%s): it helps keep the number of shadows set on the Conditions tab and does not add uses."
+msgstr "Использованная тень возвращается с шансом %s (%s): это помогает держать число теней, заданное на вкладке «Условия», но не добавляет применений."
+
+msgid "Health on shadow creation per second"
+msgstr "Здоровье за создание теней в секунду"
+
+msgid "Ward on shadow creation per second"
+msgstr "Ward за создание теней в секунду"
+
+msgid "Shadows created per second = active shadows %s × max(uses/s %s, 1 / %s s) = %s"
+msgstr "Теней создаётся в секунду = активных теней %s × max(применений/с %s, 1 / %s с) = %s"
+
+msgid "%s per shadow × %s/s = %s/s"
+msgstr "%s за тень × %s/с = %s/с"
+
+msgid "Echo chance %s (%s) rolled once per %s s while you move (at least 4 units over the last 2 s): a successful roll casts the skill where you were 1 s before. The length of an echoed channel is taken as one use (D?)."
+msgstr "Шанс эха %s (%s) проверяется раз в %s с, пока вы двигаетесь (не меньше 4 единиц за последние 2 с): при успехе умение срабатывает там, где вы были секунду назад. Длительность канала эха принята за одно применение (D?)."
+
+msgid "Event rate: %s per second."
+msgstr "Частота события: %s в секунду."

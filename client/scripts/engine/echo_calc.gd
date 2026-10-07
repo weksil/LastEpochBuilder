@@ -7,8 +7,12 @@ class_name EchoCalc
 ## Rive × (1 + echoChanceModifierWithRive); Vengeance + additionalEchoChanceWithVengeance and Abyssal Echoes
 ## + abyssalEchoesAdditionalEchoChance (only when the chance is already above 0); the skill tree param «echo_chance».
 ## Eligible: tags Melee, Throwing or Void + Spell; not a movement skill (Void Cleave is), not Anomaly, not channelled
-## (Warpath only with its node «Warpath can echo»). Echo mods: increased damage (PlayerProperty 57 «increased Echo
-## Damage»), Rive more (moreEchoDamageWithRive), Time Rot chance (echoTimeRotChance).
+## (AbilityInfo.isChanneled, interface slot 27). Warpath echoes only through its node «Warpath can echo», by its own rule
+## (WarpathHitMutator.OnMutatorUpdate): once per second, if you moved at least 4 units over the last 2 s, it rolls
+## (1 + node modifier) × the echo chance and casts Warpath (use type echo) where you were; so the echo component of a
+## channelled skill has a fixed rate of chance × 1/s instead of uses/s × chance.
+## Echo mods: increased damage (PlayerProperty 57 «increased Echo Damage»), Rive more (moreEchoDamageWithRive),
+## Time Rot chance (echoTimeRotChance).
 
 const CHANCE_FIELD: String = "CharacterMutator.chanceToRepeatMeleeThrowingAttacksAndVoidSpells"
 const RIVE_FIELD: String = "CharacterMutator.echoChanceModifierWithRive"
@@ -22,6 +26,8 @@ const ECHO_DAMAGE_PP: int = 57
 const MOVEMENT_ALLOWED: Array[String] = ["VoidCleave"]
 const NEVER: Array[String] = ["Anomaly"]
 const CHANNEL_FLAG: String = "Warpath can echo repeat"
+## Seconds between the echo rolls of a channelled skill (WarpathHitMutator.echoPosCheckInterval).
+const CHANNEL_INTERVAL: float = 1.0
 
 
 ## Sum of a CharacterMutator field over the taken passives and the mastery bonus: {value, lines}.
@@ -60,7 +66,7 @@ static func eligible(ab: Dictionary, s: Dictionary) -> bool:
 		return false
 	if bool(ab.get("countsAsMovementAbility", 0)) and not MOVEMENT_ALLOWED.has(name):
 		return false
-	if bool(ab.get("channelled", 0)) and not (s.get("flags", []) as Array).has(CHANNEL_FLAG):
+	if bool(ab.get("channelled", 0)) and not (s.get("flag_keys", []) as Array).has(CHANNEL_FLAG):
 		return false
 	return true
 
@@ -130,6 +136,14 @@ static func components(build: Node, slot: int, ab: Dictionary, global: StatStore
 	var c: Dictionary = chance(build, ab, s)
 	if float(c["value"]) <= 0.0:
 		return []
+	var channelled: bool = bool(ab.get("channelled", 0))
 	var note: String = LE.t("Echo chance %s (%s): the use is repeated 1 s later.") % [LE.fmt_pct(float(c["value"])), "; ".join(c["lines"])]
-	return ShadowCalc.repeat_components(build, slot, global, base_components, "echo", float(c["value"]), LE.t("Echo: %s"), note,
-		echo_mods(build, ab))
+	if channelled:
+		note = LE.t("Echo chance %s (%s) rolled once per %s s while you move (at least 4 units over the last 2 s): a successful roll casts the skill where you were 1 s before. The length of an echoed channel is taken as one use (D?).") % [
+			LE.fmt_pct(float(c["value"])), "; ".join(c["lines"]), LE.fmt_num(CHANNEL_INTERVAL)]
+	var out: Array[Dictionary] = ShadowCalc.repeat_components(build, slot, global, base_components, "echo", float(c["value"]),
+		LE.t("Echo: %s"), note, echo_mods(build, ab))
+	if channelled:
+		for comp: Dictionary in out:
+			comp["rate"] = float(comp["per_use"]) / CHANNEL_INTERVAL
+	return out
