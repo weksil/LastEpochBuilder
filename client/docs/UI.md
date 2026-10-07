@@ -271,3 +271,11 @@ puts the code into the field and the clipboard), `%PasteCodeButton` (puts the cl
   `decode` ignores whitespace and also accepts the plain JSON text.
 - Save files: `user://builds/<name>.json` = `{name, saved (unix time), build: to_dict}`; characters not allowed in file names become `_`.
   In the exported build `user://` is `%APPDATA%/Godot/app_userdata/<project name>/`. `tests/build_codec_test` checks the round trip.
+
+## Undo / redo — `scripts/autoload/build_history.gd` (the `BuildHistory` autoload)
+Ctrl+Z undoes a build edit, Ctrl+Shift+Z or Ctrl+Y redoes it (the built-in `ui_undo` / `ui_redo` actions, read in `_input` before the GUI, because
+a spin box keeps the focus after its arrows are clicked; a focused `TextEdit` or `LineEdit` outside a spin box keeps its own text undo). Every `Build.changed` / `stash_changed` queues one snapshot per frame:
+`BuildCodec.to_dict(Build)` without `selected_skill` (the shown skill is a view choice, not a step; it is kept on restore), stored as JSON.
+Changes closer than `merge_msec` (300 ms) to the previous one merge into one step (slider drags, a held spin box); at most 200 steps.
+A restore goes through `from_dict` + `apply` and emits `restored`; `main.gd` then syncs the top bar like after an import. Imports and loaded
+builds are steps too. Scripts do not need to do anything: any change that emits `Build.changed` is recorded. `tests/build_history_test` checks it.

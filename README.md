@@ -6,7 +6,7 @@ Runs in any desktop browser with WebGL 2, no installation; saved builds stay in 
 
 A build planner for Last Epoch in the spirit of Path of Building: exact numbers with a breakdown of every value, items,
 idols, blessings, skill and passive trees, player and enemy conditions. Game version: **1.5.0 (Season 5)**.
-Interface in English or Russian.
+Interface in English or Russian. Ctrl+Z undoes a build edit, Ctrl+Shift+Z (or Ctrl+Y) redoes it.
 
 ## Import a character
 

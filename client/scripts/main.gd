@@ -33,6 +33,9 @@ func _ready() -> void:
 	builds_button.pressed.connect(func() -> void: builds_dialog.popup_centered())
 	builds_dialog.loaded.connect(_on_imported)
 
+	# Ctrl+Z / Ctrl+Shift+Z (BuildHistory autoload): the restored build may have another class, mastery or level
+	BuildHistory.restored.connect(_on_imported)
+
 	# Bug reports and suggestions: GitHub issues
 	%FeedbackButton.pressed.connect(func() -> void: OS.shell_open(FEEDBACK_URL))
 

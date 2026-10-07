@@ -79,9 +79,9 @@ client/          Godot project
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
   docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
   scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, defense/, stats/, trees/, builds/, common/
-  scripts/       logic (.gd): autoload/ (Settings, GameData, Build), engine/ (calculations), UI scripts in folders matching the scenes
+  scripts/       logic (.gd): autoload/ (Settings, GameData, Build, BuildHistory — undo / redo), engine/ (calculations), UI scripts in folders matching the scenes
   tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test, maxroll_import_test,
-                 layout_test, relevance_test, i18n_test, build_codec_test, defense_test,
+                 layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test,
                  readme_screenshots (captures docs/screenshots, needs a window)
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations

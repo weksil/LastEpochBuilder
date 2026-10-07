@@ -22,6 +22,7 @@ _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 Settings="*res://scripts/autoload/settings.gd"
 GameData="*res://scripts/autoload/game_data.gd"
 Build="*res://scripts/autoload/build.gd"
+BuildHistory="*res://scripts/autoload/build_history.gd"
 
 [display]
 
