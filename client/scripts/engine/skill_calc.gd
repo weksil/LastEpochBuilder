@@ -49,6 +49,10 @@ static func compute(build: Node, slot: int) -> Dictionary:
 	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, target_hits, inputs, notes)
 	var comp_notes: Array[String] = []
 	var components: Array[Dictionary] = SkillComponents.collect(build, slot, ab, s_comp, comp_notes)
+	# active shadows repeat the use of the skills they imitate (docs/ENGINE.md §9.10)
+	var own_components: Array[Dictionary] = components.duplicate()
+	components.append_array(ShadowCalc.components(build, slot, ab, g["store"], own_components, s, comp_notes))
+	components.append_array(EchoCalc.components(build, slot, ab, g["store"], own_components, s))
 	# minions that fire projectiles: their attack rate is multiplied the same way (the skill's mode and tree params)
 	var proj_rows: Array = []
 	if not proj.is_empty():
@@ -90,12 +94,12 @@ static func compute(build: Node, slot: int) -> Dictionary:
 		var comp: Dictionary = components[idx]
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
 		var comp_store: StatStore = _component_store(store, s, comp)
-		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, s["conversions"], notes, comp["base"])
+		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, comp.get("conversions", s["conversions"]), notes, comp["base"])
 		var is_curse: bool = comp["kind"] == "curse_hit"
 		var is_dot: bool = comp["kind"] == "dot"
 		var events: float = float(comp["rate"])
 		if events <= 0.0 and not is_curse:
-			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else target_hits)
+			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else (hits if comp.get("single_projectile", false) else target_hits))
 		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": LE.t("damage events") if is_curse else LE.t("uses")}
 		var ds: Dictionary = _build_damage(ctx)
 		var damage_rows: Array = ds["rows"]
@@ -109,7 +113,7 @@ static func compute(build: Node, slot: int) -> Dictionary:
 			damage_rows = _dot_damage_rows(comp, ds, uses)
 			damage_title = LE.t("Effect damage over its whole duration (before enemy)")
 		elif idx > 0 or is_curse or not is_equal_approx(events, uses):
-			damage_rows = [_events_row(comp, events, uses, target_hits)] + damage_rows
+			damage_rows = [_events_row(comp, events, uses, hits if comp.get("single_projectile", false) else target_hits)] + damage_rows
 		if is_curse:
 			damage_title = LE.t("Damage per hit on the cursed target (before enemy)")
 		sections.append({"title": prefix + damage_title, "rows": damage_rows})

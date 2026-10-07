@@ -430,8 +430,11 @@ One schema for the special effects of uniques (§5.4.3), the skill tree mutator 
 - `conversion`: a rule from `skill_conversions.json` (already counted by §5.5).
 - `scope`: `skill` (default) | `component:<sub-skill name>` | `global` (onto the character) | `minion`.
 
-Common fields: `per` (source, §5.4.3, plus `input:<key>`), `when` (conditions, §5.4.3, plus `input:<key>` —
-a boolean input), `at_least`/`below`, `offset`, `factor`, `min`, `max`, `src_max`, `note`, `on_curse_hit` (an ailment chance only when a cursed target is hit, §9.3), `confidence` (D / D?).
+Common fields: `per` (source, §5.4.3, plus `input:<key>`, `player:shadows` and `buff:<AilmentID name>` — stacks of a buff
+on the player, §9.10), `when` (conditions, §5.4.3, plus `input:<key>` — a boolean input, and `use:direct|shadow|echo` —
+who uses the skill, §9.10), `at_least`/`below` (`{per, value}` or `{per, value_per_v}`: the threshold is the effect value
+× `value_per_v`, Careful Assault), `offset`, `factor`, `min`, `max`, `src_max`, `inverse` (x → 1/(1 + x) − 1, a «more»
+that cancels another one), `note`, `on_curse_hit` (an ailment chance only when a cursed target is hit, §9.3), `confidence` (D / D?).
 `input`: `{key, label, default, max, bool}` — the declaration of a skill input parameter (stacks, number of totems,
 "while channelling" …); the values are `Build.skills[slot].inputs[key]`, `default` by default.
 
@@ -567,8 +570,8 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
 
 ### 9.8 Which conditions a build needs — `engine/config_relevance.gd` (`class_name ConfigRelevance`)
 The "Conditions" tab shows (like Path of Building) only those checkboxes and fields that have a source in the build.
-`ConfigRelevance.compute(build) -> {player_flags: {key: reason}, player_values: {key: reason}, ailments: {AilmentID: reason},
-enemy: {flag: reason}}`; a key is present — the control is needed, the reason is the English text of the source (up to three lines joined by `\n`, for the tooltip).
+`ConfigRelevance.compute(build) -> {player_flags: {key: reason}, player_values: {key: reason}, player_buffs: {AilmentID: reason},
+ailments: {AilmentID: reason}, enemy: {flag: reason}}`; a key is present — the control is needed, the reason is the English text of the source (up to three lines joined by `\n`, for the tooltip).
 Sources:
 - the `when` conditions and the `per` / `at_least.per` / `below.per` sources of all effect models (uniques, passives, skill trees):
   `EffectModels.blocked` calls `ConfigRelevance.note_model` while `compute` rebuilds `global_store` and the `skill_store` of every
@@ -578,7 +581,10 @@ Sources:
   damage per stack SP 115 — the ailment `special`;
 - ailments that the build applies: the skill prefab's chances (`ailmentsOnHit`), the chance stats SP 1 (`special` > 0), ailment
   conversions (SP 100 and `ailment_convert` of tree rules);
-- Haste / Frenzy on the player: `HasteOnHitChance` and the ailment effect on you SP 120 with `special` = 33 / 34.
+- Haste / Frenzy on the player: `HasteOnHitChance` and the ailment effect on you SP 120 with `special` = 33 / 34;
+  a chance to apply a positive ailment (Void Essence, Dusk Shroud …) goes to `player_buffs`, not to the enemy;
+- shadows and buffs on the player (§9.10): a bar skill imitated by shadows; texts of the taken passive and skill nodes, of
+  the bar skills and of the equipped uniques that name `{Shadow}`, a buff's display name or "any Shroud".
 Cost is ~12 ms, called only while the tab is visible. Check — `tests/relevance_test.tscn`.
 
 ### 9.9 Projectiles and shotgun — `SkillCalc.projectile_hits`
@@ -606,6 +612,44 @@ Minions (§9.4) whose ability is in the file (Thorn Totem thorns, Skeleton Rogue
 rate of their `minion` component is multiplied by the same factor, with the summoning skill's mode and tree params; one
 row per minion ability ("<minion>: Projectiles hitting the target"). Without own projectiles `result.projectiles` is the
 minion's (a shotgun one preferred), so the selector is shown for such summons too. Check — `tests/engine_test.tscn` (`_projectiles`).
+
+### 9.10 Repeated uses (shadows, echoes), buffs on the player, combo parts
+**Shadows** — `engine/shadow_calc.gd` (`class_name ShadowCalc`). A shadow (CreateShadow, AbilityID 469) imitates your next
+direct use of Shadow Cascade, Shurikens, Umbral Blades, Dreamslash or Acid Flask (ability descriptions); up to 3 + the
+CreateShadow property 0 are active. `Build.player_state.shadows` (Conditions, "Active shadows", clamped to the limit) is
+the number of shadows that repeat each use: every hit component (primary / sub) of an imitated skill gets a copy
+"Shadows: <name>" with `per_use × shadows` (the node "Shadows do not execute Dreamslash" turns it off). The copy runs
+on `BuildMods.skill_store(build, slot, global, "shadow")`: models with `use:shadow` apply only there, `use:direct` only to
+your own use (a model of the other user is skipped without a note). Extra mods of a shadow use: increased damage =
+CreateShadow property 2, crit chance = property 4 (passives and the mastery bonus, item and idol affixes, unique effects;
+their «not counted» notes are dropped); Umbral Blades shadows throw one blade with 300% more damage and do not get the
+single-blade bonus of your throws (`BaseUmbralBladesMutator.getTempStats`: MoreStat 3 when usedByShadow, then
+1 / (1 + singleBladeDamageBonus) − 1; the player's +250% comes from the node's temp stats). Per-shadow node values
+(Shadow Torrent, Figments of Annihilation, Lethal Mirage, Dark Quiver, Careful Assault's minimum) read `player:shadows`.
+
+**Void Knight echoes** — `engine/echo_calc.gd` (`class_name EchoCalc`, `CharacterMutator.TryToEchoAbility`, pseudo-C):
+chance = Σ `chanceToRepeatMeleeThrowingAttacksAndVoidSpells` (the Void Knight mastery 10%, passives); Rive ×
+(1 + `echoChanceModifierWithRive`); Vengeance + `additionalEchoChanceWithVengeance` and Abyssal Echoes +
+`abyssalEchoesAdditionalEchoChance` when the chance is already above 0; the tree param `echo_chance`. A skill echoes if its
+tags have Melee, Throwing or Void + Spell, it is not a movement skill (Void Cleave is allowed), not Anomaly and not
+channelled (Warpath only with its node; the game checks an ability flag, assumed to be channelling — D?). Components
+"Echo: <name>" with `per_use × chance` on the store of `use:echo`, plus increased damage PlayerProperty 57 (items, idols,
+uniques), Rive's `moreEchoDamageWithRive` (more) and `echoTimeRotChance` (Time Rot chance). The 1 s delay does not change DPS.
+
+**Buffs on the player** — `Build.player_state.buffs: {AilmentID: stacks}` ("Buffs on me" on Conditions:
+`GameData.player_buffs()` = positive ailments with stats plus Silver Shroud, without Haste / Frenzy which are checkboxes).
+`BuildMods._add_player_ailments` adds the buff stats × stacks (at most `maxInstances`) × (1 + effect of the ailment on you
+SP 120); AbilityProperty / PlayerProperty buff stats are skipped. Models read the stacks as `per: "buff:DuskShroud"`
+(`BuildMods.buff_stacks`). The build code stores the keys as strings.
+
+**Combo parts and sub-ability mutators** (`BuildMods._add_skill_node`). A node often writes one field into the mutators
+of every part of a skill (Umbral Blades: UmbralBladesMutator / UmbralBlades2Mutator / UmbralBladesRecallMutator; Flay and
+its blood explosion; Volatile Reversal and its return). The parts share the skill's store, so a field the node also
+writes into the skill's own mutator (`ability.mutator.class`) is counted once, except `component` / `trigger` models
+(Volatile Reversal casts void bolts on the jump and on the return within one cooldown). A target only in the mutator of a
+combo part (`reasons` has `Ability.comboAbilities`) or of another player skill (`GameData.ability_by_mutator_class`)
+puts its stats into that ability's damage component (`scope_override`), with a note; they are dropped when the skill has
+no such component. Other sub-ability mutators keep the old behavior (into the skill's store).
 
 ## 10. Effective health — `engine/defense_calc.gd` (`class_name DefenseCalc`)
 

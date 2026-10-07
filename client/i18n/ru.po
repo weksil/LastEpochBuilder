@@ -14769,3 +14769,99 @@ msgstr "«Урон получаемый как %s» без исходного т
 
 msgid "%s of %s damage taken as %s: %s"
 msgstr "%s урона типа %s получается как %s: %s"
+
+msgid "Active shadows"
+msgstr "Активные тени"
+
+msgid "Buffs on me (stacks)"
+msgstr "Баффы на мне (стаки)"
+
+msgid "Zero the stacks of all buffs on you"
+msgstr "Обнулить стаки всех баффов на вас"
+
+msgid "buff"
+msgstr "бафф"
+
+msgid "%s stacks on me"
+msgstr "Стаки %s на мне"
+
+msgid "%s on you: %s stacks (effect ×%s)"
+msgstr "%s на вас: %s стаков (эффект ×%s)"
+
+msgid "the skill is used by a shadow"
+msgstr "умение использует тень"
+
+msgid "the skill is echoed"
+msgstr "умение повторено эхом"
+
+msgid "you use the skill yourself"
+msgstr "вы используете умение сами"
+
+msgid "Increased damage of skills used by shadows (%s)"
+msgstr "Increased урона умений, используемых тенями (%s)"
+
+msgid "Crit chance of skills used by shadows (%s)"
+msgstr "Шанс крита умений, используемых тенями (%s)"
+
+msgid "Shadows using %s: one blade with more damage (game code)"
+msgstr "Тени, использующие %s: одно лезвие с more-уроном (код игры)"
+
+msgid "Active shadows %s (Conditions tab, limit %s); each repeats the use."
+msgstr "Активных теней %s (вкладка «Условия», предел %s); каждая повторяет применение."
+
+msgid "Shadows: %s"
+msgstr "Тени: %s"
+
+msgid "Shadows imitate \"%s\": set the number of active shadows on the Conditions tab (now 0)."
+msgstr "Тени повторяют «%s»: задайте число активных теней во вкладке «Условия» (сейчас 0)."
+
+msgid "Passive \"%s\" ×%d: %s"
+msgstr "Пассивка «%s» ×%d: %s"
+
+msgid "Passive \"%s\""
+msgstr "Пассивка «%s»"
+
+msgid "%s: repeated by active shadows"
+msgstr "%s: повторяется активными тенями"
+
+msgid "Node \"%s\": stats of \"%s\" (another part of the skill) count only for its own damage component"
+msgstr "Узел «%s»: статы «%s» (другой части умения) учитываются только для её собственного компонента урона"
+
+msgid "Echo: %s"
+msgstr "Эхо: %s"
+
+msgid "Echo chance %s (%s): the use is repeated 1 s later."
+msgstr "Шанс эха %s (%s): применение повторяется через 1 с."
+
+msgid "Rive: × (1 + %s)"
+msgstr "Rive: × (1 + %s)"
+
+msgid "Increased echo damage (%s)"
+msgstr "Increased урона эха (%s)"
+
+msgid "Echo of Rive (%s)"
+msgstr "Эхо Rive (%s)"
+
+msgid "Time Rot chance of echoes (%s)"
+msgstr "Шанс Time Rot у эха (%s)"
+
+msgid "Time Rot chance of echoes (counted in the echo components)"
+msgstr "Шанс Time Rot у эха (учтён в компонентах эха)"
+
+msgid "More damage of Rive echoes (counted in the echo components)"
+msgstr "More-урон эха Rive (учтён в компонентах эха)"
+
+msgid "A shadow throws one blade: the single-blade bonus of your throws is cancelled, 1/(1 + v) - 1 (BaseUmbralBladesMutator.getTempStats)"
+msgstr "Тень бросает одно лезвие: бонус одиночного лезвия ваших бросков снимается, 1/(1 + v) − 1 (BaseUmbralBladesMutator.getTempStats)"
+
+msgid "Only for uses repeated by shadows"
+msgstr "Только для применений, повторённых тенями"
+
+msgid "Needs at least 1 active shadow per node point"
+msgstr "Нужна хотя бы 1 активная тень на очко узла"
+
+msgid "Skills used by Shadows (counted by the shadow components)"
+msgstr "Умения, используемые тенями (учтено в компонентах теней)"
+
+msgid "A shadow throws one blade: the projectiles of your throw do not apply."
+msgstr "Тень бросает одно лезвие: снаряды вашего броска не учитываются."

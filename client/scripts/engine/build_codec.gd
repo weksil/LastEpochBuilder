@@ -50,7 +50,7 @@ static func to_dict(build: Node) -> Dictionary:
 		"stash": (build.stash as Array).duplicate(true),
 		"blessings": blessings,
 		"enemy": enemy,
-		"player": (build.player_state as Dictionary).duplicate(true),
+		"player": _player_out(build.player_state),
 		"defense": DefenseCalc.normalized(build.defense),
 	}
 
@@ -131,7 +131,7 @@ static func from_dict(data: Variant) -> Dictionary:
 		"stash": stash,
 		"blessings": blessings,
 		"enemy": _enemy(data.get("enemy")),
-		"player": _merged(BuildScript.default_player_state(), data.get("player")),
+		"player": _player(data.get("player")),
 		"defense": DefenseCalc.normalized(data.get("defense")),
 	}
 
@@ -215,6 +215,23 @@ static func _merged(defaults: Dictionary, saved: Variant) -> Dictionary:
 	for key: Variant in raw if raw is Dictionary else {}:
 		result[key] = raw[key]
 	return result
+
+
+static func _player_out(state: Dictionary) -> Dictionary:
+	var player: Dictionary = state.duplicate(true)
+	player["buffs"] = _string_keys(player.get("buffs", {}) if player.get("buffs") is Dictionary else {})
+	return player
+
+
+## Player state with defaults; buff stacks keyed by int AilmentID.
+static func _player(saved: Variant) -> Dictionary:
+	var player: Dictionary = _merged(BuildScript.default_player_state(), saved)
+	var buffs: Dictionary = {}
+	for key: Variant in player["buffs"] if player["buffs"] is Dictionary else {}:
+		if str(key).is_valid_int() and int(player["buffs"][key]) > 0:
+			buffs[int(key)] = int(player["buffs"][key])
+	player["buffs"] = buffs
+	return player
 
 
 static func _enemy(saved: Variant) -> Dictionary:

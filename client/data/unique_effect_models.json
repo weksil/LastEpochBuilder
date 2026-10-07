@@ -1648,13 +1648,8 @@
    "kind": "stat",
    "stat": "DamageTaken",
    "mod": "more",
-   "per": "input:shadows",
+   "per": "player:shadows",
    "factor": 0.1666667,
-   "input": {
-    "key": "shadows",
-    "label": "Active shadows (Shadow)",
-    "default": 1
-   },
    "note": "Chance 1 in 6 per hit, counted as average",
    "confidence": "D?"
   },
@@ -3996,10 +3991,10 @@
    "confidence": "D?"
   },
   "469:2": {
-   "kind": "minion_stat",
+   "kind": "stat",
    "stat": "Damage",
    "mod": "increased",
-   "note": "shadow abilities (Shadow)",
+   "note": "Skills used by Shadows (counted by the shadow components)",
    "confidence": "D"
   },
   "468:6": {
@@ -5166,12 +5161,7 @@
    "stat": "Damage",
    "mod": "added",
    "tags": "Void|Bow",
-   "per": "input:dusk_shroud",
-   "input": {
-    "key": "dusk_shroud",
-    "label": "Stacks of Dusk Shroud",
-    "default": 1
-   },
+   "per": "buff:DuskShroud",
    "confidence": "D"
   },
   "782:5": {

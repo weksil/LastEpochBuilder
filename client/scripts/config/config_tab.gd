@@ -17,6 +17,8 @@ var _relevance: Dictionary = {}
 var _relevance_known: bool = false
 var _ailment_rows: Dictionary = {}  # ailment id -> AilmentRow
 var _ailment_order: String = ""
+var _buff_rows: Dictionary = {}  # ailment id -> AilmentRow of a buff on the player
+var _buffs_shown: int = 0
 var _player_flag_checks: Array[CheckBox] = []
 var _player_value_spins: Array[SpinBox] = []
 var _enemy_flag_checks: Array[CheckBox] = []
@@ -35,6 +37,8 @@ var _ailments_shown: int = 0
 @onready var _enemy_summary: Label = %EnemySummary
 @onready var _ailment_summary: Label = %AilmentSummary
 @onready var _ailment_list: VBoxContainer = %AilmentList
+@onready var _buff_summary: Label = %BuffSummary
+@onready var _buff_list: VBoxContainer = %BuffList
 @onready var _filter: LineEdit = %Filter
 @onready var _health_select: OptionButton = %HealthSelect
 @onready var _kind_select: OptionButton = %KindSelect
@@ -50,9 +54,12 @@ func _ready() -> void:
 	_armour_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("armour", int(value)))
 	_corruption_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("corruption", int(value)))
 	_show_all.toggled.connect(func(_on: bool) -> void: _refresh())
-	_filter.text_changed.connect(func(_text: String) -> void: _apply_ailments())
+	_filter.text_changed.connect(func(_text: String) -> void:
+		_apply_ailments()
+		_apply_buffs())
 	%ResetAilmentsButton.pressed.connect(func() -> void: Build.clear_enemy_ailments())
 	%ResetPlayerButton.pressed.connect(func() -> void: Build.reset_player_conditions())
+	%ResetBuffsButton.pressed.connect(func() -> void: Build.clear_player_buffs())
 
 	for node: Node in %PlayerFlags.find_children("*", "CheckBox", true, false):
 		var check: CheckBox = node as CheckBox
@@ -73,6 +80,7 @@ func _ready() -> void:
 			spin.value_changed.connect(_on_resistance_changed.bind(spin))
 
 	_populate_ailments()
+	_populate_buffs()
 	Build.changed.connect(_on_build_changed)
 	visibility_changed.connect(_on_visibility_changed)
 	_refresh()
@@ -104,7 +112,8 @@ func _refresh() -> void:
 	_apply_player()
 	_apply_enemy()
 	_apply_ailments()
-	_empty_hint.visible = _relevance_known and not _show_all.button_pressed and _player_shown == 0 and _enemy_shown == 0 and _ailments_shown == 0
+	_apply_buffs()
+	_empty_hint.visible = _relevance_known and not _show_all.button_pressed and _player_shown == 0 and _enemy_shown == 0 		and _ailments_shown == 0 and _buffs_shown == 0
 
 
 # --- relevance ------------------------------------------------------------------------
@@ -203,7 +212,7 @@ func _apply_player() -> void:
 		row.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
 		if value != 0:
 			var label: Label = spin.get_parent().get_child(0) as Label
-			active.append("%s %d" % [label.text, value])
+			active.append("%s %d" % [tr(label.text), value])
 			if not has_source:
 				no_source_on += 1
 
@@ -322,6 +331,52 @@ func _apply_ailments() -> void:
 	_set_summary(_ailment_summary, active, tr("Nothing applied"), hidden_count, no_source_on)
 
 
+# --- buffs on the player -------------------------------------------------------------------------
+
+func _populate_buffs() -> void:
+	for child: Node in _buff_list.get_children():
+		_buff_list.remove_child(child)
+		child.queue_free()
+	_buff_rows.clear()
+	for data: Variant in GameData.player_buffs():
+		if data is Dictionary and int((data as Dictionary).get("id", -1)) >= 0:
+			var row: AilmentRow = ailment_row_scene.instantiate() as AilmentRow
+			_buff_list.add_child(row)
+			row.setup(data as Dictionary)
+			row.stacks_changed.connect(func(id: int, stacks: int) -> void: Build.set_player_buff(id, stacks))
+			_buff_rows[row.ailment_id] = row
+
+
+## Rows with a source in the build (or with stacks) are shown; the search field filters this list too.
+func _apply_buffs() -> void:
+	var show_all: bool = _show_all.button_pressed
+	var needle: String = _filter.text.strip_edges().to_lower()
+	var buffs: Dictionary = Build.player_state.get("buffs", {}) as Dictionary
+	var active: PackedStringArray = []
+	var hidden_count: int = 0
+	var no_source_on: int = 0
+	var shown: int = 0
+	for ailment_id: int in _buff_rows:
+		var row: AilmentRow = _buff_rows[ailment_id]
+		var stacks: int = int(buffs.get(ailment_id, 0))
+		var source: Dictionary = _source("player_buffs", ailment_id)
+		var has_source: bool = bool(source["has"])
+		row.show_state(stacks, str(source["reason"]), has_source)
+		var listed: bool = show_all or has_source or stacks > 0 or row.has_edit_focus()
+		if not listed:
+			hidden_count += 1
+		row.visible = listed and (needle == "" or row.search_text.contains(needle))
+		if listed:
+			shown += 1
+		if stacks > 0:
+			active.append("%s ×%d" % [row.display_name, stacks])
+			if not has_source:
+				no_source_on += 1
+	_buffs_shown = shown
+	(_buff_list.get_parent().get_parent() as Control).visible = shown > 0
+	_set_summary(_buff_summary, active, tr("Nothing enabled"), hidden_count, no_source_on)
+
+
 # --- summaries ------------------------------------------------------------------------------------
 
 func _set_summary(label: Label, active: PackedStringArray, empty_text: String, hidden_count: int, no_source_on: int) -> void:
@@ -336,7 +391,7 @@ func _set_summary(label: Label, active: PackedStringArray, empty_text: String, h
 	if no_source_on > 0:
 		text += tr(" · without source: %d") % no_source_on
 	if hidden_count > 0:
-		text += tr(" · %d hidden_count without source") % hidden_count
+		text += tr(" · %d hidden without source") % hidden_count
 	label.text = text
 
 

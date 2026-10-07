@@ -20,7 +20,7 @@ static var _rec: Dictionary = {}
 
 
 static func compute(build: Node) -> Dictionary:
-	_rec = {"player_flags": {}, "player_values": {}, "ailments": {}, "enemy": {}}
+	_rec = {"player_flags": {}, "player_values": {}, "player_buffs": {}, "ailments": {}, "enemy": {}}
 	_recording = true
 	var global: StatStore = BuildMods.global_store(build)["store"]
 	var stores: Array[Dictionary] = []
@@ -36,6 +36,61 @@ static func compute(build: Node) -> Dictionary:
 		var name: String = LE.t("Skill \"%s\"") % GameData.display_name(s["ability"])
 		_scan_mods(out, s["result"]["store"].mods, name)
 		_scan_skill_ailments(out, s["ability"], s["result"], name)
+	_scan_buff_sources(out, build)
+	return out
+
+
+## Active shadows and the buffs of the "Buffs on me" list: shown when the build creates or uses them (texts of the taken
+## passive and skill nodes, the bar skills and the equipped uniques name them) or a bar skill is imitated by shadows (ShadowCalc).
+const SHADOW_TEXT: String = "(?i)\\{shadows?\\}|\\bshadows\\b"
+const SHROUD_TEXT: String = "(?i)\\{shroud\\}|any shroud"
+const SHROUDS: Array[String] = ["DuskShroud", "CrimsonShroud", "SilverShroud"]
+
+
+static func _scan_buff_sources(out: Dictionary, build: Node) -> void:
+	var texts: Array[Array] = []  # [text, reason]
+	var ptree: Dictionary = GameData.get_passive_tree(build.class_id)
+	for node: Dictionary in ptree.get("nodes", []):
+		if int(build.passives.get(int(node.get("id", -1)), 0)) > 0:
+			texts.append([str(node.get("description", "")), LE.t("Passive \"%s\"") % str(node.get("displayName", ""))])
+	for slot: int in range(build.skills.size()):
+		var ab: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
+		if ab.is_empty():
+			continue
+		var name: String = LE.t("Skill \"%s\"") % GameData.display_name(ab)
+		if ShadowCalc.imitates(ab):
+			_add(out, "player_values", "shadows", LE.t("%s: repeated by active shadows") % name)
+		texts.append([str(ab.get("description", "")), name])
+		var tree: Dictionary = GameData.get_skill_tree(str(ab.get("skillTree", "")))
+		var taken: Dictionary = build.skills[slot].get("tree", {})
+		for node: Dictionary in tree.get("nodes", []):
+			if int(taken.get(int(node.get("id", -1)), taken.get(str(node.get("id", -1)), 0))) > 0:
+				texts.append([str(node.get("description", "")), LE.t("%s: node \"%s\"") % [name, str(node.get("displayName", ""))]])
+	for item_slot: String in build.items:
+		var item: Dictionary = build.items[item_slot]
+		if item.has("unique"):
+			var u: Dictionary = GameData.unique(int(item["unique"]))
+			texts.append([JSON.stringify(u.get("tooltip", [])) + JSON.stringify(GameData.unique_effects(int(item["unique"]))),
+				LE.t("Item \"%s\"") % GameData.display_name(u)])
+	var patterns: Array[Array] = [[SHADOW_TEXT, "player_values", "shadows"]]
+	for ail: Dictionary in GameData.player_buffs():
+		var shown_name: String = str(ail.get("displayName", ""))
+		if shown_name != "":
+			patterns.append(["(?i)\\b%s\\b" % _regex_escape(shown_name), "player_buffs", int(ail["id"])])
+	for shroud: String in SHROUDS:
+		patterns.append([SHROUD_TEXT, "player_buffs", GameData.enum_value("AilmentID", shroud)])
+	for pattern: Array in patterns:
+		var re := RegEx.new()
+		re.compile(str(pattern[0]))
+		for t: Array in texts:
+			if re.search(str(t[0])) != null:
+				_add(out, str(pattern[1]), pattern[2], str(t[1]))
+
+
+static func _regex_escape(text: String) -> String:
+	var out: String = ""
+	for ch: String in text:
+		out += ("\\" + ch) if "\\^$.|?*+()[]{}".contains(ch) else ch
 	return out
 
 
@@ -76,6 +131,8 @@ static func _note_source(per: String, reason: String) -> void:
 			_add_ailment(_rec, GameData.enum_value("AilmentID", arg), reason)
 		"player":
 			_add(_rec, "player_values", arg, reason)
+		"buff":
+			_add(_rec, "player_buffs", GameData.enum_value("AilmentID", arg), reason)
 
 
 static func _ctx_source(ctx: Dictionary) -> String:
@@ -150,9 +207,15 @@ static func _probe_condition(out: Dictionary, cdp: int, reason: String) -> void:
 			_add_ailment(out, h[1], reason)
 
 
+## A positive ailment (a buff the build gives you: Void Essence, Dusk Shroud …) goes to the "Buffs on me" list.
 static func _add_ailment(out: Dictionary, id: int, reason: String) -> void:
-	if id >= 0:
-		_add(out, "ailments", id, reason)
+	if id < 0:
+		return
+	for key: String in BuildMods.PLAYER_AILMENTS:
+		if int(BuildMods.PLAYER_AILMENTS[key]) == id:
+			_add(out, "player_flags", key, reason)  # Haste / Frenzy are checkboxes
+			return
+	_add(out, "player_buffs" if int(GameData.ailment(id).get("positive", 0)) != 0 else "ailments", id, reason)
 
 
 ## First reason wins; later sources are appended up to three.

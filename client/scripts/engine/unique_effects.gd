@@ -174,6 +174,8 @@ static func add_notes(build: Node, notes: Array[String]) -> void:
 		var src: String = str(effect.get("source", ""))
 		if DERIVED_SOURCES.has(src):
 			continue  # ordinary mods of the item (SP 100 / 115 / 117), computed by the engine
+		if e["ability_index"] == ShadowCalc.ABILITY_INDEX and ShadowCalc.HANDLED.has(int(effect.get("propertyIndex", -1))):
+			continue  # CreateShadow properties: counted by the shadow components (ShadowCalc)
 		if not e["model"].is_empty():
 			if str(e["model"].get("kind", "")) == "flag":
 				notes.append("%s — %s" % [e["label"], LE.t(str(e["model"].get("text", "")))])

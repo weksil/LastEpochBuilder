@@ -13,6 +13,7 @@ var _tree_node_stats: Dictionary = {}
 var _abilities: Dictionary = {}          # playerAbilityID -> ability
 var _abilities_by_name: Dictionary = {}  # name -> record (every category; players' records win)
 var _abilities_by_index: Dictionary = {}  # AbilityID enum value -> record (a player record wins)
+var _abilities_by_mutator: Dictionary = {}  # lower-case mutator class -> record (lazy, ability_by_mutator_class)
 var _ability_children: Dictionary = {}   # parent name -> [records listing it in `parents`]
 var _code_damage: Dictionary = {}        # ability name -> {ability, kind, components[]} (abilities_code_damage.json)
 var _projectiles: Dictionary = {}        # ability name -> {abilityName, projectiles, shotgun, confidence, evidence}
@@ -286,6 +287,20 @@ func ability_by_index(index: int) -> Dictionary:
 
 
 ## Any ability record by its `name` (every category, not only player abilities).
+## Ability whose mutator class is `cls`: the record naming it in `mutator.class`, else the one whose name without spaces
+## is the class name without "Mutator" (UmbralBladesRecallMutator → "Umbral Blades Recall"); {} if none.
+func ability_by_mutator_class(cls: String) -> Dictionary:
+	if _abilities_by_mutator.is_empty():
+		for ab: Dictionary in _abilities_by_name.values():
+			var key: String = str(ab.get("name", "")).replace(" ", "").to_lower() + "mutator"
+			if not _abilities_by_mutator.has(key):
+				_abilities_by_mutator[key] = ab
+		for ab: Dictionary in _abilities_by_name.values():
+			if ab.get("mutator") is Dictionary and str(ab["mutator"].get("class", "")) != "":
+				_abilities_by_mutator[str(ab["mutator"]["class"]).to_lower()] = ab
+	return _abilities_by_mutator.get(cls.to_lower(), {})
+
+
 func ability_by_name(ability_name: String) -> Dictionary:
 	return _abilities_by_name.get(ability_name, {})
 
@@ -465,6 +480,21 @@ func enemy_ailments() -> Array:
 			continue
 		result.append(ail)
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("name", "")) < str(b.get("name", "")))
+	return result
+
+
+## Buffs the player can have (positive ailments with stats, plus Silver Shroud that dodges the next hit), without Haste and
+## Frenzy (checkboxes of the Conditions tab); the "Buffs on me" list. Sorted by name.
+func player_buffs() -> Array:
+	var result: Array = []
+	for ail: Dictionary in _ailments_by_id.values():
+		var id: int = int(ail.get("id", -1))
+		if int(ail.get("positive", 0)) == 0 or id in [33, 34]:
+			continue
+		if (ail.get("buffs", []) as Array).is_empty() and str(ail.get("name", "")) != "SilverShroud":
+			continue
+		result.append(ail)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return str(a.get("displayName", a.get("name", ""))) < str(b.get("displayName", b.get("name", ""))))
 	return result
 
 

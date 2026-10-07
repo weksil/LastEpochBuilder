@@ -15,6 +15,7 @@ const PLAYER_FLAG_NAMES: Dictionary = {
 }
 const PLAYER_VALUE_NAMES: Dictionary = {
 	"ward": "Current ward", "curses": "Curses on me", "ignite_stacks": "Ignite stacks on me", "damned_stacks": "Damned stacks on me",
+	"shadows": "Active shadows",
 }
 const STORE_SOURCES: Array[String] = ["attr", "total_attr", "added", "value", "increased", "added_exact", "res", "ele_res",
 	"total_res", "max_health", "max_mana", "endurance_threshold", "converted_attr"]
@@ -25,8 +26,10 @@ static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 	ConfigRelevance.note_model(model, ctx)
 	if model.has("at_least"):
 		var v: float = source(str(model["at_least"]["per"]), ctx, model)
-		if v < float(model["at_least"]["value"]):
-			return LE.t("%s ≥ %s (now %s)") % [source_name(str(model["at_least"]["per"]), ctx, model), LE.fmt_num(float(model["at_least"]["value"])), LE.fmt_num(v)]
+		# «value_per_v»: the threshold follows the effect value (Careful Assault: 0.25 more per point, 1 shadow per point)
+		var need: float = float(model["at_least"]["value"]) if model["at_least"].has("value") 			else roundf(float(ctx.get("v", 0.0)) * float(model["at_least"].get("value_per_v", 0.0)))
+		if v < need:
+			return LE.t("%s ≥ %s (now %s)") % [source_name(str(model["at_least"]["per"]), ctx, model), LE.fmt_num(need), LE.fmt_num(v)]
 	if model.has("below"):
 		var w: float = source(str(model["below"]["per"]), ctx, model)
 		if w >= float(model["below"]["value"]):
@@ -55,6 +58,10 @@ static func value(model: Dictionary, v: float, ctx: Dictionary) -> Dictionary:
 			src = minf(src, float(model["src_max"]))
 		x = v * (src - float(model.get("offset", 0.0))) * float(model.get("factor", 1.0))
 		text = "(%s × %s = %s)" % [LE.fmt_num(v), source_name(str(model["per"]), ctx, model), LE.fmt_num(src)]
+	if bool(model.get("inverse", false)):
+		# a «more» that cancels another one: 1 / (1 + x) − 1
+		x = 1.0 / (1.0 + x) - 1.0
+		text = "(1 / (1 + %s) − 1)" % LE.fmt_num(v)
 	if model.has("min"):
 		x = maxf(x, float(model["min"]))
 	if model.has("max"):
@@ -135,6 +142,8 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 			return float(build.enemy.get("ailments", {}).get(GameData.enum_value("AilmentID", arg), 0))
 		"player":
 			return float(build.player_state.get(arg, 0))
+		"buff":
+			return BuildMods.buff_stacks(build, GameData.enum_value("AilmentID", arg))
 		"complete_sets":
 			return float(BuildMods.complete_sets(build))
 		"input":
@@ -183,6 +192,9 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 			return LE.t("%s stacks on the enemy") % arg
 		"player":
 			return LE.t(str(PLAYER_VALUE_NAMES.get(arg, arg)))
+		"buff":
+			var ail: Dictionary = GameData.ailment(GameData.enum_value("AilmentID", arg))
+			return LE.t("%s stacks on me") % str(ail.get("displayName", arg))
 		"complete_sets":
 			return LE.t("complete sets")
 		"input":
@@ -223,6 +235,10 @@ static func holds(cond: String, ctx: Dictionary) -> bool:
 			return false
 		"slot":
 			return item_slot == arg
+		"use":
+			# who uses the skill: "shadow" = a use repeated by a shadow (ShadowCalc), "echo" = a Void Knight echo (EchoCalc),
+			# "direct" = your own use
+			return str(ctx.get("use", "")) == ("" if arg == "direct" else arg)
 		"input":
 			var slot: int = ctx.get("slot", -1)
 			if slot >= 0 and slot < build.skills.size():
@@ -257,6 +273,10 @@ static func condition_name(cond: String, _ctx: Dictionary) -> String:
 			return LE.t("dual wielding") if arg == "dual_wield" else LE.t("two-handed melee weapon")
 		"slot":
 			return LE.t("item in slot \"%s\"") % LE.t(str(ItemMods.SLOT_NAMES.get(arg, arg)))
+		"use":
+			if arg == "shadow":
+				return LE.t("the skill is used by a shadow")
+			return LE.t("the skill is echoed") if arg == "echo" else LE.t("you use the skill yourself")
 		"input":
 			# Get the model to find the label, but we need context info
 			# For now, just use the arg as fallback

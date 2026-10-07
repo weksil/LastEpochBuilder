@@ -3341,15 +3341,9 @@
 "CharacterMutator.armourShredChancePerStackOfSharpshooter": {
 "ailment": "ArmourShred",
 "confidence": "D",
-"input": {
-"default": 10,
-"key": "sharpshooter_stacks",
-"label": "Stacks of Sharpshooter",
-"max": 10
-},
 "kind": "stat",
 "mod": "added",
-"per": "input:sharpshooter_stacks",
+"per": "buff:Sharpshooter",
 "scope": "global",
 "src_max": 10,
 "stat": "AilmentChance"
@@ -3897,16 +3891,10 @@
 },
 "CharacterMutator.doubleDamageChancePerStackOfSharpshooter": {
 "confidence": "D?",
-"input": {
-"default": 10,
-"key": "sharpshooter_stacks",
-"label": "Stacks of Sharpshooter",
-"max": 10
-},
 "kind": "stat",
 "mod": "more",
 "note": "Chance of double damage counted as expected gain",
-"per": "input:sharpshooter_stacks",
+"per": "buff:Sharpshooter",
 "scope": "global",
 "src_max": 10,
 "stat": "Damage"
@@ -3929,20 +3917,9 @@
 "param": "echo_chance"
 },
 "CharacterMutator.echoTimeRotChance": {
-"ailment": "TimeRot",
-"confidence": "D?",
-"input": {
-"default": false,
-"key": "echoed",
-"label": "Skill repeated by echo"
-},
-"kind": "stat",
-"mod": "added",
-"scope": "global",
-"stat": "AilmentChance",
-"when": [
-"input:echoed"
-]
+"confidence": "D",
+"kind": "flag",
+"text": "Time Rot chance of echoes (counted in the echo components)"
 },
 "CharacterMutator.enduranceAlsoAppliesToCompanions": {
 "confidence": "D",
@@ -4753,19 +4730,9 @@
 ]
 },
 "CharacterMutator.moreEchoDamageWithRive": {
-"confidence": "D?",
-"input": {
-"default": false,
-"key": "is_echo",
-"label": "Damage of Rive echo"
-},
-"kind": "stat",
-"mod": "more",
-"note": "Bonus tripled for echo",
-"stat": "Damage",
-"when": [
-"input:is_echo"
-]
+"confidence": "D",
+"kind": "flag",
+"text": "More damage of Rive echoes (counted in the echo components)"
 },
 "CharacterMutator.moreHealthRegenWithABear": {
 "confidence": "D",
@@ -6494,34 +6461,24 @@
 },
 "DarkQuiverMutator.arrowGivenMoreDamagePerShadow": {
 "confidence": "D",
-"input": {
-"default": 3,
-"key": "shadows_consumed",
-"label": "Absorbed Shadows",
-"max": 10
-},
 "kind": "stat",
 "mod": "more",
 "note": "Damage of skills used via black arrow",
-"per": "input:shadows_consumed",
+"per": "player:shadows",
 "scope": "global",
 "stat": "Damage"
 },
 "DarkQuiverMutator.arrowGivenMoreDamageWith3Shadows": {
-"confidence": "D",
-"input": {
-"default": true,
-"key": "three_shadows",
-"label": "Absorbed 3+ Shadows"
+"at_least": {
+"per": "player:shadows",
+"value": 3
 },
+"confidence": "D",
 "kind": "stat",
 "mod": "more",
 "note": "Damage of skills used via black arrow",
 "scope": "global",
-"stat": "Damage",
-"when": [
-"input:three_shadows"
-]
+"stat": "Damage"
 },
 "DarkQuiverMutator.arrowManaConsumption": {
 "confidence": "D?",
@@ -7749,19 +7706,15 @@
 "scope": "component:Falconer 04.2 Explosive Trap Damage"
 },
 "DiveBombMutator.increasedMoveSpeedWith5TalonBladeStacks": {
-"confidence": "D",
-"input": {
-"default": false,
-"key": "talon_5",
-"label": "5 stacks of Talon Blades"
+"at_least": {
+"per": "buff:TalonBlades",
+"value": 5
 },
+"confidence": "D",
 "kind": "stat",
 "mod": "increased",
 "scope": "global",
-"stat": "Movespeed",
-"when": [
-"input:talon_5"
-]
+"stat": "Movespeed"
 },
 "DiveBombMutator.increasedSmokeBombDurationOnHit": {
 "confidence": "D?",
@@ -8448,15 +8401,9 @@
 "DreamslashMutator.bleedChancePerCrimson": {
 "ailment": "Bleed",
 "confidence": "D",
-"input": {
-"default": 1,
-"key": "crimson",
-"label": "Stacks of Crimson Shroud",
-"max": 10
-},
 "kind": "stat",
 "mod": "added",
-"per": "input:crimson",
+"per": "buff:CrimsonShroud",
 "stat": "AilmentChance"
 },
 "DreamslashMutator.coldConversion": {
@@ -8476,15 +8423,9 @@
 },
 "DreamslashMutator.critMultiPerShadowUsingSlash": {
 "confidence": "D",
-"input": {
-"default": 2,
-"key": "shadows",
-"label": "Shadows executing hit",
-"max": 10
-},
 "kind": "stat",
 "mod": "added",
-"per": "input:shadows",
+"per": "player:shadows",
 "stat": "CriticalMultiplier"
 },
 "DreamslashMutator.dreamStackChanceOnEliteHit": {
@@ -8544,16 +8485,11 @@
 },
 "DreamslashMutator.increasedAreaForShadows": {
 "confidence": "D",
-"input": {
-"default": true,
-"key": "by_shadow",
-"label": "Hit deals Shadow"
-},
 "kind": "stat",
 "mod": "increased",
 "stat": "IncreasedAreaForAreaSkills",
 "when": [
-"input:by_shadow"
+"use:shadow"
 ]
 },
 "DreamslashMutator.increasedAreaWith2hWep": {
@@ -8639,15 +8575,11 @@
 },
 "DreamslashMutator.shadowTempStats": {
 "confidence": "D",
-"input": {
-"default": true,
-"key": "by_shadow",
-"label": "Hit deals Shadow"
-},
 "kind": "stat_list",
+"note": "Only for uses repeated by shadows",
 "scope": "skill",
 "when": [
-"input:by_shadow"
+"use:shadow"
 ]
 },
 "DreamslashMutator.shadowsCannotSlash": {
@@ -8665,15 +8597,9 @@
 "DreamslashMutator.slowChancePerDusk": {
 "ailment": "Slow",
 "confidence": "D",
-"input": {
-"default": 1,
-"key": "dusk",
-"label": "Stacks of Dusk Shroud",
-"max": 10
-},
 "kind": "stat",
 "mod": "added",
-"per": "input:dusk",
+"per": "buff:DuskShroud",
 "stat": "AilmentChance"
 },
 "DreamslashMutator.wardOnHitPerSilver": {
@@ -8682,6 +8608,7 @@
 "kind": "resource",
 "label": "Ward per Silver Shroud stack hit",
 "on": "hit",
+"per": "buff:SilverShroud",
 "resource": "ward"
 },
 "EarthquakeSeekingCrackMutator.aftershockChanceToBlind": {
@@ -9884,15 +9811,9 @@
 },
 "ExplosiveTrapMutator.addedThrowingDamagePerStackOfDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 3,
-"key": "dusk_stacks",
-"label": "Stacks of Dusk Shroud",
-"max": 20
-},
 "kind": "stat",
 "mod": "added",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "stat": "Damage",
 "tags": "Throwing"
 },
@@ -10533,19 +10454,15 @@
 "scope": "component:Falconer 02.2 Featherstorm"
 },
 "FalconryMutator.increasedMoveSpeedWith5TalonBladeStacks": {
-"confidence": "D",
-"input": {
-"default": false,
-"key": "talon_5",
-"label": "5 stacks of Talon Blades"
+"at_least": {
+"per": "buff:TalonBlades",
+"value": 5
 },
+"confidence": "D",
 "kind": "stat",
 "mod": "increased",
 "scope": "global",
-"stat": "Movespeed",
-"when": [
-"input:talon_5"
-]
+"stat": "Movespeed"
 },
 "FalconryMutator.increasedSmokeBombDurationOnHit": {
 "confidence": "D?",
@@ -18423,15 +18340,9 @@
 },
 "LethalMirageMutator.moreDamagePerShadow": {
 "confidence": "D",
-"input": {
-"default": 3,
-"key": "shadows_consumed",
-"label": "Absorbed Shadows",
-"max": 10
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:shadows_consumed",
+"per": "player:shadows",
 "stat": "Damage"
 },
 "LethalMirageMutator.moreHitDamagePerBleed": {
@@ -25285,7 +25196,10 @@
 "mod": "added",
 "note": "Daggers from normal uses",
 "scope": "component:DaggerThrow",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"when": [
+"use:direct"
+]
 },
 "ShadowCascadeMutator.daggerShadowDaggerChanceFromShadows": {
 "ailment": "ShadowDaggers",
@@ -25294,7 +25208,10 @@
 "mod": "added",
 "note": "Daggers thrown by Shadows",
 "scope": "component:DaggerThrow",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"when": [
+"use:shadow"
+]
 },
 "ShadowCascadeMutator.daggersPerSecond": {
 "confidence": "D",
@@ -25351,6 +25268,7 @@
 "label": "Mana per Shadow on direct use",
 "note": "Value × Shadow count",
 "on": "use",
+"per": "player:shadows",
 "resource": "mana"
 },
 "ShadowCascadeMutator.minimumShadowCountToTriggerMoreDamage": {
@@ -25383,7 +25301,8 @@
 "mod": "more",
 "stat": "Damage",
 "when": [
-"input:direct_cast"
+"input:direct_cast",
+"use:direct"
 ]
 },
 "ShadowCascadeMutator.moreDamagePerAttackSpeed": {
@@ -25398,15 +25317,9 @@
 },
 "ShadowCascadeMutator.moreDamagePerShadow": {
 "confidence": "D",
-"input": {
-"default": 3,
-"key": "shadows",
-"label": "Shadow clones",
-"max": 10
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:shadows",
+"per": "player:shadows",
 "stat": "Damage"
 },
 "ShadowCascadeMutator.moreDamageToLowHealth": {
@@ -25425,18 +25338,15 @@
 ]
 },
 "ShadowCascadeMutator.moreDamageWithMinimumShadowCount": {
-"confidence": "D",
-"input": {
-"default": true,
-"key": "min_shadows_met",
-"label": "Shadows not below minimum"
+"at_least": {
+"per": "player:shadows",
+"value_per_v": 4
 },
+"confidence": "D",
 "kind": "stat",
 "mod": "more",
-"stat": "Damage",
-"when": [
-"input:min_shadows_met"
-]
+"note": "Needs at least 1 active shadow per node point",
+"stat": "Damage"
 },
 "ShadowCascadeMutator.moreDamagerPerSwordOrDagger": {
 "confidence": "D",
@@ -25492,12 +25402,19 @@
 "text": "No melee attack, daggers only"
 },
 "ShadowCascadeMutator.percentManaRegainIfAtLeastOneShadow": {
+"at_least": {
+"per": "player:shadows",
+"value": 1
+},
 "confidence": "D",
 "kind": "resource",
 "label": "Mana cost share refund (has Shadow)",
 "note": "Direct use only",
 "on": "use",
-"resource": "mana"
+"resource": "mana",
+"when": [
+"use:direct"
+]
 },
 "ShadowCascadeMutator.poisonConversionVFX": {
 "confidence": "D",
@@ -25639,15 +25556,11 @@
 },
 "ShadowRendBowMutator.moreDamageAfterFirstShadowConsumed": {
 "confidence": "D",
-"input": {
-"default": 2,
-"key": "shadows_extra",
-"label": "Shadows beyond first absorbed",
-"max": 10
-},
 "kind": "stat",
+"min": 0,
 "mod": "more",
-"per": "input:shadows_extra",
+"offset": 1,
+"per": "player:shadows",
 "stat": "Damage"
 },
 "ShadowRendBowMutator.moreDamageWithFrenzy": {
@@ -25670,15 +25583,9 @@
 },
 "ShadowRendBowMutator.moreShadowDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 5,
-"key": "dusk_stacks",
-"label": "Stacks of Dusk Shroud",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "scope": "component:ShadowRend Damage Bow",
 "src_max": 20,
 "stat": "Damage"
@@ -25754,6 +25661,7 @@
 "kind": "resource",
 "label": "Ward per Dusk Shroud stack on shadow hit",
 "on": "hit",
+"per": "buff:DuskShroud",
 "resource": "ward"
 },
 "ShadowRendMeleeMutator.addedManaCost": {
@@ -25862,15 +25770,11 @@
 },
 "ShadowRendMeleeMutator.moreAreaAfterFirstShadowConsumed": {
 "confidence": "D?",
-"input": {
-"default": 2,
-"key": "shadows_extra",
-"label": "Shadows beyond first absorbed",
-"max": 10
-},
 "kind": "stat",
+"min": 0,
 "mod": "more",
-"per": "input:shadows_extra",
+"offset": 1,
+"per": "player:shadows",
 "stat": "IncreasedAreaForAreaSkills"
 },
 "ShadowRendMeleeMutator.moreAttackSpeed": {
@@ -25880,15 +25784,11 @@
 },
 "ShadowRendMeleeMutator.moreDamageAfterFirstShadowConsumed": {
 "confidence": "D",
-"input": {
-"default": 2,
-"key": "shadows_extra",
-"label": "Shadows beyond first absorbed",
-"max": 10
-},
 "kind": "stat",
+"min": 0,
 "mod": "more",
-"per": "input:shadows_extra",
+"offset": 1,
+"per": "player:shadows",
 "stat": "Damage"
 },
 "ShadowRendMeleeMutator.moreDamageWithFrenzy": {
@@ -25911,15 +25811,9 @@
 },
 "ShadowRendMeleeMutator.moreShadowDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 5,
-"key": "dusk_stacks",
-"label": "Stacks of Dusk Shroud",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "scope": "component:ShadowRend Damage",
 "src_max": 20,
 "stat": "Damage"
@@ -25995,6 +25889,7 @@
 "kind": "resource",
 "label": "Ward per Dusk Shroud stack on shadow hit",
 "on": "hit",
+"per": "buff:DuskShroud",
 "resource": "ward"
 },
 "ShatterStrikeMutator.addedCullThresholdToFrozen": {
@@ -27185,7 +27080,8 @@
 "note": "Chakram only",
 "stat": "Damage",
 "when": [
-"input:direct_use"
+"input:direct_use",
+"use:direct"
 ]
 },
 "ShurikensMutator.moreHitDamagePerPoisonOrBleedOnTarget": {
@@ -33406,16 +33302,10 @@
 },
 "SynchronizedStrikesMutator.increasedAreaPerShadowConsumed": {
 "confidence": "D?",
-"input": {
-"default": 3,
-"key": "shadows_consumed",
-"label": "Absorbed Shadows",
-"max": 10
-},
 "kind": "stat",
 "mod": "added",
 "note": "Stacks with area before root extraction",
-"per": "input:shadows_consumed",
+"per": "player:shadows",
 "stat": "IncreasedAreaForAreaSkills"
 },
 "SynchronizedStrikesMutator.increasedCritChanceIfKilledRecently": {
@@ -35551,15 +35441,9 @@
 },
 "UmbralBlades2Mutator.moreDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 10,
-"key": "dusk_stacks",
-"label": "Dusk Shroud stacks",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "src_max": 20,
 "stat": "Damage"
 },
@@ -35609,10 +35493,14 @@
 },
 "UmbralBlades2Mutator.singleBladeDamageBonus": {
 "confidence": "D",
+"inverse": true,
 "kind": "stat",
 "mod": "more",
-"note": "Single blade bonus",
-"stat": "Damage"
+"note": "A shadow throws one blade: the single-blade bonus of your throws is cancelled, 1/(1 + v) - 1 (BaseUmbralBladesMutator.getTempStats)",
+"stat": "Damage",
+"when": [
+"use:shadow"
+]
 },
 "UmbralBlades3Mutator.addedFreezeRate": {
 "confidence": "D?",
@@ -35712,15 +35600,9 @@
 },
 "UmbralBlades3Mutator.moreDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 10,
-"key": "dusk_stacks",
-"label": "Dusk Shroud stacks",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "src_max": 20,
 "stat": "Damage"
 },
@@ -35770,10 +35652,14 @@
 },
 "UmbralBlades3Mutator.singleBladeDamageBonus": {
 "confidence": "D",
+"inverse": true,
 "kind": "stat",
 "mod": "more",
-"note": "Single blade bonus",
-"stat": "Damage"
+"note": "A shadow throws one blade: the single-blade bonus of your throws is cancelled, 1/(1 + v) - 1 (BaseUmbralBladesMutator.getTempStats)",
+"stat": "Damage",
+"when": [
+"use:shadow"
+]
 },
 "UmbralBladesBackflipMutator.extraBlades": {
 "confidence": "D",
@@ -35881,15 +35767,9 @@
 },
 "UmbralBladesMutator.moreDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 10,
-"key": "dusk_stacks",
-"label": "Dusk Shroud stacks",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "src_max": 20,
 "stat": "Damage"
 },
@@ -35939,10 +35819,14 @@
 },
 "UmbralBladesMutator.singleBladeDamageBonus": {
 "confidence": "D",
+"inverse": true,
 "kind": "stat",
 "mod": "more",
-"note": "Single blade bonus",
-"stat": "Damage"
+"note": "A shadow throws one blade: the single-blade bonus of your throws is cancelled, 1/(1 + v) - 1 (BaseUmbralBladesMutator.getTempStats)",
+"stat": "Damage",
+"when": [
+"use:shadow"
+]
 },
 "UmbralBladesMutator.throw2ExtraBlades": {
 "confidence": "D",
@@ -36021,15 +35905,9 @@
 },
 "UmbralBladesRecallMutator.moreDamagePerDuskShroud": {
 "confidence": "D",
-"input": {
-"default": 10,
-"key": "dusk_stacks",
-"label": "Dusk Shroud stacks",
-"max": 20
-},
 "kind": "stat",
 "mod": "more",
-"per": "input:dusk_stacks",
+"per": "buff:DuskShroud",
 "src_max": 20,
 "stat": "Damage"
 },

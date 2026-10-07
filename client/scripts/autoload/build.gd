@@ -110,7 +110,10 @@ static func default_player_state() -> Dictionary:
 		"ward": 0,
 		"curses": 0,
 		"ignite_stacks": 0,
-		"damned_stacks": 0
+		"damned_stacks": 0,
+		"shadows": 0,
+		# buffs on the player: AilmentID -> stacks (positive ailments of ailments.json, the "Buffs on me" list)
+		"buffs": {}
 	}
 
 
@@ -685,6 +688,23 @@ func reset_player_conditions() -> void:
 		var value: Variant = player_state[key]
 		if value is bool:
 			player_state[key] = false
+		elif value is Dictionary:
+			continue  # buffs have their own reset (clear_player_buffs)
 		elif key != "health":
 			player_state[key] = 0
+	changed.emit()
+
+
+func set_player_buff(ailment_id: int, stacks: int) -> void:
+	var buffs: Dictionary = player_state.get("buffs", {}) as Dictionary
+	if stacks > 0:
+		buffs[ailment_id] = stacks
+	elif ailment_id in buffs:
+		buffs.erase(ailment_id)
+	player_state["buffs"] = buffs
+	changed.emit()
+
+
+func clear_player_buffs() -> void:
+	player_state["buffs"] = {}
 	changed.emit()

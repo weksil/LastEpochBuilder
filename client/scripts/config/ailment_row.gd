@@ -30,7 +30,9 @@ func setup(data: Dictionary) -> void:
 	display_name = title
 	_name_label.text = title
 	var kind: String = ""
-	if bool(data.get("isCurse", false)):
+	if int(data.get("positive", 0)) != 0:
+		kind = tr("buff")
+	elif bool(data.get("isCurse", false)):
 		kind = tr("curse")
 	elif raw_name.contains("Shred") or title.begins_with("Shred"):
 		kind = tr("shred")
@@ -38,7 +40,7 @@ func setup(data: Dictionary) -> void:
 	search_text = (title + " " + raw_name + " " + kind).to_lower()
 
 	var max_instances: int = int(data.get("maxInstances", 0))
-	_spin.max_value = float(max_instances) if max_instances > 0 else 200.0
+	_spin.max_value = float(max_instances) if max_instances > 0 else 100000.0
 	tooltip_text = _tooltip(data, max_instances)
 
 

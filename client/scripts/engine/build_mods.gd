@@ -142,7 +142,9 @@ static func describe_mod(mod: StatMod) -> String:
 ## Skill-local store (parent = global store) plus mutator-field totals. Scope-global mods are returned in
 ## result["global_mods"] (not in the skill store): global_store puts them on the character, and the skill sees them
 ## through its parent.
-static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary:
+## `use` = "shadow" builds the store of a use repeated by a shadow (ShadowCalc): models with the condition «use:shadow»
+## apply, «use:direct» ones do not; "" is your own use.
+static func skill_store(build: Node, slot: int, global: StatStore, use: String = "") -> Dictionary:
 	var store := StatStore.new()
 	store.parent = global
 	var result: Dictionary = {
@@ -155,7 +157,7 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		"global_mods": [] as Array[StatMod], "ability_name": "",
 		# resource models that passed their conditions: {model, v, x, source} (the Defense tab turns them into recovery)
 		"resources": [] as Array[Dictionary],
-		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": ""},
+		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": "", "use": use},
 	}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -165,6 +167,8 @@ static func skill_store(build: Node, slot: int, global: StatStore) -> Dictionary
 		return result
 
 	result["ability_name"] = str(ability.get("abilityName", ""))
+	result["main_name"] = str(ability.get("name", ""))
+	result["own_mutator"] = str(ability.get("mutator", {}).get("class", "")) if ability.get("mutator") is Dictionary else ""
 	var effects: Dictionary = GameData.skill_effects(str(ability.get("skillTree", "")))
 	var tree: Dictionary = skill.get("tree", {})
 	for node_id: Variant in tree:
@@ -329,6 +333,8 @@ static func _passive_model(target: String) -> Dictionary:
 
 
 static func _passive_unmodelled(notes: Array[String], title: String, effect: Dictionary) -> void:
+	if ShadowCalc.handles_effect(effect):
+		return  # CreateShadow properties: counted by the shadow components (ShadowCalc)
 	notes.append(LE.t("Passive \"%s\": %s — not counted") % [title, _effect_label(effect)])
 
 
@@ -426,6 +432,8 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 
 const LEGENDS_ENTWINED: int = 423  # "Counts as a part of every equipped item set"
 const PLAYER_AILMENTS: Dictionary = {"haste": 33, "frenzy": 34}
+## Buff stats with these properties are effects of a skill or player property, not stats: listed, not added.
+const BUFF_SPECIAL_PROPERTIES: Array[int] = [LE.ABILITY_PROPERTY, LE.PLAYER_PROPERTY]
 
 
 ## Set piece counts: setID -> distinct equipped uniqueIDs of the set + Legends Entwined (07d §2.3).
@@ -490,6 +498,31 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 		for buff: Dictionary in ail.get("buffs", []):
 			var mod: StatMod = stat_from_record(buff, LE.t("%s on you (effect ×%s)") % [str(ail.get("name", key)), LE.fmt_num(effect)])
 			store.add(mod.scaled(effect))
+	# stacks of the "Buffs on me" list: every stack adds the buff's stats (at most maxInstances stacks when it is set)
+	var buffs: Variant = build.player_state.get("buffs", {})
+	for key: Variant in buffs if buffs is Dictionary else {}:
+		var id: int = int(key)
+		var stacks: float = buff_stacks(build, id)
+		if stacks <= 0.0:
+			continue
+		var ail: Dictionary = GameData.ailment(id)
+		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
+		for buff: Dictionary in ail.get("buffs", []):
+			if BUFF_SPECIAL_PROPERTIES.has(int(buff.get("property", -1))):
+				continue
+			var mod: StatMod = stat_from_record(buff, LE.t("%s on you: %s stacks (effect ×%s)") % [
+				str(ail.get("displayName", ail.get("name", id))), LE.fmt_num(stacks), LE.fmt_num(effect)])
+			store.add(mod.scaled(effect * stacks))
+
+
+## Stacks of a buff on the player (Conditions tab, "Buffs on me"), at most its maxInstances.
+static func buff_stacks(build: Node, ailment_id: int) -> float:
+	var buffs: Variant = build.player_state.get("buffs", {})
+	if not buffs is Dictionary:
+		return 0.0
+	var stacks: float = float(buffs.get(ailment_id, buffs.get(str(ailment_id), 0)))
+	var max_inst: int = int(GameData.ailment(ailment_id).get("maxInstances", 0))
+	return minf(stacks, float(max_inst)) if max_inst > 0 else stacks
 
 
 # --- 5.3 attributes -----------------------------------------------------------
@@ -559,54 +592,104 @@ static func _sum_added_any_tags(store: StatStore, property: int) -> float:
 
 # --- 5.5 skill tree -----------------------------------------------------------
 
+## A node often writes the same field into the mutators of every part of a skill (Umbral Blades: first throw, second
+## throw, recall — UmbralBladesMutator / UmbralBlades2Mutator / UmbralBladesRecallMutator; Flay and its blood explosion).
+## All parts share the skill's store, so a stat the node also writes into the skill's own mutator counts once (counts of
+## damage components and triggers still add up: Volatile Reversal casts void bolts on the jump and on the return, both
+## within one cooldown). Stats written only into the mutator of a combo part (Ability.comboAbilities) or of another
+## player skill go to that ability's damage component (dropped when the skill has no such component), not to the main hit.
 static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -> void:
-	var store: StatStore = result["store"]
-	var notes: Array[String] = result["notes"]
+	var own: String = str(result.get("own_mutator", ""))
+	var own_fields: Dictionary = {}
+	if own != "":
+		for effect: Dictionary in node.get("effects", []):
+			for part: String in str(effect.get("target", "")).split(" & "):
+				if part.strip_edges().begins_with(own + "."):
+					own_fields[part.strip_edges().get_slice(".", 1)] = true
 	var title: String = str(node.get("name", ""))
-	var source: String = LE.t("Node \"%s\" ×%d") % [title, points]
 	for effect: Dictionary in node.get("effects", []):
 		var target: String = str(effect.get("target", ""))
-		var op: String = str(effect.get("op", ""))
-		if op == "add_stat" and (_is_unconditional_temp(target) or target == "CharacterMutator.stats"):
-			var mod: StatMod = stat_from_effect(effect.get("stat", {}), points, source)
-			if mod != null:
-				store.add(mod)
+		var other: Dictionary = _other_part(target, own, str(result.get("main_name", "")))
+		if not other.is_empty():
+			var first: String = target.split(" & ")[0].strip_edges()
+			var kind: String = str(FieldModels.find(first).get("kind", ""))
+			if own_fields.has(first.get_slice(".", 1)) and kind != "component" and kind != "trigger":
+				continue  # the same stat of another part: counted once, through the own mutator
+			var reasons: Array = other.get("reasons", [])
+			if not (reasons.has("Ability.comboAbilities") or str(other.get("category", "")) == "player"):
+				_add_skill_effect(effect, points, title, result)
 				continue
-		elif op == "automatic_node_stat":
-			var auto_mod: StatMod = _automatic_stat(effect, points, source)
-			if auto_mod != null:
-				store.add(auto_mod)
-				continue
-		elif op == "add_stat":
-			if _apply_list_effect(effect, target, points, source, title, result):
-				continue
-		elif op == "cooldown":
-			for key: String in effect.get("args", {}):
-				result["cooldown_base"][key] = eval_value(effect["args"][key], points)
-			continue
-		elif op == "" and effect.has("value") and target.contains("."):
-			var field: String = target.get_slice(".", target.get_slice_count(".") - 1)
-			var v: float = eval_value(effect["value"], points)
-			var rule: Dictionary = _conversion_rule(target)
-			if not rule.is_empty():
-				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
-				continue
-			if _apply_field_models(target, v, source, title, result):
-				continue
-			match field:
-				"increasedCastSpeed", "increasedAttackSpeed":
-					result["use_speed_inc"] += v
-					continue
-				"moreCastSpeed", "moreAttackSpeed":
-					result["use_speed_more"] *= 1.0 + v
-					continue
-				"increasedManaCost":
-					result["mana_inc"] += v
-					continue
-				"addedManaCost":
-					result["mana_added"] += v
-					continue
-		notes.append(LE.t("Node \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
+			result["scope_override"] = "component:" + str(other["name"])
+			result["scope_override_note"] = LE.t("Node \"%s\": stats of \"%s\" (another part of the skill) count only for its own damage component") % [title, str(other["name"])]
+		_add_skill_effect(effect, points, title, result)
+		result.erase("scope_override")
+		result.erase("scope_override_note")
+
+
+## Ability of the mutator of a target that is not the skill's own mutator and belongs to another ability (a combo part,
+## sub-ability or another skill); {} when a part is the own mutator, the target is the character's or unknown.
+static func _other_part(target: String, own: String, main_name: String) -> Dictionary:
+	if own == "":
+		return {}
+	var cls: String = ""
+	for part: String in target.split(" & "):
+		var p: String = part.strip_edges()
+		if p.begins_with(own + "."):
+			return {}
+		if cls == "":
+			cls = p.get_slice(".", 0)
+	if cls == "" or cls == "CharacterMutator" or not cls.ends_with("Mutator"):
+		return {}
+	var ab: Dictionary = GameData.ability_by_mutator_class(cls)
+	var ab_name: String = str(ab.get("name", ""))
+	return ab if ab_name != "" and ab_name != main_name else {}
+
+
+static func _add_skill_effect(effect: Dictionary, points: int, title: String, result: Dictionary) -> void:
+	var notes: Array[String] = result["notes"]
+	var source: String = LE.t("Node \"%s\" ×%d") % [title, points]
+	var target: String = str(effect.get("target", ""))
+	var op: String = str(effect.get("op", ""))
+	if op == "add_stat" and (_is_unconditional_temp(target) or target == "CharacterMutator.stats"):
+		var mod: StatMod = stat_from_effect(effect.get("stat", {}), points, source)
+		if mod != null:
+			_add_scoped(mod, "skill", result)
+			return
+	elif op == "automatic_node_stat":
+		var auto_mod: StatMod = _automatic_stat(effect, points, source)
+		if auto_mod != null:
+			_add_scoped(auto_mod, "skill", result)
+			return
+	elif op == "add_stat":
+		if _apply_list_effect(effect, target, points, source, title, result):
+			return
+	elif op == "cooldown":
+		for key: String in effect.get("args", {}):
+			result["cooldown_base"][key] = eval_value(effect["args"][key], points)
+		return
+	elif op == "" and effect.has("value") and target.contains("."):
+		var field: String = target.get_slice(".", target.get_slice_count(".") - 1)
+		var v: float = eval_value(effect["value"], points)
+		var rule: Dictionary = _conversion_rule(target)
+		if not rule.is_empty():
+			result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
+			return
+		if _apply_field_models(target, v, source, title, result):
+			return
+		match field:
+			"increasedCastSpeed", "increasedAttackSpeed":
+				result["use_speed_inc"] += v
+				return
+			"moreCastSpeed", "moreAttackSpeed":
+				result["use_speed_more"] *= 1.0 + v
+				return
+			"increasedManaCost":
+				result["mana_inc"] += v
+				return
+			"addedManaCost":
+				result["mana_added"] += v
+				return
+	notes.append(LE.t("Node \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
 ## Field effect through its models (client/data/field_models.json, §9.1); false if no part of the target has a model.
@@ -645,6 +728,11 @@ static func _note_global_scope(model: Dictionary, result: Dictionary) -> void:
 
 
 static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void:
+	if result.has("scope_override") and (scope == "skill" or scope == ""):
+		scope = str(result["scope_override"])
+		var line: String = str(result.get("scope_override_note", ""))
+		if line != "" and not result["notes"].has(line):
+			result["notes"].append(line)
 	if scope.begins_with("component:"):
 		var comp: String = scope.get_slice(":", 1)
 		if not result["component_mods"].has(comp):
@@ -664,7 +752,14 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 	_note_global_scope(model, result)
 	for inp: Dictionary in EffectModels.inputs(model):
 		result["inputs"].append(inp)
+	# models of another user (a shadow-only node on your own use and back) are left to that store, without a note
+	var cur_use: String = str(ctx.get("use", ""))
+	for cond: Variant in model.get("when", []):
+		if str(cond).begins_with("use:") and str(cond) != "use:" + (cur_use if cur_use != "" else "direct"):
+			return
+	ctx["v"] = v
 	var reason: String = EffectModels.blocked(model, ctx)
+	ctx.erase("v")
 	if reason != "":
 		result["notes"].append(LE.t("Node \"%s\" — counted when: %s") % [title, reason])
 		return

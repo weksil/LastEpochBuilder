@@ -262,6 +262,26 @@ max_value = 200.0
 update_on_text_changed = true
 metadata/player_value = "damned_stacks"
 
+[node name="ShadowsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ShadowsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShadowsLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ShadowsRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Active shadows"
+
+[node name="ShadowsSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ShadowsRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 20.0
+update_on_text_changed = true
+metadata/player_value = "shadows"
+
 [node name="EnemyCard" type="PanelContainer" parent="Root/Columns/Left"]
 layout_mode = 2
 theme_type_variation = &"SectionCard"
@@ -530,6 +550,43 @@ metadata/flag = "frozen"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
+
+[node name="BuffCard" type="PanelContainer" parent="Root/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Columns/Right/BuffCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="HBoxContainer" parent="Root/Columns/Right/BuffCard/VBox"]
+layout_mode = 2
+
+[node name="BuffsTitle" type="Label" parent="Root/Columns/Right/BuffCard/VBox/Head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionTitle"
+text = "Buffs on me (stacks)"
+autowrap_mode = 3
+
+[node name="ResetBuffsButton" type="Button" parent="Root/Columns/Right/BuffCard/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Reset"
+tooltip_text = "Zero the stacks of all buffs on you"
+
+[node name="BuffSummary" type="Label" parent="Root/Columns/Right/BuffCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = ""
+autowrap_mode = 3
+
+[node name="BuffList" type="VBoxContainer" parent="Root/Columns/Right/BuffCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 3
 
 [node name="AilmentCard" type="PanelContainer" parent="Root/Columns/Right"]
 layout_mode = 2

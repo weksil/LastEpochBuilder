@@ -45,5 +45,5 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
 size_flags_vertical = 4
-max_value = 200.0
+max_value = 100000.0
 update_on_text_changed = true

@@ -24,6 +24,7 @@ func _ready() -> void:
 	_item_compare()
 	_projectiles()
 	_item_triggers()
+	_shadows_echoes_buffs()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -1091,3 +1092,47 @@ func _item_triggers() -> void:
 	Build.set_skill(0, "")
 	Build.set_skill(1, "")
 	Build.items = items_before
+
+
+## Shadows, Void Knight echoes, buffs on the player and combo parts (docs/ENGINE.md §9.10).
+func _shadows_echoes_buffs() -> void:
+	print("--- shadows, echoes, buffs on the player, combo parts")
+	var bd: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/letools_Q0V6XDLG.json"))
+	LEToolsImportScript.apply(Build, LEToolsImportScript.to_build(bd))  # Bladedancer: Umbral Blades, Dreamslash, Shadow Cascade
+	var ub: Dictionary = SkillCalc.compute(Build, 0)
+	# "Only 1 Blade" writes +250% into three combo-part mutators: counted once (it was ×3.5³)
+	_check("Umbral Blades DPS with the combo parts counted once", _dps(ub), 136298.7, 150.0)
+	_check("no shadow components without shadows", _count_prefixed_sections(ub, "Shadows: "), 0.0)
+	_check("max shadows: 3 + Shadow Master + mastery + Doppelganger's", ShadowCalc.max_shadows(Build), 6.0)
+	_check("increased damage of shadows (passives, idols, set, Tabi)", float(ShadowCalc.property(Build, 2)["value"]), 3.07, 0.001)
+	Build.set_player_state("shadows", 10)
+	_check("active shadows clamped to the limit", ShadowCalc.count(Build), 6.0)
+	Build.set_player_state("shadows", 3)
+	var sc: Dictionary = SkillCalc.compute(Build, 3)
+	_flag("Shadow Cascade: shadow component", _count_prefixed_sections(sc, "Shadows: Shadow Cascade") > 0.0)
+	_flag("Shadow Cascade DPS grows with shadows", _dps(sc) > 62039.3 * 2.0)
+	var rel: Dictionary = ConfigRelevance.compute(Build)
+	_flag("relevance: active shadows", rel["player_values"].has("shadows"))
+	_flag("relevance: Dusk Shroud buff", rel["player_buffs"].has(82))
+	Build.set_player_state("shadows", 0)
+	var dodge0: float = BuildMods.global_store(Build)["store"].query_untagged(LE.DODGE_RATING).added
+	Build.set_player_buff(82, 10)  # Dusk Shroud: +50 dodge rating per stack
+	Build.set_player_buff(83, 7)  # Crimson Shroud: at most 3 stacks
+	_check("Dusk Shroud ×10: +500 dodge rating", BuildMods.global_store(Build)["store"].query_untagged(LE.DODGE_RATING).added - dodge0, 500.0, 0.01)
+	_check("Crimson Shroud clamped to 3", BuildMods.buff_stacks(Build, 83), 3.0)
+	var doc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
+	_check("buff stacks survive the build code", float(doc["player"]["buffs"].get(82, 0)), 10.0)
+	Build.clear_player_buffs()
+	var vk: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/maxroll_char_palading.json"))
+	LEToolsImportScript.apply(Build, MaxrollImport.to_build(vk))  # Void Knight
+	var throw_ab: Dictionary = GameData.get_ability(str(Build.skills[4]["ability"]))
+	var s: Dictionary = BuildMods.skill_store(Build, 4, BuildMods.global_store(Build)["store"])
+	_check("Void Knight echo chance: mastery 10% + passives", float(EchoCalc.chance(Build, throw_ab, s)["value"]), 0.22)
+	_flag("Shield Throw: echo component", _count_prefixed_sections(SkillCalc.compute(Build, 4), "Echo: ") > 0.0)
+	_flag("Anomaly does not echo", not EchoCalc.eligible(GameData.ability_by_name("Anomaly"), {}))
+	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
+	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 27852.5, 30.0)
+
+
+func _dps(r: Dictionary) -> float:
+	return float(CalcSummary.find_row(r, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
