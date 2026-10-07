@@ -587,7 +587,7 @@
   "661": {
    "kind": "trigger",
    "ability": "SummonStormSprite",
-   "on": "use",
+   "on": "totem_summon",
    "chance": 1,
    "count": 4,
    "icd": 3,
@@ -883,7 +883,7 @@
   "83": {
    "kind": "trigger",
    "ability": "DragonfireNova",
-   "on": "use",
+   "on": "minion_use",
    "chance": "v",
    "icd": 0.3333,
    "note": "on minion ability use, up to 3 times per second",
@@ -1143,6 +1143,7 @@
    "tags": "Melee",
    "per": "input:ward_consumed",
    "factor": 0.1,
+   "v_caps_source": true,
    "input": {
     "key": "ward_consumed",
     "label": "Ward spent per attack",
@@ -1860,7 +1861,7 @@
   "457": {
    "kind": "trigger",
    "ability": "StaticOrb",
-   "on": "use",
+   "on": "evade",
    "chance": "v",
    "note": "on Evade use, costs 90% ability mana",
    "confidence": "D?"
@@ -2126,7 +2127,7 @@
   "526": {
    "kind": "trigger",
    "ability": "Glacier",
-   "on": "cast",
+   "on": "evade",
    "chance": "v",
    "confidence": "D?",
    "note": "Evade creates Glacier along path"
@@ -2242,7 +2243,7 @@
   "558": {
    "kind": "trigger",
    "ability": "GatheringStormMelee",
-   "on": "cast",
+   "on": "evade",
    "chance": 1,
    "confidence": "D?",
    "note": "After Dodge near enemy"
@@ -2331,7 +2332,7 @@
   "577": {
    "kind": "trigger",
    "ability": "Vengeance",
-   "on": "cast",
+   "on": "movement",
    "chance": 1,
    "confidence": "D?",
    "count": "v",
@@ -2366,7 +2367,7 @@
   "581": {
    "kind": "trigger",
    "ability": "FlameWard",
-   "on": "cast",
+   "on": "movement",
    "chance": "v",
    "confidence": "D?",
    "icd": 8,
@@ -3376,7 +3377,7 @@
   "339:0": {
    "kind": "trigger",
    "ability": "EarthquakeSlam",
-   "on": "use",
+   "on": "movement",
    "chance": "v",
    "icd": 2.5,
    "note": "after non-channelled movement ability, up to 2 times per 5 sec",
@@ -5346,9 +5347,13 @@
    "confidence": "D"
   },
   "715:1": {
-   "kind": "flag",
-   "text": "Chaos Bolts: 50% of added melee weapon damage as added spell damage",
-   "confidence": "D?"
+   "kind": "stat",
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Spell",
+   "per": "weapon_added:melee",
+   "confidence": "D?",
+   "note": "Chaos Bolts: added spell damage = 50% (the property value) of the added melee damage on the equipped weapons"
   },
   "185:6": {
    "kind": "stat",
@@ -5356,7 +5361,11 @@
    "mod": "more",
    "confidence": "D?",
    "factor": 1.5,
-   "note": "Great Harvest on direct use: damage +150%; also 5 sec cooldown and area +50% (not counted)"
+   "base_cooldown": 5,
+   "when": [
+    "use:direct"
+   ],
+   "note": "Great Harvest on direct use: damage +150% and a 5 sec cooldown; area +50% (not counted)"
   },
   "185:9": {
    "kind": "resource",

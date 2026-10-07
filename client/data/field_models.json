@@ -2864,9 +2864,11 @@
 "ability": "Harvest",
 "chance": "v",
 "confidence": "D?",
+"icd": 1,
 "kind": "trigger",
 "note": "Chance = Dexterity × value, no more than once per second",
-"on": "hit"
+"on": "hit",
+"per": "attr:dex"
 },
 "ChaosBoltsMutator.healthOnHitCursed": {
 "amount": "flat",
@@ -3090,9 +3092,12 @@
 "ability": "RipBlood",
 "chance": "v",
 "confidence": "D?",
+"factor": 0.5,
+"icd": 0.5,
 "kind": "trigger",
 "note": "Chance = Intelligence/2 × value, up to 2 per second",
-"on": "hit"
+"on": "hit",
+"per": "attr:int"
 },
 "ChaosBoltsMutator.zombieIncreasedArea": {
 "confidence": "D",
@@ -4319,7 +4324,7 @@
 },
 "CharacterMutator.increasedDamageFromOnePercentLeech": {
 "confidence": "D?",
-"factor": 100,
+"factor": 10,
 "kind": "stat",
 "mod": "increased",
 "note": "Per every 1% leech",
@@ -12323,9 +12328,12 @@
 "ability": "Warlock 01 Chaos Bolts",
 "chance": "v",
 "confidence": "D?",
+"factor": 0.01,
 "kind": "trigger",
-"note": "Chance multiplied by max mana; spends 2 mana",
-"on": "hit"
+"note": "Chance multiplied by max mana; spends 2 mana; one bolt per trigger",
+"on": "hit",
+"per": "max_mana",
+"single_projectile": true
 },
 "FlayMutator.chanceToMarrowShardsOnDirectCrit": {
 "ability": "MarrowShards",
@@ -12510,18 +12518,11 @@
 "FlayMutator.moreDamageToTriggeredSkillsPer100MaxMana": {
 "confidence": "D?",
 "factor": 0.01,
-"input": {
-"default": false,
-"key": "triggered",
-"label": "Skill activated by trigger"
-},
 "kind": "stat",
 "mod": "more",
 "per": "max_mana",
-"stat": "Damage",
-"when": [
-"input:triggered"
-]
+"scope": "triggered",
+"stat": "Damage"
 },
 "FlayMutator.moreHitDamageToChilled": {
 "confidence": "D",

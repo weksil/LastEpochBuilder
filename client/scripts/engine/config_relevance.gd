@@ -189,6 +189,8 @@ static func _scan_mods(out: Dictionary, mods: Array[StatMod], fallback: String) 
 					_add_ailment(out, mod.tags, reason)
 		if mod.property == haste_sp and mod.added > 0.0:
 			_add(out, "player_flags", "haste", reason)
+		if mod.tags & LE.TRANSFORM:
+			_add(out, "player_flags", "transformed", reason)
 		if mod.property == LE.EFFECT_OF_AILMENT_ON_YOU:
 			for key: String in BuildMods.PLAYER_AILMENTS:
 				if int(BuildMods.PLAYER_AILMENTS[key]) == mod.special:
@@ -197,6 +199,8 @@ static func _scan_mods(out: Dictionary, mods: Array[StatMod], fallback: String) 
 
 ## Prefab chances of the skill and ailment conversions of its tree.
 static func _scan_skill_ailments(out: Dictionary, ability: Dictionary, result: Dictionary, name: String) -> void:
+	if int(ability.get("isTransform", 0)) == 1:
+		_add(out, "player_flags", "transformed", name)
 	for entry: Dictionary in ability.get("ailmentsOnHit", []):
 		for a: Dictionary in entry.get("ailments", []):
 			if float(a.get("chance", 0.0)) > 0.0:

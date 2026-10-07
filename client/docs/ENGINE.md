@@ -237,7 +237,9 @@ AbilityProperty. The value `pp` is the roll of the carrier mod: SP 98 with `tags
   Apathy; Exulis "per 10 Rampancy"): the attribute value while it is converted (§5.3), otherwise 0.
 - Conditions (`when`, `at_least`, `below`): enemy ailments and flags, enemy type, player flags, two weapons / a two-handed melee
   weapon (by the bases in the slots), item slot. An unmet condition → the note "counted when: …".
-- Order in `global_store`: sets → `apply_global("pre")` (sources that do not read the store) → attributes → the player's Haste/Frenzy
+- Order in `global_store`: sets → `apply_global("pre")` (sources that do not read the store) → the "transformed" copies
+  (player flag `transformed`: every mod with the Transform tag is added once more without that tag, research/06a §6.2;
+  the Conditions checkbox is shown when a bar skill has `isTransform` or a mod carries the tag) → attributes → the player's Haste/Frenzy
   (`ailments.json` buffs × (1 + increased SP 120)) → `apply_global("post")` → `add_notes`.
 - `apply_skill` in `skill_store`: AbilityProperty only for the skill with `abilityIDEnum.value = abilityIndex`, models with
   `skill_any` — for skills with one of the tags; `kind: mana_added` → `mana_added` and `mana_sources`.
@@ -440,8 +442,16 @@ One schema for the special effects of uniques (§5.4.3), the skill tree mutator 
 - `param`: `{param, mod: added|increased|more|set}` — a skill parameter for the "Skill parameters" section
   (`projectiles, chains, pierce, area, duration, radius, count, hits, …`; `hits` — hits on the target per use,
   multiplies the DPS of all the skill's components).
-- `trigger`: `{ability (name in abilities.json), on: use|hit|crit|kill|second|end|block|hit_taken, chance, count, icd}` —
-  a new damage component (§9.3); `chance`/`count` — a number or `"v"` (the effect value).
+- `trigger`: `{ability (name in abilities.json), on: use|hit|crit|kill|second|end|block|hit_taken|evade|movement|minion_use|totem_summon, chance, count, icd}` —
+  a new damage component (§9.3); `chance`/`count` — a number or `"v"` (the effect value). With `per` the chance is the model value
+  (`v × source × factor`: Chaos Rip 1% per 1 max mana, Chaos Bolts → Harvest 1% per Dexterity); `single_projectile` — one
+  projectile per triggered use (Chaos Rip: one bolt). Events other than use/cast/end/hit/crit/second come from the input `events_<on>` (0 by default).
+  An item trigger on use / cast / end does not fire from a triggered use (`use:triggered`).
+- Scope `triggered`: the mod goes to `triggered_mods`, given to the skills this skill's tree triggers, not to the skill itself
+  (Flay's Deadly Plot: more damage per 100 max mana for the triggered Chaos Bolts and Marrow Shards).
+- `base_cooldown`: the effect gives the skill a cooldown of its own (Executioner's Tithe: Great Harvest, 5 s, `use:direct`).
+- `v_caps_source`: the effect value caps the `per` source instead of multiplying it: `min(source, v) × factor`
+  (Chronostasis: up to v ward consumed per attack, +1 melee damage per 10).
 - `component`: `{ability, count}` — the node enables a sub-skill that triggers on every use.
 - `minion_stat`: like `stat`, but for the minions of this skill.
 - `stat_list`: for `add_stat` into a special list — the stat is taken from the effect itself, the model sets `scope`/`when`/`per`.
@@ -470,7 +480,9 @@ that cancels another one), `note`, `on_curse_hit` (an ailment chance only when a
 `collect(build, slot, ab, s) -> Array[Dictionary]`: `{name, kind: primary|sub|trigger|minion|curse_hit|dot, ab, base (damage record),
 per_use (times per use), rate (events/s, if not from uses), chance, icd, mods: Array[StatMod]}`.
 - `primary`: `ab.primaryDamage`; if empty — sub-skills with the reason `prefab:CreateAbilityObjectOnDeath|OnStart|
-  CastAfterDuration` (linked via `parents`), otherwise the damage from `abilities_code_damage.json`.
+  CastAfterDuration` (linked via `parents`), otherwise the damage from `abilities_code_damage.json`. Not per use, so skipped:
+  `CastAfterDuration.alternateAbility` (the combo's other strike, Flay 2 Damage instead of Flay 1 Damage) and a sub-skill
+  linked through another record cast by `ChanceToCastOnKill` (Flay Blood Explosion through its on-kill delayer).
 - `sub`: the prefab's sub-skills (the same reasons) for skills with their own damage; `component` models of nodes. The same sub-skill from
   several sources (prefab + node) is one component with the sum of `per_use`, not a duplicate: for Transplant the prefab gives one
   detonation (DetonateBody), the node "Reign of Blood" (`TransplantMutator.explodesAtEnd`) another one on arrival (in the game
@@ -491,6 +503,11 @@ per_use (times per use), rate (events/s, if not from uses), chance, icd, mods: A
   code component with `isHit` false, `duration` and `maxInstances = 1` (Spirit Plague, Abyssal Echoes `abyssal_decay_dot`);
   stacking DoTs (`maxInstances` ≠ 1: Aura of Decay, Anomaly `time_rot`) are still counted as `sub` per use.
 - `trigger`: `trigger` models (nodes, uniques, passives): frequency = event frequency × chance, no more often than 1/icd.
+- `skill`: a trigger of a skill that is on the bar (specialized): computed through that slot as a triggered use
+  (`SkillCalc._triggered_skill`: `skill_store(…, "triggered")` + the parent's `triggered_mods`, uses/s = the trigger rate, its own
+  triggers — a chain, at most `TRIGGER_DEPTH` = 3 levels, a slot already on the chain is not counted again). Only its hits count:
+  curse damage, a maintained DoT and minions of the triggered skill stay in its own slot. Flay → Chaos Bolts → Harvest / Rip Blood.
+  The ailments of a triggered use are part of its DPS but do not feed the automatic enemy ailments (EnemyAilments) yet.
 - `curse_hit` (Bone Curse): a code component with `moreDamageWhenHitByCreator` (the curse hits the target on every hit on it;
   applying it deals no damage itself, reapplying only refreshes the single curse, uptime 100%). The damage of a single
   hit is calculated by the regular pipeline (ADE, crit, the skill's increased/more; it is a hit, so armor and the target's

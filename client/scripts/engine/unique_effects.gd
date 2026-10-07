@@ -145,6 +145,9 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			continue
 		if routed and kind == "trigger" and CHARACTER_EVENTS.has(str(model.get("on", ""))) 				and int(result["ctx"].get("slot", -1)) != first_skill_slot(build):
 			continue
+		# a use triggered by another skill is not a direct use: item triggers on use / cast do not fire from it
+		if routed and kind == "trigger" and str(result["ctx"].get("use", "")) == "triggered" and ["use", "cast", "end"].has(str(model.get("on", "use"))):
+			continue
 		if routed:
 			var ctx: Dictionary = result["ctx"]
 			var prev_slot: Variant = ctx.get("item_slot", "")

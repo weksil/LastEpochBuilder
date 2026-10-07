@@ -11,6 +11,7 @@ const EVENT_NAMES: Dictionary = {
 	"use": "use", "cast": "use", "end": "end", "hit": "hit", "crit": "crit", "second": "second",
 	"kill": "kill", "hit_taken": "hit taken", "block": "block", "dodge": "dodge", "potion": "potion",
 	"minion_hit": "minion hit", "minion_death": "minion death", "stun": "stun", "death": "death",
+	"evade": "Evade use", "movement": "movement skill use", "minion_use": "minion ability use", "totem_summon": "totem summon",
 }
 
 
@@ -26,6 +27,13 @@ const PROJECTILE_MODE_NAMES: Dictionary = {"one": "One projectile", "average": "
 ## details = false: a lean result for callers that read numbers only or build the breakdowns on demand — every row
 ## breakdown of the sections is "" and the row has `lazy` = true, the result has `lean` = true, and the texts are not
 ## built at all (LE.details); numbers, row texts and notes are the same as with details.
+## Slots computed as a use triggered by another skill: slot -> {uses, mods, text} (_triggered_skill sets it while it runs).
+static var _forced: Dictionary = {}
+## Slots on the current chain of triggered computations (no cycles, at most TRIGGER_DEPTH levels).
+static var _trigger_stack: Array[int] = []
+const TRIGGER_DEPTH: int = 3
+
+
 static func compute(build: Node, slot: int, details: bool = true) -> Dictionary:
 	if ConfigRelevance._recording:
 		return _compute_with(build, slot, details)
@@ -87,7 +95,14 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	result["title"] = str(ab.get("abilityName", ab.get("name", "")))
 
 	var g: Dictionary = BuildMods.global_store(build)
-	var s: Dictionary = BuildMods.skill_store(build, slot, g["store"])
+	var forced: Dictionary = _forced.get(slot, {})
+	# a use triggered by another skill: «use:triggered» models, plus the mods the triggering tree gives its triggered skills
+	var s: Dictionary = BuildMods.skill_store(build, slot, g["store"], "triggered" if not forced.is_empty() else "")
+	if not forced.is_empty() and not (forced["mods"] as Array).is_empty():
+		var with_parent := StatStore.new()
+		with_parent.parent = s["store"]
+		with_parent.add_all(forced["mods"])
+		s["store"] = with_parent
 	var store: StatStore = s["store"]
 	var notes: Array[String] = []
 	for n: String in g["notes"] + s["notes"]:
@@ -101,6 +116,15 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	var hits: float = float(build.skills[slot].get("hits", 1.0))
 	# projectiles of one use that hit the target multiply the hits per use of every component (docs/ENGINE.md §9.9)
 	var proj: Dictionary = projectile_hits(build, slot, ab, s)
+	if not forced.is_empty():
+		# one triggered use is one cast at the trigger rate; a trigger marked single_projectile fires one projectile
+		# (Flay's Chaos Rip: each trigger is one bolt, research: forum «each Flay-triggered Chaos Bolt is a single bolt»)
+		uses = float(forced["uses"])
+		speed["uses"] = uses
+		speed["rows"][0] = {"label": LE.t("Uses per second"), "text": LE.fmt_num(uses), "breakdown": str(forced["text"])}
+		if bool(forced.get("single_projectile", false)):
+			proj = {}
+			hits = 1.0
 	var target_hits: float = hits * float(proj.get("factor", 1.0))
 	var inputs: Array[Dictionary] = []
 	var s_comp: Dictionary = s.duplicate()
@@ -155,6 +179,24 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	var idx: int = 0
 	while idx < components.size():
 		var comp: Dictionary = components[idx]
+		# a triggered use adds its hits only: curse damage, a maintained DoT and minions are the skill's own steady effects,
+		# counted in its own slot
+		if not forced.is_empty() and ["curse_hit", "dot", "minion"].has(str(comp["kind"])):
+			idx += 1
+			if idx == own_count:
+				components.append_array(EnemyAilments.threshold_components(build, store, comp_results, notes))
+			continue
+		if comp["kind"] == "skill":
+			var tr: Dictionary = _triggered_skill(build, comp, s)
+			sections.append(tr["section"])
+			comp_results.append(tr["result"])
+			for n: String in tr["notes"]:
+				if not notes.has(n):
+					notes.append(n)
+			idx += 1
+			if idx == own_count:
+				components.append_array(EnemyAilments.threshold_components(build, store, comp_results, notes))
+			continue
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
 		var comp_store: StatStore = _component_store(store, s, comp)
 		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, comp.get("conversions", s["conversions"]), notes, comp["base"])
@@ -285,6 +327,44 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	result["ailments_applied"] = applied
 	result["resources"] = s.get("resources", [])
 	return result
+
+
+## A specialized skill triggered by this one (component kind "skill"): computed through its own slot as a triggered use at the
+## trigger rate (its tree, «use:triggered» models, the triggering tree's «triggered» mods, its own triggers — a chain), one
+## projectile per use. Returns {section, result (as comp_results), notes}.
+static func _triggered_skill(build: Node, comp: Dictionary, parent_s: Dictionary) -> Dictionary:
+	var t: int = int(comp["slot"])
+	var name: String = str(comp["name"])
+	var rate: float = float(comp["rate"])
+	var notes: Array[String] = []
+	if _trigger_stack.has(t) or _trigger_stack.size() >= TRIGGER_DEPTH or _forced.has(t):
+		notes.append(LE.t("Trigger \"%s\": the chain returns to a skill already counted or is deeper than %d — not counted.") % [name, TRIGGER_DEPTH])
+		return {"section": {"title": LE.t("Triggered skill: %s") % name, "rows": []}, "notes": notes,
+			"result": {"name": name, "hit_enemy": 0.0, "ail": {"enemy_dps": 0.0, "sections": [], "applied": []}, "events": rate}}
+	_trigger_stack.append(t)
+	_forced[t] = {"uses": rate, "mods": parent_s.get("triggered_mods", []), "single_projectile": bool(comp.get("single_projectile", false)),
+		"text": LE.t("Triggered: %s") % str(comp.get("note", ""))}
+	var r: Dictionary = _compute(build, t)
+	_forced.erase(t)
+	_trigger_stack.pop_back()
+	var total: float = 0.0
+	var lines: PackedStringArray = []
+	for sec: Dictionary in r.get("sections", []):
+		if str(sec["title"]) == LE.t("Against enemy"):
+			for row: Dictionary in sec["rows"]:
+				if row.has("value"):
+					total = float(row["value"])
+					lines.append(str(row.get("breakdown", "")))
+	var rows: Array = [
+		{"label": LE.t("Triggered uses per second"), "text": LE.fmt_num(rate), "breakdown": str(comp.get("note", ""))},
+		{"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total), "breakdown": LE.t("Computed through bar slot %d as a triggered use (its skill tree and triggers, the triggering tree's mods for triggered skills; curse damage, a maintained DoT and minions stay in its own slot):
+%s") % [t + 1, "
+".join(lines)]},
+	]
+	for n: Variant in r.get("notes", []):
+		notes.append("%s: %s" % [name, str(n)])
+	return {"section": {"title": LE.t("Triggered skill: %s") % name, "rows": rows}, "notes": notes,
+		"result": {"name": name, "hit_enemy": total, "ail": {"enemy_dps": 0.0, "sections": [], "applied": r.get("ailments_applied", [])}, "events": rate}}
 
 
 ## Projectiles of a projectile skill (ability_projectiles.json plus the tree params "projectiles", "projectile_limit",
@@ -496,13 +576,17 @@ static func _zone_results(build: Node, ab: Dictionary, s: Dictionary, components
 static func _component_store(store: StatStore, s: Dictionary, comp: Dictionary) -> StatStore:
 	if comp.get("store") is StatStore:
 		return comp["store"]
-	var by_name: Variant = s.get("component_mods", {})
-	if not by_name is Dictionary or (by_name as Dictionary).is_empty():
-		return store
 	var extra: Array[StatMod] = []
+	# a skill triggered by this skill's tree gets the tree's «triggered» mods (Deadly Plot)
+	if comp["kind"] == "trigger":
+		for mod: StatMod in s.get("triggered_mods", []):
+			extra.append(mod)
+	var by_name: Variant = s.get("component_mods", {})
+	if not by_name is Dictionary:
+		by_name = {}
 	var comp_ab: Dictionary = comp["ab"]
 	for key: String in [str(comp_ab.get("name", "")), str(comp_ab.get("abilityName", "")), str(comp["name"])]:
-		if key != "" and by_name.has(key):
+		if key != "" and (by_name as Dictionary).has(key):
 			for mod: Variant in by_name[key]:
 				if mod is StatMod and not extra.has(mod):
 					extra.append(mod)

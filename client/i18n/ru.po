@@ -5433,6 +5433,12 @@ msgstr "Frenzy при ударе, с"
 msgid "Frenzy on me"
 msgstr "Frenzy на мне"
 
+msgid "Transformed"
+msgstr "В трансформации"
+
+msgid "%s (transformed)"
+msgstr "%s (в трансформации)"
+
 msgid "Frenzy while backward jump available"
 msgstr "Неистовство, пока доступен прыжок назад"
 
@@ -15145,3 +15151,30 @@ msgstr ", не чаще %s/с из-за перезарядки или заряд
 
 msgid "×%s minions, %s uses/s each (priority %d, %s of the time%s)"
 msgstr "×%s миньонов, %s применений/с каждый (приоритет %d, %s времени%s)"
+
+msgid "Triggered skill: %s"
+msgstr "Навык от триггера: %s"
+
+msgid "Triggered uses per second"
+msgstr "Применений от триггера в секунду"
+
+msgid "Triggered: %s"
+msgstr "От триггера: %s"
+
+msgid "Trigger \"%s\": the chain returns to a skill already counted or is deeper than %d — not counted."
+msgstr "Триггер «%s»: цепочка возвращается к уже посчитанному навыку или глубже %d — не учтён."
+
+msgid "Computed through bar slot %d as a triggered use (its skill tree and triggers, the triggering tree's mods for triggered skills; curse damage, a maintained DoT and minions stay in its own slot):\n%s"
+msgstr "Посчитано через слот %d панели как применение от триггера (его дерево и триггеры, моды вызывающего дерева для вызванных навыков; урон проклятия, поддерживаемый DoT и миньоны остаются в его собственном слоте):\n%s"
+
+msgid "Evade use"
+msgstr "применение Evade"
+
+msgid "movement skill use"
+msgstr "применение навыка перемещения"
+
+msgid "minion ability use"
+msgstr "применение навыка миньоном"
+
+msgid "totem summon"
+msgstr "призыв тотема"

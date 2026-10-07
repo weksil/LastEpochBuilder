@@ -45,6 +45,7 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	_add_blessings(build, store, notes)
 	_add_set_bonuses(build, store, notes)
 	UniqueEffects.apply_global(build, store, notes, "pre")
+	_add_transformed(build, store)
 	var attributes: Dictionary = _add_attributes(build, store, notes)
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
@@ -52,6 +53,22 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	# attributes given by the models above (the game re-applies the per-point stats on every change of the value)
 	_add_attributes(build, store, notes, attributes)
 	return {"store": store, "notes": notes, "attributes": attributes}
+
+
+## While the character is transformed (Conditions flag "transformed"), every stat with the Transform tag is also added
+## without that tag, so "while transformed" mods reach every skill and the character
+## (CharacterStats.updateTransformAndChannelledStats, research/06a §6.2).
+static func _add_transformed(build: Node, store: StatStore) -> void:
+	if not bool(build.player_state.get("transformed", false)):
+		return
+	var copies: Array[StatMod] = []
+	for mod: StatMod in store.all_mods():
+		if mod.tags & LE.TRANSFORM:
+			var copy: StatMod = mod.scaled(1.0)
+			copy.tags = mod.tags & ~LE.TRANSFORM
+			copy.source = LE.t("%s (transformed)") % mod.source
+			copies.append(copy)
+	store.add_all(copies)
 
 
 const BUFF_SOURCE_PREFIX: String = "Skill \"%s\" (buff): "
@@ -169,6 +186,8 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 		"mana_sources": [] as Array[String], "conversions": [],
 		# §9: field models of the skill tree
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
+		# mods for the skills this skill's tree triggers (scope "triggered": Flay's Deadly Plot), not for the skill itself
+		"triggered_mods": [] as Array[StatMod],
 		# minion mods of one minion type only (scope "minion:<actor name>": Summon Skeleton's warrior / archer / rogue lists)
 		"minion_actor_mods": {},
 		# flags: shown texts; flag_keys: the untranslated model texts, for code that checks a mechanic
@@ -833,7 +852,8 @@ static func _apply_field_models(target: String, v: float, source: String, title:
 ## Identity of a model for the «same effect written into several mutators» check: everything that changes what the model
 ## does (not its scope, note or confidence).
 const SIGNATURE_KEYS: Array[String] = ["stat", "mod", "tags", "param", "resource", "ability", "when", "text", "label", "count", "chance",
-	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "inverse", "at_least", "below"]
+	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "inverse", "at_least", "below",
+	"base_cooldown", "single_projectile", "v_caps_source"]
 
 
 static func _model_signature(m: Dictionary) -> String:
@@ -869,6 +889,8 @@ static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void
 		result["minion_actor_mods"][actor].append(mod)
 	elif scope == "global":
 		result["global_mods"].append(mod)
+	elif scope == "triggered":
+		result["triggered_mods"].append(mod)
 	else:
 		result["store"].add(mod)
 
@@ -891,6 +913,10 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		result["notes"].append(LE.t("Node \"%s\" — counted when: %s") % [title, reason])
 		return
 	var x: float = float(EffectModels.value(model, v, ctx)["x"])
+	# an effect that gives the skill a cooldown of its own (Executioner's Tithe: Great Harvest, 5 s): the longest one wins
+	if model.has("base_cooldown"):
+		var cd_base: Dictionary = result["cooldown_base"]
+		cd_base["baseCooldownLength"] = maxf(float(cd_base.get("baseCooldownLength", 0.0)), float(model["base_cooldown"]))
 	match str(model.get("kind", "stat")):
 		"stat":
 			var mod: StatMod = EffectModels.make_mod(model, v, ctx, source)
@@ -936,8 +962,10 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 			if str(model.get("kind", "")) == "resource" and result.has("resources"):
 				result["resources"].append({"model": model, "v": v, "x": x, "source": source})
 		"trigger":
+			# a chance that grows with a stat (Chaos Rip: per 1 max mana) is the model value with its «per» source
+			var chance: float = x if model.has("per") else _num(model.get("chance", 1.0), v)
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
-				"chance": _num(model.get("chance", 1.0), v), "count": _num(model.get("count", 1.0), v),
+				"chance": chance, "count": _num(model.get("count", 1.0), v), "single_projectile": bool(model.get("single_projectile", false)),
 				"icd": float(model.get("icd", 0.0)), "node": title})
 		"component":
 			result["components"].append({"ability": str(model["ability"]), "count": _num(model.get("count", 1.0), v), "node": title})

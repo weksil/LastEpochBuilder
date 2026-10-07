@@ -28,7 +28,7 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		result.append(_component(str(ab.get("abilityName", ab_name)), "primary", ab, primary, 1.0, 0.0, ""))
 
 	for sub: Dictionary in GameData.sub_abilities(ab_name):
-		if not _is_spawned(str(sub.get("spawn_reason", ""))):
+		if not _is_spawned(str(sub.get("spawn_reason", ""))) or _not_per_use(sub, ab_name):
 			continue
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
@@ -51,6 +51,17 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 	for trig: Variant in s.get("triggers", []):
 		if not trig is Dictionary:
 			continue
+		# a triggered skill that is specialized on the bar is computed through its own slot (tree, triggers, ailments)
+		var t_slot: int = bar_slot_of(build, slot, str(trig.get("ability", "")))
+		if t_slot >= 0:
+			if float(trig.get("rate", 0.0)) > 0.0:
+				var t_ab: Dictionary = GameData.get_ability(str(build.skills[t_slot]["ability"]))
+				var t_comp: Dictionary = _component(str(trig.get("label", GameData.display_name(t_ab))), "skill", t_ab, {}, 1.0,
+					float(trig["rate"]), str(trig.get("note", "")))
+				t_comp["slot"] = t_slot
+				t_comp["single_projectile"] = bool(trig.get("single_projectile", false))
+				result.append(t_comp)
+			continue
 		var sub: Dictionary = GameData.ability_by_name(str(trig.get("ability", "")))
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
@@ -67,6 +78,16 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		# the number of each minion is set on the Conditions tab (MinionCount), the summon limit by default
 		result.append_array(MinionCalc.components(s["store"], ab, s.get("minion_mods", []), build, s.get("minion_actor_mods", {})))
 	return result
+
+
+## Bar slot (other than `slot`) whose skill is the ability named `ability_name` (record `name`), -1 if none.
+static func bar_slot_of(build: Node, slot: int, ability_name: String) -> int:
+	if ability_name == "":
+		return -1
+	for i in range(build.skills.size()):
+		if i != slot and str(GameData.get_ability(str(build.skills[i].get("ability", ""))).get("name", "")) == ability_name:
+			return i
+	return -1
 
 
 static func _component(comp_name: String, kind: String, ab: Dictionary, base: Dictionary, per_use: float, rate: float, note: String) -> Dictionary:
@@ -90,6 +111,21 @@ static func _is_spawned(reason: String) -> bool:
 	for r: String in SUB_REASONS:
 		if reason.begins_with(r):
 			return true
+	return false
+
+
+## A linked sub-ability that is not dealt on every use: the alternate ability of CastAfterDuration (Flay 2 Damage replaces
+## Flay 1 Damage on the combo's second use, one of them per use), or one spawned through another linked record that the
+## prefab casts only on kill (Flay Blood Explosion via the ChanceToCastOnKill delayer).
+static func _not_per_use(sub: Dictionary, ab_name: String) -> bool:
+	if str(sub.get("spawn_reason", "")) == "prefab:CastAfterDuration.alternateAbility":
+		return true
+	for parent: Variant in sub.get("parents", []):
+		if str(parent) == ab_name:
+			continue
+		for reason: Variant in GameData.ability_by_name(str(parent)).get("reasons", []):
+			if str(reason).begins_with("prefab:ChanceToCastOnKill"):
+				return true
 	return false
 
 

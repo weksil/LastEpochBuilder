@@ -12,6 +12,7 @@ const PLAYER_FLAG_NAMES: Dictionary = {
 	"hit_recently": "Hit recently", "crit_recently": "Crit recently", "moving": "Moving",
 	"leeching": "Leech active", "low_mana": "Mana below 50%", "haste": "Haste on me", "frenzy": "Frenzy on me",
 	"low_life": "Low health",
+	"transformed": "Transformed",
 }
 const PLAYER_VALUE_NAMES: Dictionary = {
 	"ward": "Current ward", "curses": "Curses on me", "ignite_stacks": "Ignite stacks on me", "damned_stacks": "Damned stacks on me",
@@ -58,6 +59,10 @@ static func value(model: Dictionary, v: float, ctx: Dictionary) -> Dictionary:
 			src = minf(src, float(model["src_max"]))
 		x = v * (src - float(model.get("offset", 0.0))) * float(model.get("factor", 1.0))
 		text = "(%s × %s = %s)" % [LE.fmt_num(v), source_name(str(model["per"]), ctx, model), LE.fmt_num(src)]
+		if bool(model.get("v_caps_source", false)):
+			# the effect value is the cap of the source, not a multiplier (Chronostasis: up to v ward consumed per attack)
+			x = minf(src, v) * float(model.get("factor", 1.0))
+			text = "(min(%s %s, %s) × %s)" % [source_name(str(model["per"]), ctx, model), LE.fmt_num(src), LE.fmt_num(v), LE.fmt_num(float(model.get("factor", 1.0)))]
 	if bool(model.get("inverse", false)):
 		# a «more» that cancels another one: 1 / (1 + x) − 1
 		x = 1.0 / (1.0 + x) - 1.0
@@ -113,6 +118,18 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 			return float(total)
 		"added":
 			return store.query_untagged(GameData.sp_id(arg)).added
+		"weapon_added":
+			# added damage of one tag (melee …) on the equipped weapons: implicits and affixes of the weapon and off-hand items
+			var tag: int = LE.tag_mask(arg.capitalize())
+			var sum: float = 0.0
+			for slot: String in ["weapon", "offhand"]:
+				var item: Dictionary = build.items.get(slot, {})
+				if item.is_empty() or not bool(GameData.item_base(int(item.get("base", -1))).get("isWeapon", false)):
+					continue
+				for mod: StatMod in ItemMods.item_mods(slot, item):
+					if mod.property == LE.DAMAGE and mod.added > 0.0 and (mod.tags & tag) != 0:
+						sum += mod.added
+			return sum
 		"value":
 			return store.query_untagged(GameData.sp_id(arg)).value()
 		"increased":
@@ -177,6 +194,8 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 			return LE.t("sum of attributes")
 		"added", "increased":
 			return "%s %s" % [kind, arg]
+		"weapon_added":
+			return LE.t("added %s damage on equipped weapons") % arg
 		"value":
 			return arg
 		"added_exact":

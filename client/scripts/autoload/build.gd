@@ -107,6 +107,8 @@ static func default_player_state() -> Dictionary:
 		"low_mana": false,
 		"haste": false,
 		"frenzy": false,
+		# transformed (Reaper Form, Werebear …): stats with the Transform tag also apply without it (BuildMods)
+		"transformed": false,
 		"ward": 0,
 		"curses": 0,
 		"ignite_stacks": 0,
