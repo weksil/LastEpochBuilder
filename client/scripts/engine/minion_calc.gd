@@ -96,17 +96,6 @@ static func minion_store(player_store: StatStore, summon_ab: Dictionary, minion:
 	return store
 
 
-static func _minion_count(minion: Dictionary, count_input: float) -> float:
-	if count_input > 0.0:
-		return count_input
-	var settings: Array = minion.get("summonSettings", [])
-	if not settings.is_empty() and settings[0] is Dictionary:
-		var first: Dictionary = settings[0]
-		var limit: float = float(first.get("limit", 0.0))
-		return limit if limit > 0.0 else maxf(float(first.get("numberToSummon", 1.0)), 1.0)
-	return 1.0
-
-
 static func _use_duration(minion: Dictionary, ability: Dictionary) -> float:
 	var first: float = 0.0
 	for entry: Variant in minion.get("castSpeedOverrides", []):
@@ -129,8 +118,9 @@ static func _first_damage(rec: Dictionary) -> Dictionary:
 	return {}
 
 
-## Damage components (SkillComponents format, kind "minion") of every minion summoned by the ability.
-static func components(player_store: StatStore, summon_ab: Dictionary, minion_mods: Array, count_input: float) -> Array[Dictionary]:
+## Damage components (SkillComponents format, kind "minion") of every minion summoned by the ability; the number of each
+## minion is MinionCount (the Conditions tab, else the summon limit).
+static func components(player_store: StatStore, summon_ab: Dictionary, minion_mods: Array, build: Node) -> Array[Dictionary]:
 	_load()
 	var result: Array[Dictionary] = []
 	for minion: Dictionary in minions_for(str(summon_ab.get("name", ""))):
@@ -140,7 +130,7 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 			for inline: Variant in minion.get("abilities", []):
 				if inline is Dictionary:
 					names.append(inline.get("ability", ""))
-		var count: float = _minion_count(minion, count_input)
+		var count: float = MinionCount.of_minion(build, minion, str(summon_ab.get("name", "")))
 		for ab_name: Variant in names:
 			var ability: Dictionary = _abilities.get(str(ab_name), {})
 			var entry: Dictionary = _first_damage(ability)

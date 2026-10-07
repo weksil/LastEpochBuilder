@@ -43,7 +43,7 @@ func _wolf() -> void:
 		print("  %s: %s" % [row["label"], row["text"]])
 	_check("wolf health", float(rows[0]["text"]), 240)
 
-	var comps: Array[Dictionary] = MinionCalcScript.components(player, summon, [], 0.0)
+	var comps: Array[Dictionary] = MinionCalcScript.components(player, summon, [], Build)
 	_check("components non-empty", 1.0 if not comps.is_empty() else 0.0, 1.0)
 	for comp: Dictionary in comps:
 		print("  %s rate=%s note=%s" % [comp["name"], comp["rate"], comp["note"]])

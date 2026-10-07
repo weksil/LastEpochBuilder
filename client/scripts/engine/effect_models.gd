@@ -147,6 +147,9 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 		"complete_sets":
 			return float(BuildMods.complete_sets(build))
 		"input":
+			# minion counts are global (the Minions card of the Conditions tab), not fields of one skill
+			if MinionCount.is_count_key(arg):
+				return float(MinionCount.count(build, arg)["value"])
 			var default: float = 0.0
 			if model.has("input"):
 				var inp: Dictionary = model["input"]
@@ -198,6 +201,8 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 		"complete_sets":
 			return LE.t("complete sets")
 		"input":
+			if MinionCount.is_count_key(arg):
+				return LE.t(str(MinionCount.COUNT_KEYS[MinionCount.canonical(arg)]["label"]))
 			if model.has("input") and model["input"].get("key") == arg:
 				return LE.t(str(model["input"].get("label", arg)))
 			return arg
@@ -306,7 +311,7 @@ static func phase(model: Dictionary) -> String:
 
 ## Declared input parameters of the model.
 static func inputs(model: Dictionary) -> Array[Dictionary]:
-	if model.has("input"):
+	if model.has("input") and not MinionCount.is_count_key(str(model["input"].get("key", ""))):
 		return [model["input"]]
 	return []
 

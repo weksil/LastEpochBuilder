@@ -64,12 +64,8 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 
 	# minions summoned by the skill (§9.4): own stores built from the player's snapshot
 	if not MinionCalc.minions_for(ab_name).is_empty() and s.get("store") is StatStore:
-		var count: float = 0.0
-		if slot >= 0 and slot < build.skills.size():
-			count = float(build.skills[slot].get("inputs", {}).get("minions", 0.0))
-		if s.get("inputs") is Array:
-			s["inputs"].append({"key": "minions", "label": LE.t("Active minions (0 = by summon limit)"), "default": 0.0})
-		result.append_array(MinionCalc.components(s["store"], ab, s.get("minion_mods", []), count))
+		# the number of each minion is set on the Conditions tab (MinionCount), the summon limit by default
+		result.append_array(MinionCalc.components(s["store"], ab, s.get("minion_mods", []), build))
 	return result
 
 

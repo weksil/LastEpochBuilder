@@ -497,8 +497,15 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
 - Damage: every ability from `abilityList` with damage is a `kind: minion` component (§9.3), the pipeline of §8.2–8.6 on the minion's stats
   (the minion's level does not scale damage; the `levelScaling` of minion abilities is not applied). Attack frequency: the minion's attack/cast
   speed (SP 2/3, base 1) × 1.1 / `useDuration` from `castSpeedOverrides` (or the ability).
-- Number of minions: the skill input `minions` (by default `limit` from `summonSettings`, with the tree parameters `count`);
-  DPS = DPS of one × the number. The rows "Minion health", "Armor" and the resistances are in the section "Minion: <name>".
+- Number of minions (`engine/minion_count.gd`, `class_name MinionCount`): one global count per minion type summoned by
+  the bar skills — the card «Active minions» of the Conditions tab (`Build.player_state.minions`, keyed by actor name), by
+  default the `limit` of the summoning skill's `summonSettings` entry (`numberToSummon` when unlimited; limit increases of
+  passives and nodes are not read, D?); DPS = DPS of one × the number. The models that scale with a minion count
+  (`per: input:<key>` of `MinionCount.COUNT_KEYS`: `minions` = all minions but totems, `totems`, `wolves`, `raptors`,
+  `crows` = `storm_crows`) read the same card: a number set by hand, else the sum of the summoned types it covers. These
+  keys are never per-skill fields (`EffectModels.inputs` drops them), so passives and uniques («per minion you control»,
+  «per active totem», Spriggan auras per wolf / raptor / crow) follow them too. The card lists the summoned types and only
+  the counts a model of the build reads (ConfigRelevance group `minions`; the global store is recorded as well). The rows "Minion health", "Armor" and the resistances are in the section "Minion: <name>".
 
 ### 9.5 Blessings — `BuildMods._add_blessings` (`blessings.json`, 07a §8.2)
 `Build.blessings: {timelineID: {id: blessingId, roll: 0..255}}`, one per timeline (normal or grand — from

@@ -231,6 +231,10 @@ static func _player(saved: Variant) -> Dictionary:
 		if str(key).is_valid_int():
 			buffs[int(key)] = maxf(float(player["buffs"][key]), 0.0)  # 0 = set by hand to none
 	player["buffs"] = buffs
+	var minions: Dictionary = {}
+	for key: Variant in player["minions"] if player["minions"] is Dictionary else {}:
+		minions[str(key)] = maxf(float(player["minions"][key]), 0.0)
+	player["minions"] = minions
 	for key: String in EnemyAilments.EVENT_INPUTS:
 		player[key] = maxf(float(player.get(key, 0.0)), 0.0)  # per second, fractional
 	return player

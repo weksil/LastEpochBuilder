@@ -159,7 +159,7 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   after picking a cell) offers only idol bases and unique idols (each with its size, e.g. "[1x3]"), with the same roll sliders, unsaved-changes stat diff, weaver /
   enchantment affixes and a corrupted affix row; the Items tab never offers idols.
 - **Calculations** — at the top is a totals strip: DPS vs enemy (with the target name), average hit, uses per second, crit chance; below are the calculation parameters
-  (hits on the target, stacks, number of minions, event frequency for triggers — change on the fly), the "Skill buffs on the character" panel
+  (hits on the target, stacks, event frequency for triggers — change on the fly), the "Skill buffs on the character" panel
   (each skill on the bar with its mods on the character and an enable checkbox; the buffs apply to all skills and stats: "on the character" tree effects,
   Holy Aura, Symbols of Hope, Enchant Weapon, Firebrand, Aura of Decay, Dark Quiver) and sections in a fixed order: damage components (main hit, sub-skills,
   triggers, minions), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
@@ -179,7 +179,9 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   (client/docs/ENGINE.md §10). A warning appears when the worst hit (crit, +20% variance) kills from full health.
 - **Conditions** — health and player state (hit recently / crit recently, movement, leech, mana below 50%, Haste, Frenzy,
   ward, curses and stacks on yourself, active shadows, kills / stuns / arrows picked up / drops below high health per second for
-  buffs gained on those events — shown only when the build has such a buff source), "Buffs on me" with stacks (Dusk / Crimson / Silver Shroud, Void
+  buffs gained on those events — shown only when the build has such a buff source), "Active minions" (each minion type
+  summoned by the bar skills, its summon limit by default, and the counts that "per minion / per totem / per wolf …" nodes,
+  passives and uniques scale with — the sum of the summoned minions by default, shown only when the build has such a source), "Buffs on me" with stacks (Dusk / Crimson / Silver Shroud, Void
   Essence, Divine Essence, Sharpshooter … — any positive ailment of `ailments.json`, its stats go to the character), enemy type/level/armor/resistances, flags (including "frozen") and stacks of ailments,
   shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for); an enemy ailment
   or a buff on you with "auto" on shows the average kept while the selected skill is used (gains per second × duration,

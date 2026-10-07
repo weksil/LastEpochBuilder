@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/minion_row.gd" id="1_script"]
+
+[node name="MinionRow" type="PanelContainer"]
+theme_type_variation = &"RowIdle"
+script = ExtResource("1_script")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Texts" type="VBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="NameLabel" type="Label" parent="HBox/Texts"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 1
+text = "Minion"
+
+[node name="ReasonLabel" type="Label" parent="HBox/Texts"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 1
+theme_type_variation = &"MutedLabel"
+text = ""
+autowrap_mode = 3
+
+[node name="AutoCheck" type="CheckBox" parent="HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+tooltip_text = "Automatic: the summon limit, or the sum of the summoned minions"
+text = "auto"
+
+[node name="CountSpin" type="SpinBox" parent="HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 100.0
+update_on_text_changed = true

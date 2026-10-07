@@ -2,7 +2,8 @@ class_name ConfigRelevance
 
 ## Which controls of the "Conditions" tab matter for the current build (Path of Building style): a control is shown only
 ## when something in the build reads it. compute(build) -> {
-##   "player_flags": {key: reason}, "player_values": {key: reason}, "ailments": {ailment_id: reason}, "enemy": {flag: reason}}
+##   "player_flags": {key: reason}, "player_values": {key: reason}, "ailments": {ailment_id: reason}, "enemy": {flag: reason},
+##   "minions": {actor name or MinionCount count key: reason}}
 ## A key present = relevant; reason = short translated text naming the source (shown as a tooltip).
 ## Sources:
 ## - conditions and "per" sources of effect models (uniques, passive and skill trees): EffectModels.blocked calls note_model
@@ -20,8 +21,9 @@ static var _rec: Dictionary = {}
 
 
 static func compute(build: Node) -> Dictionary:
-	_rec = {"player_flags": {}, "player_values": {}, "player_buffs": {}, "ailments": {}, "enemy": {}}
+	_rec = {"player_flags": {}, "player_values": {}, "player_buffs": {}, "ailments": {}, "enemy": {}, "minions": {}}
 	_recording = true
+	# the global store records too: passives and uniques that scale with a minion count («per minion», «per totem»)
 	var global: StatStore = BuildMods.global_store(build)["store"]
 	var stores: Array[Dictionary] = []
 	for slot: int in range(build.skills.size()):
@@ -41,6 +43,9 @@ static func compute(build: Node) -> Dictionary:
 	for s: Dictionary in stores:
 		for label: Variant in s["result"].get("params", {}):
 			params[str(s["result"]["params"][label].get("param", ""))] = LE.t("Skill \"%s\": %s") % [GameData.display_name(s["ability"]), str(label)]
+	# every minion type summoned by a bar skill can be counted by hand
+	for t: Dictionary in MinionCount.types(build):
+		_add(out, "minions", str(t["actor"]), LE.t("Skill \"%s\"") % str(t["skill"]))
 	var inputs: Dictionary = EnemyAilments.input_reasons(build, params)
 	for group: String in inputs:
 		for key: String in inputs[group]:
@@ -141,6 +146,9 @@ static func _note_source(per: String, reason: String) -> void:
 			_add(_rec, "player_values", arg, reason)
 		"buff":
 			_add(_rec, "player_buffs", GameData.enum_value("AilmentID", arg), reason)
+		"input":
+			if MinionCount.is_count_key(arg):
+				_add(_rec, "minions", MinionCount.canonical(arg), reason)
 
 
 static func _ctx_source(ctx: Dictionary) -> String:

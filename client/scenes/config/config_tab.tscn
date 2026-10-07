@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/config/config_tab.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/config/ailment_row.tscn" id="2_row"]
+[ext_resource type="PackedScene" path="res://scenes/config/minion_row.tscn" id="3_minion_row"]
 
 [node name="Conditions" type="ScrollContainer"]
 horizontal_scroll_mode = 0
 script = ExtResource("1_script")
 ailment_row_scene = ExtResource("2_row")
+minion_row_scene = ExtResource("3_minion_row")
 
 [node name="Root" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -634,6 +636,43 @@ metadata/flag = "frozen"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
+
+[node name="MinionCard" type="PanelContainer" parent="Root/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"SectionCard"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Columns/Right/MinionCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="HBoxContainer" parent="Root/Columns/Right/MinionCard/VBox"]
+layout_mode = 2
+
+[node name="MinionsTitle" type="Label" parent="Root/Columns/Right/MinionCard/VBox/Head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionTitle"
+text = "Active minions"
+autowrap_mode = 3
+
+[node name="ResetMinionsButton" type="Button" parent="Root/Columns/Right/MinionCard/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Reset"
+tooltip_text = "Return all minion counts to automatic (summon limits)"
+
+[node name="MinionSummary" type="Label" parent="Root/Columns/Right/MinionCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SummaryOff"
+text = ""
+autowrap_mode = 3
+
+[node name="MinionList" type="VBoxContainer" parent="Root/Columns/Right/MinionCard/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 3
 
 [node name="BuffCard" type="PanelContainer" parent="Root/Columns/Right"]
 layout_mode = 2

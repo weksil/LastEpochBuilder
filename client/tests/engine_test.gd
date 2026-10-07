@@ -284,7 +284,17 @@ func _minion_skill() -> void:
 				wolf_dps = float(str(row["text"]))
 	print("--- Summon Wolf: %s" % str(r["sections"].map(func(x: Dictionary) -> String: return x["title"])))
 	_check("Summon Wolf deals minion DPS", 1.0 if wolf_dps > 0.0 else 0.0, 1.0)
-	_check("Summon Wolf declares the minions input", 1.0 if str(r.get("inputs", [])).contains("minions") else 0.0, 1.0)
+	_flag("Summon Wolf: the wolf count is not a skill field (Conditions tab)", not str(r.get("inputs", [])).contains("\"minions\""))
+	_check("one wolf by its summon limit", float(MinionCount.count(Build, "wolves")["value"]), 1.0)
+	_check("all minions = the summoned wolf", float(MinionCount.count(Build, "minions")["value"]), 1.0)
+	Build.set_minion_count("Primal Wolf", 3.0)
+	var r3: Dictionary = SkillCalc.compute(Build, 3)
+	_check("3 wolves set by hand: wolves count", float(MinionCount.count(Build, "wolves")["value"]), 3.0)
+	_check("3 wolves set by hand: triple wolf DPS", _dps(r3), _dps(r) * 3.0, _dps(r) * 0.01)
+	Build.set_minion_count("minions", 7.0)
+	_check("all minions set by hand win over the sum", float(MinionCount.count(Build, "minions")["value"]), 7.0)
+	Build.clear_minion_counts()
+	_flag("relevance lists the summoned wolf", ConfigRelevance.compute(Build)["minions"].has("Primal Wolf"))
 	Build.set_skill(3, "")
 
 

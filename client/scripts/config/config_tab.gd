@@ -11,12 +11,15 @@ const MAX_LISTED: int = 8
 const ENEMY_FLAG_DEFAULTS: Dictionary = {"high_health": true, "full_health": true}
 
 @export var ailment_row_scene: PackedScene
+@export var minion_row_scene: PackedScene
 
 var _pending: bool = false
 var _relevance: Dictionary = {}
 var _relevance_known: bool = false
 var _ailment_rows: Dictionary = {}  # ailment id -> AilmentRow
 var _ailment_order: String = ""
+var _minion_rows: Dictionary = {}  # MinionCount key or actor name -> MinionRow
+var _minions_shown: int = 0
 var _buff_rows: Dictionary = {}  # ailment id -> AilmentRow of a buff on the player
 var _buffs_shown: int = 0
 var _player_flag_checks: Array[CheckBox] = []
@@ -38,6 +41,8 @@ var _ailments_shown: int = 0
 @onready var _ailment_summary: Label = %AilmentSummary
 @onready var _ailment_list: VBoxContainer = %AilmentList
 @onready var _buff_summary: Label = %BuffSummary
+@onready var _minion_summary: Label = %MinionSummary
+@onready var _minion_list: VBoxContainer = %MinionList
 @onready var _buff_list: VBoxContainer = %BuffList
 @onready var _filter: LineEdit = %Filter
 @onready var _health_select: OptionButton = %HealthSelect
@@ -60,6 +65,7 @@ func _ready() -> void:
 	%ResetAilmentsButton.pressed.connect(func() -> void: Build.clear_enemy_ailments())
 	%ResetPlayerButton.pressed.connect(func() -> void: Build.reset_player_conditions())
 	%ResetBuffsButton.pressed.connect(func() -> void: Build.clear_player_buffs())
+	%ResetMinionsButton.pressed.connect(func() -> void: Build.clear_minion_counts())
 
 	for node: Node in %PlayerFlags.find_children("*", "CheckBox", true, false):
 		var check: CheckBox = node as CheckBox
@@ -113,7 +119,8 @@ func _refresh() -> void:
 	_apply_enemy()
 	_apply_ailments()
 	_apply_buffs()
-	_empty_hint.visible = _relevance_known and not _show_all.button_pressed and _player_shown == 0 and _enemy_shown == 0 		and _ailments_shown == 0 and _buffs_shown == 0
+	_apply_minions()
+	_empty_hint.visible = _relevance_known and not _show_all.button_pressed and _player_shown == 0 and _enemy_shown == 0 		and _ailments_shown == 0 and _buffs_shown == 0 and _minions_shown == 0
 
 
 # --- relevance ------------------------------------------------------------------------
@@ -389,6 +396,74 @@ func _apply_buffs() -> void:
 	_buffs_shown = shown
 	(_buff_list.get_parent().get_parent() as Control).visible = shown > 0
 	_set_summary(_buff_summary, active, tr("Nothing enabled"), hidden_count, no_source_on)
+
+
+# --- active minions --------------------------------------------------------------------------------
+
+## Rows: every minion type summoned by a bar skill (its summon limit by default) and the counts the build's models scale
+## with (MinionCount.COUNT_KEYS: all minions, totems, wolves …; the sum of the summoned types by default). A count row is
+## shown only when a model of the build reads it (or with «Show all conditions», or when set by hand).
+func _apply_minions() -> void:
+	var show_all: bool = _show_all.button_pressed
+	var given: Dictionary = MinionCount.explicit(Build)
+	var wanted: Array[Array] = []  # [key, title, is_type, limit]
+	for t: Dictionary in MinionCount.types(Build):
+		wanted.append([str(t["actor"]), "%s (%s)" % [str(t["actor"]), str(t["skill"])], true, float(t["limit"])])
+	for key: String in MinionCount.COUNT_KEYS:
+		wanted.append([key, tr(str(MinionCount.COUNT_KEYS[key]["label"])), false, 0.0])
+	var keys: Array = wanted.map(func(w: Array) -> String: return str(w[0]))
+	if keys != _minion_rows.keys():
+		for child: Node in _minion_list.get_children():
+			_minion_list.remove_child(child)
+			child.queue_free()
+		_minion_rows.clear()
+		for w: Array in wanted:
+			var row: MinionRow = minion_row_scene.instantiate() as MinionRow
+			_minion_list.add_child(row)
+			row.setup(str(w[0]), str(w[1]))
+			row.count_changed.connect(func(key: String, v: float) -> void: Build.set_minion_count(key, v))
+			row.auto_toggled.connect(_on_minion_auto_toggled.bind(row))
+			_minion_rows[str(w[0])] = row
+	var active: PackedStringArray = []
+	var hidden_count: int = 0
+	var no_source_on: int = 0
+	var shown: int = 0
+	for w: Array in wanted:
+		var key: String = str(w[0])
+		var row: MinionRow = _minion_rows[key]
+		var value: float
+		var auto_text: String = ""
+		if bool(w[2]):
+			value = float(MinionCount.type_count(Build, key, float(w[3]))["value"])
+			auto_text = tr("summon limit: %s") % LE.fmt_num(float(w[3]))
+		else:
+			var c: Dictionary = MinionCount.count(Build, key)
+			value = float(c["value"])
+			auto_text = str(c["text"])
+		var is_auto: bool = not given.has(key)
+		var source: Dictionary = _source("minions", key)
+		var has_source: bool = bool(source["has"])
+		row.show_state(value, str(source["reason"]), has_source, is_auto, auto_text)
+		var listed: bool = show_all or has_source or not is_auto or row.has_edit_focus()
+		row.visible = listed
+		if listed:
+			shown += 1
+		else:
+			hidden_count += 1
+		if listed and value > 0.0:
+			active.append("%s %s%s" % [str(w[1]), LE.fmt_num(value), tr(" (auto)") if is_auto else ""])
+			if not has_source:
+				no_source_on += 1
+	_minions_shown = shown
+	(_minion_list.get_parent().get_parent() as Control).visible = shown > 0
+	_set_summary(_minion_summary, active, tr("Nothing enabled"), hidden_count, no_source_on)
+
+
+func _on_minion_auto_toggled(key: String, on: bool, row: MinionRow) -> void:
+	if on:
+		Build.clear_minion_count(key)
+	else:
+		Build.set_minion_count(key, row.value())
 
 
 # --- summaries ------------------------------------------------------------------------------------

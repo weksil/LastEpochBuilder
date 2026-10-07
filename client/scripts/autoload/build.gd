@@ -117,6 +117,8 @@ static func default_player_state() -> Dictionary:
 		"stuns_per_second": 0.0,
 		"arrow_pickups_per_second": 0.0,
 		"health_drops_per_second": 0.0,
+		# active minions set by hand: actor name or MinionCount count key -> count (the rest are automatic)
+		"minions": {},
 		# buffs on the player: AilmentID -> stacks (positive ailments of ailments.json, the "Buffs on me" list)
 		"buffs": {}
 	}
@@ -704,6 +706,27 @@ func reset_player_conditions() -> void:
 			player_state[key] = 0.0
 		elif key != "health":
 			player_state[key] = 0
+	changed.emit()
+
+
+## Sets the number of active minions of a type (actor name) or of a MinionCount count key by hand.
+func set_minion_count(key: String, value: float) -> void:
+	var minions: Dictionary = player_state.get("minions", {}) as Dictionary
+	minions[key] = maxf(value, 0.0)
+	player_state["minions"] = minions
+	changed.emit()
+
+
+## Returns one minion count to automatic.
+func clear_minion_count(key: String) -> void:
+	var minions: Dictionary = player_state.get("minions", {}) as Dictionary
+	if minions.erase(key):
+		changed.emit()
+
+
+## Returns every minion count to automatic.
+func clear_minion_counts() -> void:
+	player_state["minions"] = {}
 	changed.emit()
 
 

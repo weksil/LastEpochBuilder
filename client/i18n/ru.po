@@ -15082,3 +15082,36 @@ msgstr "Ancient Flight на вас: %s"
 
 msgid "Skill \"%s\": %s"
 msgstr "Умение «%s»: %s"
+
+msgid "Active minions"
+msgstr "Активные миньоны"
+
+msgid "All minions (not totems)"
+msgstr "Все миньоны (кроме тотемов)"
+
+msgid "Wolves"
+msgstr "Волки"
+
+msgid "Raptors"
+msgstr "Рапторы"
+
+msgid "Storm Crows"
+msgstr "Грозовые вороны"
+
+msgid "Return all minion counts to automatic (summon limits)"
+msgstr "Вернуть всё количество миньонов к автоматическому (лимиты призыва)"
+
+msgid "summon limit: %s"
+msgstr "лимит призыва: %s"
+
+msgid "Automatic: the summon limit, or the sum of the summoned minions"
+msgstr "Автоматически: лимит призыва или сумма призванных миньонов"
+
+msgid "Minion"
+msgstr "Миньон"
+
+msgid "sum of the summoned minions: %s"
+msgstr "сумма призванных миньонов: %s"
+
+msgid "no such minion is summoned by the bar skills"
+msgstr "такие миньоны не призываются скиллами с панели"
