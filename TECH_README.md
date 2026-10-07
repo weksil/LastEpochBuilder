@@ -162,7 +162,7 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   (hits on the target, stacks, event frequency for triggers — change on the fly), the "Skill buffs on the character" panel
   (each skill on the bar with its mods on the character and an enable checkbox; the buffs apply to all skills and stats: "on the character" tree effects,
   Holy Aura, Symbols of Hope, Enchant Weapon, Firebrand, Aura of Decay, Dark Quiver) and sections in a fixed order: damage components (main hit, sub-skills,
-  triggers, minions), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
+  triggers, minions — Summon Skeleton and Summon Skeletal Mage split between the types of their rotation), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
   DPS vs enemy (hit without crit and with crit as on the dummy, average hit, per component and the total), sustain (leech, health/mana/ward per hit).
   "+" expands the breakdown (in a monospace font; expanded rows do not collapse on recalculation), "Not counted" is a collapsible block.
 - **Defense** — effective health against one enemy attack, as "Maximum hit taken" / "Total EHP" in Path of Building. Two dropdowns:

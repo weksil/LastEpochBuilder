@@ -509,7 +509,12 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   `stormTotemAdditionalTotem`, `extraNonCompanionCapSpriggans`, `maxLocusts`; `doubledMaxSkeletons` ×2; wolves / raptors
   «up to your maximum number of companions» = Round((2 + SP MaximumCompanions) …), research 07d §1.4), rounded. Not read:
   the shared companion cap across companion skills, Bone Golem's extra golems per skeleton and its tree flag (D?).
-  DPS = DPS of one × the number. The models that scale with a minion count
+  Summon Skeleton and Summon Skeletal Mage (`GROUPS`) have no minion records of their own: their count is split evenly
+  between the members of the rotation the tree flags allow (`MinionCount.rotation` / `members`: warriors and archers,
+  rogues with «Adds rogues», at most one warrior with «Max one warrior»; mages, cryomancers, pyromancers, death knights),
+  and every member is a minion component with its own record (`MinionCalc.minion_by_actor`). The per-type stat lists
+  (`warriorStatList`, `archerStatList`, `rogueStatList`) have the scope `minion:<actor>` (`minion_actor_mods` of the skill
+  store), so they reach only that type. DPS = DPS of one × the number. The models that scale with a minion count
   (`per: input:<key>` of `MinionCount.COUNT_KEYS`: `minions` = all minions but totems, `totems`, `wolves`, `raptors`,
   `crows` = `storm_crows`) read the same card: a number set by hand, else the sum of the summoned types it covers. These
   keys are never per-skill fields (`EffectModels.inputs` drops them), so passives and uniques («per minion you control»,

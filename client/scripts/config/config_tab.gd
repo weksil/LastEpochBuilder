@@ -436,6 +436,14 @@ func _apply_minions() -> void:
 		if bool(w[2]):
 			value = float(MinionCount.type_count(Build, key, float(w[3]))["value"])
 			auto_text = tr("summon limit: %s") % str(w[4])
+			var split: PackedStringArray = []
+			for t: Dictionary in MinionCount.types(Build):
+				if str(t["actor"]) == key and t.has("rotation"):
+					for m: Dictionary in MinionCount.members(Build, str(t["ability"])):
+						split.append("%s %s" % [str(m["actor"]), LE.fmt_num(float(m["count"]))])
+			if not split.is_empty():
+				auto_text += "
+" + tr("split between the types: %s") % ", ".join(split)
 		else:
 			var c: Dictionary = MinionCount.count(Build, key)
 			value = float(c["value"])

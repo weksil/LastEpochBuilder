@@ -30946,10 +30946,10 @@
 "param": "per_cast"
 },
 "SummonSkeletonMutator.archerStatList": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "stat_list",
 "note": "Skeleton archers only",
-"scope": "minion"
+"scope": "minion:Skeleton Archer"
 },
 "SummonSkeletonMutator.canSummonRogues": {
 "confidence": "D",
@@ -31033,21 +31033,22 @@
 "input": {
 "default": 3,
 "key": "warriors_archers",
-"label": "Warriors and archers",
+"label": "Skeleton warriors and archers",
 "max": 10
 },
 "kind": "minion_stat",
 "mod": "more",
 "note": "Rogues only",
 "per": "input:warriors_archers",
+"scope": "minion:Skeleton Rogue",
 "src_max": 5,
 "stat": "Damage"
 },
 "SummonSkeletonMutator.rogueStatList": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "stat_list",
 "note": "Skeleton rogues only",
-"scope": "minion"
+"scope": "minion:Skeleton Rogue"
 },
 "SummonSkeletonMutator.roguesCastAcidFlask": {
 "confidence": "D",
@@ -31090,10 +31091,10 @@
 "resource": "ward"
 },
 "SummonSkeletonMutator.warriorStatList": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "stat_list",
 "note": "Skeleton warriors only",
-"scope": "minion"
+"scope": "minion:Skeleton Warrior"
 },
 "SummonSkeletonMutator.warriorsCastBoneArmorOnAllies": {
 "confidence": "D",

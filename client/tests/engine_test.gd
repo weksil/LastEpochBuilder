@@ -313,11 +313,38 @@ func _minion_limits() -> void:
 	Build.changed.emit()
 	_check("Unbound Necromancy + Tyrant's Legion: 3 + 1 + 1", _type_limit("Skeletons"), 5.0)
 	_check("all minions follow the raised limit", float(MinionCount.count(Build, "minions")["value"]), 5.0)
+	# damage: the 5 skeletons split between warriors and archers (the default rotation), each its own minion component
+	var sk: Dictionary = SkillCalc.compute(Build, 0)
+	var warrior: float = _section_dps(sk, "Skeleton Warrior")
+	var archer: float = _section_dps(sk, "Skeleton Archer")
+	_flag("Summon Skeleton: warriors deal damage", warrior > 0.0)
+	_flag("Summon Skeleton: archers deal damage", archer > 0.0)
+	_flag("Summon Skeleton: no rogues without their node", _section_dps(sk, "Skeleton Rogue") == 0.0)
+	var split: Array[Dictionary] = MinionCount.members(Build, "SummonSkeleton")
+	_check("warriors and archers share the 5 skeletons", float(split[0]["count"]) + float(split[1]["count"]) if split.size() == 2 else -1.0, 5.0)
+	_check("rogues' «per warrior or archer» count", float(MinionCount.count(Build, "warriors_archers")["value"]), 5.0)
+	Build.set_minion_count("Skeletons", 10.0)
+	_check("10 skeletons by hand: double the skeleton DPS", _section_dps(SkillCalc.compute(Build, 0), "Skeleton Warrior"), warrior * 2.0, warrior * 0.01)
+	Build.clear_minion_counts()
+	Build.set_skill(1, "sm4g")  # Summon Skeletal Mage
+	var mg: Dictionary = SkillCalc.compute(Build, 1)
+	_flag("Summon Skeletal Mage: the mage's Dread Bolt is its damage", str(mg["sections"]).contains("Skeleton Mage") and _dps(mg) > 0.0)
+	_check("Skeletal Mages: base limit 2", _type_limit("Skeletal Mages"), 2.0)
 	Build.set_class(class_id)
 	Build.passives = saved_passives
 	for i: int in range(saved_skills.size()):
 		Build.skills[i] = saved_skills[i]
 	Build.changed.emit()
+
+
+## Sum of the DPS rows of the minion components whose name starts with the actor.
+func _section_dps(r: Dictionary, actor: String) -> float:
+	var total: float = 0.0
+	for sec: Dictionary in r["sections"]:
+		for row: Dictionary in sec["rows"]:
+			if str(row["label"]).begins_with(LE.t("DPS vs enemy") + ": " + actor):
+				total += float(str(row["text"]))
+	return total
 
 
 func _type_limit(actor: String) -> float:

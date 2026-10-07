@@ -37,6 +37,15 @@ static func _read_json(path: String) -> Variant:
 	return JSON.parse_string(FileAccess.get_file_as_string(path))
 
 
+## Minion record by actor name ({} if none).
+static func minion_by_actor(actor: String) -> Dictionary:
+	_load()
+	for rec: Dictionary in _minions:
+		if str(rec.get("actorName", "")) == actor:
+			return rec
+	return {}
+
+
 ## Minion records summoned by the ability (`summonedBy` contains its `name`).
 static func minions_for(ability_name: String) -> Array[Dictionary]:
 	_load()
@@ -119,18 +128,34 @@ static func _first_damage(rec: Dictionary) -> Dictionary:
 
 
 ## Damage components (SkillComponents format, kind "minion") of every minion summoned by the ability; the number of each
-## minion is MinionCount (the Conditions tab, else the summon limit).
-static func components(player_store: StatStore, summon_ab: Dictionary, minion_mods: Array, build: Node) -> Array[Dictionary]:
+## minion is MinionCount (the Conditions tab, else the summon limit; a summon whose tree chooses the minions — Summon
+## Skeleton, Summon Skeletal Mage — splits its count between the types of its rotation). `actor_mods`: {actor: mods} of
+## one minion type only.
+static func components(player_store: StatStore, summon_ab: Dictionary, minion_mods: Array, build: Node,
+		actor_mods: Dictionary = {}) -> Array[Dictionary]:
 	_load()
 	var result: Array[Dictionary] = []
-	for minion: Dictionary in minions_for(str(summon_ab.get("name", ""))):
-		var store: StatStore = minion_store(player_store, summon_ab, minion, minion_mods)
+	var entries: Array[Array] = []  # [minion record, count]
+	var summon_name: String = str(summon_ab.get("name", ""))
+	if MinionCount.GROUPS.has(summon_name):
+		for m: Dictionary in MinionCount.members(build, summon_name):
+			var rec: Dictionary = minion_by_actor(str(m["actor"]))
+			if not rec.is_empty() and float(m["count"]) > 0.0:
+				entries.append([rec, float(m["count"])])
+	else:
+		for minion: Dictionary in minions_for(summon_name):
+			entries.append([minion, MinionCount.of_minion(build, minion, summon_name)])
+	for item: Array in entries:
+		var minion: Dictionary = item[0]
+		var mods: Array = minion_mods.duplicate()
+		mods.append_array(actor_mods.get(str(minion.get("actorName", "")), []))
+		var store: StatStore = minion_store(player_store, summon_ab, minion, mods)
 		var names: Array = (minion.get("abilityList", []) as Array).duplicate()
 		if names.is_empty():
 			for inline: Variant in minion.get("abilities", []):
 				if inline is Dictionary:
 					names.append(inline.get("ability", ""))
-		var count: float = MinionCount.of_minion(build, minion, str(summon_ab.get("name", "")))
+		var count: float = float(item[1])
 		for ab_name: Variant in names:
 			var ability: Dictionary = _abilities.get(str(ab_name), {})
 			var entry: Dictionary = _first_damage(ability)

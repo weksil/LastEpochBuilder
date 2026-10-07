@@ -15127,3 +15127,9 @@ msgstr "× 2 (%s)"
 
 msgid "up to the maximum number of companions %s (%s)"
 msgstr "до максимума компаньонов %s (%s)"
+
+msgid "split between the types: %s"
+msgstr "по типам: %s"
+
+msgid "Skeleton warriors and archers"
+msgstr "Скелеты-воины и лучники"

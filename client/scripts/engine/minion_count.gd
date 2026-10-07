@@ -16,13 +16,26 @@ const COUNT_KEYS: Dictionary = {
 	"wolves": {"label": "Wolves", "kind": "actor", "actors": ["Primal Wolf"]},
 	"raptors": {"label": "Raptors", "kind": "actor", "actors": ["Primal Raptor"]},
 	"crows": {"label": "Storm Crows", "kind": "actor", "actors": ["Storm Crow"]},
+	"warriors_archers": {"label": "Skeleton warriors and archers", "kind": "actor", "actors": ["Skeleton Warrior", "Skeleton Archer"]},
 }
 const ALIASES: Dictionary = {"storm_crows": "crows"}
 ## Summons whose minion records are chosen by the tree (no `summonedBy` of their own): one type with the base limit of
-## the code (SummonSkeletonMutator.getSkeletonLimit: 3 + additional; SummonMageMutator.getSkeletonMageLimit: 2 + …).
+## the code (SummonSkeletonMutator.getSkeletonLimit: 3 + additional; SummonMageMutator.getSkeletonMageLimit: 2 + …) and
+## the members of its rotation, switched by tree flags (field_models texts): `if` — only with the flag, `unless` — not
+## with any of these flags, `one` — at most one with the flag. The count is split evenly between the members (the
+## summons alternate the types, D?).
 const GROUPS: Dictionary = {
-	"SummonSkeleton": {"actor": "Skeletons", "base": 3.0},
-	"SummonMage": {"actor": "Skeletal Mages", "base": 2.0},
+	"SummonSkeleton": {"actor": "Skeletons", "base": 3.0, "members": [
+		{"actor": "Skeleton Warrior", "unless": ["Warriors not summoned"], "one": "Max one warrior"},
+		{"actor": "Skeleton Archer", "unless": ["Archers not summoned"]},
+		{"actor": "Skeleton Rogue", "if": "Adds rogues"},
+	]},
+	"SummonMage": {"actor": "Skeletal Mages", "base": 2.0, "members": [
+		{"actor": "Skeleton Mage", "unless": ["Removes normal mages from rotation", "Replaces mages with Death Knights"]},
+		{"actor": "Cryomancer", "if": "Adds cryomancers"},
+		{"actor": "Pyromancer", "if": "Adds pyromancers", "unless": ["Removes pyromancers from rotation"]},
+		{"actor": "Death Knight", "if": "Replaces mages with Death Knights"},
+	]},
 }
 ## «Max …» parameters of the summon skills (field_models labels, untranslated): tree nodes and passives such as
 ## SummonSkeletonMutator.additionalSkeletonsFromPassives.
@@ -84,11 +97,14 @@ static func types(build: Node) -> Array[Dictionary]:
 			if actor == "" or seen.has(actor):
 				continue
 			seen[actor] = true
-			var lim: Dictionary = {"value": float(e[1]), "text": LE.fmt_num(float(e[1]))}
+			var lim: Dictionary = {"value": float(e[1]), "text": LE.fmt_num(float(e[1])), "flag_keys": []}
 			if not _busy:
 				lim = limit_of(build, slot, ab, float(e[1]))
-			out.append({"actor": actor, "ability": ab_name, "skill": GameData.display_name(ab),
-				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": lim["value"], "limit_text": lim["text"]})
+			var t: Dictionary = {"actor": actor, "ability": ab_name, "skill": GameData.display_name(ab),
+				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": lim["value"], "limit_text": lim["text"]}
+			if GROUPS.has(ab_name) and actor == str(GROUPS[ab_name]["actor"]):
+				t["rotation"] = rotation(ab_name, lim["flag_keys"])
+			out.append(t)
 	if key != "":
 		if _cache.size() >= 16:
 			_cache.clear()
@@ -159,7 +175,47 @@ static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dic
 				value = maxf(value, float(companions["value"]))
 				parts.append(LE.t("up to the maximum number of companions %s (%s)") % [LE.fmt_num(float(companions["value"])), ", ".join(pp["lines"])])
 	value = maxf(float(roundi(value)), 0.0)
-	return {"value": value, "text": "%s = %s" % [" ".join(parts), LE.fmt_num(value)]}
+	return {"value": value, "flag_keys": s.get("flag_keys", []), "text": "%s = %s" % [" ".join(parts), LE.fmt_num(value)]}
+
+
+## Members of a GROUPS summon's rotation under the tree flags: [{actor, one}].
+static func rotation(ability_name: String, flag_keys: Array) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for m: Dictionary in GROUPS[ability_name]["members"]:
+		if m.has("if") and not flag_keys.has(str(m["if"])):
+			continue
+		var blocked: bool = false
+		for f: Variant in m.get("unless", []):
+			blocked = blocked or flag_keys.has(str(f))
+		if blocked:
+			continue
+		out.append({"actor": str(m["actor"]), "one": m.has("one") and flag_keys.has(str(m["one"]))})
+	return out
+
+
+## Counts of the members of a GROUPS summon on the bar: [{actor, count}] — the group count split evenly between the
+## members of its rotation, a member limited to one gets at most 1.
+static func members(build: Node, ability_name: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for t: Dictionary in types(build):
+		if str(t["ability"]) != ability_name or not t.has("rotation"):
+			continue
+		var total: float = float(type_count(build, str(t["actor"]), float(t["limit"]))["value"])
+		var rot: Array = t["rotation"]
+		if rot.is_empty():
+			return out
+		var share: float = total / float(rot.size())
+		var capped: float = 0.0
+		var free: int = 0
+		for m: Dictionary in rot:
+			if bool(m["one"]) and share > 1.0:
+				capped += 1.0
+			else:
+				free += 1
+		for m: Dictionary in rot:
+			var n: float = 1.0 if bool(m["one"]) and share > 1.0 else (total - capped) / float(free)
+			out.append({"actor": str(m["actor"]), "count": n})
+	return out
 
 
 ## Maximum number of companions: {value}.
@@ -204,6 +260,11 @@ static func count(build: Node, key: String) -> Dictionary:
 				take = bool(t["totem"])
 			"actor":
 				take = (spec.get("actors", []) as Array).has(t["actor"])
+				if not take and t.has("rotation"):
+					for m: Dictionary in members(build, str(t["ability"])):
+						if (spec.get("actors", []) as Array).has(m["actor"]):
+							total += float(m["count"])
+							parts.append("%s %s" % [str(m["actor"]), LE.fmt_num(float(m["count"]))])
 		if take:
 			var n: float = float(type_count(build, str(t["actor"]), float(t["limit"]))["value"])
 			total += n

@@ -153,6 +153,8 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 		"mana_sources": [] as Array[String], "conversions": [],
 		# §9: field models of the skill tree
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
+		# minion mods of one minion type only (scope "minion:<actor name>": Summon Skeleton's warrior / archer / rogue lists)
+		"minion_actor_mods": {},
 		# flags: shown texts; flag_keys: the untranslated model texts, for code that checks a mechanic
 		"flags": [] as Array[String], "flag_keys": [] as Array[String], "cooldown": {}, "cooldown_base": {}, "inputs": [] as Array[Dictionary],
 		"global_mods": [] as Array[StatMod], "ability_name": "",
@@ -778,6 +780,11 @@ static func _add_scoped(mod: StatMod, scope: String, result: Dictionary) -> void
 		result["component_mods"][comp].append(mod)
 	elif scope == "minion":
 		result["minion_mods"].append(mod)
+	elif scope.begins_with("minion:"):
+		var actor: String = scope.get_slice(":", 1)
+		if not result["minion_actor_mods"].has(actor):
+			result["minion_actor_mods"][actor] = [] as Array[StatMod]
+		result["minion_actor_mods"][actor].append(mod)
 	elif scope == "global":
 		result["global_mods"].append(mod)
 	else:
@@ -810,7 +817,8 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		"minion_stat":
 			var mmod: StatMod = EffectModels.make_mod(model, v, ctx, source)
 			if mmod != null:
-				result["minion_mods"].append(mmod)
+				var mscope: String = str(model.get("scope", "minion"))
+				_add_scoped(mmod, mscope if mscope.begins_with("minion:") else "minion", result)
 		"speed":
 			if str(model.get("speed", "")) == "more":
 				result["use_speed_more"] *= 1.0 + x
