@@ -14982,3 +14982,12 @@ msgstr "Атака вкладки «Защита»: раз в %s с, шанс у
 
 msgid "hit taken"
 msgstr "полученный удар"
+
+msgid "%s: %s stacks per use"
+msgstr "%s: %s стаков за применение"
+
+msgid ", spent by %s enemy hits/s (Defense tab)"
+msgstr ", расходуется %s ударами врага в секунду (вкладка «Защита»)"
+
+msgid "%s: %s stacks per second in the zone, %s of the time"
+msgstr "%s: %s стаков в секунду в зоне, %s времени"

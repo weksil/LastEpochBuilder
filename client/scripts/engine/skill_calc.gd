@@ -231,6 +231,7 @@ Corruption does not change your DPS.") % [
 	result["rates"] = {"uses": uses, "hits": hit_rate, "crit": main_crit, "mana": float(speed["mana"])}
 	result["cooldown"] = bool(speed.get("cooldown", false))
 	result["flag_keys"] = s.get("flag_keys", [])
+	result["params"] = s.get("params", {})
 	var applied: Array[Dictionary] = []
 	for cr: Dictionary in comp_results:
 		applied.append_array(cr["ail"].get("applied", []))

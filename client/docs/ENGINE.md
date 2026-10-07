@@ -712,6 +712,10 @@ to automatic) work the same way through `EnemyAilments.buffs(build, slot)`. Gain
   (`CharacterMutator.OnFirstMeleeOrThrowingHit`), 97 Dusk Shroud per enemy hit taken, 470 per dodge (the attack, interval and
   dodge chance of the Defense tab);
 - Dusk Shroud per consumed shadow (CreateShadow property 6; shadows consumed per second as in `ShadowCalc.sustain_rows`).
+- skill parameters (`PARAM_BUFFS`, `SkillCalc` result `params`): Smoke Bomb «Moonlight Bomb» `silver_shroud_stacks` per
+  use — Silver Shroud dodges your next hit, so the k-th stack of a burst lives min(10 s, k / landed enemy hits per second)
+  (the Defense tab attack, PlayerProperty 534 = chance not to spend it); «Smoke Blades» `smoke_blades_stacks` per second
+  while you stand in the cloud (4 s per bomb: min(1, uses × 4) of the time).
 Stacks = min(Σ gains/s × duration, maxInstances) with the same parallel sources as the enemy ailments.
 `EnemyAilments.apply(build, slot)` / `restore` put both the enemy ailments and the buffs into the build around
 `SkillCalc.compute`, `DefenseCalc.compute` and the character stats panel (the selected skill).

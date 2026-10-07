@@ -1201,6 +1201,11 @@ func _automatic_enemy_ailments() -> void:
 	_check("Dusk Shroud on you = 60% × uses/s × 4 s", float(dusk.get("stacks", 0.0)), 0.6 * uses * 4.0, 0.001)
 	_check("Crimson Shroud on you: its limit of 3", float(buffs.get(GameData.ailment_id_by_name("CrimsonShroud"), {}).get("stacks", 0.0)), 3.0, 0.001)
 	_flag("Dusk Shroud is not an enemy ailment", not auto.has(GameData.ailment_id_by_name("DuskShroud")))
+	# Smoke Bomb params: Smoke Blades 1 stack/s while in the 4 s cloud, Silver Shroud stacks per use spent by enemy hits
+	var smoke_uses: float = float(SkillCalc.compute(Build, 1)["rates"]["uses"])
+	_check("Smoke Blades = 1/s × min(1, uses × 4 s) × 4 s", float(buffs.get(GameData.ailment_id_by_name("SmokeBlades"), {}).get("stacks", 0.0)),
+		minf(1.0, smoke_uses * 4.0) * 4.0, 0.001)
+	_flag("Silver Shroud from Moonlight Bomb", float(buffs.get(GameData.ailment_id_by_name("SilverShroud"), {}).get("stacks", 0.0)) > 0.0)
 	for id: int in buffs:
 		Build.set_player_buff(id, 0.0)
 	var bdoc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))

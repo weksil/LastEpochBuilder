@@ -40,6 +40,15 @@ const PP_BUFFS: Dictionary = {
 	107: {"ailment": "CrimsonShroud", "event": "melee_throwing_use"},
 	470: {"ailment": "DuskShroud", "event": "dodge"},
 }
+## Skill parameters (field_models.json `param`) that give buffs on you: stacks per use (Smoke Bomb «Moonlight Bomb»: Silver
+## Shroud on the initial burst) or stacks per second while you stand in the skill's zone (Smoke Bomb «Smoke Blades»: the
+## cloud lasts `zone` seconds, «Lasts 4 seconds»). `spent_by_hits`: one stack is spent by every enemy hit (Silver Shroud
+## «Dodge your next hit»; PlayerProperty 534 = chance not to spend it).
+const PARAM_BUFFS: Dictionary = {
+	"silver_shroud_stacks": {"ailment": "SilverShroud", "per": "use", "spent_by_hits": true},
+	"smoke_blades_stacks": {"ailment": "SmokeBlades", "per": "second_in_zone", "zone": 4.0},
+}
+const KEEP_SILVER_PROPERTY: int = 534
 ## Chance of Dusk Shroud per consumed shadow: AbilityProperty 6 of CreateShadow.
 const SHADOW_SHROUD_PROPERTY: int = 6
 
@@ -139,6 +148,7 @@ static func _raw(build: Node) -> Dictionary:
 		var uses: float = float(r.get("rates", {}).get("uses", 0.0))
 		var applied: Array = (r.get("ailments_applied", []) as Array).duplicate()
 		applied.append_array(_self_sources(build, ab, uses, float(r.get("rates", {}).get("hits", 0.0))))
+		applied.append_array(_param_sources(build, r.get("params", {}), uses))
 		out[slot] = {"name": GameData.display_name(ab), "applied": applied, "uses": uses,
 			"cooldown": bool(r.get("cooldown", false)), "flag_keys": r.get("flag_keys", [])}
 	out["defense"] = _defense_sources(build)
@@ -230,6 +240,62 @@ static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float)
 	return out
 
 
+## Buff gains from skill parameters (PARAM_BUFFS). A buff spent by enemy hits lives min(duration, k / hits per second) for
+## its k-th stack of a burst (the stacks are spent one per hit), so its average lifetime replaces the duration.
+static func _param_sources(build: Node, params: Dictionary, uses: float) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for label: Variant in params:
+		var p: Dictionary = params[label]
+		var spec: Dictionary = PARAM_BUFFS.get(str(p.get("param", "")), {})
+		if spec.is_empty():
+			continue
+		var n: float = _param_value(p)
+		var id: int = GameData.ailment_id_by_name(str(spec["ailment"]))
+		if n <= 0.0 or id < 0:
+			continue
+		if str(spec["per"]) == "use":
+			var g: Dictionary = _gain(id, uses * n, 0.0, LE.t("%s: %s stacks per use") % [str(label), LE.fmt_num(n)])
+			if bool(spec.get("spent_by_hits", false)):
+				var hits: Dictionary = _enemy_hits(build)
+				var spend: float = float(hits["rate"]) * (1.0 - clampf(float(player_property(build, KEEP_SILVER_PROPERTY)["value"]), 0.0, 1.0))
+				if spend > 0.0:
+					var total: float = 0.0
+					var k: int = 1
+					while k <= int(ceil(n)):
+						total += minf(float(g["duration"]), float(k) / spend)
+						k += 1
+					g["duration"] = total / ceilf(n)
+					g["source"] = str(g["source"]) + LE.t(", spent by %s enemy hits/s (Defense tab)") % LE.fmt_num(spend)
+			out.append(g)
+		else:
+			var in_zone: float = minf(1.0, uses * float(spec["zone"]))
+			out.append(_gain(id, n * in_zone, 0.0, LE.t("%s: %s stacks per second in the zone, %s of the time") % [
+				str(label), LE.fmt_num(n), LE.fmt_pct(in_zone)]))
+	return out
+
+
+## Value of a skill parameter: set, or added × (1 + increased) × more.
+static func _param_value(p: Dictionary) -> float:
+	if p.get("set") != null:
+		return float(p["set"])
+	return float(p.get("added", 0.0)) * (1.0 + float(p.get("increased", 0.0))) * float(p.get("more", 1.0))
+
+
+## The enemy's hits on you (the attack of the Defense tab): {interval, dodge, rate = landed hits per second}; rate 0 for a
+## DoT attack.
+static func _enemy_hits(build: Node) -> Dictionary:
+	var settings: Dictionary = DefenseCalc.settings_of(build)
+	var attack: Dictionary = DefenseCalc.enemy_attack(build)
+	if not bool(attack.get("is_hit", true)):
+		return {"interval": 0.0, "dodge": 0.0, "rate": 0.0, "hit": false}
+	var interval: float = float(settings["interval"])
+	if interval <= 0.0:
+		interval = float(attack["every"]) if float(attack["every"]) > 0.0 else DefenseCalc.DEFAULT_INTERVAL
+	var layers: Dictionary = DefenseCalc.player_layers(build, BuildMods.global_store(build)["store"], int(settings["area_level"]), attack)
+	var dodge: float = clampf(float(layers["dodge"]), 0.0, 1.0)
+	return {"interval": interval, "dodge": dodge, "rate": (1.0 - dodge) / interval, "hit": true}
+
+
 ## Gains from the enemy's hits (the attack of the Defense tab): per hit taken and per dodge.
 static func _defense_sources(build: Node) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
@@ -242,15 +308,11 @@ static func _defense_sources(build: Node) -> Array[Dictionary]:
 			any = any or float(chances[index]) > 0.0
 	if not any:
 		return out
-	var settings: Dictionary = DefenseCalc.settings_of(build)
-	var attack: Dictionary = DefenseCalc.enemy_attack(build)
-	if not bool(attack.get("is_hit", true)):
+	var hits: Dictionary = _enemy_hits(build)
+	if not bool(hits["hit"]):
 		return out
-	var interval: float = float(settings["interval"])
-	if interval <= 0.0:
-		interval = float(attack["every"]) if float(attack["every"]) > 0.0 else DefenseCalc.DEFAULT_INTERVAL
-	var layers: Dictionary = DefenseCalc.player_layers(build, BuildMods.global_store(build)["store"], int(settings["area_level"]), attack)
-	var dodge: float = clampf(float(layers["dodge"]), 0.0, 1.0)
+	var interval: float = float(hits["interval"])
+	var dodge: float = float(hits["dodge"])
 	for index: int in chances:
 		if float(chances[index]) <= 0.0:
 			continue
