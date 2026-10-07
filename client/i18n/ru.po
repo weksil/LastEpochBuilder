@@ -15034,3 +15034,51 @@ msgstr "каждые %s с при высоком здоровье"
 
 msgid "%s s after a hit, once per %s s (15 s cooldown + the next enemy hit, Defense tab)"
 msgstr "%s с после удара, раз в %s с (перезарядка 15 с + следующий удар врага, вкладка «Защита»)"
+
+msgid "Kills per second"
+msgstr "Убийств в секунду"
+
+msgid "Stuns per second"
+msgstr "Оглушений в секунду"
+
+msgid "Arrows picked up per second"
+msgstr "Подобранных стрел в секунду"
+
+msgid "Drops below high health per second"
+msgstr "Падений ниже высокого здоровья в секунду"
+
+msgid "kills/s"
+msgstr "убийств/с"
+
+msgid "stuns/s"
+msgstr "оглушений/с"
+
+msgid "arrows picked up/s"
+msgstr "подобранных стрел/с"
+
+msgid "drops below high health/s"
+msgstr "падений ниже высокого здоровья/с"
+
+msgid "%s: chance %s per kill in the zone (%s of the time), %s kills/s (Conditions)"
+msgstr "%s: шанс %s за убийство в зоне (%s времени), %s убийств/с («Условия»)"
+
+msgid "%s: %s stacks × %s/s (Conditions)"
+msgstr "%s: %s стаков × %s/с («Условия»)"
+
+msgid "moving after attacking (Moving on the Conditions tab), %s s"
+msgstr "движение после атаки (галочка «Движение» на вкладке «Условия»), %s с"
+
+msgid "%s stacks per event, %s %s (Conditions)"
+msgstr "%s стаков за событие, %s %s («Условия»)"
+
+msgid "chance %s per event, %s %s (Conditions)"
+msgstr "шанс %s за событие, %s %s («Условия»)"
+
+msgid "%s on you: %s"
+msgstr "%s на вас: %s"
+
+msgid "Ancient Flight on you: %s"
+msgstr "Ancient Flight на вас: %s"
+
+msgid "Skill \"%s\": %s"
+msgstr "Умение «%s»: %s"

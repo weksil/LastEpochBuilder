@@ -197,8 +197,8 @@ func _apply_player() -> void:
 
 	for spin: SpinBox in _player_value_spins:
 		var key: String = str(spin.get_meta("player_value"))
-		var value: int = int(Build.player_state.get(key, 0))
-		_set_spin(spin, float(value))
+		var value: float = float(Build.player_state.get(key, 0))
+		_set_spin(spin, value)
 		var source: Dictionary = _source("player_values", key)
 		var has_source: bool = bool(source["has"])
 		var row: PanelContainer = spin.get_parent().get_parent() as PanelContainer
@@ -212,7 +212,7 @@ func _apply_player() -> void:
 		row.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
 		if value != 0:
 			var label: Label = spin.get_parent().get_child(0) as Label
-			active.append("%s %d" % [tr(label.text), value])
+			active.append("%s %s" % [tr(label.text), LE.fmt_num(value)])
 			if not has_source:
 				no_source_on += 1
 
@@ -441,7 +441,8 @@ func _on_player_flag_toggled(pressed: bool, check: CheckBox) -> void:
 
 
 func _on_player_value_changed(value: float, spin: SpinBox) -> void:
-	Build.set_player_state(str(spin.get_meta("player_value")), int(value))
+	# per-second numbers (step below 1) stay fractional
+	Build.set_player_state(str(spin.get_meta("player_value")), value if spin.step < 1.0 else int(value))
 
 
 func _on_ailment_stacks_changed(ailment_id: int, stacks: float) -> void:

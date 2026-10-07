@@ -1221,6 +1221,24 @@ func _automatic_enemy_ailments() -> void:
 	_check("Smoke Bomb Dusk Shroud: every 2 / (1 + 100%) s, 40% of the time in the cloud", float(g[0]["rate"]) if g.size() == 1 else -1.0, 0.4, 0.0001)
 	g = EnemyAilments._param_sources(Build, {"Drain Life": {"param": "contempt_interval", "set": 0.5}}, rates)
 	_check("Contempt: a stack every 0.5 s of channel", float(g[0]["rate"]) if g.size() == 1 else -1.0, 2.0, 0.0001)
+	# events the calculation cannot derive: player numbers of the Conditions tab, shown only with a source in the build
+	g = EnemyAilments._param_sources(Build, {"Smoke Bomb": {"param": "crimson_shroud_chance", "added": 0.5}}, rates)
+	_flag("Crimson Shroud on kill in the cloud: nothing without kills/s", g.is_empty())
+	Build.player_state["kills_per_second"] = 2.0
+	g = EnemyAilments._param_sources(Build, {"Smoke Bomb": {"param": "crimson_shroud_chance", "added": 0.5}}, rates)
+	_check("Crimson Shroud: kills/s × 40% of the time in the cloud × 50%", float(g[0]["rate"]) if g.size() == 1 else -1.0, 0.4, 0.0001)
+	Build.player_state["kills_per_second"] = 0.0
+	var reasons: Dictionary = EnemyAilments.input_reasons(Build, {})
+	_flag("drops below high health/s shown for Cloaked Reaper (Silver Shroud, PP 104)", (reasons["player_values"] as Dictionary).has("health_drops_per_second"))
+	_flag("kills, stuns, arrows and Moving not shown without a source", not (reasons["player_values"] as Dictionary).has("kills_per_second")
+		and not (reasons["player_values"] as Dictionary).has("stuns_per_second") and not (reasons["player_values"] as Dictionary).has("arrow_pickups_per_second")
+		and (reasons["player_flags"] as Dictionary).is_empty())
+	Build.player_state["health_drops_per_second"] = 0.5
+	var drops: Dictionary = EnemyAilments.buffs(Build, 0).get(GameData.ailment_id_by_name("SilverShroud"), {})
+	_flag("Silver Shroud from drops below high health", str(drops.get("sources", {}).keys()).contains("drops below high health"))
+	Build.player_state["health_drops_per_second"] = 0.0
+	reasons = EnemyAilments.input_reasons(Build, {"crimson_shroud_chance": "Smoke Bomb"})
+	_flag("kills/s shown for Smoke Bomb's Crimson Shroud on kill", (reasons["player_values"] as Dictionary).has("kills_per_second"))
 	for id: int in buffs:
 		Build.set_player_buff(id, 0.0)
 	var bdoc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))

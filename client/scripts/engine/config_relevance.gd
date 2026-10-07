@@ -37,6 +37,14 @@ static func compute(build: Node) -> Dictionary:
 		_scan_mods(out, s["result"]["store"].mods, name)
 		_scan_skill_ailments(out, s["ability"], s["result"], name)
 	_scan_buff_sources(out, build)
+	var params: Dictionary = {}
+	for s: Dictionary in stores:
+		for label: Variant in s["result"].get("params", {}):
+			params[str(s["result"]["params"][label].get("param", ""))] = LE.t("Skill \"%s\": %s") % [GameData.display_name(s["ability"]), str(label)]
+	var inputs: Dictionary = EnemyAilments.input_reasons(build, params)
+	for group: String in inputs:
+		for key: String in inputs[group]:
+			_add(out, group, key, str(inputs[group][key]))
 	return out
 
 

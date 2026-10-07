@@ -728,9 +728,13 @@ to automatic) work the same way through `EnemyAilments.buffs(build, slot)`. Gain
   Shroud stacks per use; Void Essence chance per use (Rebuke, Volatile Reversal, Devouring Orb expiry, Vengeance) or per
   crit (Erasing Strike); Void Cleave Molten Infusion stacks per hit (none with «only on hit vs own minion»); Drain Life
   Contempt, a stack every `contempt_interval` s of channel.
-Not modelled (no such event in a single-target calculation, or no rate known): gains on kill (Void Essence, Inspiration,
-Smoke Bomb Crimson Shroud), on stun (Inspiration), on arrow pickup (Dark Quiver), on dropping below high health (Silver
-Shroud, PP 104), on moving after attacking (Ancient Flight), Swiftness, buffs given to minions only.
+- events a single-target calculation has no rate for come from player numbers of the Conditions tab (`EVENT_INPUTS`,
+  per second, `Build.player_state`; shown only when the build has a source — `EnemyAilments.input_reasons` feeds
+  `ConfigRelevance`): kills/s — PP 50 Void Essence, PP 60 Inspiration (kills of the selected skill when it is a void
+  skill), Smoke Bomb Crimson Shroud on kill in the cloud (× the share of time in it); stuns/s — PP 8 Inspiration; arrows
+  picked up/s — Dark Quiver `dusk_shroud_stacks`; drops below high health/s — PP 104 Silver Shroud stacks (spent by enemy
+  hits like Moonlight Bomb's); the Moving checkbox — PP 139 Ancient Flight (always on while moving after attacking).
+Not modelled: Swiftness (its stacks follow the distance moved; set them by hand), buffs given to minions only.
 Stacks = min(Σ gains/s × duration, maxInstances) with the same parallel sources as the enemy ailments.
 `EnemyAilments.apply(build, slot)` / `restore` put both the enemy ailments and the buffs into the build around
 `SkillCalc.compute`, `DefenseCalc.compute` and the character stats panel (the selected skill).

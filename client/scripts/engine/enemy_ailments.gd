@@ -19,14 +19,15 @@ class_name EnemyAilments
 ## enemy hits come from the Defense tab attack), timed PlayerProperty buffs (Apocalypse every 3 s at high health, Damage
 ## Immunity after a hit on a 15 s cooldown), skill parameters (PARAM_BUFFS), unique AbilityProperty chances
 ## (ABILITY_PROPERTY_BUFFS) and Dusk Shroud per consumed shadow (CreateShadow 6).
-## Not modelled (no such event in a single-target calculation, or no rate known): kills, stuns, arrow pickups, dropping
-## below high health, moving after attacking.
+## Events a single-target calculation cannot derive come from the player numbers of the Conditions tab (EVENT_INPUTS, per
+## second): kills, stuns, arrows picked up, drops below high health; «moving after attacking» is the Moving checkbox.
 
 ## Marks an enemy dictionary that already holds the automatic values (nested calculations do not add them again).
 const APPLIED_KEY: String = "auto_applied"
 const CACHE_LIMIT: int = 16
 ## Kinds of applications that act in parallel with the other skills (minions, zones).
-const PARALLEL_KINDS: Array[String] = ["minion", "zone"]
+## «input»: gains driven by an EVENT_INPUTS rate, the same whatever skill is used.
+const PARALLEL_KINDS: Array[String] = ["minion", "zone", "input"]
 ## Flag texts (field_models.json) of nodes whose hits spend the target's stacks -> the ailments they spend.
 const CONSUMERS: Dictionary = {
 	"Bleed stacks spent, remainder damage dealt instantly": ["Bleed"],
@@ -53,10 +54,27 @@ const PP_BUFFS: Dictionary = {
 	470: {"ailment": "DuskShroud", "event": "dodge"},
 	680: {"ailment": "AspectOfTheGroleVisuals", "event": "companion_use", "flag": true},
 }
+## Player numbers of the Conditions tab (Build.player_state, per second) that drive gains on events the calculation has no
+## rate for.
+const EVENT_INPUTS: Array[String] = ["kills_per_second", "stuns_per_second", "arrow_pickups_per_second", "health_drops_per_second"]
+## PlayerProperties on those events: {ailment, input, flag (chance 1), stacks (the value is stacks per event), void (only
+## kills by a void skill — the selected one)}.
+const PP_INPUT_BUFFS: Dictionary = {
+	8: {"ailment": "Inspiration", "input": "stuns_per_second", "flag": true},
+	50: {"ailment": "VoidEssence", "input": "kills_per_second"},
+	60: {"ailment": "Inspiration", "input": "kills_per_second", "void": true},
+	104: {"ailment": "SilverShroud", "input": "health_drops_per_second", "stacks": true},
+}
+## «Seconds of Ancient Flight when you move after attacking»: on while the Moving checkbox is on.
+const ANCIENT_FLIGHT_PROPERTY: int = 139
 ## Event labels of PP_BUFFS (translated in ru.po).
 const PP_EVENT_TEXT: Dictionary = {
 	"melee_throwing_use": "melee or throwing attack that hits", "spell_use": "spell cast", "crit": "critical strike",
 	"companion_use": "companion skill use", "hit_taken": "hit taken", "dodge": "dodge",
+}
+const INPUT_TEXT: Dictionary = {
+	"kills_per_second": "kills/s", "stuns_per_second": "stuns/s", "arrow_pickups_per_second": "arrows picked up/s",
+	"health_drops_per_second": "drops below high health/s",
 }
 const TAG_USE_TEXT: Dictionary = {2: "direct use of a lightning skill", 4: "direct use of a cold skill", 8: "direct use of a fire skill"}
 ## «Every 3 seconds if you are on high health you lose 25% of your current health and gain Apocalypse for 3 seconds».
@@ -85,6 +103,8 @@ const PARAM_BUFFS: Dictionary = {
 	"void_essence_crit_chance": {"ailment": "VoidEssence", "per": "crit", "chance": true},
 	"molten_stacks": {"ailment": "MoltenInfusion", "per": "hit", "unless_flag": "Molten Infusion only on hit vs own minion"},
 	"contempt_interval": {"ailment": "Contempt", "per": "interval"},
+	"crimson_shroud_chance": {"ailment": "CrimsonShroud", "per": "kill_in_zone", "chance": true, "zone": 4.0, "input": "kills_per_second"},
+	"dusk_shroud_stacks": {"ailment": "DuskShroud", "per": "input", "input": "arrow_pickups_per_second"},
 }
 ## AbilityProperty chances of uniques (item_procs.json) per use or per hit of the ability:
 ## Lament of the Lost Refuge — Corrupted Heraldry on Volcanic Orb cast (7) and on a hit of its shrapnel (8).
@@ -200,6 +220,7 @@ static func _raw(build: Node) -> Dictionary:
 			"cooldown": bool(r.get("cooldown", false)), "flag_keys": r.get("flag_keys", [])}
 	out["defense"] = _defense_sources(build)
 	out["defense"].append_array(_timed_sources(build))
+	out["defense"].append_array(_input_sources(build))
 	_busy = false
 	if _cache.size() >= CACHE_LIMIT:
 		_cache.clear()
@@ -229,6 +250,8 @@ static func buffs(build: Node, slot: int) -> Dictionary:
 			if bool(a.get("self", false)) and (all or PARALLEL_KINDS.has(str(a.get("kind", "")))):
 				gains.append([a, str(r["name"]) if str(a.get("source", "")) == "" else "%s: %s" % [r["name"], a["source"]]])
 	for a: Dictionary in raw.get("defense", []):
+		gains.append([a, str(a["source"])])
+	for a: Dictionary in _void_kill_sources(build, GameData.get_ability(str(build.skills[slot].get("ability", "")))):
 		gains.append([a, str(a["source"])])
 	var sums: Dictionary = {}
 	for g: Array in gains:
@@ -336,7 +359,20 @@ static func _param_sources(build: Node, params: Dictionary, rates: Dictionary, f
 		var id: int = GameData.ailment_id_by_name(str(spec["ailment"]))
 		if n <= 0.0 or id < 0:
 			continue
-		if bool(spec.get("chance", false)):
+		if spec.has("input"):
+			var rate_in: float = input_rate(build, str(spec["input"]))
+			if rate_in <= 0.0:
+				continue
+			var g_in: Dictionary
+			if str(spec["per"]) == "kill_in_zone":
+				var share: float = minf(1.0, uses * float(spec["zone"]))
+				g_in = _gain(id, rate_in * share * minf(n, 1.0), 0.0, LE.t("%s: chance %s per kill in the zone (%s of the time), %s kills/s (Conditions)") % [
+					str(label), LE.fmt_pct(n), LE.fmt_pct(share), LE.fmt_num(rate_in)])
+			else:
+				g_in = _gain(id, rate_in * n, 0.0, LE.t("%s: %s stacks × %s/s (Conditions)") % [str(label), LE.fmt_num(n), LE.fmt_num(rate_in)])
+			g_in["kind"] = "input"
+			out.append(g_in)
+		elif bool(spec.get("chance", false)):
 			var events: float = uses
 			match str(spec["per"]):
 				"hit":
@@ -360,16 +396,7 @@ static func _param_sources(build: Node, params: Dictionary, rates: Dictionary, f
 		elif str(spec["per"]) == "use":
 			var g: Dictionary = _gain(id, uses * n, 0.0, LE.t("%s: %s stacks per use") % [str(label), LE.fmt_num(n)])
 			if bool(spec.get("spent_by_hits", false)):
-				var hits: Dictionary = _enemy_hits(build)
-				var spend: float = float(hits["rate"]) * (1.0 - clampf(float(player_property(build, KEEP_SILVER_PROPERTY)["value"]), 0.0, 1.0))
-				if spend > 0.0:
-					var total: float = 0.0
-					var k: int = 1
-					while k <= int(ceil(n)):
-						total += minf(float(g["duration"]), float(k) / spend)
-						k += 1
-					g["duration"] = total / ceilf(n)
-					g["source"] = str(g["source"]) + LE.t(", spent by %s enemy hits/s (Defense tab)") % LE.fmt_num(spend)
+				_spend_silver(build, g, n)
 			out.append(g)
 		else:
 			var in_zone: float = minf(1.0, uses * float(spec["zone"]))
@@ -383,6 +410,96 @@ static func _param_value(p: Dictionary) -> float:
 	if p.get("set") != null:
 		return float(p["set"])
 	return float(p.get("added", 0.0)) * (1.0 + float(p.get("increased", 0.0))) * float(p.get("more", 1.0))
+
+
+## Silver Shroud dodges your next hit: the k-th stack of a burst of `n` lives min(duration, k / spends per second), so the
+## average lifetime replaces the duration of the gain `g`.
+static func _spend_silver(build: Node, g: Dictionary, n: float) -> void:
+	var spend: float = float(_enemy_hits(build)["rate"]) * (1.0 - clampf(float(player_property(build, KEEP_SILVER_PROPERTY)["value"]), 0.0, 1.0))
+	if spend <= 0.0:
+		return
+	var total: float = 0.0
+	var k: int = 1
+	while k <= int(ceil(n)):
+		total += minf(float(g["duration"]), float(k) / spend)
+		k += 1
+	g["duration"] = total / ceilf(n)
+	g["source"] = str(g["source"]) + LE.t(", spent by %s enemy hits/s (Defense tab)") % LE.fmt_num(spend)
+
+
+## Rate of an EVENT_INPUTS player number (per second, at least 0).
+static func input_rate(build: Node, key: String) -> float:
+	return maxf(float(build.player_state.get(key, 0.0)), 0.0)
+
+
+## Gains from PP_INPUT_BUFFS (not the void-kill ones, which follow the selected skill) and Ancient Flight while moving.
+static func _input_sources(build: Node) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for index: int in PP_INPUT_BUFFS:
+		var spec: Dictionary = PP_INPUT_BUFFS[index]
+		if not bool(spec.get("void", false)):
+			var g: Dictionary = _input_gain(build, index, spec)
+			if not g.is_empty():
+				out.append(g)
+	var seconds: float = float(player_property(build, ANCIENT_FLIGHT_PROPERTY)["value"])
+	var id: int = GameData.ailment_id_by_name("AncientFlight")
+	if seconds > 0.0 and id >= 0 and bool(build.player_state.get("moving", false)):
+		var g_f: Dictionary = _gain(id, 1.0 / seconds, 0.0, LE.t("moving after attacking (Moving on the Conditions tab), %s s") % LE.fmt_num(seconds))
+		g_f["duration"] = seconds
+		g_f["periodic"] = true
+		out.append(g_f)
+	return out
+
+
+## Inspiration on kills with a void skill: the kills are those of the selected skill (`ab`).
+static func _void_kill_sources(build: Node, ab: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if (int(ab.get("tags", 0)) & LE.VOID) == 0:
+		return out
+	for index: int in PP_INPUT_BUFFS:
+		if bool(PP_INPUT_BUFFS[index].get("void", false)):
+			var g: Dictionary = _input_gain(build, index, PP_INPUT_BUFFS[index])
+			if not g.is_empty():
+				out.append(g)
+	return out
+
+
+static func _input_gain(build: Node, index: int, spec: Dictionary) -> Dictionary:
+	var rate: float = input_rate(build, str(spec["input"]))
+	var value: float = float(player_property(build, index)["value"])
+	var id: int = GameData.ailment_id_by_name(str(spec["ailment"]))
+	if rate <= 0.0 or value <= 0.0 or id < 0:
+		return {}
+	var what: String = LE.t(str(INPUT_TEXT[str(spec["input"])]))
+	if bool(spec.get("stacks", false)):
+		var g: Dictionary = _gain(id, rate * value, 0.0, LE.t("%s stacks per event, %s %s (Conditions)") % [LE.fmt_num(value), LE.fmt_num(rate), what])
+		if str(spec["ailment"]) == "SilverShroud":
+			_spend_silver(build, g, value)
+		return g
+	var chance: float = 1.0 if bool(spec.get("flag", false)) else minf(value, 1.0)
+	return _gain(id, rate * chance, 0.0, LE.t("chance %s per event, %s %s (Conditions)") % [LE.fmt_pct(chance), LE.fmt_num(rate), what])
+
+
+## Why each EVENT_INPUTS number (and the Moving checkbox) matters to the build: {"player_values": {key: reason},
+## "player_flags": {key: reason}}; `params` = the param names of the bar skills -> skill name.
+static func input_reasons(build: Node, params: Dictionary) -> Dictionary:
+	var values: Dictionary = {}
+	var flags: Dictionary = {}
+	for index: int in PP_INPUT_BUFFS:
+		var spec: Dictionary = PP_INPUT_BUFFS[index]
+		var pp: Dictionary = player_property(build, index)
+		if float(pp["value"]) > 0.0:
+			values[str(spec["input"])] = LE.t("%s on you: %s") % [GameData.display_name(GameData.ailment(GameData.ailment_id_by_name(str(spec["ailment"])))),
+				", ".join(pp["lines"])]
+	for param: String in PARAM_BUFFS:
+		var spec_p: Dictionary = PARAM_BUFFS[param]
+		if spec_p.has("input") and params.has(param):
+			values[str(spec_p["input"])] = LE.t("%s on you: %s") % [GameData.display_name(GameData.ailment(GameData.ailment_id_by_name(str(spec_p["ailment"])))),
+				str(params[param])]
+	var flight: Dictionary = player_property(build, ANCIENT_FLIGHT_PROPERTY)
+	if float(flight["value"]) > 0.0:
+		flags["moving"] = LE.t("Ancient Flight on you: %s") % ", ".join(flight["lines"])
+	return {"player_values": values, "player_flags": flags}
 
 
 ## The enemy's hits on you (the attack of the Defense tab): {interval, dodge, rate = landed hits per second}; rate 0 for a

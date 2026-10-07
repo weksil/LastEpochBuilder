@@ -112,6 +112,11 @@ static func default_player_state() -> Dictionary:
 		"ignite_stacks": 0,
 		"damned_stacks": 0,
 		"shadows": 0,
+		# events per second the calculation cannot derive (EnemyAilments.EVENT_INPUTS)
+		"kills_per_second": 0.0,
+		"stuns_per_second": 0.0,
+		"arrow_pickups_per_second": 0.0,
+		"health_drops_per_second": 0.0,
 		# buffs on the player: AilmentID -> stacks (positive ailments of ailments.json, the "Buffs on me" list)
 		"buffs": {}
 	}
@@ -695,6 +700,8 @@ func reset_player_conditions() -> void:
 			player_state[key] = false
 		elif value is Dictionary:
 			continue  # buffs have their own reset (clear_player_buffs)
+		elif value is float:
+			player_state[key] = 0.0
 		elif key != "health":
 			player_state[key] = 0
 	changed.emit()

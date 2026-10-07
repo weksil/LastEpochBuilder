@@ -178,7 +178,8 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   glancing, block, enemy crit), the pool (health, ward, endurance, mana before health) and the maximum hit per damage type
   (client/docs/ENGINE.md §10). A warning appears when the worst hit (crit, +20% variance) kills from full health.
 - **Conditions** — health and player state (hit recently / crit recently, movement, leech, mana below 50%, Haste, Frenzy,
-  ward, curses and stacks on yourself, active shadows), "Buffs on me" with stacks (Dusk / Crimson / Silver Shroud, Void
+  ward, curses and stacks on yourself, active shadows, kills / stuns / arrows picked up / drops below high health per second for
+  buffs gained on those events — shown only when the build has such a buff source), "Buffs on me" with stacks (Dusk / Crimson / Silver Shroud, Void
   Essence, Divine Essence, Sharpshooter … — any positive ailment of `ailments.json`, its stats go to the character), enemy type/level/armor/resistances, flags (including "frozen") and stacks of ailments,
   shreds and curses (buffs are taken from `ailments.json`, the penalty against bosses is accounted for); an enemy ailment
   or a buff on you with "auto" on shows the average kept while the selected skill is used (gains per second × duration,

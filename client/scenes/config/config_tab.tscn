@@ -282,6 +282,90 @@ max_value = 20.0
 update_on_text_changed = true
 metadata/player_value = "shadows"
 
+[node name="KillsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/KillsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="KillsLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/KillsRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kills per second"
+
+[node name="KillsSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/KillsRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 100.0
+step = 0.1
+update_on_text_changed = true
+metadata/player_value = "kills_per_second"
+
+[node name="StunsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/StunsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StunsLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/StunsRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Stuns per second"
+
+[node name="StunsSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/StunsRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 100.0
+step = 0.1
+update_on_text_changed = true
+metadata/player_value = "stuns_per_second"
+
+[node name="ArrowPickupsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ArrowPickupsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ArrowPickupsLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ArrowPickupsRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Arrows picked up per second"
+
+[node name="ArrowPickupsSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/ArrowPickupsRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 100.0
+step = 0.1
+update_on_text_changed = true
+metadata/player_value = "arrow_pickups_per_second"
+
+[node name="HealthDropsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/HealthDropsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HealthDropsLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/HealthDropsRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Drops below high health per second"
+
+[node name="HealthDropsSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/HealthDropsRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 100.0
+step = 0.1
+update_on_text_changed = true
+metadata/player_value = "health_drops_per_second"
+
 [node name="EnemyCard" type="PanelContainer" parent="Root/Columns/Left"]
 layout_mode = 2
 theme_type_variation = &"SectionCard"
