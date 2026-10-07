@@ -11,6 +11,11 @@ Subscribe to `Build.changed` in `_ready`. When filling controls from code, wrap 
 values from `Build` go back into controls only via `set_value_no_signal` / `set_pressed_no_signal` and only if they differ.
 Recalculation on `Build.changed` is deferred (`call_deferred`, at most once per frame, a hidden tab is not calculated). Rows are not recreated while
 the set of rows is the same: texts are updated in place, the value of a focused control is not touched, expanded breakdowns and scroll position are kept.
+**Lazy breakdowns.** The Calculations tab and the stats panel read lean `SkillCalc.compute(…, false)` results (docs/ENGINE.md §11):
+rows have `lazy = true` and no breakdown, `CalcRow` shows "+" for them (the details panel holds "…"); expanding a row makes the tab
+recompute with details while any row is expanded. Tooltips that hold breakdowns of a lean result are built on hover:
+`LazyTooltipPanel` (`scripts/common/lazy_tooltip_panel.gd`, `set_tooltip_source(callable)`, `_get_tooltip`) — `CalcTile` extends it
+(`show_value(text, sub, tooltip, tooltip_source)`), the stats panel `%SummaryCard` uses it.
 Changed values are highlighted for ~1.5 s by switching `theme_type_variation` (by a `SceneTreeTimer`, there are no styles in code).
 
 **Theme (`theme/main_theme.tres`).** Checkboxes: the icons `theme/icons/check_*.svg` (checked — a gold plate with a tick, unchecked — an outlined
@@ -160,7 +165,7 @@ First the rows "Class/Mastery/Level/Passive points", then by groups: `group_scen
 `StatRowChanged` for ~1.5 s, and if the row has a numeric `value`, the difference is shown next to it ("+12", "−3%", variants `DeltaUp`/`DeltaDown`).
 `%SummaryCard` (visible if at least one skill on the bar has a positive "DPS vs enemy" row in its "Against enemy" section): `%SkillName` "Total DPS vs enemy",
 `%SkillSummary` — the sum over the bar (`HeroValueMain`), `%SkillBreakdown` — one line "<skill> — <DPS>" per contributing skill, highest first (`HeroSkillList`),
-`%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is every skill's breakdown.
+`%SkillTarget` — "target: <Enemy.describe>", the card's tooltip is every skill's breakdown (`LazyTooltipPanel`, built on hover).
 
 ## Defense — `scripts/defense/defense_tab.gd` (`class_name DefenseTab extends VBoxContainer`)
 Scene `scenes/defense/defense_tab.tscn`, `@export section_scene, row_scene` (the `calc_section` / `calc_row` scenes of Calculations).

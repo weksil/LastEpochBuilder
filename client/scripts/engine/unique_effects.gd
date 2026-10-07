@@ -12,8 +12,18 @@ const CHARACTER_EVENTS: Array[String] = ["second", "hit_taken", "block", "dodge"
 const CAST_FOR_TAGS_EVENTS: Dictionary = {1: "hit", 2: "crit"}
 
 
-## Every special effect of the equipped uniques: {slot, unique, effect, model, pp, label, ability_index}.
+## Every special effect of the equipped uniques: {slot, unique, effect, model, pp, label, ability_index}. Cached by the
+## items and the locale (CalcCache): the entries are shared and must not be changed.
 static func entries(build: Node) -> Array[Dictionary]:
+	var key: PackedByteArray = var_to_bytes([build.items, TranslationServer.get_locale()])
+	var hit: Variant = CalcCache.lookup("unique_entries", key)
+	if hit == null:
+		hit = _entries(build)
+		CalcCache.put("unique_entries", key, hit)
+	return hit
+
+
+static func _entries(build: Node) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for slot: String in build.items:
 		var item: Dictionary = build.items[slot]

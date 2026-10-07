@@ -30,7 +30,7 @@ func setup(key: String, row: Dictionary, alt: bool, expanded: bool, key_row: boo
 	_name_label.text = str(row.get("label", ""))
 	_value_label.text = str(row.get("text", ""))
 	_value_label.theme_type_variation = _base_variation()
-	_apply_breakdown(str(row.get("breakdown", "")))
+	_apply_breakdown(row)
 	_expand_button.set_pressed_no_signal(expanded and _expand_button.visible)
 	_sync_expanded()
 
@@ -41,12 +41,16 @@ func update_row(row: Dictionary) -> void:
 	if text != _value_label.text:
 		_value_label.text = text
 		_flash()
-	_apply_breakdown(str(row.get("breakdown", "")))
+	_apply_breakdown(row)
 
 
-func _apply_breakdown(breakdown: String) -> void:
-	_details.text = breakdown
-	_expand_button.visible = breakdown != ""
+## A `lazy` row (lean SkillCalc result) has a breakdown that is built when the row is expanded: "+" is shown and the
+## panel holds "…" until the tab refreshes with the breakdowns.
+func _apply_breakdown(row: Dictionary) -> void:
+	var breakdown: String = str(row.get("breakdown", ""))
+	var lazy: bool = bool(row.get("lazy", false))
+	_details.text = breakdown if breakdown != "" or not lazy else "…"
+	_expand_button.visible = breakdown != "" or lazy
 	_sync_expanded()
 
 

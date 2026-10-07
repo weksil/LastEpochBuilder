@@ -1,4 +1,4 @@
-class_name CalcTile extends PanelContainer
+class_name CalcTile extends LazyTooltipPanel
 
 ## One big number of the "Calculations" headline strip (docs/UI.md).
 
@@ -21,8 +21,9 @@ func _ready() -> void:
 	_value.theme_type_variation = _base_variation()
 
 
-## text "" shows an em dash. sub: small line below the number; tooltip: breakdown of the number.
-func show_value(text: String, sub: String = "", tooltip: String = "") -> void:
+## text "" shows an em dash. sub: small line below the number; tooltip: breakdown of the number, or tooltip_source:
+## a callable that builds it when the pointer is over the tile (the breakdown of a lean result).
+func show_value(text: String, sub: String = "", tooltip: String = "", tooltip_source: Callable = Callable()) -> void:
 	var shown: String = text if text != "" else "—"
 	if shown != _value.text and _value.text != "—" and shown != "—":
 		_flash()
@@ -30,6 +31,7 @@ func show_value(text: String, sub: String = "", tooltip: String = "") -> void:
 	_sub.text = sub
 	_sub.visible = sub != ""
 	tooltip_text = tooltip
+	set_tooltip_source(tooltip_source)
 
 
 func _base_variation() -> StringName:

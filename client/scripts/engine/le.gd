@@ -15,6 +15,11 @@ static func t(text: String) -> String:
 static var missing: Dictionary = {}
 
 
+## Off while a calculation runs whose breakdown texts nobody reads (SkillCalc.compute with details = false): the engine
+## skips building them. Numbers, row texts and notes never depend on it.
+static var details: bool = true
+
+
 ## Directory of research/data: inside the exported build it is packed as res://data/research
 ## (scripts/build_windows.ps1 copies it there); in the editor it is read from the repository next to client/.
 static func research_dir() -> String:

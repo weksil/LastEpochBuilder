@@ -171,8 +171,7 @@ func _ready() -> void:
 	if int(Build.items.get("helmet", {}).get("unique", -1)) != snowblind_id:
 		search_failed = true
 		print("FAIL: Enter in the search did not choose Snowblind")
-	print("unique rows: %d, text: %s" % [editor.get_node("%UniqueMods").get_child_count(), editor.get_node("%UniqueText").text.replace("
-", " | ")])
+	print("unique rows: %d, text: %s" % [editor.get_node("%UniqueMods").get_child_count(), editor.get_node("%UniqueText").text.replace("\n", " | ")])
 
 	# unequipped items: copy the helmet to the stash, open the choice list, add an item and equip it
 	var failed_items: bool = false
@@ -356,6 +355,32 @@ func _ready() -> void:
 	if summary_tile.text == "—":
 		failed = true
 		print("FAIL: headline DPS is empty")
+	# lazy breakdowns: the rows show "+" without a built breakdown; expanding one builds the breakdowns of the tab
+	if not calcs._row_nodes.is_empty():
+		var first_row: CalcRow = calcs._row_nodes[0]
+		var expand: Button = first_row.get_node("%ExpandButton")
+		var details: Label = first_row.get_node("%Details")
+		if not calcs._lean or not expand.visible or details.text != "…":
+			failed = true
+			print("FAIL: calc rows are not lean with a \"+\" before a row is expanded")
+		expand.button_pressed = true
+		await _frames(3)
+		print("expanded breakdown: %s" % details.text.get_slice("\n", 0))
+		if calcs._lean or details.text == "…" or details.text == "" or not first_row.get_node("%DetailsPanel").visible:
+			failed = true
+			print("FAIL: expanding a row did not build its breakdown")
+		expand.button_pressed = false
+		await _frames(3)
+	var dps_tile: CalcTile = calcs.get_node("%Summary").get_node("%DpsTile")
+	var dps_tip: String = dps_tile._get_tooltip(Vector2.ZERO)
+	print("DPS tile tooltip: %s" % dps_tip.get_slice("\n", 0))
+	if dps_tip == "":
+		failed = true
+		print("FAIL: the DPS tile has no tooltip")
+	var card: LazyTooltipPanel = main.get_node("Margin/Layout/Split/StatsPanel/VBox/SummaryCard")
+	if card._get_tooltip(Vector2.ZERO) == "":
+		failed = true
+		print("FAIL: the stats panel DPS card has no tooltip")
 	# buffs panel lists the equipped skills
 	print("buff rows: %d" % calcs.get_node("%Buffs").get_node("%List").get_child_count())
 	# defense tab: a boss preset through the dropdown, corruption typed in the tab goes to the enemy, tiles filled

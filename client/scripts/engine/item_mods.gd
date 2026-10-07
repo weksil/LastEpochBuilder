@@ -40,8 +40,18 @@ static func scale_key(affix: Dictionary) -> String:
 ## item: Dictionary with {base: int, sub: int, implicit_rolls: Array[int], affixes: Array[{id, tier, roll}]}
 ## effect_scale: optional multipliers of the affix effect {"prefix", "suffix", "enchant"} (default 1) — idols in refracted
 ## altar slots (AltarMods); applied to the affix effect modifier like the base's affixEffectModifier.
-## Returns: Array[StatMod] for implicits and affixes.
+## Returns: Array[StatMod] for implicits and affixes. Cached by the arguments and the locale (CalcCache): the array is a
+## copy, the StatMods are shared and must not be changed.
 static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary = {}) -> Array[StatMod]:
+	var key: PackedByteArray = var_to_bytes([slot, item, effect_scale, TranslationServer.get_locale()])
+	var hit: Variant = CalcCache.lookup("item_mods", key)
+	if hit == null:
+		hit = _item_mods(slot, item, effect_scale)
+		CalcCache.put("item_mods", key, hit, 1024)
+	return (hit as Array[StatMod]).duplicate()
+
+
+static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary) -> Array[StatMod]:
 	var mods: Array[StatMod] = []
 
 	if not item or item.is_empty():

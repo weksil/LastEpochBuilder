@@ -22,7 +22,53 @@ const PROJECTILE_MODE_NAMES: Dictionary = {"one": "One projectile", "average": "
 
 ## The enemy ailments and the buffs on you the calculation sees: the Conditions values plus the averages kept while the
 ## skill is used (EnemyAilments, docs/ENGINE.md §9.11); `auto_ailments` / `auto_buffs` of the result list the averages.
-static func compute(build: Node, slot: int) -> Dictionary:
+## Cached by the build state, the slot and the engine flags it reads (CalcCache); every call gets its own deep copy.
+## details = false: a lean result for callers that read numbers only or build the breakdowns on demand — every row
+## breakdown of the sections is "" and the row has `lazy` = true, the result has `lean` = true, and the texts are not
+## built at all (LE.details); numbers, row texts and notes are the same as with details.
+static func compute(build: Node, slot: int, details: bool = true) -> Dictionary:
+	if ConfigRelevance._recording:
+		return _compute_with(build, slot, details)
+	var key: Array = [CalcCache.build_key(build), slot, EnemyAilments.enabled, EnemyAilments._busy, MinionCount._busy]
+	var hit: Variant = CalcCache.lookup("skill_calc", key + [details])
+	if hit == null and not details:
+		var full: Variant = CalcCache.lookup("skill_calc", key + [true])
+		if full != null:
+			hit = (full as Dictionary).duplicate(true)
+			_make_lean(hit)
+			CalcCache.put("skill_calc", key + [false], hit)
+	if hit == null:
+		hit = _compute_with(build, slot, details)
+		CalcCache.put("skill_calc", key + [details], hit)
+	return (hit as Dictionary).duplicate(true)
+
+
+static func _compute_with(build: Node, slot: int, details: bool) -> Dictionary:
+	var saved_details: bool = LE.details
+	LE.details = details
+	var result: Dictionary = _compute_applied(build, slot)
+	LE.details = saved_details
+	if not details:
+		_make_lean(result)
+	return result
+
+
+## Empties the section row breakdowns of a result (they may be partly built while LE.details is off) and marks it lean.
+## The projectile row (also a row of a section, the same dictionary) is cheap and keeps its breakdown as its own copy
+## (the tooltip of the projectile selector).
+static func _make_lean(result: Dictionary) -> void:
+	var proj: Dictionary = result.get("projectiles", {})
+	var proj_row: Dictionary = (proj["row"] as Dictionary).duplicate() if proj.has("row") else {}
+	for section: Dictionary in result.get("sections", []):
+		for row: Dictionary in section.get("rows", []):
+			row["breakdown"] = ""
+			row["lazy"] = true
+	if proj.has("row"):
+		proj["row"] = proj_row
+	result["lean"] = true
+
+
+static func _compute_applied(build: Node, slot: int) -> Dictionary:
 	var saved: Dictionary = EnemyAilments.apply(build, slot)
 	var result: Dictionary = _compute(build, slot)
 	EnemyAilments.restore(build, saved)
@@ -199,9 +245,7 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		var more: Dictionary = Enemy.corruption_more(build.enemy)
 		enemy_rows.append({"label": LE.t("Corruption"), "text": LE.t("health and hits +%s more, DoT +%s more") % [
 			LE.fmt_pct(more["health"]), LE.fmt_pct(more["dot"])], "breakdown":
-			LE.t("Corruption %d: f(c) = %s (0.6c up to 100, 0.002·c^1.52 + 1.055c − 47.69 above).
-The enemy gets %s more health and hit damage and %s more DoT damage.
-Corruption does not change your DPS.") % [
+			LE.t("Corruption %d: f(c) = %s (0.6c up to 100, 0.002·c^1.52 + 1.055c − 47.69 above).\nThe enemy gets %s more health and hit damage and %s more DoT damage.\nCorruption does not change your DPS.") % [
 			corruption, LE.fmt_num(Enemy.corruption_power(corruption)), LE.fmt_pct(more["health"]), LE.fmt_pct(more["dot"])]})
 	enemy_rows.append_array(proj_rows)
 	enemy_rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(total_enemy), "value": total_enemy, "breakdown":
@@ -293,8 +337,7 @@ static func projectile_hits(build: Node, slot: int, ab: Dictionary, s: Dictionar
 	lines.insert(0, LE.t("Shotgun (several projectiles of one use hit one target): %s") % (LE.t("yes") if shotgun else LE.t("no")))
 	lines.insert(1, LE.t("Max projectiles per use: %s") % LE.fmt_num(count))
 	var row: Dictionary = {"label": LE.t("Projectiles hitting the target"), "text": "%s / %s" % [LE.fmt_num(factor), LE.fmt_num(count)],
-		"value": factor, "breakdown": "
-".join(lines)}
+		"value": factor, "breakdown": "\n".join(lines)}
 	return {"count": count, "shotgun": shotgun, "mode": mode, "factor": factor, "row": row}
 
 
@@ -699,6 +742,7 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 	var lines_inc: Array = [[], [], [], [], [], [], []]
 	var lines_more: Array = [[], [], [], [], [], [], []]
 	var lines_pen: Array = [[], [], [], [], [], [], []]
+	var details: bool = LE.details
 
 	# 1. untyped flat damage shared by base-damage proportion
 	var total_base: float = 0.0
@@ -716,8 +760,9 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 				if base_dmg[i] > 0.0:
 					var share: float = mod.added * ade * base_dmg[i] / total_base
 					flat_added[i] += share
-					lines_added[i].append(LE.t("  +%s × %s × share %s = %s  (%s, untyped)") % [
-						LE.fmt_num(mod.added), LE.fmt_num(ade), LE.fmt_pct(base_dmg[i] / total_base), LE.fmt_num(share), mod.source])
+					if details:
+						lines_added[i].append(LE.t("  +%s × %s × share %s = %s  (%s, untyped)") % [
+							LE.fmt_num(mod.added), LE.fmt_num(ade), LE.fmt_pct(base_dmg[i] / total_base), LE.fmt_num(share), mod.source])
 
 	# 2. damage, crit, penetration
 	var cc_add: float = 0.0
@@ -738,32 +783,37 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 			if mod.property == LE.PENETRATION:
 				for i: int in targets:
 					pen[i] += mod.added
-					if mod.added != 0.0:
+					if details and mod.added != 0.0:
 						lines_pen[i].append("  +%s  (%s)" % [LE.fmt_pct(mod.added), mod.source])
 				continue
 			if mod.added != 0.0 and split[0] >= 0 and ade != 0.0:
 				var i_add: int = split[0]
 				flat_added[i_add] += ade * mod.added
-				lines_added[i_add].append("  +%s × %s = %s  (%s)" % [LE.fmt_num(mod.added), LE.fmt_num(ade), LE.fmt_num(ade * mod.added), mod.source])
+				if details:
+					lines_added[i_add].append("  +%s × %s = %s  (%s)" % [LE.fmt_num(mod.added), LE.fmt_num(ade), LE.fmt_num(ade * mod.added), mod.source])
 			for i: int in targets:
 				if mod.increased != 0.0:
 					inc[i] += mod.increased
-					lines_inc[i].append("  %s%s  (%s)" % ["+" if mod.increased > 0 else "", LE.fmt_pct(mod.increased), mod.source])
+					if details:
+						lines_inc[i].append("  %s%s  (%s)" % ["+" if mod.increased > 0 else "", LE.fmt_pct(mod.increased), mod.source])
 				for m: float in mod.more:
 					more[i] *= 1.0 + m
-					lines_more[i].append("  ×%s  (%s)" % [LE.fmt_num(1.0 + m), mod.source])
+					if details:
+						lines_more[i].append("  ×%s  (%s)" % [LE.fmt_num(1.0 + m), mod.source])
 		elif mod.property == LE.CRIT_CHANCE and _applicable(ctx, mod.tags):
 			cc_add += mod.added
 			cc_inc += mod.increased
 			for m: float in mod.more:
 				cc_more *= 1.0 + m
-			crit_lines.append("  " + mod.describe())
+			if details:
+				crit_lines.append("  " + mod.describe())
 		elif mod.property == LE.CRIT_MULTI and _applicable(ctx, mod.tags):
 			cm_add += mod.added
 			cm_inc += mod.increased
 			for m: float in mod.more:
 				cm_more *= 1.0 + m
-			multi_lines.append("  " + mod.describe())
+			if details:
+				multi_lines.append("  " + mod.describe())
 
 	# 3. final per type
 	var final: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -775,6 +825,9 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 			continue
 		final[i] = maxf(0.0, pre * (1.0 + inc[i]) * more[i])
 		total += final[i]
+		if not details:
+			rows.append({"label": LE.t(LE.DT_NAME[i]), "text": LE.fmt_num(final[i]), "breakdown": ""})
+			continue
 		var b: PackedStringArray = []
 		if not ctx["conversion_lines"][i].is_empty():
 			b.append(LE.t("Base before conversion: %s") % LE.fmt_num(ctx["base_before"][i]))

@@ -29,6 +29,7 @@ var _input_rows: Array[SkillInputRow] = []
 var _section_signature: String = ""
 var _row_nodes: Array[CalcRow] = []
 var _expanded: Dictionary = {}  # row key -> true
+var _lean: bool = false  # the shown result has no breakdowns (SkillCalc.compute without details)
 
 @onready var skill_select: OptionButton = %SkillSelect
 @onready var summary: CalcSummary = %Summary
@@ -98,7 +99,9 @@ func _update_calcs() -> void:
 	_pending = false
 	if not is_visible_in_tree():
 		return
-	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill)
+	# breakdowns are built only while a row is expanded; otherwise the rows show "+" and build them on demand
+	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill, not _expanded.is_empty())
+	_lean = bool(result.get("lean", false))
 	summary.show_result(result)
 	_update_inputs(result)
 	_update_sections(result)
@@ -217,6 +220,8 @@ func _restore_scroll(pos: int) -> void:
 func _on_row_expanded(key: String, expanded: bool) -> void:
 	if expanded:
 		_expanded[key] = true
+		if _lean:
+			_schedule_update()
 	else:
 		_expanded.erase(key)
 

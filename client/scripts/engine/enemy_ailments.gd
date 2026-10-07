@@ -201,7 +201,7 @@ static func consumed_load(rate: float, duration: float, period: float) -> float:
 
 ## Per bar slot: {name, applied, uses, cooldown, flag_keys} of a pass against the Conditions values only (cached).
 static func _raw(build: Node) -> Dictionary:
-	var key: String = _signature(build)
+	var key: PackedByteArray = _signature(build)
 	if _cache.has(key):
 		return _cache[key]
 	_busy = true
@@ -210,7 +210,7 @@ static func _raw(build: Node) -> Dictionary:
 		var ab: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
 		if ab.is_empty():
 			continue
-		var r: Dictionary = SkillCalc.compute(build, slot)
+		var r: Dictionary = SkillCalc.compute(build, slot, false)
 		var uses: float = float(r.get("rates", {}).get("uses", 0.0))
 		var applied: Array = (r.get("ailments_applied", []) as Array).duplicate()
 		var rates: Dictionary = r.get("rates", {})
@@ -721,6 +721,6 @@ static func threshold_components(build: Node, store: StatStore, comp_results: Ar
 	return out
 
 
-static func _signature(build: Node) -> String:
-	return var_to_str([build.class_id, build.mastery, build.level, build.quest_passive_points, build.passives,
-		build.skills, build.items, build.blessings, build.enemy, build.player_state])
+## Everything _raw reads, the Defense tab settings (enemy hits on you) and the locale (source texts) included.
+static func _signature(build: Node) -> PackedByteArray:
+	return CalcCache.build_key(build)

@@ -36,24 +36,37 @@ func _on_projectile_toggled(pressed: bool, mode: String) -> void:
 		Build.set_skill_projectile_mode(Build.selected_skill, mode)
 
 
-## result: SkillCalc.compute output. Empty sections (no skill in the slot) clear the strip.
+## result: SkillCalc.compute output. Empty sections (no skill in the slot) clear the strip. The tile tooltips of a lean
+## result are built on hover from the result with details of the selected skill.
 func show_result(result: Dictionary) -> void:
-	var dps: Dictionary = find_row(result, DPS_LABEL, ENEMY_SECTION)
 	var target: Dictionary = find_row(result, TARGET_LABEL, ENEMY_SECTION)
 	_title.text = str(result.get("title", ""))
 	_target.text = (tr("Target: %s") % str(target.get("text", ""))) if not target.is_empty() else ""
-	_dps.show_value(str(dps.get("text", "")), tr("damage per second vs target"), str(dps.get("breakdown", "")))
-	var hit: Dictionary = find_row(result, HIT_LABEL, ENEMY_SECTION)
-	_hit.show_value(str(hit.get("text", "")), tr("including crit chance"), str(hit.get("breakdown", "")))
-	var uses: Dictionary = find_row(result, USES_LABEL, SPEED_SECTION)
-	if uses.is_empty():  # skills whose only component is prefixed (minions, triggers)
-		uses = find_row(result, USES_LABEL)
-	_uses.show_value(str(uses.get("text", "")), "", str(uses.get("breakdown", "")))
-	var crit: Dictionary = find_row(result, CRIT_LABEL, CRIT_SECTION)
-	if crit.is_empty():
-		crit = find_row(result, CRIT_LABEL)
-	_crit.show_value(str(crit.get("text", "")), "", str(crit.get("breakdown", "")))
+	_show_tile(_dps, result, DPS_LABEL, ENEMY_SECTION, false, tr("damage per second vs target"))
+	_show_tile(_hit, result, HIT_LABEL, ENEMY_SECTION, false, tr("including crit chance"))
+	# uses and crit: skills whose only component is prefixed (minions, triggers) have them in another section
+	_show_tile(_uses, result, USES_LABEL, SPEED_SECTION, true, "")
+	_show_tile(_crit, result, CRIT_LABEL, CRIT_SECTION, true, "")
 	_show_projectiles(result.get("projectiles", {}))
+
+
+func _show_tile(tile: CalcTile, result: Dictionary, label: String, section: String, any_section: bool, sub: String) -> void:
+	var row: Dictionary = _tile_row(result, label, section, any_section)
+	var source: Callable = Callable()
+	if bool(result.get("lean", false)) and not row.is_empty():
+		source = _detailed_breakdown.bind(Build.selected_skill, label, section, any_section)
+	tile.show_value(str(row.get("text", "")), sub, str(row.get("breakdown", "")), source)
+
+
+static func _tile_row(result: Dictionary, label: String, section: String, any_section: bool) -> Dictionary:
+	var row: Dictionary = find_row(result, label, section)
+	if row.is_empty() and any_section:
+		row = find_row(result, label)
+	return row
+
+
+static func _detailed_breakdown(slot: int, label: String, section: String, any_section: bool) -> String:
+	return str(_tile_row(SkillCalc.compute(Build, slot, true), label, section, any_section).get("breakdown", ""))
 
 
 ## Selector "how many projectiles of one use hit the target", only for skills that fire projectiles. Without shotgun

@@ -870,3 +870,33 @@ die. "Maximum hit taken by damage type" divides the lethal damage by the hit mul
 penetration. Not counted (`notes`): boss mechanics without damage numbers, resource models without an amount.
 Check — `tests/defense_test.tscn` (06c §2.7/§2.9 vectors, endurance modes, delayed damage, recovery, scaling, presets,
 the average monster, an imported build, the build code).
+
+## 11. Caching and lean results — `engine/calc_cache.gd` (`class_name CalcCache`)
+
+One edit in the UI recomputes every bar skill (the stats panel), the enemy ailments and buffs kept on the target
+(EnemyAilments computes the whole bar once more), the Defense tab, the Conditions filter and, on an item hover, the build
+with that item. Most of it is the same work on the same build state, so pure results are memoized:
+- `CalcCache.build_key(build)` — `var_to_bytes` of every Build field the engine reads (class, mastery, level, quest points,
+  passives, skills with trees and inputs, items, blessings, enemy, player state, defense settings) and the locale (mod
+  sources are translated). It is exact (no hash collisions) and a temporary change of the build (EnemyAilments.apply,
+  ItemCompare snapshots, a skill input switched for a moment) is a different key, so an edit never sees a stale value.
+- Buckets (`lookup` / `put`, at most 64 entries each, a full bucket is emptied): `global_store` (key + `MinionCount._busy`;
+  not cached while ConfigRelevance records, it needs the models to run), `skill_calc` (key, slot, `EnemyAilments.enabled`
+  and `_busy`, `MinionCount._busy`, details; every call gets a deep copy), `item_mods` (slot, item, effect scale, locale;
+  1024 entries), `unique_entries` (items, locale), `passive_entries` (class, mastery, passives, locale).
+  `EnemyAilments._raw` and `MinionCount.types` keep their own caches keyed the same way.
+- Cached values are shared: callers never change a returned store, StatMod or entry (StatMods are not changed after they
+  are put into a store). Game data is assumed fixed; code that changes it at run time (tests) calls `CalcCache.clear()`.
+  `CalcCache.enabled = false` turns the cache off (`tests/perf_bench.tscn -- --nocache`).
+- `StatStore` keeps an index property → own mods (extended lazily as mods are appended); `query` and `mods_of(property)`
+  walk the parent chain through it in the order of `all_mods()`, so sums are added in the same order as before.
+
+**Lean results.** `SkillCalc.compute(build, slot, details := true)`: with `details = false` the static flag `LE.details`
+is off while the skill is computed and the per-mod breakdown lines are not built (`_build_damage`); every section row gets
+`breakdown = ""` and `lazy = true`, the result `lean = true`. Numbers, row texts, notes and the projectile row (with its
+breakdown) are the same as with details (`engine_test` `_lean_and_cache`). A lean result is also made from a cached result
+with details. Lean callers: EnemyAilments (the bar pass), ItemCompare snapshots, the stats panel, the Calculations tab while no
+row is expanded (the breakdowns are computed when a row is expanded, the headline tile tooltips on hover).
+
+`tests/perf_bench.tscn` (not part of the suite) times what the UI recomputes after an edit on every fixture build and writes
+every row of the results with `--golden=<path>`, to diff two engine versions.

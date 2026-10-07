@@ -11,7 +11,7 @@ var _signature: String = ""
 var _rows: Array[StatRow] = []  # stat rows only (group headers are not listed)
 
 @onready var rows_container: VBoxContainer = %Rows
-@onready var summary_card: PanelContainer = %SummaryCard
+@onready var summary_card: LazyTooltipPanel = %SummaryCard
 @onready var skill_breakdown_label: Label = %SkillBreakdown
 @onready var skill_summary_label: Label = %SkillSummary
 @onready var skill_target_label: Label = %SkillTarget
@@ -117,43 +117,47 @@ static func _row_item(group_name: String, title: String, text: String, tooltip: 
 	return {"kind": "row", "key": group_name + "|" + title, "title": title, "text": text, "tooltip": tooltip, "value": value}
 
 
-## Total DPS vs enemy of every skill on the bar, with the share of each skill below it.
+## Total DPS vs enemy of every skill on the bar, with the share of each skill below it. The numbers come from lean
+## results (no breakdowns); the card's tooltip with every skill's breakdown is built when the pointer is over it.
 func _update_skill_summary() -> void:
 	var parts: Array[Dictionary] = []
 	var total: float = 0.0
 	for slot: int in range(Build.skills.size()):
 		if str((Build.skills[slot] as Dictionary).get("ability", "")) == "":
 			continue
-		var result: Dictionary = SkillCalc.compute(Build, slot)
+		var result: Dictionary = SkillCalc.compute(Build, slot, false)
 		var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
 		var value: Variant = dps.get("value")
 		if not (value is float or value is int) or float(value) <= 0.0:
 			continue
 		total += float(value)
 		var title: String = str(result.get("title", ""))
-		var breakdown: String = str(dps.get("breakdown", ""))
+		var header: String = ""
 		var proj: Dictionary = result.get("projectiles", {})
 		if not proj.is_empty():
 			# projectiles hitting the target used for the DPS, then shotgun and the max per use in the tooltip
 			title = tr("%s (%s proj)") % [title, LE.fmt_num(float(proj["factor"]))]
-			breakdown = tr("Projectiles: %s in the calculation, max %s per use, shotgun: %s") % [LE.fmt_num(float(proj["factor"])),
-				LE.fmt_num(float(proj["count"])), tr("yes") if bool(proj["shotgun"]) else tr("no")] + "
-" + breakdown
-		parts.append({"title": title, "value": float(value), "breakdown": breakdown})
+			header = tr("Projectiles: %s in the calculation, max %s per use, shotgun: %s") % [LE.fmt_num(float(proj["factor"])),
+				LE.fmt_num(float(proj["count"])), tr("yes") if bool(proj["shotgun"]) else tr("no")] + "\n"
+		parts.append({"slot": slot, "title": title, "value": float(value), "header": header})
 	summary_card.visible = not parts.is_empty()
 	if parts.is_empty():
 		return
 	parts.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["value"] > b["value"])
 	var lines: PackedStringArray = []
-	var tips: PackedStringArray = []
 	for part: Dictionary in parts:
 		lines.append("%s — %s" % [part["title"], LE.fmt_num(part["value"])])
-		tips.append("%s: %s
-%s" % [part["title"], LE.fmt_num(part["value"]), part["breakdown"]])
 	skill_summary_label.text = LE.fmt_num(total)
-	skill_breakdown_label.text = "
-".join(lines)
+	skill_breakdown_label.text = "\n".join(lines)
 	skill_target_label.text = tr("target: %s") % Enemy.describe(Build.enemy)
-	summary_card.tooltip_text = "
+	summary_card.set_tooltip_source(_summary_tooltip.bind(parts))
 
-".join(tips)
+
+## Tooltip of the summary card: every skill's DPS breakdown (computed with details on the first hover).
+static func _summary_tooltip(parts: Array[Dictionary]) -> String:
+	var tips: PackedStringArray = []
+	for part: Dictionary in parts:
+		var dps: Dictionary = CalcSummary.find_row(SkillCalc.compute(Build, int(part["slot"]), true), CalcSummary.DPS_LABEL,
+			CalcSummary.ENEMY_SECTION)
+		tips.append("%s: %s\n%s%s" % [part["title"], LE.fmt_num(part["value"]), part["header"], str(dps.get("breakdown", ""))])
+	return "\n\n".join(tips)

@@ -119,8 +119,8 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 			var sp: int = GameData.sp_id(arg)
 			var mask: int = int(per.get_slice(":", 2))
 			var sum: float = 0.0
-			for mod: StatMod in store.all_mods():
-				if mod.property == sp and mod.tags == mask:
+			for mod: StatMod in store.mods_of(sp):
+				if mod.tags == mask:
 					sum += mod.added
 			return sum
 		"res":

@@ -442,8 +442,7 @@ func _apply_minions() -> void:
 					for m: Dictionary in MinionCount.members(Build, str(t["ability"])):
 						split.append("%s %s" % [str(m["actor"]), LE.fmt_num(float(m["count"]))])
 			if not split.is_empty():
-				auto_text += "
-" + tr("split between the types: %s") % ", ".join(split)
+				auto_text += "\n" + tr("split between the types: %s") % ", ".join(split)
 		else:
 			var c: Dictionary = MinionCount.count(Build, key)
 			value = float(c["value"])

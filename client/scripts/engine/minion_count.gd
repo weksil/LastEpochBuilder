@@ -77,8 +77,8 @@ static func canonical(key: String) -> String:
 ## Minion types summoned by the bar skills: [{actor, ability (name), skill (display name), totem, limit, limit_text}],
 ## one per actor. While a limit is being computed (the summon's store reads the counts) the bases are used.
 static func types(build: Node) -> Array[Dictionary]:
-	var key: String = "" if _busy else _signature(build)
-	if key != "" and _cache.has(key):
+	var key: PackedByteArray = PackedByteArray() if _busy else _signature(build)
+	if not key.is_empty() and _cache.has(key):
 		return _cache[key]
 	var out: Array[Dictionary] = []
 	var seen: Dictionary = {}
@@ -105,7 +105,7 @@ static func types(build: Node) -> Array[Dictionary]:
 			if GROUPS.has(ab_name) and actor == str(GROUPS[ab_name]["actor"]):
 				t["rotation"] = rotation(ab_name, lim["flag_keys"])
 			out.append(t)
-	if key != "":
+	if not key.is_empty():
 		if _cache.size() >= 16:
 			_cache.clear()
 		_cache[key] = out
@@ -282,6 +282,6 @@ static func of_minion(build: Node, minion: Dictionary, ability_name: String) -> 
 	return float(type_count(build, actor, base_limit(minion, ability_name))["value"])
 
 
-static func _signature(build: Node) -> String:
-	return var_to_str([build.class_id, build.mastery, build.level, build.passives, build.skills, build.items, build.blessings,
-		build.player_state])
+static func _signature(build: Node) -> PackedByteArray:
+	return var_to_bytes([build.class_id, build.mastery, build.level, build.passives, build.skills, build.items, build.blessings,
+		build.player_state, TranslationServer.get_locale()])

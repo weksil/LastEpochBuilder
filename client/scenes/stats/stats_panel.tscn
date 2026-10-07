@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/stats/stats_panel.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/stats/stat_row.tscn" id="2_row"]
 [ext_resource type="PackedScene" path="res://scenes/stats/stat_group.tscn" id="3_group"]
+[ext_resource type="Script" path="res://scripts/common/lazy_tooltip_panel.gd" id="4_lazy"]
 
 [node name="StatsPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(360, 0)
@@ -24,6 +25,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"TilePanelMain"
+script = ExtResource("4_lazy")
 
 [node name="SummaryBox" type="VBoxContainer" parent="VBox/SummaryCard"]
 layout_mode = 2

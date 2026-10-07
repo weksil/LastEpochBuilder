@@ -34,8 +34,7 @@ func show_item(item: Dictionary, slot: String, changes: Dictionary = {}) -> void
 		base.text = subtitle
 		base.visible = subtitle != ""
 		var mod_lines: PackedStringArray = ItemCompare.item_lines(item)
-		mods.text = "
-".join(mod_lines)
+		mods.text = "\n".join(mod_lines)
 		mods.visible = not mod_lines.is_empty()
 
 	if slot == "":

@@ -18,6 +18,7 @@ const HASTE_ON_HIT: String = "HasteOnHitChance"
 
 static var _recording: bool = false
 static var _rec: Dictionary = {}
+static var _regexes: Dictionary = {}  # pattern -> compiled RegEx of _scan_buff_sources
 
 
 static func compute(build: Node) -> Dictionary:
@@ -93,8 +94,10 @@ static func _scan_buff_sources(out: Dictionary, build: Node) -> void:
 	for shroud: String in SHROUDS:
 		patterns.append([SHROUD_TEXT, "player_buffs", GameData.enum_value("AilmentID", shroud)])
 	for pattern: Array in patterns:
-		var re := RegEx.new()
-		re.compile(str(pattern[0]))
+		var re: RegEx = _regexes.get(str(pattern[0]))
+		if re == null:
+			re = RegEx.create_from_string(str(pattern[0]))
+			_regexes[str(pattern[0])] = re
 		for t: Array in texts:
 			if re.search(str(t[0])) != null:
 				_add(out, str(pattern[1]), pattern[2], str(t[1]))

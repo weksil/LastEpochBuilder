@@ -82,7 +82,7 @@ client/          Godot project
   scripts/       logic (.gd): autoload/ (Settings, GameData, Build, BuildHistory — undo / redo), engine/ (calculations), UI scripts in folders matching the scenes
   tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test, maxroll_import_test,
                  layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test,
-                 readme_screenshots (captures docs/screenshots, needs a window)
+                 readme_screenshots (captures docs/screenshots, needs a window), perf_bench (engine timing and golden output)
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations
   addons/        the godot_ai plugin
@@ -217,9 +217,9 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/defense
 ```
 `engine_test` checks the test vectors from `research/06a–06c`, `07a`, checks uniques, sets and special effects
 (including a run of all uniques with conditions enabled), Rogue shadows (with health / ward on creation), Void Knight
-echoes (Warpath), nodes aimed at another bar skill, buffs on the player and combo parts (`letools_Q0V6XDLG.json`, `maxroll_char_palading.json`) and prints an example build with a breakdown;
+echoes (Warpath), nodes aimed at another bar skill, buffs on the player and combo parts (`letools_Q0V6XDLG.json`, `maxroll_char_palading.json`), lean results and the calculation cache against fresh results with details, and prints an example build with a breakdown;
 `ui_smoke` runs through all tabs and prints script errors to the console (watchdog timer 180 s), checks typing into a `SpinBox` without Enter,
-in-place updates of the Calculations rows, the totals strip and the "Reset" buttons;
+in-place updates of the Calculations rows, lazy breakdowns (a row expanded on demand, tile tooltips), the totals strip and the "Reset" buttons;
 `i18n_test` imports the saved builds, shows every tab in Russian and fails on every string that went through `LE.t()` without a
 translation in `client/i18n/ru.po` (`LE.missing`);
 `relevance_test` checks the Conditions filter (`ConfigRelevance`: which flags, numbers and ailments have a source in the build);
@@ -235,6 +235,10 @@ sealed / corrupted / primordial affixes, the characters `maxroll_char_palading.j
 blessings and a set item, applying to `Build`); `maxroll_live` (not part of the suite, needs network) imports a live character through the dialog;
 `trees_test` checks that tree nodes have icons from the game client and that every node of all 136 current skill trees and 5 passive trees can be taken
 (obsolete version 0 trees — Fire Shield, Ice Ward, etc. — are skipped).
+
+`perf_bench` (not part of the suite) times what the UI recomputes after an edit (every bar skill, Defense, Conditions, an item
+hover) on the fixture builds; `-- --golden=<file>` writes every result row to diff two engine versions, `--rounds=N`, `--nocache`
+(client/docs/ENGINE.md §11).
 
 `readme_screenshots` (not part of the suite, run without `--headless`) imports the fixture builds and saves the English
 screenshots of README.md and the landing page into `docs/screenshots/`: `minions.png`, `skill_calcs.png` and the frames of the

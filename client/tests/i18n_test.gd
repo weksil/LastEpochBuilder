@@ -26,6 +26,8 @@ func _ready() -> void:
 			for i in range(tabs.get_tab_count()):
 				tabs.current_tab = i
 				await _frames(2)
+			# the tabs read lean results; the breakdowns (built when a row is expanded) need their translations too
+			SkillCalc.compute(Build, slot, true)
 		var cfg: Node = tabs.get_child(tabs.get_tab_count() - 1)
 		if cfg.has_node("%ShowAllCheck"):
 			cfg.get_node("%ShowAllCheck").button_pressed = true

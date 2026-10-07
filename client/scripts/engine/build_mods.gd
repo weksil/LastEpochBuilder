@@ -8,8 +8,21 @@ const BUFF_SKILLS: GDScript = preload("res://scripts/engine/buff_skills.gd")  # 
 const SLOTS: Array[String] = ["helmet", "body", "belt", "boots", "gloves", "weapon", "offhand", "amulet", "ring1", "ring2", "relic"]
 
 
-## {store: StatStore, notes: Array[String]} — all character-wide mods.
+## {store: StatStore, notes: Array[String]} — all character-wide mods. Cached by the build state (CalcCache): the store
+## is shared and must not be changed. Not cached while ConfigRelevance records (it needs the models to run) and keyed
+## apart while MinionCount computes a summon limit (minion counts are their bases then).
 static func global_store(build: Node) -> Dictionary:
+	if ConfigRelevance._recording:
+		return _global_store(build)
+	var key: Array = [CalcCache.build_key(build), MinionCount._busy]
+	var hit: Variant = CalcCache.lookup("global_store", key)
+	if hit == null:
+		hit = _global_store(build)
+		CalcCache.put("global_store", key, hit)
+	return {"store": hit["store"], "notes": (hit["notes"] as Array[String]).duplicate()}
+
+
+static func _global_store(build: Node) -> Dictionary:
 	var g: Dictionary = _store_without_skill_buffs(build)
 	var store: StatStore = g["store"]
 	var notes: Array[String] = g["notes"]
@@ -283,7 +296,17 @@ static func _add_passives(build: Node, store: StatStore, notes: Array[String], p
 
 ## Allocated passive nodes plus the base bonus of the chosen mastery (one "point", research/07f §2):
 ## [{node, points, title, source}].
+## Cached by the class, mastery, passives and locale (CalcCache): the entries are shared and must not be changed.
 static func _passive_entries(build: Node) -> Array[Dictionary]:
+	var key: PackedByteArray = var_to_bytes([build.class_id, build.mastery, build.passives, TranslationServer.get_locale()])
+	var hit: Variant = CalcCache.lookup("passive_entries", key)
+	if hit == null:
+		hit = _collect_passive_entries(build)
+		CalcCache.put("passive_entries", key, hit)
+	return hit
+
+
+static func _collect_passive_entries(build: Node) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	var tree_id: String = str(GameData.get_passive_tree(build.class_id).get("treeID", ""))
 	var effects: Dictionary = GameData.passive_effects(tree_id)
@@ -582,17 +605,16 @@ static func converted_attribute(store: StatStore, attr: Dictionary) -> String:
 	var flag: Dictionary = attr.get("corruptedFlag", {})
 	if flag.is_empty():
 		return ""
-	for mod: StatMod in store.all_mods():
-		if mod.property == int(flag.get("property", LE.PLAYER_PROPERTY)) and mod.tags == int(flag.get("tags", -1)) and mod.added > 0.0:
+	for mod: StatMod in store.mods_of(int(flag.get("property", LE.PLAYER_PROPERTY))):
+		if mod.tags == int(flag.get("tags", -1)) and mod.added > 0.0:
 			return str(flag.get("playerPropertyName", "")).get_slice(" Converted to ", 1)
 	return ""
 
 
 static func _sum_added_any_tags(store: StatStore, property: int) -> float:
 	var total: float = 0.0
-	for mod: StatMod in store.all_mods():
-		if mod.property == property:
-			total += mod.added
+	for mod: StatMod in store.mods_of(property):
+		total += mod.added
 	return total
 
 
@@ -657,15 +679,27 @@ static func _add_other_skill_nodes(build: Node, slot: int, result: Dictionary) -
 				continue
 			var title: String = "%s: %s" % [GameData.display_name(other_ab), str(node.get("name", ""))]
 			for effect: Dictionary in node.get("effects", []):
-				var parts: PackedStringArray = []
-				for part: String in str(effect.get("target", "")).split(" & "):
-					if part.strip_edges().begins_with(own + "."):
-						parts.append(part.strip_edges())
-				if parts.is_empty():
+				var own_target: String = _own_parts(str(effect.get("target", "")), own)
+				if own_target == "":
 					continue
 				var mine: Dictionary = effect.duplicate()
-				mine["target"] = " & ".join(parts)
+				mine["target"] = own_target
 				_add_skill_effect(mine, points, title, result)
+
+
+## The parts ("A & B") of a target on the mutator `own`, joined back with " & "; "" if none (memoized).
+static func _own_parts(target: String, own: String) -> String:
+	var key: String = own + "|" + target
+	if not _own_parts_memo.has(key):
+		var parts: PackedStringArray = []
+		for part: String in target.split(" & "):
+			if part.strip_edges().begins_with(own + "."):
+				parts.append(part.strip_edges())
+		_own_parts_memo[key] = " & ".join(parts)
+	return _own_parts_memo[key]
+
+
+static var _own_parts_memo: Dictionary = {}
 
 
 ## Ability of the mutator of a target that is not the skill's own mutator and belongs to another ability (a combo part,
@@ -673,6 +707,16 @@ static func _add_other_skill_nodes(build: Node, slot: int, result: Dictionary) -
 static func _other_part(target: String, own: String, main_name: String) -> Dictionary:
 	if own == "":
 		return {}
+	var key: String = "%s|%s|%s" % [target, own, main_name]
+	if not _other_parts.has(key):
+		_other_parts[key] = _find_other_part(target, own, main_name)
+	return _other_parts[key]
+
+
+static var _other_parts: Dictionary = {}  # memo of _other_part (game data only)
+
+
+static func _find_other_part(target: String, own: String, main_name: String) -> Dictionary:
 	var cls: String = ""
 	for part: String in target.split(" & "):
 		var p: String = part.strip_edges()
@@ -925,11 +969,18 @@ static func _automatic_stat(effect: Dictionary, points: int, source: String) -> 
 
 ## Conversion / tag-change rule for any "Mutator.field" part of a target ({} if none or kind "none").
 static func _conversion_rule(target: String) -> Dictionary:
-	for part: String in target.split(" & "):
-		var rule: Dictionary = GameData.conversion_rule(part.strip_edges())
-		if not rule.is_empty() and str(rule.get("kind", "none")) != "none":
-			return rule
-	return {}
+	if not _conversion_rules.has(target):
+		var found: Dictionary = {}
+		for part: String in target.split(" & "):
+			var rule: Dictionary = GameData.conversion_rule(part.strip_edges())
+			if not rule.is_empty() and str(rule.get("kind", "none")) != "none":
+				found = rule
+				break
+		_conversion_rules[target] = found
+	return _conversion_rules[target]
+
+
+static var _conversion_rules: Dictionary = {}  # memo of _conversion_rule (game data only)
 
 
 static func _is_unconditional_temp(target: String) -> bool:

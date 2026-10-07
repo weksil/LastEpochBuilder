@@ -278,7 +278,7 @@ static func snapshot(build: Node) -> Dictionary:
 	var values: Dictionary = {}
 	if build.selected_skill >= 0 and build.selected_skill < build.skills.size() \
 			and str((build.skills[build.selected_skill] as Dictionary).get("ability", "")) != "":
-		var result: Dictionary = SkillCalc.compute(build, build.selected_skill)
+		var result: Dictionary = SkillCalc.compute(build, build.selected_skill, false)
 		var dps: Dictionary = CalcSummary.find_row(result, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION)
 		var dps_value: Variant = dps.get("value")
 		if dps_value is float or dps_value is int:

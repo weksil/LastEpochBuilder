@@ -2,8 +2,11 @@
 class_name StatStore extends RefCounted
 
 
-var mods: Array[StatMod] = []  # Mods stored locally
+var mods: Array[StatMod] = []  # Mods stored locally (only appended to: the property index relies on it)
 var parent: StatStore = null  # Optional parent store (for inheritance chain)
+
+var _index: Dictionary = {}  # property -> Array[StatMod] of the own mods, in insertion order
+var _indexed: int = 0  # how many own mods _index covers
 
 
 ## Add a single mod to this store.
@@ -30,6 +33,30 @@ func all_mods() -> Array[StatMod]:
 	return result
 
 
+## Own mods of one property, in insertion order (the index is extended with the mods added since the last call).
+func _own_of(property: int) -> Array:
+	if _indexed > mods.size():  # the array was replaced or shrunk: rebuild
+		_index.clear()
+		_indexed = 0
+	while _indexed < mods.size():
+		var mod: StatMod = mods[_indexed]
+		if not _index.has(mod.property):
+			_index[mod.property] = []
+		_index[mod.property].append(mod)
+		_indexed += 1
+	return _index.get(property, [])
+
+
+## Mods of one property: own mods plus the parent chain, in the order of all_mods().
+func mods_of(property: int) -> Array[StatMod]:
+	var result: Array[StatMod] = []
+	var current: StatStore = self
+	while current != null:
+		result.append_array(current._own_of(property))
+		current = current.parent
+	return result
+
+
 ## Query mods for a property with optional filtering.
 ## Filters:
 ## - property must equal
@@ -39,31 +66,30 @@ func all_mods() -> Array[StatMod]:
 func query(property: int, check_tags: int = 0, special: int = 0, extra: int = 0, extra_zero_matches: bool = true) -> StatQuery:
 	var result = StatQuery.new()
 
-	for mod in all_mods():
-		# Check property
-		if mod.property != property:
-			continue
+	var current: StatStore = self
+	while current != null:
+		for mod: StatMod in current._own_of(property):
+			# Check special
+			if mod.special != 0 and mod.special != special:
+				continue
 
-		# Check special
-		if mod.special != 0 and mod.special != special:
-			continue
+			# Check extra
+			if mod.extra != extra and not (extra_zero_matches and mod.extra == 0):
+				continue
 
-		# Check extra
-		if mod.extra != extra and not (extra_zero_matches and mod.extra == 0):
-			continue
+			# Check tags
+			if not LE.tags_match(mod.tags, check_tags):
+				continue
 
-		# Check tags
-		if not LE.tags_match(mod.tags, check_tags):
-			continue
+			# This mod matches; add it to result
+			result.added += mod.added
+			result.increased += mod.increased
 
-		# This mod matches; add it to result
-		result.added += mod.added
-		result.increased += mod.increased
+			for m in mod.more:
+				result.more *= (1.0 + m)
 
-		for m in mod.more:
-			result.more *= (1.0 + m)
-
-		result.mods.append(mod)
+			result.mods.append(mod)
+		current = current.parent
 
 	return result
 

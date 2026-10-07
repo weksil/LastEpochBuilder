@@ -25,6 +25,7 @@ func _ready() -> void:
 	_projectiles()
 	_item_triggers()
 	_shadows_echoes_buffs()
+	_lean_and_cache()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -427,20 +428,24 @@ func _unique_skill_level_models() -> void:
 	Build.set_skill(0, "fi9")
 	var g: Dictionary = BuildMods.global_store(Build)
 	player_models["285"] = {"kind": "trigger", "ability": str(ab.get("abilityName", "")), "on": "hit", "chance": 0.25}
+	CalcCache.clear()  # the game data changed under the cached results
 	var s: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
 	_check("global trigger reaches the skill result", float(s["triggers"].size()), 1.0)
 	_check("global trigger is not a global stat", BuildMods.global_store(Build)["store"].query_untagged(LE.HEALTH).added, g["store"].query_untagged(LE.HEALTH).added - 2.0 * _row(g, "Vitality"))
 	_check("skill with a global trigger computes", 1.0 if not SkillCalc.compute(Build, 0)["sections"].is_empty() else 0.0, 1.0)
 	player_models["285"] = {"kind": "param", "param": "projectiles", "label": "Test parameter", "mod": "added"}
+	CalcCache.clear()  # the game data changed under the cached results
 	s = BuildMods.skill_store(Build, 0, g["store"])
 	_check("global param row appears", 1.0 if s["params"].has("Test parameter") else 0.0, 1.0)
 	player_models["285"] = {"kind": "flag", "text": "test flag"}
+	CalcCache.clear()  # the game data changed under the cached results
 	g = BuildMods.global_store(Build)
 	_check("flag effect is listed", 1.0 if "\n".join(PackedStringArray(g["notes"])).contains("test flag") else 0.0, 1.0)
 	if had:
 		player_models["285"] = old
 	else:
 		player_models.erase("285")
+	CalcCache.clear()
 	Build.clear_item("amulet")
 	Build.set_skill(0, "")
 
@@ -1370,3 +1375,38 @@ func _row_value(r: Dictionary, label: String, prefix: String = "") -> float:
 
 func _dps(r: Dictionary) -> float:
 	return float(CalcSummary.find_row(r, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+
+
+## SkillCalc.compute without details (computed for real, not derived from a cached result) equals the result with
+## details except the breakdowns; the cached results equal fresh ones.
+func _lean_and_cache() -> void:
+	print("--- lean results and the calculation cache")
+	for fixture: String in ["letools_Q0V6XDLG.json", "maxroll_char_palading.json", "letools_A83KxJq5.json"]:
+		var raw: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/" + fixture))
+		var doc: Dictionary = MaxrollImport.to_build(raw) if fixture.begins_with("maxroll") else LEToolsImportScript.to_build(raw)
+		LEToolsImportScript.apply(Build, doc)
+		for slot: int in range(Build.skills.size()):
+			if str(Build.skills[slot].get("ability", "")) == "":
+				continue
+			CalcCache.enabled = false
+			var full: Dictionary = SkillCalc.compute(Build, slot, true)
+			var lean: Dictionary = SkillCalc.compute(Build, slot, false)
+			CalcCache.enabled = true
+			CalcCache.clear()
+			var cached_full: Dictionary = SkillCalc.compute(Build, slot, true)
+			var cached_lean: Dictionary = SkillCalc.compute(Build, slot, false)
+			_flag("%s slot %d: lean = full without breakdowns" % [fixture, slot], _stripped(lean) == _stripped(full) and bool(lean.get("lean", false)))
+			_flag("%s slot %d: cached = fresh" % [fixture, slot], var_to_str(cached_full) == var_to_str(full)
+				and var_to_str(cached_lean) == var_to_str(lean))
+
+
+## The result as text without the row breakdowns and the lean markers.
+func _stripped(result: Dictionary) -> String:
+	var copy: Dictionary = result.duplicate(true)
+	copy.erase("lean")
+	for section: Dictionary in copy.get("sections", []):
+		for row: Dictionary in section.get("rows", []):
+			row.erase("breakdown")
+			row.erase("lazy")
+	return var_to_str(copy)
+
