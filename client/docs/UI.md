@@ -93,13 +93,18 @@ clicking again on the shown slot keeps it selected), the other slots `set_select
 ## Items
 `scripts/items/items_tab.gd` (`class_name ItemsTab extends HBoxContainer`), `@export stash_button_scene, choice_button_scene, select_group`.
 The left column (`items_tab.tscn`): `%SlotList` holds 11 `slot_row.tscn` (`SlotRow`: `@export slot, slot_name, slot_icon`;
-`%SlotIcon` — a plain picture (`mouse_filter` ignore); `%ItemButton` — the equipped item: pressing it shows the slot in the editor and opens the
+`%SlotIcon` — a plain picture (`mouse_filter` ignore): `ItemPictures.picture(item)` of the equipped item, `slot_icon` when empty or without a picture; `%ItemButton` — the equipped item: pressing it shows the slot in the editor and opens the
 choice list; the edited slot's button gets the variation `SlotItemSelected`; unique / set item names use `SlotItem(Selected)Unique` /
 `…Set` and `ItemChoiceUnique` / `ItemChoiceSet` — `ItemCompare.rarity(item)`),
-a separator, `%StashRows` (the unequipped items `Build.stash`, `stash_item_button.tscn`, grey variation `ItemButtonStashed`, no icon;
+a separator, `%StashRows` (the unequipped items `Build.stash`, `stash_item_button.tscn`, grey variation `ItemButtonStashed`;
 pressing one edits it), `%StashEmpty`, `%AddButton` "+" → a new stash item (the selected slot's type, its first base) opened in the editor,
 where `%TypeRow` > `%TypeSelect` (stash mode only, types with icons) and the base are chosen.
 Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `tools/extract/extract_item_icons.py`).
+Item pictures: `ItemPictures.picture(item)` (`scripts/common/item_pictures.gd`) — `res://assets/equipment/` (bases 0–23) or
+`res://assets/idols/` (idols, altars), `unique_<uniqueID>.webp` first, then `sub_<base>_<sub>.webp`; null when missing
+(`tools/extract/extract_item_pictures.py`). `ItemButton.setup` puts the item's picture as the button icon (stash and choice rows; the list
+sets the slot icon first as the fallback); `ItemEditor` shows it in `%ItemPicture` (96×96, right of `%TypeRow` / `%UniqueRow` / `%SubRow`
+inside `BaseBlock`), hidden without a picture.
 - `%ChoicePopup` > `%ChoiceRows` (`item_choice_button.tscn`): "— none —" (`Build.unequip_to_stash`), every equipped item that fits the slot
   (variation `ItemChoice`, icon of the slot it is equipped in; another slot → `Build.move_item(from, to)`, the replaced item goes back if it
   fits or to the stash), every fitting stash item (variation `ItemChoiceStashed`, `Build.equip_from_stash(index, slot)`).
@@ -190,8 +195,7 @@ projectiles cannot hit one target twice. `%ProjectileCount` — "<factor> of <co
 Scene `scenes/idols/idols_tab.tscn`: `%Grid` holds 25 ready-made `IdolCell` buttons with `metadata/row`, `metadata/col`;
 `%Grid` and `%Pictures` (a plain Control, mouse ignored) share the `GridStack` MarginContainer: `_update_pictures` puts one
 `scenes/idols/idol_picture.tscn` TextureRect per idol into `%Pictures`, over all cells of the idol (cell minimum size + grid
-separations, inset `PICTURE_INSET`); the texture is `IdolsTab.picture(item)` — `res://assets/idols/sub_<base>_<sub>.png` or
-`unique_<uniqueID>.png` (`tools/extract/extract_idol_icons.py`), null when missing (then the anchor cell shows the name as text).
+separations, inset `PICTURE_INSET`); the texture is `ItemPictures.picture(item)` (see "Items"), null when missing (then the anchor cell shows the name as text).
 `%AltarIcon` in the altar row shows the altar's picture;
 on the right `%EditorScroll` > `%ItemEditor` (the same `ItemEditor`, it understands idol keys itself; it offers only idol bases and
 unique idols that fit the cell, each named with its grid size "[WxH]" from `IdolGrid.size_of`). Until a cell or "Edit altar" is picked `%EditorScroll` is hidden and `%EditorHint` asks to pick a cell;

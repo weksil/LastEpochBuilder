@@ -82,6 +82,8 @@ func _refresh() -> void:
 		var button: ItemButton = stash_button_scene.instantiate()
 		%StashRows.add_child(button)
 		button.button_group = select_group
+		var row: SlotRow = _row(ItemCompare.target_slot(item, _slot))
+		button.icon = row.slot_icon if row != null else null
 		button.setup(item, ItemCompare.target_slot(item, _slot))
 		button.pressed.connect(_edit_stash.bind(i))
 		if i == _stash_index:
@@ -133,6 +135,7 @@ func _show_choices(slot: String, anchor: Control) -> void:
 		var button: ItemButton = choice_button_scene.instantiate()
 		%ChoiceRows.add_child(button)
 		button.theme_type_variation = &"ItemChoiceStashed"
+		button.icon = _row(slot).slot_icon
 		button.setup(item, slot, {slot: item})
 		button.pressed.connect(_choose.bind(slot, func() -> void: Build.equip_from_stash(i, slot)))
 

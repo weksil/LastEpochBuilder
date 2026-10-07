@@ -16,6 +16,10 @@ func setup(item: Dictionary, slot: String, changes: Dictionary = {}) -> void:
 	_slot = slot
 	_changes = changes
 	text = tr("— none —") if item.is_empty() else ItemCompare.item_title(item)
+	# the item's picture; without one the icon set by the list (the slot icon) stays
+	var picture: Texture2D = ItemPictures.picture(item)
+	if picture != null:
+		icon = picture
 	tooltip_text = text  # must stay non-empty, or the custom tooltip is not shown
 
 

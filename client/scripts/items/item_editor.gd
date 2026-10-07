@@ -191,6 +191,8 @@ func _fill() -> void:
 	%UniqueSelect.select(maxi(0, %UniqueSelect.get_item_index(unique_id)))
 
 	_fill_sub_select(item)
+	%ItemPicture.texture = ItemPictures.picture(item)
+	%ItemPicture.visible = %ItemPicture.texture != null
 
 	var has_unique: bool = unique_id != UNIQUE_EMPTY_ID
 	_fill_implicits(item)

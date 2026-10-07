@@ -22,7 +22,10 @@ func _ready() -> void:
 		choices_requested.emit(slot, %ItemButton))
 
 
+## The equipped item's picture replaces the slot icon (the slot icon stays for an empty slot or a missing picture).
 func update_item(item: Dictionary) -> void:
+	var picture: Texture2D = ItemPictures.picture(item)
+	%SlotIcon.texture = picture if picture != null else slot_icon
 	%ItemButton.text = ItemCompare.item_title(item)
 	_rarity = ItemCompare.rarity(item)
 	_update_variation()

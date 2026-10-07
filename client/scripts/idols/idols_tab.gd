@@ -101,7 +101,7 @@ func _update_grid() -> void:
 	var altar: Dictionary = IdolGrid.altar(Build.items)
 	%AltarSelect.select(maxi(0, %AltarSelect.get_item_index(int(altar.get("sub", NO_ALTAR)) if not altar.is_empty() else NO_ALTAR)))
 	%AltarEditButton.disabled = altar.is_empty()
-	%AltarIcon.texture = null if altar.is_empty() else picture(altar)
+	%AltarIcon.texture = null if altar.is_empty() else ItemPictures.picture(altar)
 	_filling = false
 	_update_weaver_limit()
 	_update_pictures()
@@ -149,7 +149,7 @@ func _update_grid() -> void:
 					var base: Dictionary = GameData.item_base(base_id)
 					item_name = GameData.display_name(base)
 				# the picture stands for the name when there is one
-				cell.text = item_name if picture(item) == null else ""
+				cell.text = item_name if ItemPictures.picture(item) == null else ""
 			else:
 				cell.text = ""
 
@@ -166,14 +166,6 @@ func _update_grid() -> void:
 			cell.theme_type_variation = &"IdolCellSelected"
 
 
-## Picture of an idol or altar item (client/assets/idols, tools/extract/extract_idol_icons.py); null if there is none.
-static func picture(item: Dictionary) -> Texture2D:
-	var path: String = "res://assets/idols/sub_%d_%d.png" % [int(item.get("base", -1)), int(item.get("sub", -1))]
-	if item.has("unique"):
-		path = "res://assets/idols/unique_%d.png" % int(item["unique"])
-	return load(path) if ResourceLoader.exists(path) else null
-
-
 ## Idol pictures over the grid cells (%Pictures): one per idol, covering all its cells; clicks go through to the cells.
 func _update_pictures() -> void:
 	for child: Node in %Pictures.get_children():
@@ -185,7 +177,7 @@ func _update_pictures() -> void:
 		if not IdolGrid.is_idol_key(slot) or not Build.items[slot].has("base"):
 			continue
 		var item: Dictionary = Build.items[slot]
-		var texture: Texture2D = picture(item)
+		var texture: Texture2D = ItemPictures.picture(item)
 		if texture == null:
 			continue
 		var anchor: Vector2i = IdolGrid.anchor(slot)  # (row, col)

@@ -77,17 +77,27 @@ layout_mode = 2
 focus_mode = 0
 text = "Remove item"
 
-[node name="TypeRow" type="HBoxContainer" parent="VBox"]
+[node name="BaseBlock" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BaseRows" type="VBoxContainer" parent="VBox/BaseBlock"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="TypeRow" type="HBoxContainer" parent="VBox/BaseBlock/BaseRows"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TypeLabel" type="Label" parent="VBox/TypeRow"]
+[node name="TypeLabel" type="Label" parent="VBox/BaseBlock/BaseRows/TypeRow"]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Type"
 
-[node name="TypeSelect" type="OptionButton" parent="VBox/TypeRow"]
+[node name="TypeSelect" type="OptionButton" parent="VBox/BaseBlock/BaseRows/TypeRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -126,29 +136,39 @@ popup/item_9/text = "Relic"
 popup/item_9/icon = ExtResource("icon_relic")
 popup/item_9/id = 9
 
-[node name="UniqueRow" type="HBoxContainer" parent="VBox"]
+[node name="UniqueRow" type="HBoxContainer" parent="VBox/BaseBlock/BaseRows"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="UniqueSelect" parent="VBox/UniqueRow" instance=ExtResource("9_search")]
+[node name="UniqueSelect" parent="VBox/BaseBlock/BaseRows/UniqueRow" instance=ExtResource("9_search")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SubRow" type="HBoxContainer" parent="VBox"]
+[node name="SubRow" type="HBoxContainer" parent="VBox/BaseBlock/BaseRows"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="SubLabel" type="Label" parent="VBox/SubRow"]
+[node name="SubLabel" type="Label" parent="VBox/BaseBlock/BaseRows/SubRow"]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Item"
 
-[node name="SubSelect" parent="VBox/SubRow" instance=ExtResource("9_search")]
+[node name="SubSelect" parent="VBox/BaseBlock/BaseRows/SubRow" instance=ExtResource("9_search")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="ItemPicture" type="TextureRect" parent="VBox/BaseBlock"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ImplicitsTitle" type="Label" parent="VBox"]
 unique_name_in_owner = true
