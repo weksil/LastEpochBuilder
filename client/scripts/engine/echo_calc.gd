@@ -146,4 +146,5 @@ static func components(build: Node, slot: int, ab: Dictionary, global: StatStore
 	if channelled:
 		for comp: Dictionary in out:
 			comp["rate"] = float(comp["per_use"]) / CHANNEL_INTERVAL
+			comp["rate_hit_scaled"] = true
 	return out

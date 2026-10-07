@@ -25,6 +25,8 @@ func _ready() -> void:
 	_projectiles()
 	_item_triggers()
 	_shadows_echoes_buffs()
+	_review_damage_fixes()
+	_review_mod_fixes()
 	_lean_and_cache()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -1259,7 +1261,7 @@ func _shadows_echoes_buffs() -> void:
 	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
 	EnemyAilments.enabled = false
-	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 27852.5, 30.0)
+	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 28122.0, 30.0)  # omen idols use omenIdolAffixEffectModifier (was 27852.5)
 	EnemyAilments.enabled = true
 
 
@@ -1375,6 +1377,193 @@ func _row_value(r: Dictionary, label: String, prefix: String = "") -> float:
 
 func _dps(r: Dictionary) -> float:
 	return float(CalcSummary.find_row(r, CalcSummary.DPS_LABEL, CalcSummary.ENEMY_SECTION).get("value", 0.0))
+
+
+## Fixes of the damage review: speed pipeline (06e §1.1), cooldown guards, mod guards, minion copy, ailment conversion guards.
+func _review_damage_fixes() -> void:
+	print("--- damage review fixes")
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.CAST_SPEED, "added", 1.0, 0, "test"))
+	store.add(StatMod.make(LE.CAST_SPEED, "increased", 0.4, 0, "test"))
+	store.add(StatMod.make(LE.CAST_SPEED, "added", 5.0, 0, "other skill", 0, 777))
+	var s: Dictionary = {"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_added": 0.0, "mana_inc": 0.0}
+	var ab: Dictionary = {"speedScaler": LE.CAST_SPEED, "useDuration": 1.0, "speedMultiplier": 1.0, "abilityIDEnum": {"value": 5}}
+	var ctx: Dictionary = {"store": store, "tags": 0, "ab": ab}
+	# S = 1.4 → ×1.1 / 1 (the extra of another ability does not count)
+	_check("speed: plain", float(SkillCalc._speed(null, ab, ctx, s)["uses"]), 1.4 * 1.1)
+	# speedScalerAppliedAsIncrease, eff 0.5, S = 1.4 → (1.4 − 1)·0.5 + 1 = 1.2 (06e table), not 1.4·0.5 + 1
+	ab["speedScalerAppliedAsIncrease"] = 1
+	ab["speedScalerEffectiveness"] = 0.5
+	_check("speed as increase: max(S-1,0)·eff + 1", float(SkillCalc._speed(null, ab, ctx, s)["uses"]), 1.2 * 1.1)
+	# S below 1: no negative increase
+	store.add(StatMod.make(LE.CAST_SPEED, "increased", -0.8, 0, "slow"))
+	_check("speed as increase: S < 1 gives 1", float(SkillCalc._speed(null, ab, ctx, s)["uses"]), 1.1)
+	# a non-positive speed becomes 0.1 before the division
+	var dead := StatStore.new()
+	dead.add(StatMod.make(LE.CAST_SPEED, "added", 1.0, 0, "test"))
+	dead.add(StatMod.make(LE.CAST_SPEED, "more", -1.0, 0, "test"))
+	var ab2: Dictionary = {"speedScaler": LE.CAST_SPEED, "useDuration": 1.0, "speedMultiplier": 1.0}
+	_check("speedScale <= 0 → 0.1", float(SkillCalc._speed(null, ab2, {"store": dead, "tags": 0, "ab": ab2}, s)["uses"]), 0.1)
+	# the extra of the ability narrows the cooldown recovery query
+	var cdr := StatStore.new()
+	cdr.add(StatMod.make(LE.CDR, "increased", 1.0, 0, "this", 0, 5))
+	cdr.add(StatMod.make(LE.CDR, "increased", 1.0, 0, "other", 0, 6))
+	_check("cooldown: only own ability extra", float(SkillCalc.cooldown_info({"cooldown": 4.0}, cdr, 0, {}, 5)["cd"]), 2.0)
+	# a cooldown length of 0 or less gives no cooldown cap
+	var cd0: Dictionary = SkillCalc.cooldown_info({"cooldown": 1.0}, StatStore.new(), 0, {"cooldown": {"length_added": -3.0}})
+	_check("cooldown never negative", float(cd0["cd"]), 0.0)
+	# mod guards
+	var q: StatMod = StatMod.make(LE.DAMAGE, "quotient", -1.0, 0, "test")
+	_check("quotient at -100% is finite", 1.0 if is_finite(q.more[0]) else 0.0, 1.0)
+	var sc: StatMod = StatMod.make(LE.DAMAGE, "more", -0.4, 0, "test").scaled(5.0)
+	_check("scaled more stops at x0", 1.0 + sc.more[0], 0.0)
+	_check("scaled more normal", 1.0 + StatMod.make(LE.DAMAGE, "more", 0.1, 0, "test").scaled(2.0).more[0], 1.2)
+	# the minion copy keeps the curse flag
+	var flagged: StatMod = StatMod.make(LE.AILMENT_CHANCE, "added", 0.1, 0, "test", 1)
+	flagged.on_curse_hit = true
+	_check("minion copy keeps on_curse_hit", 1.0 if MinionCalc._copy(flagged, 0, 0, "x").on_curse_hit else 0.0, 1.0)
+	# minion transfer without an ability index: Minion-tagged mods with an extra still go through the MINION branch
+	var player := StatStore.new()
+	player.add(StatMod.make(LE.DAMAGE, "increased", 0.3, LE.MINION, "minion node", 0, 9))
+	var ms: StatStore = MinionCalc.minion_store(player, {}, {}, [])
+	_check("no ability index: Minion-tagged extra mod is transferred without the tag", ms.query(LE.DAMAGE, 0).increased, 0.3)
+
+
+## Review fixes of the modifier collection (docs/ENGINE.md §5): omen idol affix effect, skill-scoped passives of skills that
+## are not on the bar, attributes from post-phase models, unknown ailments, model signatures, Haste / Frenzy counted once,
+## extraTag of automatic node stats, attribute sums with tags, re-entrant ConfigRelevance.
+func _review_mod_fixes() -> void:
+	print("--- review fixes: modifier collection")
+	# omen idols: affixEffectModifier = ItemList.omenIdolAffixEffectModifier (0), not the base's value (07a §6)
+	var omen_sub: int = -1
+	for st: Dictionary in GameData.item_base(29).get("subItems", []):
+		if str(st.get("affixEffectiveness", "")) == "OmenIdol":
+			omen_sub = int(st["subTypeID"])
+			break
+	var idol_affixes: Array = GameData.affixes_for_type(29)
+	var affix: Dictionary = {}
+	for a: Dictionary in idol_affixes:
+		if float(a.get("standardAffixEffectModifier", 0.0)) != 0.0 and not (a.get("tiers", []) as Array).is_empty():
+			affix = a
+			break
+	_flag("omen idol: a subtype and an affix with a standard modifier exist", omen_sub >= 0 and not affix.is_empty())
+	if omen_sub >= 0 and not affix.is_empty():
+		var tier: Dictionary = affix["tiers"][0]
+		var prop: Dictionary = affix["properties"][0]
+		var lo: float = float(tier["rolls"][0][0])
+		var hi: float = float(tier["rolls"][0][1])
+		var std: float = float(affix["standardAffixEffectModifier"])
+		var item: Dictionary = {"base": 29, "sub": omen_sub, "affixes": [{"id": int(affix["affixId"]), "tier": 1, "roll": 255}]}
+		var mods: Array[StatMod] = ItemMods.item_mods("helmet", item)
+		var want: float = AffixMath.roll_value(lo, hi, str(prop.get("rounding", "Integer")), str(prop.get("modType", "ADDED")), 255,
+			AffixMath.effect_modifier(0.0, std))
+		var got: float = mods[0].added + mods[0].increased + (mods[0].more[0] if not mods[0].more.is_empty() else 0.0)
+		_check("omen idol affix uses the omen modifier (0)", got, want)
+		var plain_sub: int = int(GameData.item_base(29)["subItems"][0]["subTypeID"])
+		var plain: Array[StatMod] = ItemMods.item_mods("helmet", {"base": 29, "sub": plain_sub, "affixes": [{"id": int(affix["affixId"]), "tier": 1, "roll": 255}]})
+		var plain_want: float = AffixMath.roll_value(lo, hi, str(prop.get("rounding", "Integer")), str(prop.get("modType", "ADDED")), 255,
+			AffixMath.effect_modifier(float(GameData.item_base(29)["affixEffectModifier"]), std))
+		var plain_got: float = plain[0].added + plain[0].increased + (plain[0].more[0] if not plain[0].more.is_empty() else 0.0)
+		_check("non-omen idol affix keeps the base modifier", plain_got, plain_want)
+
+	# a skill-scoped field of a skill that is not on the bar does not reach the character
+	var weapon_model: Dictionary = FieldModels.find("SummonWeaponMutator.statListFromPassiveTree")
+	_flag("SummonWeaponMutator.statListFromPassiveTree is a skill-scoped model", str(weapon_model.get("scope", "")) == "skill")
+	_check("skill-scoped passive of a skill off the bar: no character scope",
+		1.0 if BuildMods._passive_scope(weapon_model, "SummonWeaponMutator.statListFromPassiveTree") == "" else 0.0, 1.0)
+	var global_model: Dictionary = FieldModels.find("CharacterMutator.adaptiveSpellDamageFromMaxMana")
+	_check("character-scoped passive keeps the global scope",
+		1.0 if BuildMods._passive_scope(global_model, "CharacterMutator.adaptiveSpellDamageFromMaxMana") == "global" else 0.0, 1.0)
+
+	# attributes given by models applied after the per-point conversion are converted by their delta
+	var store_a := StatStore.new()
+	store_a.add(StatMod.make(LE.STRENGTH, "added", 20.0, 0, "first"))
+	var notes: Array[String] = []
+	var done: Dictionary = BuildMods._add_attributes(Build, store_a, notes)
+	var size_before: int = store_a.mods.size()
+	BuildMods._add_attributes(Build, store_a, notes, done)
+	_check("attribute delta: no change, no new mods", float(store_a.mods.size()), float(size_before))
+	store_a.add(StatMod.make(LE.STRENGTH, "added", 10.0, 0, "late (post phase / buff)"))
+	BuildMods._add_attributes(Build, store_a, notes, done)
+	var store_b := StatStore.new()
+	store_b.add(StatMod.make(LE.STRENGTH, "added", 30.0, 0, "all at once"))
+	BuildMods._add_attributes(Build, store_b, notes)
+	var equal: bool = true
+	for per_point: Dictionary in GameData.attributes[0].get("perPoint", []):
+		var prop_id: int = int(per_point.get("property", 0))
+		var qa: StatQuery = store_a.query_untagged(prop_id)
+		var qb: StatQuery = store_b.query_untagged(prop_id)
+		equal = equal and is_equal_approx(qa.added, qb.added) and is_equal_approx(qa.increased, qb.increased) and is_equal_approx(qa.more, qb.more)
+	_flag("attribute delta: 20 + 10 Strength converts like 30 at once", equal and GameData.attributes[0].get("perPoint", []).size() > 0)
+
+	# unknown ailments / numeric special ids
+	var ail_stat: Dictionary = {"kind": "added", "property": "AilmentChance", "added": {"per_point": 1, "flat": 0}}
+	ail_stat["specialTag"] = "NoSuchAilment"
+	_check("unknown specialTag name: the mod is dropped", 1.0 if BuildMods.stat_from_effect(ail_stat, 1, "t") == null else 0.0, 1.0)
+	ail_stat["specialTag"] = "Poison"
+	var poison: StatMod = BuildMods.stat_from_effect(ail_stat, 2, "t")
+	_check("specialTag by name: AilmentID", float(poison.special), float(GameData.enum_value("AilmentID", "Poison")))
+	ail_stat["specialTag"] = "3"
+	_check("numeric specialTag text: special id as is", float(BuildMods.stat_from_effect(ail_stat, 1, "t").special), 3.0)
+	var unknown_model: Dictionary = {"stat": "AilmentChance", "mod": "added", "ailment": "NoSuchAilment"}
+	_check("model with an unknown ailment: no mod", 1.0 if EffectModels.make_mod(unknown_model, 1.0, {"build": Build, "store": StatStore.new()}, "t") == null else 0.0, 1.0)
+
+	# model signatures keep apart models that differ in text / count / chance
+	var sig_a: String = BuildMods._model_signature({"kind": "flag", "text": "A"})
+	_check("signature: flags with different texts differ", 1.0 if sig_a != BuildMods._model_signature({"kind": "flag", "text": "B"}) else 0.0, 1.0)
+	_check("signature: components with different counts differ", 1.0 if BuildMods._model_signature({"kind": "component", "ability": "X", "count": 1}) != BuildMods._model_signature({"kind": "component", "ability": "X", "count": 2}) else 0.0, 1.0)
+	_check("signature: the same effect in two mutators is equal (scope and note do not count)",
+		1.0 if BuildMods._model_signature({"kind": "stat", "stat": "Damage", "scope": "skill", "note": "a"}) == BuildMods._model_signature({"kind": "stat", "stat": "Damage", "scope": "minion", "note": "b"}) else 0.0, 1.0)
+
+	# Haste on you: the flag and the "Buffs on me" stack of the same ailment count once
+	var ail_only_flag := StatStore.new()
+	var ail_both := StatStore.new()
+	var prev_state: Dictionary = Build.player_state.duplicate(true)
+	Build.set_player_state("haste", true)
+	BuildMods._add_player_ailments(Build, ail_only_flag)
+	Build.set_player_state("buffs", {33: 1})
+	BuildMods._add_player_ailments(Build, ail_both)
+	var move_flag: float = ail_only_flag.query_untagged(LE.MOVESPEED).increased
+	_flag("Haste flag adds movement speed", move_flag > 0.0)
+	_check("Haste flag + stack: counted once", ail_both.query_untagged(LE.MOVESPEED).increased, move_flag)
+	Build.player_state = prev_state
+
+	# expressions that do not run count as 0 (and warn once)
+	_check("failing node expression: 0", BuildMods.eval_value({"expr": "NoSuchGameClass.Func(p)"}, 3), 0.0)
+	_check("failing node expression: still 0 afterwards", BuildMods.eval_value({"expr": "NoSuchGameClass.Func(p)"}, 3), 0.0)
+
+	# extraTag of automatic node stats pins the stat to the named ability
+	_check("ability index of a tag: entanglingRoots", float(BuildMods.ability_index_of("entanglingRoots")), 71.0)
+	_check("ability index of a tag: none", float(BuildMods.ability_index_of("none")), 0.0)
+	_check("ability index of a tag: unknown", float(BuildMods.ability_index_of("noSuchAbility")), -1.0)
+	var auto: StatMod = BuildMods._automatic_stat({"property": "Damage", "modType": "MORE", "value": 0.06, "scaling": "PerPoint",
+		"specialTag": 0, "extraTag": "entanglingRoots"}, 2, "t")
+	_check("automatic stat with extraTag: mod.extra = ability index", float(auto.extra), 71.0)
+	_check("automatic stat with extraTag: value", auto.more[0], 0.12)
+	_check("automatic stat with an unknown extraTag: dropped", 1.0 if BuildMods._automatic_stat({"property": "Damage", "modType": "MORE",
+		"value": 0.06, "scaling": "PerPoint", "extraTag": "noSuchAbility"}, 2, "t") == null else 0.0, 1.0)
+
+	# attribute values of effect models ignore tags like the per-point conversion
+	var tagged := StatStore.new()
+	tagged.add(StatMod.make(LE.STRENGTH, "added", 12.0, LE.FIRE, "tagged"))
+	tagged.add(StatMod.make(LE.ALL_ATTRIBUTES, "added", 3.0, 0, "all"))
+	_check("EffectModels attr: tagged Strength counts", EffectModels.source("attr:str", {"build": Build, "store": tagged}), 15.0)
+	_check("EffectModels attr = BuildMods.attribute_value", EffectModels.source("attr:str", {"build": Build, "store": tagged}), float(BuildMods.attribute_value(tagged, LE.STRENGTH)))
+
+	# affix trigger chance: added, increased or more
+	var inc_mod: StatMod = StatMod.make(LE.PLAYER_PROPERTY, "increased", 0.05, 0, "t")
+	_check("affix trigger value from an increased mod", UniqueEffects._affix_value(inc_mod), 0.05)
+
+	# float32 arithmetic of the affix roll
+	_check("AffixMath.f32 rounds to float32", AffixMath.f32(0.1), 0.10000000149011612, 1e-12)
+
+	# ConfigRelevance.compute keeps the recording state of an outer call
+	ConfigRelevance._recording = true
+	ConfigRelevance._rec = {"marker": 1}
+	ConfigRelevance.compute(Build)
+	_flag("ConfigRelevance.compute restores the outer recording state", ConfigRelevance._recording and ConfigRelevance._rec.has("marker"))
+	ConfigRelevance._recording = false
+	ConfigRelevance._rec = {}
 
 
 ## SkillCalc.compute without details (computed for real, not derived from a cached result) equals the result with

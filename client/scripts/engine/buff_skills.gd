@@ -57,7 +57,8 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 		_declare_input(result, active_input)
 		active = bool(input_value(build, slot, str(active_input["key"]), active_input.get("default", false)))
 	var k: float = float(model.get("active_multiplier", 1.0)) if active else 1.0
-	var x: float = ability_property(build, str(model.get("ability_id", "")), int(model.get("effect_index", -1)))
+	var ability_index: int = int(ability.get("abilityIDEnum", {}).get("value", 0)) if ability.get("abilityIDEnum") is Dictionary else 0
+	var x: float = ability_property(build, str(model.get("ability_id", "")), ability_index, int(model.get("effect_index", -1)))
 	var m: float = 1.0 + x
 	var mode: String = LE.t(str(model.get("mode_active", "active mode"))) if active else LE.t(str(model.get("mode_passive", "always on")))
 	var suffix: String = " ×M %s" % LE.fmt_num(m) if x != 0.0 else ""
@@ -93,7 +94,7 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 				out.append(mod.scaled(m))
 
 	for entry: Dictionary in model.get("ability_properties", []):
-		var v: float = ability_property(build, str(model.get("ability_id", "")), int(entry["index"]))
+		var v: float = ability_property(build, str(model.get("ability_id", "")), ability_index, int(entry["index"]))
 		if v == 0.0:
 			continue
 		var factor: float = k if bool(entry.get("active_k", false)) else 1.0
@@ -133,28 +134,12 @@ static func _declare_input(result: Dictionary, input: Dictionary) -> void:
 	result["inputs"].append(input)
 
 
-## Sum of the AbilityPropertyStat values (stat kind "ability_property") of the passives for `ability_id` and property `index`.
-static func ability_property(build: Node, ability_id: String, index: int) -> float:
+## Sum of the AbilityProperty values for `ability_id` (its index `ability_index` in the ability list) and property `index`:
+## passives, mastery bonus, item and idol affixes and unique effects — the same sum the game's mutators read (07d §AbilityProperty).
+static func ability_property(build: Node, ability_id: String, ability_index: int, index: int) -> float:
 	if ability_id == "" or index < 0:
 		return 0.0
-	var tree: Dictionary = GameData.get_passive_tree(build.class_id)
-	var effects: Dictionary = GameData.passive_effects(str(tree.get("treeID", "")))
-	var total: float = 0.0
-	for node_id: Variant in build.passives:
-		var points: int = int(build.passives[node_id])
-		var node: Dictionary = effects.get(int(node_id), {})
-		if points <= 0 or node.is_empty():
-			continue
-		for effect: Dictionary in node.get("effects", []):
-			var stat: Variant = effect.get("stat")
-			if not stat is Dictionary or str(stat.get("kind", "")) != "ability_property":
-				continue
-			if str(stat.get("abilityID", "")) != ability_id or int(str(stat.get("abilityPropertyIndex", "-1"))) != index:
-				continue
-			if points < int(effect.get("minPoints", 0)):
-				continue
-			total += BuildMods.eval_value(stat.get("value"), points)
-	return total
+	return float(ShadowCalc.ability_property(build, ability_id, ability_index, index)["value"])
 
 
 static func _make(entry: Dictionary, value: float, source: String) -> StatMod:

@@ -416,7 +416,10 @@ static func player_layers(build: Node, store: StatStore, area_level: int, attack
 	var bc: int = int(conv["block_conversion"])
 	var dodge: float = CharacterCalc._compute_dodge_chance(dodge_rating, area_level)
 	# slot f1 is multiplied by the block chance multiplier (1 + increased)·more (06c §0)
-	var block: float = maxf(block_q.value() + float(conv["block_add"]) * (1.0 + block_q.increased) * block_q.more, 0.0)
+	var block_f1: float = float(conv["block_add"]) * (1.0 + block_q.increased) * block_q.more
+	var block: float = maxf(block_q.value() + block_f1, 0.0)
+	var block_glance: float = glancing_from_block(block_q.value(), float(conv["max_block"]), block_f1)
+	var armour_raw: float = armour
 	armour *= 1.0 + float(conv["armour_more"])
 	if float(conv["max_block"]) > 0.0:
 		block = minf(block, float(conv["max_block"]))
@@ -448,7 +451,7 @@ static func player_layers(build: Node, store: StatStore, area_level: int, attack
 		layers["dodge"] = 0.0
 		match dc:
 			1:
-				layers["armour"] = armour + dodge_rating
+				layers["armour"] = converted_armour(armour_raw, dodge_rating, float(conv["armour_more"]))
 			2:
 				layers["glancing"] = float(layers["glancing"]) + 2.0 * dodge
 			3:
@@ -457,7 +460,7 @@ static func player_layers(build: Node, store: StatStore, area_level: int, attack
 	if bc != 0:
 		layers["block"] = 0.0
 		if bc == 1:
-			layers["glancing"] = float(layers["glancing"]) + block
+			layers["glancing"] = float(layers["glancing"]) + block_glance
 		elif bc == 2:
 			layers["parry"] = minf(PARRY_CAP, float(layers["parry"]) + block)
 	layers["endurance_mode"] = int(conv["endurance_mode"])
@@ -465,6 +468,19 @@ static func player_layers(build: Node, store: StatStore, area_level: int, attack
 	layers["endurance_extra"] = clampf(float(conv["endurance_extra"]), 0.0, 1.0)
 	layers["block_dot"] = float(conv["block_dot"])
 	return layers
+
+
+## Armor with the dodge rating converted to it: A = (armour + dodgeRating)·(1 + f2) (06c §1 step 6).
+static func converted_armour(armour: float, dodge_rating: float, armour_more: float) -> float:
+	return (armour + dodge_rating) * (1.0 + armour_more)
+
+
+## Glancing blow chance from converted block: min(maxBlock, blockChance) + f1·mult, the cap does not reach the slot f1
+## (06c §1 step 5.2); `max_block` 0 = no cap.
+static func glancing_from_block(block_chance: float, max_block: float, f1_mult: float) -> float:
+	if max_block > 0.0:
+		block_chance = minf(block_chance, max_block)
+	return maxf(block_chance + f1_mult, 0.0)
 
 
 ## Damage taken multiplier (1 + Σadded)·(1 + Σinc)·Πmore (06c §2.10).
@@ -509,9 +525,12 @@ static func type_multiplier(layers: Dictionary, i: int, is_hit: bool, pen: float
 	return {"mult": mult, "lines": lines}
 
 
-## Chance that an enemy hit crits you and its damage factor (06c §2.8).
+## Chance that an enemy hit crits you and its damage factor (06c §2.8). An attack without a crit chance never crits,
+## whatever the added chance to be crit (06c §1 step 5.4).
 static func crit_against(layers: Dictionary, crit_chance: float, crit_multi: float) -> Dictionary:
-	var chance: float = clampf(crit_chance + float(layers["crit_taken"]), 0.0, 1.0) * (1.0 - clampf(float(layers["crit_avoid"]), 0.0, 1.0))
+	var chance: float = 0.0
+	if crit_chance > 0.0:
+		chance = clampf(crit_chance + float(layers["crit_taken"]), 0.0, 1.0) * (1.0 - clampf(float(layers["crit_avoid"]), 0.0, 1.0))
 	var factor: float = crit_multi
 	var r: float = float(layers["crit_reduced"])
 	if not is_zero_approx(r) and crit_multi > 1.0:
@@ -540,9 +559,8 @@ static func endurance_of(layers: Dictionary) -> float:
 ## ward, mana before health, endurance under the threshold. Returns the health lost now.
 static func take_damage(layers: Dictionary, pool: Dictionary, d: float) -> float:
 	var delayed: float = float(layers.get("delayed", 0.0))
+	var d_in: float = d
 	if delayed > 0.0 and d > 0.0:
-		if pool.has("slow"):
-			pool["slow"].append([d * delayed / SLOW_DAMAGE_SECONDS, SLOW_DAMAGE_SECONDS])
 		d *= 1.0 - delayed
 	var mode: int = int(layers.get("endurance_mode", 0))
 	var e: float = endurance_of(layers)
@@ -553,6 +571,10 @@ static func take_damage(layers: Dictionary, pool: Dictionary, d: float) -> float
 		d -= MANA_PER_DAMAGE * lost
 	if mode == 2:
 		d *= 1.0 - e
+	# the delayed share is queued from the final D: D / (1 − f7) · f7 (06c §1 step 18), after mana before ward and endurance
+	if delayed > 0.0 and d_in > 0.0 and pool.has("slow"):
+		var queued: float = d / (1.0 - delayed) * delayed if delayed < 1.0 else d_in * delayed
+		pool["slow"].append([queued / SLOW_DAMAGE_SECONDS, SLOW_DAMAGE_SECONDS])
 	var ward: float = float(pool["ward"])
 	if d <= ward:
 		pool["ward"] = ward - d
@@ -599,19 +621,49 @@ static func lethal_damage(layers: Dictionary) -> float:
 	return hi
 
 
+## The delayed share (f7) lands within SLOW_DAMAGE_SECONDS and counts: the hit kills when the pool is empty after it
+## (no recovery in between, ward absorbs the delayed ticks too).
 static func _kills(layers: Dictionary, d: float) -> bool:
 	var pool: Dictionary = full_pool(layers)
 	take_damage(layers, pool, d)
+	if float(pool["health"]) > 0.0:
+		DefenseRecovery.slow_damage(pool, SLOW_DAMAGE_SECONDS)
 	return float(pool["health"]) <= 0.0
 
 
-## Number of identical hits of `d` damage that kill from a full pool (fractional last hit); INF if they never do.
+## What the pool can still absorb in damage units: health + ward + 5 per mana, minus the delayed damage not yet taken.
+static func pool_value(pool: Dictionary) -> float:
+	var v: float = float(pool["health"]) + float(pool["ward"]) + MANA_PER_DAMAGE * float(pool.get("mana", 0.0))
+	return v - pending_slow(pool)
+
+
+## Delayed damage queued in the pool and not yet taken.
+static func pending_slow(pool: Dictionary) -> float:
+	var total: float = 0.0
+	for entry: Array in pool.get("slow", []):
+		total += float(entry[0]) * float(entry[1])
+	return total
+
+
+## The simulation reached its limit of `n` hits: the hits to die are estimated from what the last hit (`before` → `pool`) took
+## from the pool, n + value / loss; INF only when the pool does not decrease.
+static func extrapolate_hits(n: int, before: Dictionary, pool: Dictionary) -> float:
+	var loss: float = pool_value(before) - pool_value(pool)
+	if loss <= 1e-9:
+		return INF
+	return float(n) + maxf(pool_value(pool), 0.0) / loss
+
+
+## Number of identical hits of `d` damage that kill from a full pool (fractional last hit); INF if they never do, an
+## estimate from the loss of the last hit after MAX_HITS.
 static func hits_to_die(layers: Dictionary, d: float) -> float:
 	if d <= 0.0:
 		return INF
 	var pool: Dictionary = full_pool(layers)
+	var before_last: Dictionary = pool
 	for n in range(1, MAX_HITS + 1):
 		var before: Dictionary = pool.duplicate(true)
+		before_last = before
 		take_damage(layers, pool, d)
 		if float(pool["health"]) <= 0.0:
 			# the share of the last hit that was needed, found on the copy of the pool before it
@@ -626,7 +678,7 @@ static func hits_to_die(layers: Dictionary, d: float) -> float:
 				else:
 					lo = mid
 			return float(n - 1) + hi
-	return INF
+	return extrapolate_hits(MAX_HITS, before_last, pool)
 
 
 ## Ward the regeneration holds against decay (06c §3.2): regen = (q·x² + l·x)/(1 + 0.5·max(retention, −0.9)), x = W − T.
@@ -822,7 +874,7 @@ static func _compute(build: Node) -> Dictionary:
 		var max_hit: float = lethal / share if share > 0.0 else INF
 		var max_crit_hit: float = max_hit / float(crit["factor"])
 		var hits: float = hits_to_die(layers, expected) if sources.is_empty() and float(layers["delayed"]) <= 0.0 else DefenseRecovery.hits_to_die(layers, sources, expected, interval)
-		var ehp: float = hits * total_raw
+		var ehp: float = _ehp(hits, total_raw)
 		var worst: float = d_unit * float(crit["factor"]) * VARIANCE_MAX
 		ehp_rows.append(_row(LE.t("Damage that kills from full health"), LE.fmt_num(lethal),
 			LE.t("After every per-type layer, without avoidance. %s") % pool_text))
@@ -849,7 +901,7 @@ static func _compute(build: Node) -> Dictionary:
 			LE.t("Block, dodge and crit do not apply to damage over time; ward, mana before health and endurance do")))
 		ehp_rows.append(_row(LE.t("Seconds to die"), _num(seconds),
 			LE.t("From a full pool under this damage, with the recovery between hits; ∞ when the recovery outlasts it")))
-		summary = {"ehp": seconds * total_raw, "max_hit": INF, "hits": seconds, "taken": dps_taken / total_raw if total_raw > 0.0 else 0.0,
+		summary = {"ehp": _ehp(seconds, total_raw), "max_hit": INF, "hits": seconds, "taken": dps_taken / total_raw if total_raw > 0.0 else 0.0,
 			"worst": dps_taken, "lethal": lethal, "one_shot": false}
 	sections.append({"title": LE.t("Effective health"), "rows": ehp_rows})
 
@@ -870,7 +922,16 @@ static func _row(label: String, text: String, breakdown: String) -> Dictionary:
 	return {"label": label, "text": text, "breakdown": breakdown}
 
 
+## Effective health = hits (seconds) to die × raw damage; ∞ when nothing kills (no INF·0 = NaN for an attack without damage).
+static func _ehp(hits: float, total_raw: float) -> float:
+	if is_inf(hits) or total_raw <= 0.0:
+		return INF
+	return hits * total_raw
+
+
 static func _num(x: float) -> String:
+	if is_nan(x):
+		return "—"
 	if is_inf(x) or x > 1e12:
 		return "∞"
 	return LE.fmt_num(x)

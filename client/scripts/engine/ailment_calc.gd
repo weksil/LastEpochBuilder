@@ -120,7 +120,7 @@ static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false
 	for conv: Dictionary in ctx.get("ailment_conversions", []):
 		var from: int = GameData.ailment_id_by_name(str(conv["from"]))
 		var to: int = GameData.ailment_id_by_name(str(conv["to"]))
-		if from < 0 or to < 0 or not out.has(from):
+		if from < 0 or to < 0 or from == to or not out.has(from):
 			continue
 		var src: Dictionary = out[from]
 		var dst: Dictionary = _entry(out, to)
@@ -129,7 +129,8 @@ static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false
 		src["chance"] = 0.0
 	# conversions from item stats: property 100, specialTag = from, tags = to, applied when value > 0.1 (06d §1.2)
 	for mod: StatMod in ctx["mods"]:
-		if mod.property != LE.AILMENT_CONVERSION or mod.added <= 0.1 or not out.has(mod.special):
+		# `tags` carries the target ailment id here: 0 is no target, from == to is no conversion (it would zero the chance)
+		if mod.property != LE.AILMENT_CONVERSION or mod.added <= 0.1 or not out.has(mod.special) or mod.tags <= 0 or mod.tags == mod.special:
 			continue
 		var from_c: Dictionary = out[mod.special]
 		var to_c: Dictionary = _entry(out, mod.tags)
@@ -278,7 +279,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		var pen: float = float(ds["pen"][i]) + (eff_pen if i == pen_type else 0.0)
 		var res_mult: float = (0.25 if res > 0.75 else 1.0 - res) + pen
 		var dt_q: StatQuery = e.query(LE.DAMAGE_TAKEN, (atags & ~0xFF) | LE.DT_TAG[i])
-		var dt: float = (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more
+		var dt: float = maxf(0.0, (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more)
 		var arm: float = 1.0
 		if armour != 0.0 and armour_share > 0.0:
 			arm = 1.0 - Enemy.armour_mitigation(armour, int(enemy.get("level", 100)), i != 0) * armour_share

@@ -77,10 +77,18 @@ static func _affix_triggers(build: Node) -> Array[Dictionary]:
 			var cast_title: String = str(GameData.ability_by_name(cast_name).get("abilityName", cast_name))
 			out.append({
 				"slot": slot, "item": item, "unique": {}, "effect": {"source": "Affix", "ability": cast_name}, "model": model,
-				"ability_index": ability_index, "pp": mod.added,
+				"ability_index": ability_index, "pp": _affix_value(mod),
 				"label": "%s — %s" % [mod.source, LE.t("chance to cast %s") % cast_title],
 			})
 	return out
+
+
+## Value of an affix mod that carries a trigger chance: added, increased or more (the data has only added ones for triggers).
+static func _affix_value(mod: StatMod) -> float:
+	var v: float = mod.added + mod.increased
+	for m: float in mod.more:
+		v += m
+	return v
 
 
 ## Character-wide models. Phase "pre" runs before attributes are converted to stats, "post" after (sources read the store).
@@ -130,7 +138,7 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			var mask: int = int(model["skill_mask"]) if model.has("skill_mask") else LE.tag_mask(str(model["skill_any"]))
 			if (ability_tags & mask) == 0:
 				continue
-			routed = kind == "trigger"
+			routed = kind == "trigger" or (kind == "stat" and _is_skill_scoped(model))  # minion / component scope is honoured
 		elif SKILL_KINDS.has(kind) or (kind == "stat" and _is_skill_scoped(model)):
 			routed = true
 		else:

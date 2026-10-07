@@ -161,7 +161,10 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		var is_curse: bool = comp["kind"] == "curse_hit"
 		var is_dot: bool = comp["kind"] == "dot"
 		var events: float = float(comp["rate"])
-		if events <= 0.0 and not is_curse:
+		if events > 0.0 and comp.get("rate_hit_scaled", false):
+			# a rate in uses/s (channelled echo): the hits per use multiply it like they do the rate derived from `uses`
+			events *= hits if comp.get("single_projectile", false) else target_hits
+		elif events <= 0.0 and not is_curse:
 			events = uses * float(comp["per_use"]) * (1.0 if comp["kind"] == "trigger" else (hits if comp.get("single_projectile", false) else target_hits))
 		var comp_speed: Dictionary = {"uses": events, "rows": [], "unit": LE.t("damage events") if is_curse else LE.t("uses")}
 		var ds: Dictionary = _build_damage(ctx)
@@ -891,7 +894,8 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		speed = 1.0 + use_inc
 		b.append(LE.t("Speed is not scaled by stats: 1 + %s (tree)") % LE.fmt_pct(use_inc))
 	else:
-		var q: StatQuery = store.query(scaler, int(ctx["tags"]))
+		# the ability index narrows the mods to this skill; 0 matches all (06e §1.1)
+		var q: StatQuery = store.query(scaler, int(ctx["tags"]), 0, _ability_index(ctx))
 		speed = q.added * (1.0 + q.increased + use_inc) * q.more
 		b.append(LE.t("%s: (Σ added %s) × (1 + %s + %s tree) × %s = %s") % [
 			LE.t("Attack speed") if scaler == LE.ATTACK_SPEED else LE.t("Cast speed"),
@@ -904,7 +908,8 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 				speed *= rate
 				b.append(LE.t("× weapon attack speed %s = %s") % [LE.fmt_num(rate), LE.fmt_num(speed)])
 		if int(ab.get("speedScalerAppliedAsIncrease", 0)) == 1:
-			speed = speed * float(ab.get("speedScalerEffectiveness", 1.0)) + 1.0
+			# runtime: max(S - 1, 0) · eff + 1 (06e §1.1); S · eff + 1 is only the tooltip's bug
+			speed = maxf(speed - 1.0, 0.0) * float(ab.get("speedScalerEffectiveness", 1.0)) + 1.0
 			b.append(LE.t("Speed as increased: × %s + 1 = %s") % [LE.fmt_num(float(ab.get("speedScalerEffectiveness", 1.0))), LE.fmt_num(speed)])
 	var max_speed: float = float(ab.get("maximumUseSpeed", 0.0))
 	if max_speed > 0.0 and speed > max_speed:
@@ -916,7 +921,11 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	var duration: float = float(ab.get("useDuration", 1.0))
 	var mult: float = float(ab.get("speedMultiplier", 1.0))
 	var instant: bool = int(ab.get("instantCastForPlayer", 0)) == 1
-	var uses: float = speed * mult * 1.1 / (1.0 if instant or duration <= 0.0 else duration)
+	# speedScale <= 0 becomes 0.1 (06e §1.1)
+	var speed_scale: float = speed * mult * 1.1
+	if speed_scale <= 0.0:
+		speed_scale = 0.1
+	var uses: float = speed_scale / (1.0 if instant or duration <= 0.0 else duration)
 	b.append(LE.t("Uses/s = %s × speedMultiplier %s × 1.1 / useDuration %s = %s") % [
 		LE.fmt_num(speed), LE.fmt_num(mult), "—" if instant else LE.fmt_num(duration), LE.fmt_num(uses)])
 
@@ -929,13 +938,14 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		mana_lines.append("  " + line)
 	mana_lines.append(LE.t("Added — tree nodes and properties of unique items; mana stats from affixes and passives are not counted yet."))
 	rows.append({"label": LE.t("Mana cost"), "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
-	var cd: Dictionary = cooldown_info(ab, store, int(ctx["tags"]), s)
+	var cd: Dictionary = cooldown_info(ab, store, int(ctx["tags"]), s, _ability_index(ctx))
 	if bool(cd["has"]):
 		rows.append({"label": LE.t("Cooldown, s"), "text": LE.fmt_num(cd["cd"]), "breakdown": cd["text"]})
 		if float(cd["charges"]) > 1.0:
 			rows.append({"label": LE.t("Cooldown charges"), "text": LE.fmt_num(cd["charges"]), "breakdown":
 				LE.t("Charges: %s. Charges allow a series of uses in a row; in steady state the cooldown sets the rate.") % LE.fmt_num(cd["charges"])})
-		var cap: float = 1.0 / float(cd["cd"])
+		# a cooldown of 0 (or below) does not cap anything
+		var cap: float = 1.0 / float(cd["cd"]) if float(cd["cd"]) > 0.0 else INF
 		if uses > cap:
 			rows[0]["text"] = LE.fmt_num(cap)
 			rows[0]["breakdown"] += LE.t("\nCapped by cooldown: min(%s, 1 / %s s) = %s") % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
@@ -980,7 +990,7 @@ static func curse_own_hits_estimate(build: Node, slot: int, global: StatStore) -
 
 
 ## Cooldown of the skill (docs/ENGINE.md §9.6). Returns {has, cd, charges, text}.
-static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictionary) -> Dictionary:
+static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictionary, ability_index: int = 0) -> Dictionary:
 	var cdm: Dictionary = s.get("cooldown", {})
 	var base_info: Dictionary = s.get("cooldown_base", {})
 	var base: float = float(ab["cooldown"]) if ab.get("cooldown") != null and float(ab["cooldown"]) > 0.0 else float(base_info.get("baseCooldownLength", 0.0))
@@ -990,11 +1000,11 @@ static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictio
 	var added: float = float(cdm.get("length_added", 0.0))
 	var len_inc: float = float(cdm.get("length_increased", 0.0)) + float(base_info.get("increasedCooldownLength", 0.0))
 	var length: float = (base + added) * (1.0 + len_inc)
-	var cdr: StatQuery = store.query(LE.CDR, tags)
+	var cdr: StatQuery = store.query(LE.CDR, tags, 0, ability_index)
 	var rec_inc: float = cdr.increased + float(cdm.get("recovery_increased", 0.0)) + float(base_info.get("increasedCooldownRecoverySpeed", 0.0))
 	var rec_more: float = (1.0 + float(cdm.get("recovery_more", 0.0))) * (1.0 + float(base_info.get("moreCooldownRecoverySpeed", 0.0)))
 	var recovery: float = maxf((1.0 + rec_inc) * rec_more, 0.0001)
-	var cd: float = length / recovery
+	var cd: float = maxf(length / recovery, 0.0)
 	var lines: PackedStringArray = [
 		LE.t("Length: (%s + %s) × (1 + %s) = %s") % [LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(len_inc), LE.fmt_num(length)],
 		LE.t("Recovery: (1 + %s) × %s = %s") % [LE.fmt_pct(rec_inc), LE.fmt_num(rec_more), LE.fmt_num(recovery)],
@@ -1065,7 +1075,8 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 				b.append("  " + mod.describe())
 		# damage taken (SP 6, base 1)
 		var dt_q: StatQuery = e.query(LE.DAMAGE_TAKEN, (src & ~0xFF) | LE.DT_TAG[i])
-		var dt: float = (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more
+		# not below 0: negative damage taken would heal (06b: clamp >= 0)
+		var dt: float = maxf(0.0, (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more)
 		if dt != 1.0:
 			b.append(LE.t("Enemy damage taken: ×%s") % LE.fmt_num(dt))
 			for mod: StatMod in dt_q.mods:
@@ -1097,7 +1108,13 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var cc: float = ds["cc"]
 	var cm: float = ds["cm"]
 	var ctbc: float = e.query(LE.CHANCE_TO_BE_CRIT).added
-	var p: float = minf(1.0, cc + ctbc) if cc > 0.0 else 0.0
+	# crit avoidance (SP 89 = added · more) cancels a rolled crit; reduced crit bonus taken (SP 114) shrinks the multiplier (06b §2.2)
+	var avoid_q: StatQuery = e.query(LE.CRIT_AVOIDANCE)
+	var avoid: float = clampf(avoid_q.added * avoid_q.more, 0.0, 1.0)
+	var rbdt: float = e.query(LE.REDUCED_CRIT_BONUS_TAKEN).added
+	if rbdt != 0.0 and cm > 1.0:
+		cm = maxf(1.0, (1.0 - rbdt) * (cm - 1.0) + 1.0)
+	var p: float = minf(1.0, cc + ctbc) * (1.0 - avoid) if cc > 0.0 else 0.0
 	var e_crit: float = 1.0 + p * (cm - 1.0)
 	# single-hit numbers as the training dummy shows them (no per-hit variance there)
 	var type_parts: PackedStringArray = []

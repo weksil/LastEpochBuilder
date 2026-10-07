@@ -123,6 +123,7 @@ static func _copy(mod: StatMod, tags: int, extra: int, source: String) -> StatMo
 	copy.increased = mod.increased
 	copy.more = mod.more.duplicate()
 	copy.source = source
+	copy.on_curse_hit = mod.on_curse_hit
 	return copy
 
 
@@ -141,7 +142,8 @@ static func minion_store(player_store: StatStore, summon_ab: Dictionary, minion:
 	for mod: StatMod in player_store.all_mods():
 		if SKIPPED_PROPERTIES.has(mod.property):
 			continue
-		if mod.extra != 0 and mod.extra != idx:
+		# with no ability index (idx == 0) there is nothing to compare an extra with: the usual rules below decide
+		if idx != 0 and mod.extra != 0 and mod.extra != idx:
 			store.add(_copy(mod, mod.tags, mod.extra, LE.t("Player → minion (as is): %s") % mod.source))
 		elif (mod.tags & LE.MINION) != 0 or (is_totem and (mod.tags & LE.TOTEM) != 0) or (idx != 0 and mod.extra == idx):
 			store.add(_copy(mod, mod.tags & ~(LE.MINION | LE.TOTEM), 0, LE.t("Player → minion: %s") % mod.source))
@@ -239,11 +241,13 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 	else:
 		for minion: Dictionary in minions_for(summon_name):
 			entries.append([minion, MinionCount.of_minion(build, minion, summon_name)])
+	# the property mods do not depend on the minion
+	var prop_mods: Array = property_mods(build, summon_name)
 	for item: Array in entries:
 		var minion: Dictionary = item[0]
 		var mods: Array = minion_mods.duplicate()
 		mods.append_array(actor_mods.get(str(minion.get("actorName", "")), []))
-		mods.append_array(property_mods(build, summon_name))
+		mods.append_array(prop_mods)
 		var store: StatStore = minion_store(player_store, summon_ab, minion, mods)
 		var names: Array = (minion.get("abilityList", []) as Array).duplicate()
 		if names.is_empty():
@@ -306,7 +310,8 @@ static func defence_rows(stats: StatStore, minion: Dictionary) -> Array[Dictiona
 	var shred: float = stats.sum_added_untagged([LE.NEG_ARMOUR])
 	var armour_row: Dictionary = _defence_base(LE.t("Armor"), float(protection.get("armour", 0.0)), stats.query_untagged(LE.ARMOUR),
 		(LE.t(" − %s (shred)") % LE.fmt_num(shred)) if shred != 0.0 else "")
-	armour_row["text"] = str(LE.round_half_even(float(armour_row["value"]) - shred))
+	armour_row["value"] = float(armour_row["value"]) - shred
+	armour_row["text"] = str(LE.round_half_even(float(armour_row["value"])))
 	rows.append(armour_row)
 
 	for i in range(LE.RES_SP.size()):

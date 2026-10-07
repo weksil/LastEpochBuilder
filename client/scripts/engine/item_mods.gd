@@ -51,6 +51,11 @@ static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary =
 	return (hit as Array[StatMod]).duplicate()
 
 
+## items.json globals.omenIdolAffixEffectModifier: the affix effect modifier of omen idol subtypes (affixEffectiveness
+## "OmenIdol"), in place of the base's affixEffectModifier (07a §6).
+const OMEN_IDOL_AEM: float = 0.0
+
+
 static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary) -> Array[StatMod]:
 	var mods: Array[StatMod] = []
 
@@ -81,7 +86,7 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 		if implicit.is_empty():
 			continue
 
-		# Get roll value (0-255), default to 0 if not provided
+		# Get roll value (0-255); an implicit without a stored roll takes the maximum (255)
 		var roll: int = int(implicit_rolls[j]) if j < implicit_rolls.size() else 255
 
 		# Calculate rolled value
@@ -135,6 +140,7 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 			mods.append(um)
 
 	# Process affixes
+	var omen: bool = str(sub.get("affixEffectiveness", "")) == "OmenIdol"
 	var affixes_list: Array = item.get("affixes", [])
 	for affix_entry in affixes_list:
 		if not affix_entry is Dictionary:
@@ -162,7 +168,8 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 			continue
 
 		# Calculate effect modifier
-		var item_aem: float = base.get("affixEffectModifier", 0.0)
+		# omen idols use the global ItemList.omenIdolAffixEffectModifier instead of the base's value (07a §6)
+		var item_aem: float = OMEN_IDOL_AEM if omen else float(base.get("affixEffectModifier", 0.0))
 		var std_aem: float = affix.get("standardAffixEffectModifier", 0.0)
 		var m: float = AffixMath.effect_modifier(item_aem, std_aem)
 		if not effect_scale.is_empty():

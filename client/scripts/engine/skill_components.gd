@@ -199,8 +199,11 @@ static func _curse_hit_component(build: Node, slot: int, s: Dictionary, label: S
 	if slot >= 0 and slot < build.skills.size():
 		inputs = build.skills[slot].get("inputs", {})
 	var global: StatStore = (s["store"] as StatStore).parent if s.get("store") is StatStore else null
-	var estimate: Dictionary = SkillCalc.curse_own_hits_estimate(build, slot, global)
-	var own: float = float(inputs.get(CURSE_OWN_KEY, estimate["rate"]))
+	# the estimate is only the default of the input and its note: skipped while the user's value overrides it and nothing declares the input
+	var estimate: Dictionary = {}
+	if not inputs.has(CURSE_OWN_KEY) or s.get("inputs") is Array:
+		estimate = SkillCalc.curse_own_hits_estimate(build, slot, global)
+	var own: float = float(inputs.get(CURSE_OWN_KEY, estimate.get("rate", 0.0)))
 	var other: float = float(inputs.get(CURSE_OTHER_KEY, 0.0))
 	if s.get("inputs") is Array:
 		_declare_input(s["inputs"], {"key": CURSE_OWN_KEY, "label": LE.t("Your hits on the cursed target per second (by other skills)"), "default": float(estimate["rate"])})

@@ -31,13 +31,10 @@ static func roll_value(lo: float, hi: float, rounding: String, mod_type: String,
 	var scale_type: String = "Hundredth" if mod_type == "INCREASED" else rounding
 	var s: float = float(SCALE.get(scale_type, 1))
 
-	# Apply modifier
-	var lo2: float = lo * (1.0 + m)
-	var hi2: float = hi * (1.0 + m)
-
-	# Scale and round
-	var a: int = LE.round_half_even(lo2 * s)
-	var b: int = LE.round_half_even(hi2 * s)
+	# Apply the modifier and scale: the game computes min·(1+m)·s in float32 (07a, open issue 8); it matters only at .5 boundaries
+	var f: float = f32(1.0 + m)
+	var a: int = LE.round_half_even(f32(f32(f32(lo) * f) * s))
+	var b: int = LE.round_half_even(f32(f32(f32(hi) * f) * s))
 
 	# Ensure a <= b
 	if a > b:
@@ -49,6 +46,11 @@ static func roll_value(lo: float, hi: float, rounding: String, mod_type: String,
 	var v: float = float(min(int(floor(float(b - a + 1) * float(roll) / 255.0 + float(a))), b)) / s
 
 	return v
+
+
+## x rounded to float32 (the game's float arithmetic).
+static func f32(x: float) -> float:
+	return PackedFloat32Array([x])[0]
 
 
 ## Value on the rounding grid without a roll (GetFixedValueAfterRounding).

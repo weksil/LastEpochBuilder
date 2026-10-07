@@ -13,6 +13,7 @@ const WARD_DECAY_MIN: float = 0.5
 ## Simulation: time step, and the number of hits after which the build counts as never dying.
 const STEP: float = 0.05
 const MAX_SIM_HITS: int = 2000
+const STEPS_PER_SECOND: int = 20
 const MAX_DOT_SECONDS: float = 600.0
 ## Own-event kinds of resource models and enemy-hit kinds (docs/ENGINE.md §9.1 `resource.on`).
 const OWN_EVENTS: Array[String] = ["use", "hit", "crit", "second"]
@@ -140,7 +141,8 @@ static func _base(base: String, pool: Dictionary, max_health: float) -> float:
 	return 1.0
 
 
-## Ward decay per second above the threshold (06c §3.2).
+## Ward decay per second above the threshold (06c §3.2). `regen` = wardRegen + wardRegenFromStats: the minimum decay
+## applies when it is not above 0 (ward gained by skills is not regeneration).
 static func ward_decay(layers: Dictionary, ward: float, regen: float) -> float:
 	var t: float = maxf(float(layers["ward_threshold"]), 0.0)
 	if ward <= t:
@@ -170,13 +172,13 @@ static func recover(layers: Dictionary, sources: Array[Dictionary], pool: Dictio
 				dw += amount
 		pool["health"] = minf(max_health, float(pool["health"]) + dh * dt)
 		var w: float = float(pool["ward"]) + dw * dt
-		pool["ward"] = maxf(0.0, w - ward_decay(layers, w, dw) * dt)
-		_slow_damage(pool, dt)
+		pool["ward"] = maxf(0.0, w - ward_decay(layers, w, float(layers.get("ward_regen", 0.0))) * dt)
+		slow_damage(pool, dt)
 		t += dt
 
 
 ## Delayed damage ticks (SlowDamageInstance): direct damage, only ward absorbs it (06c §2.10, §5.3).
-static func _slow_damage(pool: Dictionary, dt: float) -> void:
+static func slow_damage(pool: Dictionary, dt: float) -> void:
 	var slow: Array = pool.get("slow", [])
 	if slow.is_empty():
 		return
@@ -207,14 +209,23 @@ static func on_enemy_hit(layers: Dictionary, sources: Array[Dictionary], pool: D
 			pool["ward"] = float(pool["ward"]) + amount
 
 
+## True when the pool after a cycle is no worse than before it: health, ward and mana not lower, no more delayed damage queued.
+static func _holds(before: Dictionary, pool: Dictionary) -> bool:
+	return float(pool["health"]) >= float(before["health"]) - 1e-6 and float(pool["ward"]) >= float(before["ward"]) - 1e-6 \
+		and float(pool.get("mana", 0.0)) >= float(before.get("mana", 0.0)) - 1e-6 \
+		and DefenseCalc.pending_slow(pool) <= DefenseCalc.pending_slow(before) + 1e-6
+
+
 ## Hits of `d` (after every layer, average) every `interval` seconds until death, with recovery in between; the last hit is
-## fractional. INF when the pool holds (a full cycle leaves health and ward no lower) or after MAX_SIM_HITS hits.
+## fractional. INF when the pool holds (a full cycle leaves health, ward and mana no lower and no more delayed damage queued);
+## after MAX_SIM_HITS hits an estimate from the pool lost in the last cycle (INF if it lost nothing).
 static func hits_to_die(layers: Dictionary, sources: Array[Dictionary], d: float, interval: float) -> float:
 	if d <= 0.0:
 		return INF
 	var pool: Dictionary = DefenseCalc.full_pool(layers)
+	var before: Dictionary = pool
 	for n in range(1, MAX_SIM_HITS + 1):
-		var before: Dictionary = pool.duplicate(true)
+		before = pool.duplicate(true)
 		DefenseCalc.take_damage(layers, pool, d)
 		if float(pool["health"]) <= 0.0:
 			var lo: float = 0.0
@@ -232,9 +243,9 @@ static func hits_to_die(layers: Dictionary, sources: Array[Dictionary], d: float
 		recover(layers, sources, pool, interval)
 		if float(pool["health"]) <= 0.0:
 			return float(n)  # killed by the delayed share of the hits while waiting for the next one
-		if n > 1 and float(pool["health"]) >= float(before["health"]) - 1e-6 and float(pool["ward"]) >= float(before["ward"]) - 1e-6:
+		if n > 1 and _holds(before, pool):
 			return INF
-	return INF
+	return DefenseCalc.extrapolate_hits(MAX_SIM_HITS, before, pool)
 
 
 ## Seconds a constant damage over time (after every per-type layer) takes to kill from a full pool, recovering at the same
@@ -243,6 +254,7 @@ static func seconds_to_die(layers: Dictionary, sources: Array[Dictionary], dps: 
 	if dps <= 0.0:
 		return INF
 	var pool: Dictionary = DefenseCalc.full_pool(layers)
+	var steps: int = 0
 	var t: float = 0.0
 	var mark: Dictionary = pool.duplicate(true)
 	while t < MAX_DOT_SECONDS:
@@ -252,10 +264,14 @@ static func seconds_to_die(layers: Dictionary, sources: Array[Dictionary], dps: 
 			var lost: float = float(before["health"]) - float(pool["health"])
 			return t + STEP * (float(before["health"]) / lost if lost > 0.0 else 1.0)
 		recover(layers, sources, pool, STEP)
-		t += STEP
-		if fmod(t + 1e-6, 1.0) < STEP:
-			if t > 1.5 and float(pool["health"]) >= float(mark["health"]) - 1e-6 and float(pool["ward"]) >= float(mark["ward"]) - 1e-6:
+		steps += 1
+		t = float(steps) / float(STEPS_PER_SECOND)
+		if steps % STEPS_PER_SECOND == 0:
+			if t > 1.5 and _holds(mark, pool):
 				return INF
+			if t >= MAX_DOT_SECONDS - 1e-6:
+				var loss: float = DefenseCalc.pool_value(mark) - DefenseCalc.pool_value(pool)
+				return INF if loss <= 1e-9 else t + maxf(DefenseCalc.pool_value(pool), 0.0) / loss
 			mark = pool.duplicate(true)
 	return INF
 

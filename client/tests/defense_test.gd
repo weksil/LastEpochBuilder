@@ -14,6 +14,7 @@ func _ready() -> void:
 		print("DEFENSE TEST TIMEOUT")
 		get_tree().quit(1))
 	_pool_vectors()
+	_review_fixes()
 	_scaling()
 	_presets()
 	_build()
@@ -89,6 +90,75 @@ func _pool_vectors() -> void:
 	_near(DefenseCalc.lethal_damage(layers), 1450.0, "lethal with endurance")
 	layers["ward"] = 500.0
 	_near(DefenseCalc.lethal_damage(layers), 1950.0, "lethal with ward")
+
+
+## Fixes of the engine review: spec vectors of research/06c §1.
+func _review_fixes() -> void:
+	# dodge converted to armor: (armour + dodgeRating)·(1 + f2), not armour·(1 + f2) + dodgeRating (step 6)
+	_near(DefenseCalc.converted_armour(1000.0, 500.0, 0.5), 2250.0, "dodge → armor goes through the armor more")
+	# block converted to glancing blow: min(maxBlock, blockChance) + f1·mult (step 5.2)
+	_near(DefenseCalc.glancing_from_block(0.5, 0.4, 0.2), 0.6, "block → glancing: the cap does not reach f1")
+	_near(DefenseCalc.glancing_from_block(0.5, 0.0, 0.2), 0.7, "block → glancing: no cap")
+	# an attack with no crit chance never crits, added chance to be crit or not (step 5.4)
+	var crit_layers: Dictionary = {"crit_taken": 0.2, "crit_avoid": 0.0, "crit_reduced": 0.0}
+	_near(float(DefenseCalc.crit_against(crit_layers, 0.0, 2.0)["chance"]), 0.0, "no crit chance: no crit")
+	_near(float(DefenseCalc.crit_against(crit_layers, 0.1, 2.0)["chance"]), 0.3, "crit chance + chance to be crit")
+	# the delayed share is queued from the final D: D / (1 − f7) · f7 (step 18), after mana before ward and endurance
+	var layers: Dictionary = _layers(0.0, 0.0)
+	layers["delayed"] = 0.5
+	layers["mana_before_ward"] = 0.5
+	var pool: Dictionary = {"health": 1000.0, "ward": 0.0, "mana": 500.0, "slow": []}
+	DefenseCalc.take_damage(layers, pool, 1000.0)
+	# 500 now, 50 mana absorb 250 → 250 immediate, 250 delayed
+	_near(float(pool["mana"]), 450.0, "delayed + mana before ward: mana spent")
+	_near(DefenseCalc.pending_slow(pool), 250.0, "delayed share after mana before ward")
+	layers = _layers(0.5, 0.0)
+	layers["endurance_mode"] = 2
+	layers["delayed"] = 0.5
+	pool = {"health": 2000.0, "ward": 0.0, "mana": 0.0, "slow": []}
+	DefenseCalc.take_damage(layers, pool, 1000.0)
+	_near(DefenseCalc.pending_slow(pool), 250.0, "delayed share after endurance mode 2")
+	# the maximum hit counts the delayed share that lands within 4 s: 50% now + 50% later kill at 1000, not at 2000
+	layers = _layers(0.0, 0.0)
+	layers["delayed"] = 0.5
+	_near(DefenseCalc.lethal_damage(layers), 1000.0, "lethal damage includes the delayed share")
+	# the pool holds only when mana does not drain either: mana before health 50%, mana 5000, regen 100/s against 150 per hit
+	layers = _layers(0.0, 0.0, 0.5)
+	layers["mana"] = 5000.0
+	layers["ward_threshold"] = 0.0
+	layers["ward_retention"] = 0.0
+	var regen: Array[Dictionary] = [{"resource": "health", "timing": "rate", "base": "flat", "k": 100.0, "label": "", "text": ""}]
+	var hits: float = DefenseRecovery.hits_to_die(layers, regen, 150.0, 1.0)
+	_check(hits > 340.0 and hits < 370.0, "mana drains while health holds: finite hits to die (%s)" % str(hits))
+	var seconds: float = DefenseRecovery.seconds_to_die(layers, regen, 150.0)
+	_check(seconds > 340.0 and seconds < 370.0, "mana drains under DoT: finite seconds to die (%s)" % str(seconds))
+	# the minimum ward decay applies when there is no ward regeneration, ward from skills is not regeneration (06c §3.2)
+	layers = _layers(0.0, 0.0)
+	layers["ward_threshold"] = 0.0
+	layers["ward_retention"] = 0.0
+	layers["ward_regen"] = 0.0
+	var ward_src: Array[Dictionary] = [{"resource": "ward", "timing": "rate", "base": "flat", "k": 0.2, "label": "", "text": ""}]
+	pool = {"health": 1000.0, "ward": 1.5, "mana": 0.0, "slow": []}
+	DefenseRecovery.recover(layers, ward_src, pool, 0.05)
+	_near(float(pool["ward"]), 1.5 + 0.2 * 0.05 - 0.5 * 0.05, "minimum ward decay with ward gain from a skill", 0.0001)
+	layers["ward_regen"] = 0.2
+	pool = {"health": 1000.0, "ward": 1.5, "mana": 0.0, "slow": []}
+	DefenseRecovery.recover(layers, ward_src, pool, 0.05)
+	_near(float(pool["ward"]), 1.51 - 0.302 * 0.05, "no minimum ward decay with ward regeneration", 0.0001)
+	# the simulation limits give an estimate, not ∞, while the pool keeps shrinking
+	layers = _layers(0.0, 0.0)
+	layers["health"] = 1.0e9
+	_near(DefenseCalc.hits_to_die(layers, 1.0), 1.0e9, "hits to die beyond the limit: extrapolated", 0.001)
+	layers["health"] = 1.0e6
+	layers["ward_threshold"] = 0.0
+	layers["ward_retention"] = 0.0
+	regen = [{"resource": "health", "timing": "rate", "base": "flat", "k": 10.0, "label": "", "text": ""}]
+	_near(DefenseRecovery.hits_to_die(layers, regen, 100.0, 1.0), 1.0e6 / 90.0, "hits to die with recovery beyond the limit", 0.01)
+	_near(DefenseRecovery.seconds_to_die(layers, [] as Array[Dictionary], 10.0), 1.0e5, "DoT beyond 600 s: extrapolated", 0.01)
+	_check(is_inf(DefenseRecovery.seconds_to_die(layers, regen, 5.0)), "DoT outhealed: ∞")
+	# no NaN in the results of an attack without damage
+	_check(is_inf(DefenseCalc._ehp(INF, 0.0)) and not is_nan(DefenseCalc._ehp(INF, 0.0)), "EHP without damage is ∞, not NaN")
+	_check(DefenseCalc._num(NAN) == "—", "NaN is never printed")
 
 
 func _scaling() -> void:
@@ -183,6 +253,14 @@ func _build() -> void:
 	var rogue: Dictionary = DefenseCalc.compute(Build)
 	_check(float(rogue["layers"]["dodge"]) == 0.0, "Apostasy: no dodge")
 	Build.passives.erase(61)
+	# an attack without any damage: no NaN anywhere in the summary
+	Build.set_defense("attack", DefenseCalc.CUSTOM_KEY)
+	Build.set_defense("custom_damage", [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+	var zero: Dictionary = DefenseCalc.compute(Build)["summary"]
+	for key: String in ["ehp", "max_hit", "hits", "taken", "worst"]:
+		_check(not is_nan(float(zero[key])), "zero damage attack: %s is not NaN" % key)
+	_check(is_inf(float(zero["ehp"])) and is_inf(float(zero["hits"])), "zero damage attack: nothing kills")
+	Build.set_defense("custom_damage", DefenseCalc.default_settings()["custom_damage"])
 	# round trip of the settings through the build code
 	Build.set_defense("area_level", 90)
 	var decoded: Dictionary = BuildCodec.decode(BuildCodec.encode(Build))

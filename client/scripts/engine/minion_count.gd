@@ -128,10 +128,11 @@ static func base_limit(minion: Dictionary, ability_name: String) -> float:
 
 ## Summon limit of the skill in `slot` from `base`: {value, text} — text lists the steps.
 static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dictionary:
+	var was_busy: bool = _busy
 	_busy = true
 	var s: Dictionary = BuildMods.skill_store(build, slot, BuildMods.global_store(build)["store"])
 	var companions: Dictionary = max_companions(build)
-	_busy = false
+	_busy = was_busy
 	var value: float = base
 	var parts: PackedStringArray = [LE.t("base %s") % LE.fmt_num(base)]
 	var labels: Array = LIMIT_LABELS.map(func(l: String) -> String: return LE.t(l))

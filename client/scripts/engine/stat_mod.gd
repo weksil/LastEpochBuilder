@@ -33,7 +33,8 @@ static func make(prop: int, kind: String, value: float, tag_mask: int = 0, src: 
 			mod.more.append(value)
 		"quotient":
 			# quotient -> more: 1/(1+x) - 1
-			mod.more.append(1.0 / (1.0 + value) - 1.0)
+			# x <= -1 would divide by zero or flip the sign: the divisor is floored
+			mod.more.append(1.0 / maxf(1.0 + value, 0.01) - 1.0)
 		_:
 			push_error("Unknown mod kind: " + kind)
 
@@ -54,7 +55,8 @@ func scaled(n: float) -> StatMod:
 	copy.more = more.duplicate()
 
 	for i in range(copy.more.size()):
-		copy.more[i] *= n
+		# a scaled more below -100% would give a negative multiplier: stops at ×0
+		copy.more[i] = maxf(copy.more[i] * n, -1.0)
 
 	return copy
 

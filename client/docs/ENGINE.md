@@ -146,16 +146,28 @@ For a node with `p > 0` points, for every `effect` with `op == "add_stat"`:
 - `target == "CharacterMutator.stats"` and `stat.kind` ∈ `added|increased|more` → `StatMod`:
   property = id by the name `stat.property` (via `sp_enum`), tags = `LE.tag_mask(stat.tags)`,
   value = `v(stat.added | stat.increased | stat.more | stat.value)`.
+- `specialTag` of `added|increased|more`: a number (or numeric text) is the special id as is (AilmentChance "3" = Chill), a name is
+  its AilmentID; an unknown name drops the mod (it must not become special 0 = every ailment; the same for the `ailment` of a model).
 - `kind == "ailment_chance"` → property 1, special = AilmentID by the name `stat.ailment` (`stat_tag_enums.json` → `AilmentID`), added.
 - `kind == "ailment_duration"` → 42, `ailment_effect` → 43 (special = AilmentID, added).
 - `kind == "conditional_more_damage"` → property 117, special = the index of ConditionalDamageProperty by the name `stat.condition`, more.
 - Everything else (other targets, `player_property`, `ability_property`, `stat` without kind…) → `notes`: `Node "displayName": <target or kind> — not counted`.
+- A field model of scope `skill` on the mutator of another skill (not `CharacterMutator.*`) never reaches the character: with its
+  skill on the bar it is applied in `skill_store` (§9.7), without it the effect is a "not counted" note.
+- `automatic_node_stat.extraTag` (an ability name such as "entanglingRoots", "none" = 0) limits the stat to that ability
+  (`mod.extra` = its abilityIDEnum value, `BuildMods.ability_index_of`); an unknown name drops the mod.
+An expression that does not parse or run (game code the client does not have) counts as 0 and logs a warning once per text.
 Value `v(x)`: `x.per_point·p + x.flat`; if `x.expr` is present, evaluate an `Expression` with the variable `p`.
 The base bonus of the chosen mastery (`GameData.mastery_bonus`, e.g. Falconer +12 Dexterity, Forge Guard +35% Fire and
 Physical Resistance) is applied as one more node with `p = 1`, source "<Mastery> mastery bonus" (**D**, 07f §2).
 
 ### 5.3 Attributes (after all other sources)
-`N = round_half_even(Σadded SP_attr + Σadded SP 46)` over **all** mods (tags are not checked).
+`N = round_half_even(Σadded SP_attr + Σadded SP 46)` over **all** mods (tags are not checked, 06a §5.1): `BuildMods.attribute_value`,
+also used by the `attr:` / `total_attr` sources of the effect models (§9.2).
+Attributes given after this step (models of the "post" phase, Haste / Frenzy, the buffs of the equipped skills) are converted by
+their delta: `_add_attributes(..., done)` adds the per-point stats × (N now − N converted before), as the game does on every
+change of the value (nothing if the attribute was converted or un-converted meanwhile).
+Haste / Frenzy of the Conditions tab count once: the flag is skipped while the same ailment has "Buffs on me" stacks.
 For every `attributes[i].perPoint` add the mod × N (`scaled(N)`), source `Strength ×N`.
 Corrupted attributes (07a §2.2): when the store holds SP 98 with the tags of `corruptedFlag` (650–654, e.g. the corrupted
 amulet affix "Vitality converted to Rampancy"), the attribute gives `corruptedPerPoint` instead of `perPoint`, the source and
@@ -167,7 +179,9 @@ more damage taken without Frenzy); entries without a model and the AbilityProper
 `static func item_mods(slot: String, item: Dictionary) -> Array[StatMod]`.
 - Implicits `item_sub(base, sub).implicits[j]`: value `AffixMath.roll_value(value, maxValue, rounding, modType, implicit_rolls[j], 0.0)`.
 - Affixes: `a = affix(id)`, `tier = a.tiers[t-1]`, for every `properties[j]` + `tier.rolls[j] = [min,max]`:
-  `m = AffixMath.effect_modifier(base.affixEffectModifier, a.standardAffixEffectModifier)`,
+  `m = AffixMath.effect_modifier(base.affixEffectModifier, a.standardAffixEffectModifier)` (for a subtype with
+  `affixEffectiveness == "OmenIdol"` the base's value is replaced by `items.json globals.omenIdolAffixEffectModifier` = 0,
+  `ItemMods.OMEN_IDOL_AEM`, 07a §6),
   value `AffixMath.roll_value(min, max, rounding, modType, roll, m)`.
 - Mod: `property, special = specialTag, tags, extra = extraTag`, kind by `modType` (ADDED/INCREASED/MORE/QUOTIENT).
 - Source: `"<Slot>: <affix name> T<t>"`.
@@ -178,7 +192,7 @@ scale(rounding) = {"Hundredth":100, "Integer":1, "Tenth":10, "Thousandth":1000};
 effect_modifier(item_aem, std) = 0 if is_equal_approx(item_aem, std) else (1+item_aem)/(1+std) − 1
 roll_value(lo, hi, rounding, mod_type, roll, m):
    lo2 = lo·(1+m); hi2 = hi·(1+m); s = scale
-   a = round_half_even(lo2·s); b = round_half_even(hi2·s)
+   a = round_half_even(lo2·s); b = round_half_even(hi2·s)    // in float32 like the game (AffixMath.f32): lo·(1+m)·s
    if a > b: swap them
    v = min(floor((b − a + 1)·roll/255.0 + a), b) / s
 ```
@@ -343,10 +357,11 @@ Breakdown for each type: base, added (list of mods), Σinc (list), Πmore (list)
 - `scaler = ab.speedScaler` (2 AttackSpeed, 3 CastSpeed, 54 None).
   `None → S = 1 + use_speed_inc`; otherwise `q = store.query(scaler, tags)`; `S = q.added·(1 + q.increased + use_speed_inc)·q.more`;
   for AttackSpeed and the MELEE tag (or BOW with a bow) `S *= attackRate` of the weapon (`item_sub(weapon).attackRate`, with two weapons — the average).
-  `speedScalerAppliedAsIncrease` → `S = S·speedScalerEffectiveness + 1`. `maximumUseSpeed > 0 → S = min(S, max)`.
-  `S *= use_speed_more`. `uses/s = S·speedMultiplier·1.1 / useDuration` (`instantCastForPlayer` → no division).
+  `speedScalerAppliedAsIncrease` → `S = max(S − 1, 0)·speedScalerEffectiveness + 1` (06e §1.1; `S·eff + 1` is only the tooltip's bug). `maximumUseSpeed > 0 → S = min(S, max)`.
+  `S *= use_speed_more`. `speedScale = S·speedMultiplier·1.1` (≤ 0 → 0.1), `uses/s = speedScale / useDuration` (`instantCastForPlayer` → no division).
 - Mana: `cost = (ab.manaCost + mana_added)·(1 + mana_inc)` (mana stats are not counted — a note).
 - Cooldown: `ab.cooldown` (if present) / (1 + query(70).increased) — shown.
+  The speed and CDR queries pass the ability index (`abilityIDEnum`; extra 0 matches all); a cooldown ≤ 0 caps nothing.
 
 ### 8.4 Removed
 The model "DPS as in the game's tooltip" (without an enemy) has been removed: the only source of DPS is "Against enemy" (§8.5). The hit numbers match
@@ -815,13 +830,14 @@ per second.
 Conditional defenses of uniques that reduce to stats (DamageTaken / Armour / BlockChance … with conditions from the
 Conditions tab) are already in the store.
 **Avoidance** (hits only): average factor `(1 − dodge)(1 − parry)(1 − 0.35·glancing)(1 − block·blockDR)(1 + critChance·(critMulti − 1))`
-at area level L; enemy crit `(attack crit + SP 112)·(1 − SP 89)`, multiplier `max(1, 1 + (1 − SP 114)(cm − 1))` (06c §2.8).
+at area level L; enemy crit `(attack crit + SP 112)·(1 − SP 89)` (an attack with crit chance 0 never crits), multiplier `max(1, 1 + (1 − SP 114)(cm − 1))` (06c §2.8).
 **Conversions and conditional defenses** (`engine/defense_conversions.gd`, `DefenseConversions.collect(build, store, attack)`,
 research/07n, `research/data/game/conditional_defenses.json`). PlayerProperty values (`pp_values`) are summed from uniques
 (only effects whose model is not already a stat / overcap_taken in the store), item and idol affixes (SP 98), passives and
 skill tree nodes (`PlayerPropertyStat`). Then:
 - dodge → endurance threshold (PP 425) / glancing blow at 2 × dodge chance (PP 194) / armor (PP 177), in that priority;
-  block → parry without a shield (PP 531) / glancing blow (PP 392); maximum block chance (PP 614); endurance mode
+  block → parry without a shield (PP 531) / glancing blow `min(maxBlock, block) + f1·mult` (PP 392); maximum block chance
+  (PP 614); converted dodge adds to the armor before its more: `(armour + dodgeRating)·(1 + f2)`; endurance mode
   "everything" (PP 310) or "…and mana" (PP 309). Converted dodge or block no longer dodges or blocks.
 - `ApplyConditionalDefenses` (the conditions not modelled as unique stats): within 4 m (PP 257/258; melee attacks count as
   near — D?), ≥ 400 current mana (262), DoT per 8% over-capped cold resistance (677), attacker Slowed / Time Rotted /
@@ -839,8 +855,8 @@ skill tree nodes (`PlayerPropertyStat`). Then:
   every per-type layer, hits and DoT.
 Slot values: f0 → `hit_more` / `dot_more` (per type × `type_more`), f1 → block chance (× the block chance multiplier),
 f2 → armor × (1 + f2), f3/f4 → endurance threshold, f5 → crit avoidance.
-**Pool** (`take_damage`, 06c §1 steps 3, 10–16): the delayed share f7 (taken over 4 s as direct damage that only ward
-absorbs), mana before ward SP 94, endurance on the whole hit in the mode "everything", ward, mana before health SP 24
+**Pool** (`take_damage`, 06c §1 steps 3, 10–16, 18): the delayed share f7 (queued from the final damage `D/(1 − f7)·f7`,
+after mana before ward and endurance mode 2; taken over 4 s as direct damage that only ward absorbs), mana before ward SP 94, endurance on the whole hit in the mode "everything", ward, mana before health SP 24
 (1 mana = 5 damage; × (1 − e) in the mode "…and mana"), endurance below the threshold;
 `e = 1 − (1 − f8)(1 − min(SP 75, 0.6))`, in modes 0/1 only with base endurance above 0 (`endurance_of`).
 
@@ -857,14 +873,18 @@ Own events: `use` × uses/s, `hit` × hits/s, `crit` × hits/s × crit, `second`
 `hit_taken` (not dodged or parried). `kill` and other events are not counted (one target).
 Interval between enemy hits: the "Seconds between hits" parameter, else the attack's `every`, else 1 s.
 `hits_to_die` simulates average hits every `interval` seconds with recovery in 0.05 s steps (ward decay 06c §3.2, health
-capped at its maximum, delayed damage ticks); ∞ when a full cycle leaves health and ward no lower (or after 2000 hits).
-`seconds_to_die` does the same for damage over time (ward, mana before health and endurance apply to it).
+capped at its maximum, delayed damage ticks; the minimum ward decay depends on the ward regeneration SP 92 only); ∞ when a
+full cycle leaves health, ward and mana no lower and no more delayed damage queued; after 2000 hits (100000 without
+recovery) the result is an estimate `n + pool / loss of the last cycle` (pool = health + ward + 5 per mana − queued delayed damage).
+`seconds_to_die` does the same for damage over time (ward, mana before health and endurance apply to it; steps are counted as
+integers, after 600 s the estimate is extrapolated like above).
 
 ### 10.4 Results
 
-`lethal_damage` — the smallest post-layer damage that kills from full health (binary search); "Maximum hit taken" =
+`lethal_damage` — the smallest post-layer damage that kills from full health (binary search; the delayed share f7 that lands
+within 4 s counts, no recovery in between); "Maximum hit taken" =
 lethal / (post-layer share of the attack mix), "Maximum crit taken" = that / crit multiplier; "Hits to die" (with recovery
-when it is on); "Effective health" = hits to die × raw damage per hit; "Worst hit" = post-layer damage × crit multiplier ×
+when it is on); "Effective health" = hits to die × raw damage per hit (∞ for an attack without damage); "Worst hit" = post-layer damage × crit multiplier ×
 1.2 (variance) — the tab warns when it kills from full health. DoT attacks show damage taken per second and seconds to
 die. "Maximum hit taken by damage type" divides the lethal damage by the hit multiplier of each type without attack
 penetration. Not counted (`notes`): boss mechanics without damage numbers, resource models without an amount.

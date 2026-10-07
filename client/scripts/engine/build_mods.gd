@@ -27,6 +27,7 @@ static func _global_store(build: Node) -> Dictionary:
 	var store: StatStore = g["store"]
 	var notes: Array[String] = g["notes"]
 	_add_skill_buffs(build, store)
+	_add_attributes(build, store, notes, g["attributes"])  # attributes given by the buffs
 	UniqueEffects.add_notes(build, notes)
 	return {"store": store, "notes": notes}
 
@@ -44,11 +45,13 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	_add_blessings(build, store, notes)
 	_add_set_bonuses(build, store, notes)
 	UniqueEffects.apply_global(build, store, notes, "pre")
-	_add_attributes(build, store, notes)
+	var attributes: Dictionary = _add_attributes(build, store, notes)
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
-	return {"store": store, "notes": notes}
+	# attributes given by the models above (the game re-applies the per-point stats on every change of the value)
+	_add_attributes(build, store, notes, attributes)
+	return {"store": store, "notes": notes, "attributes": attributes}
 
 
 const BUFF_SOURCE_PREFIX: String = "Skill \"%s\" (buff): "
@@ -372,7 +375,11 @@ static func _passive_scope(model: Dictionary, target: String) -> String:
 	var scope: String = str(model.get("scope", ""))
 	if scope == "":
 		return "global" if target.begins_with("CharacterMutator.") else ""
-	if scope == "global" or scope == "skill":
+	if scope == "skill":
+		# a skill-scoped field of another skill's mutator: its skill is not on the bar (equipped ones are applied in
+		# skill_store), so it must not leak to the character
+		return "global" if target.begins_with("CharacterMutator.") else ""
+	if scope == "global":
 		return "global"
 	return scope if scope == "minion" else ""
 
@@ -522,9 +529,13 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 		if not build.player_state.get(key, false):
 			continue
 		var id: int = PLAYER_AILMENTS[key]
+		if buff_stacks(build, id) > 0.0:
+			continue  # the «Buffs on me» stacks of the same ailment are counted below (not twice)
 		var ail: Dictionary = GameData.ailment(id)
 		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
 		for buff: Dictionary in ail.get("buffs", []):
+			if BUFF_SPECIAL_PROPERTIES.has(int(buff.get("property", -1))):
+				continue
 			var mod: StatMod = stat_from_record(buff, LE.t("%s on you (effect ×%s)") % [str(ail.get("name", key)), LE.fmt_num(effect)])
 			store.add(mod.scaled(effect))
 	# stacks of the "Buffs on me" list: every stack adds the buff's stats (at most maxInstances stacks when it is set)
@@ -560,14 +571,24 @@ static func buff_stacks(build: Node, ailment_id: int) -> float:
 ## corruptedFlag, e.g. a corrupted amulet affix) gives corruptedPerPoint instead of perPoint (07a §2.2); its special
 ## PlayerProperty stats go through the player models of unique_effect_models.json, those without a model (and the
 ## AbilityProperty ones) go to the notes.
-static func _add_attributes(build: Node, store: StatStore, notes: Array[String]) -> void:
+## `done` = the values already converted by an earlier call ({attribute index: {n, converted}}): only the change since then
+## is added (the same per-point stats × the delta), nothing if the attribute was converted or un-converted meanwhile.
+## Returns the values after this call, in the format of `done`.
+static func _add_attributes(build: Node, store: StatStore, notes: Array[String], done: Dictionary = {}) -> Dictionary:
+	var values: Dictionary = {}
 	var all_attr: float = _sum_added_any_tags(store, LE.ALL_ATTRIBUTES)
 	for attr: Dictionary in GameData.attributes:
 		var index: int = int(attr.get("attribute", 0))
-		var n: int = LE.round_half_even(_sum_added_any_tags(store, int(attr["statProperty"])) + all_attr)
+		var total: int = LE.round_half_even(_sum_added_any_tags(store, int(attr["statProperty"])) + all_attr)
+		var converted: String = converted_attribute(store, attr)
+		values[index] = {"n": total, "converted": converted}
+		var n: int = total
+		if done.has(index):
+			if str(done[index]["converted"]) != converted:
+				continue
+			n = total - int(done[index]["n"])
 		if n == 0:
 			continue
-		var converted: String = converted_attribute(store, attr)
 		var name: String = LE.t(converted if converted != "" else ATTRIBUTE_NAMES[index])
 		var source: String = "%s ×%d" % [name, n]
 		for per_point: Dictionary in attr.get("corruptedPerPoint" if converted != "" else "perPoint", []):
@@ -577,6 +598,7 @@ static func _add_attributes(build: Node, store: StatStore, notes: Array[String])
 				continue
 			var mod: StatMod = stat_from_record(per_point, source)
 			store.add(mod.scaled(float(n)))
+	return values
 
 
 ## Special per-point stat of a corrupted attribute: the player model of its PlayerProperty index with value = per point × N.
@@ -609,6 +631,12 @@ static func converted_attribute(store: StatStore, attr: Dictionary) -> String:
 		if mod.tags == int(flag.get("tags", -1)) and mod.added > 0.0:
 			return str(flag.get("playerPropertyName", "")).get_slice(" Converted to ", 1)
 	return ""
+
+
+## Attribute value of a store as the game counts it: round_half_even(Σ added SP of the attribute + Σ added AllAttributes),
+## tags are not checked (06a §5.1). `sp` = the attribute's stat property.
+static func attribute_value(store: StatStore, sp: int) -> int:
+	return LE.round_half_even(_sum_added_any_tags(store, sp) + _sum_added_any_tags(store, LE.ALL_ATTRIBUTES))
 
 
 static func _sum_added_any_tags(store: StatStore, property: int) -> float:
@@ -802,9 +830,17 @@ static func _apply_field_models(target: String, v: float, source: String, title:
 	return any
 
 
+## Identity of a model for the «same effect written into several mutators» check: everything that changes what the model
+## does (not its scope, note or confidence).
+const SIGNATURE_KEYS: Array[String] = ["stat", "mod", "tags", "param", "resource", "ability", "when", "text", "label", "count", "chance",
+	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "inverse", "at_least", "below"]
+
+
 static func _model_signature(m: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s" % [m.get("kind", "stat"), m.get("stat", ""), m.get("mod", ""), m.get("tags", ""),
-		m.get("param", ""), m.get("ability", ""), str(m.get("when", []))]
+	var parts: PackedStringArray = [str(m.get("kind", "stat"))]
+	for key: String in SIGNATURE_KEYS:
+		parts.append(str(m.get(key, "")))
+	return "|".join(parts)
 
 
 ## A scope-global model was met (even if its condition is off): the skill gets the input «buff active».
@@ -963,8 +999,28 @@ static func _automatic_stat(effect: Dictionary, points: int, source: String) -> 
 			value *= points
 		"Threshold":
 			value = value if points >= int(effect.get("threshold", 0)) else 0.0
+	var extra: int = ability_index_of(effect.get("extraTag", 0))
+	if extra < 0:
+		return null  # an ability the data does not know: the stat cannot be pinned to it
 	return StatMod.make(property, str(effect.get("modType", "ADDED")).to_lower(), value,
-		LE.tag_mask(str(effect.get("tags", ""))), source, int(effect.get("specialTag", 0)))
+		LE.tag_mask(str(effect.get("tags", ""))), source, int(effect.get("specialTag", 0)), extra)
+
+
+## AbilityID value of an `extraTag` of effect data: 0 for none ("none", 0, ""), an int or numeric text as is, the
+## abilityIDEnum value of the ability named so ("entanglingRoots" → EntanglingRoots); -1 if no such ability.
+static func ability_index_of(tag: Variant) -> int:
+	if tag is int or tag is float:
+		return int(tag)
+	var text: String = str(tag)
+	if text == "" or text == "none" or text == "None":
+		return 0
+	if text.is_valid_int():
+		return text.to_int()
+	var ab: Dictionary = GameData.ability_by_name(text.substr(0, 1).to_upper() + text.substr(1))
+	var enum_rec: Variant = ab.get("abilityIDEnum")
+	if enum_rec is Dictionary and str(enum_rec.get("name", "")) == text:
+		return int(enum_rec.get("value", -1))
+	return -1
 
 
 ## Conversion / tag-change rule for any "Mutator.field" part of a target ({} if none or kind "none").
@@ -1048,7 +1104,7 @@ static func stat_from_effect(stat: Dictionary, points: int, source: String) -> S
 		"added", "increased", "more", "quotient":
 			property = GameData.sp_id(str(stat.get("property", "")))
 			if stat.has("specialTag"):
-				special = maxi(0, GameData.enum_value("AilmentID", str(stat["specialTag"])))
+				special = special_id(stat["specialTag"])  # -1 (unknown name) drops the mod below, it must not become «any ailment»
 		"ailment_chance":
 			property = LE.AILMENT_CHANCE
 			special = GameData.enum_value("AilmentID", str(stat.get("ailment", "")))
@@ -1069,12 +1125,26 @@ static func stat_from_effect(stat: Dictionary, points: int, source: String) -> S
 			return null
 	if property < 0 or special < 0:
 		return null
+	var extra: int = ability_index_of(stat.get("extraTag", 0))
+	if extra < 0:
+		return null
 	var raw: Variant = stat.get(kind, stat.get("value", null))
 	if raw == null:
 		raw = stat.get("value", null)
 	if raw == null:
 		return null
-	return StatMod.make(property, value_kind, eval_value(raw, points), LE.tag_mask(str(stat.get("tags", ""))), source, special)
+	return StatMod.make(property, value_kind, eval_value(raw, points), LE.tag_mask(str(stat.get("tags", ""))), source, special, extra)
+
+
+## specialTag of effect data: a number (or numeric text: the special id of the property, e.g. an AilmentID) as is, otherwise
+## the AilmentID of the name; -1 if the name is unknown.
+static func special_id(tag: Variant) -> int:
+	if tag is int or tag is float:
+		return int(tag)
+	var text: String = str(tag)
+	if text.is_valid_int():
+		return text.to_int()
+	return GameData.enum_value("AilmentID", text)
 
 
 ## Stat-like record ({property, specialTag, tags, extraTag, added|addedValue, increased|increasedValue, more|moreValues}).
@@ -1105,6 +1175,7 @@ static func eval_value(raw: Variant, points: int) -> float:
 		var out: Variant = expr.execute([float(points)], null, false)
 		if expr.has_execute_failed():
 			# game code the client does not have (EpochExtensions.AreaToRadius, TheWeaver.…): counts as 0 from now on
+			push_warning("BuildMods: node expression failed to run, counted as 0: %s" % str(raw["expr"]))
 			_expressions[str(raw["expr"])] = null
 			return 0.0
 		if out is float or out is int:
@@ -1120,7 +1191,10 @@ static var _expressions: Dictionary = {}
 static func _expression(text: String) -> Expression:
 	if not _expressions.has(text):
 		var expr := Expression.new()
-		_expressions[text] = expr if expr.parse(text, ["p"]) == OK else null
+		var parsed: bool = expr.parse(text, ["p"]) == OK
+		if not parsed:
+			push_warning("BuildMods: node expression does not parse, counted as 0: %s" % text)
+		_expressions[text] = expr if parsed else null
 	return _expressions[text]
 
 

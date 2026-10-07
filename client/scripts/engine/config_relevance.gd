@@ -22,6 +22,9 @@ static var _regexes: Dictionary = {}  # pattern -> compiled RegEx of _scan_buff_
 
 
 static func compute(build: Node) -> Dictionary:
+	# re-entrant: the recording state of an outer compute is restored when this one ends
+	var prev_rec: Dictionary = _rec
+	var prev_recording: bool = _recording
 	_rec = {"player_flags": {}, "player_values": {}, "player_buffs": {}, "ailments": {}, "enemy": {}, "minions": {}}
 	_recording = true
 	# the global store records too: passives and uniques that scale with a minion count («per minion», «per totem»)
@@ -31,9 +34,9 @@ static func compute(build: Node) -> Dictionary:
 		var ability: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
 		if not ability.is_empty():
 			stores.append({"ability": ability, "result": BuildMods.skill_store(build, slot, global)})
-	_recording = false
+	_recording = prev_recording
 	var out: Dictionary = _rec
-	_rec = {}
+	_rec = prev_rec
 	_scan_mods(out, global.mods, LE.t("Character"))
 	for s: Dictionary in stores:
 		var name: String = LE.t("Skill \"%s\"") % GameData.display_name(s["ability"])

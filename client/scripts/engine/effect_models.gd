@@ -69,7 +69,7 @@ static func value(model: Dictionary, v: float, ctx: Dictionary) -> Dictionary:
 	return {"x": x, "text": text}
 
 
-## StatMod from the model (null if SP is unknown).
+## StatMod from the model (null if SP or the ailment is unknown).
 static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String) -> StatMod:
 	var property: int = GameData.sp_id(str(model.get("stat", "")))
 	if property < 0:
@@ -83,7 +83,9 @@ static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String
 		source_text += " — " + LE.t(str(model["note"]))
 	var special: int = 0
 	if model.has("ailment"):
-		special = maxi(0, GameData.enum_value("AilmentID", str(model["ailment"])))
+		special = GameData.enum_value("AilmentID", str(model["ailment"]))
+		if special < 0:
+			return null  # an unknown ailment must not become special 0 (= every ailment)
 	var mod: StatMod = StatMod.make(property, str(model.get("mod", "added")), x, LE.tag_mask(str(model.get("tags", ""))), source_text, special)
 	mod.on_curse_hit = bool(model.get("on_curse_hit", false))
 	return mod
@@ -321,7 +323,7 @@ static func inputs(model: Dictionary) -> Array[Dictionary]:
 static func _attribute(store: StatStore, sp: int) -> int:
 	if sp < 0:
 		return 0
-	return LE.round_half_even(store.sum_added_untagged([sp, LE.ALL_ATTRIBUTES]))
+	return BuildMods.attribute_value(store, sp)  # tags are not checked, as for the per-point stats (06a §5.1)
 
 
 static func _is_weapon(item: Dictionary) -> bool:
