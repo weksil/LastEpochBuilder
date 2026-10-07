@@ -290,6 +290,27 @@ puts the code into the field and the clipboard), `%PasteCodeButton` (puts the cl
 - Save files: `user://builds/<name>.json` = `{name, saved (unix time), build: to_dict}`; characters not allowed in file names become `_`.
   In the exported build `user://` is `%APPDATA%/Godot/app_userdata/<project name>/`. `tests/build_codec_test` checks the round trip.
 
+## Loot filter — `scripts/loot_filter/loot_filter_dialog.gd` (`class_name LootFilterDialog extends Window`), `scripts/engine/loot_filter.gd` (`LootFilter`)
+The button `%LootFilterButton` ("Loot filter…", top bar) opens `%LootFilterDialog` (`scenes/loot_filter/loot_filter_dialog.tscn`).
+- `LootFilter.plan(Build.items, Build.stash, options) -> {rules, notes}`: rule specs `{key, kind, title, outcome, types, subs, affixes, min_same,
+  min_tier, uniques, lp, rarity, emphasized}` in priority order (top of the in-game list first). Kinds: `legendary` (build uniques with affixes →
+  the unique with legendary potential ≥ its affix count, one rule per value), `exalted` (per item type, any base, a wanted affix at tier
+  `exalted_tier`+; wanted affixes of regular items and the legendary affixes of uniques), `craft` (per equipment type: the build's subtypes
+  unless `exact_base` is off, at least `min_affixes` of the wanted affixes, capped by the build item's own count), `idol` (per idol type,
+  up to 2 wanted affixes), `unique` (every build unique and set item), `idol_one`, `base` (subtypes with any affixes), `hide` (RarityCondition
+  NORMAL MAGIC RARE [EXALTED]). Wanted affixes: the item's affixes without corrupted entries and `Corrupted` / `FakeUniqueMod` kinds
+  (`wanted_affixes`). The altar and blessings are left out; an item without wanted affixes gives a note.
+- `apply_choices(rules, off_rules, off_entries)` drops unchecked rules and affix / unique ids (a rule left without them is dropped, `min_same` is
+  capped); `to_xml(name, description, rules)` writes the game's `ItemFiltering.ItemFilter` XML (no XML declaration, `lootFilterVersion` 9,
+  `<Rule>` elements bottom-up: the first is the lowest priority with `Order` N-1, the last has `Order` 0; conditions `RarityCondition`,
+  `SubTypeCondition` (`EquipmentType` = the base's `typeName`), `AffixCondition` (`minOnTheSameItem`, or `advanced` with `MORE_OR_EQUAL` tier),
+  `UniqueModifiersCondition`, `PotentialCondition`; rule colours, sounds and beams stay default, important rules are `emphasized`).
+- The dialog: `%NameEdit`, option checks / spin boxes (`_options()`), `%RuleTree` (rule rows and their affix / unique rows with check boxes; the
+  unchecked keys survive option changes), `%NotesLabel`, `%SaveGameButton` (writes `<name>.xml` into
+  `%USERPROFILE%/AppData/LocalLow/Eleventh Hour Games/Last Epoch/Filters`, asks `%ReplaceConfirm` before overwriting; hidden when the folder is
+  missing and in the browser), `%SaveFileButton` (`%SaveFileDialog`; in the browser "Download .xml" through `JavaScriptBridge.download_buffer`),
+  `%CopyButton` (XML to the clipboard), `%StatusLabel`. `tests/loot_filter_test` checks the rules and the XML.
+
 ## Undo / redo — `scripts/autoload/build_history.gd` (the `BuildHistory` autoload)
 Ctrl+Z undoes a build edit, Ctrl+Shift+Z or Ctrl+Y redoes it (the built-in `ui_undo` / `ui_redo` actions, read in `_input` before the GUI, because
 a spin box keeps the focus after its arrows are clicked; a focused `TextEdit` or `LineEdit` outside a spin box keeps its own text undo). Every `Build.changed` / `stash_changed` queues one snapshot per frame:

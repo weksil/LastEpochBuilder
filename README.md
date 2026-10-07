@@ -17,6 +17,13 @@ tree is not imported yet). The current build is replaced.
 
 To share a build made in Last Epoch Builder, use **Builds… → Copy code**; the other person presses **Paste code** in the same dialog, then **Load**.
 
+## Loot filter for the build
+
+**Loot filter…** in the top bar makes a Last Epoch loot filter from the build: the bases of your items with the affixes you
+want to craft, exalted items with those affixes (also for legendary crafting), your idols, uniques and set items; everything
+else of normal, magic and rare rarity is hidden. Uncheck what you do not need, press **Download .xml** and put the file into
+`%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Filters`, then pick the filter in the game.
+
 ## What it shows
 
 ### Minion damage

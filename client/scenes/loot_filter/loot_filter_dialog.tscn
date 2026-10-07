@@ -1,0 +1,288 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/loot_filter/loot_filter_dialog.gd" id="1_script"]
+[ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
+
+[node name="LootFilterDialog" type="Window"]
+title = "Loot filter"
+initial_position = 1
+size = Vector2i(1060, 720)
+visible = false
+transient = true
+exclusive = true
+min_size = Vector2i(760, 560)
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Layout" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Loot filter for this build"
+
+[node name="Hint" type="Label" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Makes a Last Epoch loot filter from the build's items and idols: their bases with the affixes you want to craft, exalted items with those affixes (also for legendary crafting), the build's uniques and set items. Uncheck the rules, affixes or uniques you do not need."
+autowrap_mode = 3
+
+[node name="NameRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/Layout/NameRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Filter name"
+
+[node name="NameEdit" type="LineEdit" parent="Panel/Margin/Layout/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Filter name"
+max_length = 60
+clear_button_enabled = true
+
+[node name="Body" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="OptionsScroll" type="ScrollContainer" parent="Panel/Margin/Layout/Body"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Options" type="VBoxContainer" parent="Panel/Margin/Layout/Body/OptionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="OptionsTitle" type="Label" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+text = "What to show"
+
+[node name="StashCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+focus_mode = 0
+text = "Also the unequipped items"
+autowrap_mode = 3
+
+[node name="ExactBaseCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+tooltip_text = "Off: any base of the item type, e.g. every helmet."
+focus_mode = 0
+button_pressed = true
+text = "Only the build's bases"
+autowrap_mode = 3
+
+[node name="MinAffixesRow" type="HBoxContainer" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MinAffixesLabel" type="Label" parent="Panel/Margin/Layout/Body/OptionsScroll/Options/MinAffixesRow"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Wanted affixes on a base"
+autowrap_mode = 3
+
+[node name="MinAffixesSpin" type="SpinBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options/MinAffixesRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "How many of the item's wanted affixes a dropped base needs (no more than the build's item has)."
+min_value = 1.0
+max_value = 4.0
+value = 2.0
+update_on_text_changed = true
+
+[node name="ExaltedCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+tooltip_text = "Any base of the item type: an exalted affix can be moved to a unique by legendary crafting."
+focus_mode = 0
+button_pressed = true
+text = "Exalted items with a wanted affix"
+autowrap_mode = 3
+
+[node name="ExaltedTierRow" type="HBoxContainer" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ExaltedTierLabel" type="Label" parent="Panel/Margin/Layout/Body/OptionsScroll/Options/ExaltedTierRow"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Exalted affix tier from"
+autowrap_mode = 3
+
+[node name="ExaltedTierSpin" type="SpinBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options/ExaltedTierRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 6.0
+max_value = 7.0
+value = 6.0
+update_on_text_changed = true
+
+[node name="LegendaryCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+tooltip_text = "For a build unique with affixes: the unique with at least as much legendary potential as it has affixes."
+focus_mode = 0
+button_pressed = true
+text = "Uniques with enough legendary potential"
+autowrap_mode = 3
+
+[node name="UniquesCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+focus_mode = 0
+button_pressed = true
+text = "The build's uniques and set items"
+autowrap_mode = 3
+
+[node name="IdolOneCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+focus_mode = 0
+text = "Idols with one wanted affix"
+autowrap_mode = 3
+
+[node name="BasesCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+tooltip_text = "Bases to craft on from scratch, whatever affixes they have."
+focus_mode = 0
+text = "The build's bases with any affixes"
+autowrap_mode = 3
+
+[node name="HideCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+tooltip_text = "Uniques, set items, crafting materials, runes, glyphs and keys stay visible."
+focus_mode = 0
+button_pressed = true
+text = "Hide other normal, magic and rare items"
+autowrap_mode = 3
+
+[node name="HideExaltedCheck" type="CheckBox" parent="Panel/Margin/Layout/Body/OptionsScroll/Options"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+focus_mode = 0
+text = "Also hide other exalted items"
+autowrap_mode = 3
+
+[node name="RulesBox" type="VBoxContainer" parent="Panel/Margin/Layout/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="RulesTitle" type="Label" parent="Panel/Margin/Layout/Body/RulesBox"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+text = "Rules (top of the in-game list first)"
+
+[node name="RuleTree" type="Tree" parent="Panel/Margin/Layout/Body/RulesBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+hide_root = true
+select_mode = 1
+
+[node name="NotesLabel" type="Label" parent="Panel/Margin/Layout/Body/RulesBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"WarningLabel"
+autowrap_mode = 3
+
+[node name="InstallHint" type="Label" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "In the game the filter is chosen in the loot filter panel. Filters live in %USERPROFILE%\\AppData\\LocalLow\\Eleventh Hour Games\\Last Epoch\\Filters; a new file there appears in the game's filter list."
+autowrap_mode = 3
+
+[node name="StatusLabel" type="Label" parent="Panel/Margin/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveGameButton" type="Button" parent="Panel/Margin/Layout/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Save to the game's filters"
+
+[node name="SaveFileButton" type="Button" parent="Panel/Margin/Layout/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Save as…"
+
+[node name="CopyButton" type="Button" parent="Panel/Margin/Layout/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Copy XML"
+
+[node name="Spacer" type="Control" parent="Panel/Margin/Layout/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/Layout/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Close"
+
+[node name="ReplaceConfirm" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Replace the filter"
+initial_position = 1
+size = Vector2i(460, 150)
+ok_button_text = "Replace"
+dialog_autowrap = true
+
+[node name="SaveFileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Save the loot filter"
+initial_position = 1
+size = Vector2i(760, 480)
+access = 2
+filters = PackedStringArray("*.xml ; Last Epoch loot filter")
+use_native_dialog = true

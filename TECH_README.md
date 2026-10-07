@@ -80,10 +80,10 @@ client/          Godot project
   data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
   docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
-  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, defense/, stats/, trees/, builds/, common/
+  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, defense/, stats/, trees/, builds/, loot_filter/, common/
   scripts/       logic (.gd): autoload/ (Settings, GameData, Build, BuildHistory — undo / redo), engine/ (calculations), UI scripts in folders matching the scenes
   tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test, maxroll_import_test,
-                 layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test,
+                 layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test, loot_filter_test,
                  readme_screenshots (captures docs/screenshots, needs a window), perf_bench (engine timing and golden output)
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations
@@ -198,6 +198,12 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   and enabled conditions without a source are highlighted in red. Each group has an "Active: …" line and a "Reset" button; ailments are shown with readable names.
 - **Builds** (the "Builds…" button in the top bar) — save the current build under a name (`user://builds/<name>.json`), load or delete a saved one,
   copy the build code (the whole build as one line: JSON → zlib → URL-safe base64, as in Path of Building) and load a build from someone's code.
+- **Loot filter** (the "Loot filter…" button in the top bar) — makes a Last Epoch loot filter (the game's XML) from the build's items and idols:
+  the build's bases with at least N of the item's affixes, exalted items of the build's item types with a wanted affix at tier 6+ (the affixes of
+  regular items and the legendary affixes of uniques, for legendary crafting), the build's uniques (with enough legendary potential for its
+  legendary affixes) and set items, idols with their affixes, and a rule that hides the other normal / magic / rare items. Rules, affixes and
+  uniques can be unchecked in a tree. The filter is saved into the game's Filters folder (Windows build), as a file, downloaded (browser) or
+  copied as XML. The format follows `ItemFiltering.ItemFilter` of the game code and the game's own filter files (client/docs/UI.md "Loot filter").
 - **Import** (the "Import…" button in the top bar) — two tabs:
   - "Maxroll account": the account name → the character list (`GET planners.maxroll.gg/lastepoch/characters/<account>`) → pick a
     character → `GET …/<account>/<name>`. The answer is the game's offline-save JSON with binary item blobs (`research/07e`), the
@@ -221,6 +227,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/i18n_te
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/letools_import_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/maxroll_import_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/defense_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/loot_filter_test.tscn
 ```
 `engine_test` checks the test vectors from `research/06a–06c`, `07a`, checks uniques, sets and special effects
 (including a run of all uniques with conditions enabled), Rogue shadows (with health / ward on creation), Void Knight
@@ -233,6 +240,9 @@ translation in `client/i18n/ru.po` (`LE.missing`);
 `defense_test` checks effective health (pool vectors of research/06c §2.7/§2.9, endurance modes, delayed damage, damage taken
 as another type (07n §1), recovery between hits, ActorScaler and corruption scaling, the boss presets and the average monster,
 an imported build against Uber Aberroth, a passive dodge conversion, the defense settings in the build code);
+`loot_filter_test` checks the loot filter of the fixture builds (every regular item, idol and unique of the build is shown by its own rule,
+the XML parses and has the game's rule order, legendary and exalted rules, unchecked rules and affixes, the options; `-- --out=<file>` writes a
+filter to load in the game by hand);
 `minion_test` checks the transfer of player stats to a minion (07d §1.1);
 `layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
 `letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,

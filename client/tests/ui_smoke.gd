@@ -423,6 +423,25 @@ func _ready() -> void:
 	if bool(Build.player_state["haste"]):
 		failed = true
 		print("FAIL: reset_player_conditions")
+	# loot filter dialog: the rule tree follows LootFilter.plan and the options; an unchecked rule leaves the XML
+	var loot: LootFilterDialog = main.get_node("%LootFilterDialog")
+	main.get_node("%LootFilterButton").pressed.emit()
+	await _frames(2)
+	var rule_tree: Tree = loot.get_node("%RuleTree")
+	var planned: int = LootFilter.plan(Build.items, Build.stash, loot._options())["rules"].size()
+	if not loot.visible or rule_tree.get_root().get_child_count() != planned or planned == 0:
+		failed = true
+		print("FAIL: loot filter dialog: %d rule rows, %d planned" % [rule_tree.get_root().get_child_count(), planned])
+	loot.get_node("%BasesCheck").button_pressed = true
+	await _frames(1)
+	var hide_row: TreeItem = rule_tree.get_root().get_child(rule_tree.get_root().get_child_count() - 1)
+	hide_row.set_checked(0, false)
+	loot._apply_check(hide_row)
+	if loot._xml().contains("<type>HIDE</type>") or not loot._xml().contains("<ItemFilter"):
+		failed = true
+		print("FAIL: loot filter: the unchecked hide rule is still in the XML")
+	print("loot filter rules: %d" % loot._rule_count())
+	loot.hide()
 	failed = failed or split_failed or tree_switch_failed or failed_items or search_failed or hover_failed or pending_failed
 	# interface language: the Russian catalogue (res://i18n/ru.po) is loaded and switching the locale works
 	var saved_locale: String = TranslationServer.get_locale()

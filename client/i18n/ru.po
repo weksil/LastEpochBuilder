@@ -15178,3 +15178,177 @@ msgstr "применение навыка миньоном"
 
 msgid "totem summon"
 msgstr "призыв тотема"
+
+msgid "Loot filter"
+msgstr "Лутфильтр"
+
+msgid "Loot filter…"
+msgstr "Лутфильтр…"
+
+msgid "Make a Last Epoch loot filter for the build's items, idols and crafting affixes"
+msgstr "Сделать лутфильтр Last Epoch под предметы, идолы и аффиксы для крафта этой сборки"
+
+msgid "Loot filter for this build"
+msgstr "Лутфильтр для этой сборки"
+
+msgid "Makes a Last Epoch loot filter from the build's items and idols: their bases with the affixes you want to craft, exalted items with those affixes (also for legendary crafting), the build's uniques and set items. Uncheck the rules, affixes or uniques you do not need."
+msgstr "Собирает лутфильтр Last Epoch по предметам и идолам сборки: их базы с нужными для крафта аффиксами, экзальтированные предметы с этими аффиксами (в том числе для легендарного крафта), уники и сетовые предметы сборки. Снимите галочки с ненужных правил, аффиксов или уников."
+
+msgid "Filter name"
+msgstr "Название фильтра"
+
+msgid "What to show"
+msgstr "Что показывать"
+
+msgid "Also the unequipped items"
+msgstr "Также снятые предметы"
+
+msgid "Off: any base of the item type, e.g. every helmet."
+msgstr "Выключено: любая база этого типа предмета, например любой шлем."
+
+msgid "Only the build's bases"
+msgstr "Только базы сборки"
+
+msgid "Wanted affixes on a base"
+msgstr "Нужных аффиксов на базе"
+
+msgid "How many of the item's wanted affixes a dropped base needs (no more than the build's item has)."
+msgstr "Сколько нужных аффиксов предмета должно быть на выпавшей базе (не больше, чем у предмета сборки)."
+
+msgid "Any base of the item type: an exalted affix can be moved to a unique by legendary crafting."
+msgstr "Любая база этого типа: экзальтированный аффикс можно перенести на уник легендарным крафтом."
+
+msgid "Exalted items with a wanted affix"
+msgstr "Экзальтированные предметы с нужным аффиксом"
+
+msgid "Exalted affix tier from"
+msgstr "Тир экзальтированного аффикса от"
+
+msgid "For a build unique with affixes: the unique with at least as much legendary potential as it has affixes."
+msgstr "Для уника сборки с аффиксами: этот уник с легендарным потенциалом не меньше числа его аффиксов."
+
+msgid "Uniques with enough legendary potential"
+msgstr "Уники с достаточным легендарным потенциалом"
+
+msgid "The build's uniques and set items"
+msgstr "Уники и сетовые предметы сборки"
+
+msgid "Idols with one wanted affix"
+msgstr "Идолы с одним нужным аффиксом"
+
+msgid "Bases to craft on from scratch, whatever affixes they have."
+msgstr "Базы для крафта с нуля, с любыми аффиксами."
+
+msgid "The build's bases with any affixes"
+msgstr "Базы сборки с любыми аффиксами"
+
+msgid "Uniques, set items, crafting materials, runes, glyphs and keys stay visible."
+msgstr "Уники, сетовые предметы, материалы для крафта, руны, глифы и ключи остаются видны."
+
+msgid "Hide other normal, magic and rare items"
+msgstr "Скрыть остальные обычные, магические и редкие предметы"
+
+msgid "Also hide other exalted items"
+msgstr "Скрыть и остальные экзальтированные предметы"
+
+msgid "Rules (top of the in-game list first)"
+msgstr "Правила (сверху — начало списка в игре)"
+
+msgid "In the game the filter is chosen in the loot filter panel. Filters live in %USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Filters; a new file there appears in the game's filter list."
+msgstr "В игре фильтр выбирается в панели лутфильтра. Фильтры лежат в %USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Filters; новый файл там появляется в списке фильтров игры."
+
+msgid "Save to the game's filters"
+msgstr "Сохранить в фильтры игры"
+
+msgid "Save as…"
+msgstr "Сохранить как…"
+
+msgid "Copy XML"
+msgstr "Копировать XML"
+
+msgid "Replace the filter"
+msgstr "Заменить фильтр"
+
+msgid "Replace"
+msgstr "Заменить"
+
+msgid "Save the loot filter"
+msgstr "Сохранение лутфильтра"
+
+msgid "Last Epoch loot filter"
+msgstr "Лутфильтр Last Epoch"
+
+msgid "Download .xml"
+msgstr "Скачать .xml"
+
+msgid "%s build"
+msgstr "Сборка %s"
+
+msgid "Build filter"
+msgstr "Фильтр сборки"
+
+msgid "The build has no items or idols to filter."
+msgstr "В сборке нет предметов или идолов для фильтра."
+
+msgid "Hide"
+msgstr "Скрыть"
+
+msgid "Show"
+msgstr "Показать"
+
+msgid "Made with Last Epoch Builder for this build."
+msgstr "Сделано в Last Epoch Builder для этой сборки."
+
+msgid "The filter XML is copied to the clipboard (%d rules)."
+msgstr "XML фильтра скопирован в буфер обмена (правил: %d)."
+
+msgid "The game's filter folder was not found."
+msgstr "Папка фильтров игры не найдена."
+
+msgid "The game already has the filter \"%s\". Replace it?"
+msgstr "В игре уже есть фильтр «%s». Заменить его?"
+
+msgid "The filter is downloaded as %s."
+msgstr "Фильтр скачан как %s."
+
+msgid "Could not write %s."
+msgstr "Не удалось записать %s."
+
+msgid "The filter is saved to %s (%d rules). Pick it in the game's loot filter panel."
+msgstr "Фильтр сохранён в %s (правил: %d). Выберите его в панели лутфильтра в игре."
+
+msgid "%s: no wanted affixes, no rule."
+msgstr "%s: нет нужных аффиксов, правила нет."
+
+msgid "Build uniques with %d+ legendary potential"
+msgstr "Уники сборки с ЛП %d+"
+
+msgid "Exalted %s: a wanted affix of tier %d+"
+msgstr "Экзальт. %s: нужный аффикс тира %d+"
+
+msgid "%s: %d+ wanted affixes"
+msgstr "%s: нужных аффиксов %d+"
+
+msgid "Build uniques and set items"
+msgstr "Уники и сетовые предметы сборки"
+
+msgid "%s: one wanted affix"
+msgstr "%s: один нужный аффикс"
+
+msgid "%s bases with any affixes"
+msgstr "%s: базы с любыми аффиксами"
+
+msgid "Hide other normal, magic, rare and exalted items"
+msgstr "Скрыть остальные обычные, магические, редкие и экзальтированные предметы"
+
+msgid "any %s"
+msgstr "любой %s"
+
+msgid "rarity: %s"
+msgstr "редкость: %s"
+
+msgid "legendary potential %d+"
+msgstr "легендарный потенциал %d+"
+
+msgid "exalted"
+msgstr "экзальтированный"

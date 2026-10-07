@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/import/letools_import_dialog.tscn" id="11_import"]
 [ext_resource type="PackedScene" path="res://scenes/builds/builds_dialog.tscn" id="12_builds"]
 [ext_resource type="PackedScene" path="res://scenes/defense/defense_tab.tscn" id="13_defense"]
+[ext_resource type="PackedScene" path="res://scenes/loot_filter/loot_filter_dialog.tscn" id="14_loot_filter"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -110,6 +111,13 @@ layout_mode = 2
 focus_mode = 0
 text = "Import…"
 
+[node name="LootFilterButton" type="Button" parent="Margin/Layout/TopBar/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Make a Last Epoch loot filter for the build's items, idols and crafting affixes"
+focus_mode = 0
+text = "Loot filter…"
+
 [node name="Spacer" type="Control" parent="Margin/Layout/TopBar/Row"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -198,4 +206,7 @@ layout_mode = 2
 unique_name_in_owner = true
 
 [node name="BuildsDialog" parent="." instance=ExtResource("12_builds")]
+unique_name_in_owner = true
+
+[node name="LootFilterDialog" parent="." instance=ExtResource("14_loot_filter")]
 unique_name_in_owner = true

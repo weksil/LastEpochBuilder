@@ -28,6 +28,11 @@ func _ready() -> void:
 				await _frames(2)
 			# the tabs read lean results; the breakdowns (built when a row is expanded) need their translations too
 			SkillCalc.compute(Build, slot, true)
+		# loot filter rule titles, notes and descriptions (LE.t in LootFilter)
+		for opts: Dictionary in [{"idol_one": true, "bases": true, "stash": true, "exact_base": false}, {"hide_exalted": true}]:
+			var plan: Dictionary = LootFilter.plan(Build.items, Build.stash, opts)
+			for spec: Dictionary in plan["rules"]:
+				LootFilter.describe(spec)
 		var cfg: Node = tabs.get_child(tabs.get_tab_count() - 1)
 		if cfg.has_node("%ShowAllCheck"):
 			cfg.get_node("%ShowAllCheck").button_pressed = true
