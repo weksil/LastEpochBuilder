@@ -41,6 +41,9 @@ const LIMITS: Dictionary = {
 	8: ["Corrupted idol limit", "corrupted"],
 }
 
+## IdolAltarPropertyID.WeaverIdolLimit.
+const WEAVER_LIMIT: int = 5
+
 const KIND_LABELS: Dictionary = {
 	"corrupted": "corrupted", "heretical": "heretical", "omen": "omen", "weaver": "Weaver",
 	"adorned": "Adorned", "ornate": "Ornate", "huge": "Huge", "unique": "unique/legendary",
@@ -119,6 +122,18 @@ static func idol_counts(items: Dictionary) -> Dictionary:
 	return counts
 
 
+## Weaver idol limit of the altar (property 5); 0 = no limit: IdolsItemContainer.CanPlaceNewWeaverIdol lets any number
+## of Weaver idols in while the rounded limit is below 1 (altars without the property).
+static func weaver_limit(items: Dictionary) -> int:
+	return roundi(float(altar_values(items).get(WEAVER_LIMIT, 0.0)))
+
+
+## Number of Weaver idols in the grid above the altar limit (0 when within the limit or without one).
+static func weaver_excess(items: Dictionary) -> int:
+	var limit: int = weaver_limit(items)
+	return maxi(0, int(idol_counts(items)["weaver"]) - limit) if limit > 0 else 0
+
+
 ## True if some larger idol sits above a smaller one (same column, larger area, higher row) — breaks property 21.
 static func larger_above_smaller(items: Dictionary) -> bool:
 	var rects: Array[Rect2i] = []
@@ -194,6 +209,9 @@ static func apply(build: Node, store: StatStore, notes: Array[String]) -> void:
 			continue
 		var limit: Array = LIMITS[id]
 		notes.append(LE.t("%s: %s +%s (in build: %d)") % [prefix, LE.t(limit[0]), LE.fmt_num(float(values[id])), int(counts[limit[1]])])
+	if weaver_excess(build.items) > 0:
+		notes.append(LE.t("%s: %d Weaver idols, above the limit of %d — the game does not let them into the grid") % [
+			prefix, int(counts["weaver"]), weaver_limit(build.items)])
 
 	# 9–19, 22–30: stat per idol of a kind
 	for id: int in PER_IDOL:

@@ -6,7 +6,8 @@ Tasks deferred for later. We take them on by agreement.
 
 - [x] **Tree visuals from the game client** (node icons and frames, backgrounds, ornaments, connections) — `tools/extract/extract_tree_art.py`,
   `client/assets/trees/`.
-- [ ] **The remaining icons from the game client:** skill icons in slots and lists, items, idols, blessings, classes,
+- [x] **Idol pictures** (idol and altar subtypes, unique idols) — `tools/extract/extract_idol_icons.py`, `client/assets/idols/`.
+- [ ] **The remaining icons from the game client:** skill icons in slots and lists, items, blessings, classes,
   icons of tooltip rows (`tree_node_stats.json` → `tooltipStats[].icon`). The same method: UnityPy, `m_SpriteSoftRef`.
 - [ ] Backgrounds, logos, class portraits — from the official site / lastepochtools, if the client does not have them.
 

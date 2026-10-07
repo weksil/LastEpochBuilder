@@ -74,6 +74,7 @@ research/        research notes (01…07n) and data
 client/          Godot project
   assets/trees/  skill and passive tree sprites from the game client (PNGs in Git LFS; tools/extract/extract_tree_art.py)
   assets/items/  item type icons from the game client (PNGs in Git LFS; tools/extract/extract_item_icons.py)
+  assets/idols/  idol, unique idol and altar pictures from the game client (PNGs in Git LFS; tools/extract/extract_idol_icons.py)
   i18n/          ru.po — Russian translation (msgid = English source text)
   data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
@@ -157,7 +158,10 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
 - **Idols** — a 5×5 grid, an altar (13 subtypes) changes the grid and gives refracted cells and properties; clicking a cell places an idol,
   the base size is checked against free cells; 1 prefix and 1 suffix, affixes and large idols are by class. The idol editor (shown
   after picking a cell) offers only idol bases and unique idols (each with its size, e.g. "[1x3]"), with the same roll sliders, unsaved-changes stat diff, weaver /
-  enchantment affixes and a corrupted affix row; the Items tab never offers idols.
+  enchantment affixes and a corrupted affix row; the Items tab never offers idols. Weaver affixes are offered only on Weaver idols
+  (Small / Minor / Humble / Stout Weaver Idol); altars with a Weaver idol limit show "Weaver idols: n / limit" under the grid and warn
+  above it. Idols and altars are drawn with their game pictures (`client/assets/idols/`, `tools/extract/extract_idol_icons.py`),
+  each picture covering all cells of its idol.
 - **Calculations** — at the top is a totals strip: DPS vs enemy (with the target name), average hit, uses per second, crit chance; below are the calculation parameters
   (hits on the target, stacks, event frequency for triggers — change on the fly), the "Skill buffs on the character" panel
   (each skill on the bar with its mods on the character and an enable checkbox; the buffs apply to all skills and stats: "on the character" tree effects,
@@ -312,7 +316,7 @@ the copy. Test locally: `python -m http.server -d build/web 8060`, open `http://
 
 - The preset is single-threaded (`variant/thread_support=false`): the threaded build needs COOP/COEP headers that GitHub Pages
   cannot send. The renderer is GL Compatibility (WebGL 2).
-- Images of `client/assets/trees` and `client/assets/items` are imported as lossy WebP (`compress/mode=1`, quality 0.85) to keep
+- Images of `client/assets/trees`, `client/assets/items` and `client/assets/idols` are imported as lossy WebP (`compress/mode=1`, quality 0.85) to keep
   the download small; new images there need the same import settings.
 - `user://` (settings, saved builds) lives in the browser IndexedDB. The "open the saves folder" button is hidden there.
 - Clipboard: Godot copies to the system clipboard; Ctrl+V in a text field pastes from it (Godot reads the browser paste event).
@@ -359,6 +363,6 @@ README.md is updated when a user-facing feature changes and when a feature worth
 The project's code and documentation are distributed under the MIT license, see [LICENSE](LICENSE).
 
 The license does not cover Last Epoch materials. These are the data extracted from the client (`research/data/game/`),
-the texts and images of the in-game guide (`research/02_assets/`) and the tree graphics (`client/assets/trees/`).
+the texts and images of the in-game guide (`research/02_assets/`) and the graphics from the game client (`client/assets/trees/`, `client/assets/items/`, `client/assets/idols/`).
 The rights to them belong to Eleventh Hour Games. They are kept in the repository only for the planner to work.
 The `client/addons/godot_ai` plugin is distributed under its own MIT license (`client/addons/godot_ai/LICENSE`).

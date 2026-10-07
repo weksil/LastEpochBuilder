@@ -442,11 +442,18 @@ func _affix_options(base: Dictionary, kinds: Array) -> Dictionary:
 	return options
 
 
+## AFFIX_KINDS offered for the item: Weaver affixes roll only on Weaver idols (GenerateItems.IsValidAffix isWeaverIdol).
+func _affix_kinds(item: Dictionary) -> Array:
+	if IdolGrid.is_idol_key(_slot) and AltarMods.idol_kinds(item)["weaver"]:
+		return AFFIX_KINDS
+	return AFFIX_KINDS.filter(func(k: String) -> bool: return k != "IdolWeaver")
+
+
 func _fill_affixes(item: Dictionary, base: Dictionary) -> void:
 	var stored: Array = _placed_affixes(item)
 	var is_set: bool = item.has("unique") and int(GameData.unique(int(item["unique"])).get("isSetItem", 0)) != 0
 	var is_idol: bool = IdolGrid.is_idol_key(_slot)
-	var options: Dictionary = _affix_options(base, AFFIX_KINDS)
+	var options: Dictionary = _affix_options(base, _affix_kinds(item))
 	var corrupted_options: Dictionary = _affix_options(base, CORRUPTED_KINDS)
 	for r in range(AFFIX_ROWS.size()):
 		var row: Node = %Affixes.get_node(AFFIX_ROWS[r])
@@ -582,6 +589,10 @@ func _on_sub_selected(index: int) -> void:
 		# another base starts without affixes; the same base keeps them
 		var kept_affixes: Array = item.get("affixes", []) if int(item.get("base", -1)) == base_id else []
 		var new_item: Dictionary = ItemCompare.new_item(base_id, entry_id % SUB_ID_STRIDE, kept_affixes)
+		# Weaver affixes leave with the Weaver subtype
+		if not AltarMods.idol_kinds(new_item)["weaver"]:
+			new_item["affixes"] = new_item.get("affixes", []).filter(func(a: Dictionary) -> bool:
+				return str(GameData.affix(int(a.get("id", -1))).get("specialAffixType", "")) != "IdolWeaver")
 		_keep_name(new_item, item)
 		_commit(new_item)
 	_fill()

@@ -3,6 +3,9 @@ class_name IdolsTab extends HBoxContainer
 ## Idol grid editor (docs/UI.md "Idols"). Grid cells are pre-defined in idols_tab.tscn.
 
 const NO_ALTAR: int = -1
+const PICTURE_SCENE: PackedScene = preload("res://scenes/idols/idol_picture.tscn")
+## Gap between an idol picture and the edges of its cells, so the cell frame (selection, refracted) stays visible.
+const PICTURE_INSET: float = 4.0
 
 var _selected_slot: String = ""
 var _filling: bool = false
@@ -98,7 +101,10 @@ func _update_grid() -> void:
 	var altar: Dictionary = IdolGrid.altar(Build.items)
 	%AltarSelect.select(maxi(0, %AltarSelect.get_item_index(int(altar.get("sub", NO_ALTAR)) if not altar.is_empty() else NO_ALTAR)))
 	%AltarEditButton.disabled = altar.is_empty()
+	%AltarIcon.texture = null if altar.is_empty() else picture(altar)
 	_filling = false
+	_update_weaver_limit()
+	_update_pictures()
 
 	for cell: Node in %Grid.get_children():
 		var row: int = cell.get_meta("row")
@@ -142,7 +148,8 @@ func _update_grid() -> void:
 					var base_id: int = int(item.get("base", 0))
 					var base: Dictionary = GameData.item_base(base_id)
 					item_name = GameData.display_name(base)
-				cell.text = item_name
+				# the picture stands for the name when there is one
+				cell.text = item_name if picture(item) == null else ""
 			else:
 				cell.text = ""
 
@@ -157,6 +164,51 @@ func _update_grid() -> void:
 		# Set selected state
 		if is_selected:
 			cell.theme_type_variation = &"IdolCellSelected"
+
+
+## Picture of an idol or altar item (client/assets/idols, tools/extract/extract_idol_icons.py); null if there is none.
+static func picture(item: Dictionary) -> Texture2D:
+	var path: String = "res://assets/idols/sub_%d_%d.png" % [int(item.get("base", -1)), int(item.get("sub", -1))]
+	if item.has("unique"):
+		path = "res://assets/idols/unique_%d.png" % int(item["unique"])
+	return load(path) if ResourceLoader.exists(path) else null
+
+
+## Idol pictures over the grid cells (%Pictures): one per idol, covering all its cells; clicks go through to the cells.
+func _update_pictures() -> void:
+	for child: Node in %Pictures.get_children():
+		%Pictures.remove_child(child)
+		child.queue_free()
+	var cell_size: Vector2 = (%Grid.get_child(0) as Control).get_combined_minimum_size()
+	var gap: Vector2 = Vector2(%Grid.get_theme_constant("h_separation"), %Grid.get_theme_constant("v_separation"))
+	for slot: String in Build.items:
+		if not IdolGrid.is_idol_key(slot) or not Build.items[slot].has("base"):
+			continue
+		var item: Dictionary = Build.items[slot]
+		var texture: Texture2D = picture(item)
+		if texture == null:
+			continue
+		var anchor: Vector2i = IdolGrid.anchor(slot)  # (row, col)
+		var cells: Vector2 = Vector2(IdolGrid.size_of(int(item["base"])))  # (columns, rows)
+		var pic: TextureRect = PICTURE_SCENE.instantiate()
+		pic.texture = texture
+		pic.position = Vector2(anchor.y, anchor.x) * (cell_size + gap) + Vector2.ONE * PICTURE_INSET
+		pic.size = cells * cell_size + (cells - Vector2.ONE) * gap - Vector2.ONE * 2.0 * PICTURE_INSET
+		%Pictures.add_child(pic)
+
+
+## "Weaver idols: n / limit" under the grid while the altar has a Weaver idol limit; a warning colour above the limit.
+func _update_weaver_limit() -> void:
+	var limit: int = AltarMods.weaver_limit(Build.items)
+	%WeaverLimit.visible = limit > 0
+	if limit <= 0:
+		return
+	var count: int = int(AltarMods.idol_counts(Build.items)["weaver"])
+	var over: bool = AltarMods.weaver_excess(Build.items) > 0
+	%WeaverLimit.text = tr("Weaver idols: %d / %d") % [count, limit]
+	if over:
+		%WeaverLimit.text += " — " + tr("above the altar limit, the game does not let them into the grid")
+	%WeaverLimit.theme_type_variation = &"WarningLabel" if over else &"MutedLabel"
 
 
 func _set_idol_tooltip(cell: Node, slot: String) -> void:
@@ -183,7 +235,7 @@ func _set_idol_tooltip(cell: Node, slot: String) -> void:
 
 	if bool(item.get("corrupted", false)):
 		lines.append(tr("Corrupted"))
-	if preload("res://scripts/engine/altar_mods.gd").in_refracted_slot(slot, item, Build.items):
+	if AltarMods.in_refracted_slot(slot, item, Build.items):
 		lines.append(tr("Refracted slot"))
 	var affixes: Array = item.get("affixes", [])
 	for affix_data: Dictionary in affixes:

@@ -130,7 +130,8 @@ Slot icons are `client/assets/items/*.png` (symbolic reward icons of the game, `
   `%KindLabel` "Prefix"/"Suffix"; `%AffixSelect` item 0 "— none —", then `GameData.affixes_for_type(base.type, class, kinds)` with the
   required `type` (PREFIX/SUFFIX), text `name` (special kinds get a marker: "(set)" in the set colour, "(experimental)", "(personal)",
   "(weaver)", "(enchantment)"), id = affixId; kinds `ItemEditor.AFFIX_KINDS` (Standard, Set, Experimental, Personal, IdolWeaver,
-  IdolEnchantment; set and idol affixes filtered by class), the corrupted row offers only `Corrupted` affixes; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
+  IdolEnchantment; set and idol affixes filtered by class; IdolWeaver only on Weaver idol subtypes — `ItemEditor._affix_kinds`, and a
+  change to a non-Weaver subtype drops the stored Weaver affixes), the corrupted row offers only `Corrupted` affixes; `%TierSpin` 1..len(tiers); `%RollSlider` 0..255;
   `%ValueLabel` — the values of all the affix's `properties` for the tier and roll (via `AffixMath`, with the base's `effect_modifier`).
   `%RollSlider` covers every tier: value = (tier − 1) · 256 + roll, `tick_count = tiers + 1` marks the tier borders; `%TierSpin` follows it.
   Extra rows `Sealed` (index 4) and `Corrupted` (index 5) hold the sealed / corrupted affix ("Sealed prefix", "Corrupted suffix"…): the
@@ -187,6 +188,11 @@ projectiles cannot hit one target twice. `%ProjectileCount` — "<factor> of <co
 
 ## Idols — `scripts/idols/idols_tab.gd` (`extends HBoxContainer`)
 Scene `scenes/idols/idols_tab.tscn`: `%Grid` holds 25 ready-made `IdolCell` buttons with `metadata/row`, `metadata/col`;
+`%Grid` and `%Pictures` (a plain Control, mouse ignored) share the `GridStack` MarginContainer: `_update_pictures` puts one
+`scenes/idols/idol_picture.tscn` TextureRect per idol into `%Pictures`, over all cells of the idol (cell minimum size + grid
+separations, inset `PICTURE_INSET`); the texture is `IdolsTab.picture(item)` — `res://assets/idols/sub_<base>_<sub>.png` or
+`unique_<uniqueID>.png` (`tools/extract/extract_idol_icons.py`), null when missing (then the anchor cell shows the name as text).
+`%AltarIcon` in the altar row shows the altar's picture;
 on the right `%EditorScroll` > `%ItemEditor` (the same `ItemEditor`, it understands idol keys itself; it offers only idol bases and
 unique idols that fit the cell, each named with its grid size "[WxH]" from `IdolGrid.size_of`). Until a cell or "Edit altar" is picked `%EditorScroll` is hidden and `%EditorHint` asks to pick a cell;
 it is hidden again when the edited altar or idol is removed by an altar change. The corrupted flag of an idol (altar properties) is the
@@ -197,9 +203,11 @@ The grids `GameData.idol_grid()` / `altar_grid(sub)` are already in `[row][col]`
   Then `%ItemEditor.edit_slot(slot, "Idol %d:%d" % [row + 1, col + 1])`, remember the selected slot.
 - Updating the cells (in `_ready`, on `Build.changed` and after a click): blocked (`not is_open`) → `disabled = true`,
   variant `&"IdolCellBlocked"`, empty text. Occupied → `&"IdolCellOccupied"`; for the idol's top-left cell the text =
-  `GameData.display_name(GameData.item_base(base))`, for the idol's other cells the text is empty. The cells of the selected slot
+  `GameData.display_name(GameData.item_base(base))` when the idol has no picture, for the idol's other cells the text is empty. The cells of the selected slot
   (or the selected empty cell) → `&"IdolCellSelected"`. Free → `&"IdolCellOpen"`, empty text.
 - The `tooltip_text` of an occupied cell: the subtype name and the affix lines (id → `GameData.affix(id).name`, tier).
+- `%WeaverLimit` under the grid (visible while the altar has a Weaver idol limit, `AltarMods.weaver_limit` > 0): "Weaver idols: n / limit",
+  variant `&"WarningLabel"` with a note when `AltarMods.weaver_excess` > 0, otherwise `&"MutedLabel"`.
 
 ## Unique items in `ItemEditor` (`scripts/items/item_editor.gd`)
 The scene already contains `%UniqueRow` > `%UniqueSelect` (above the base), `%UniqueTitle`, `%UniqueMods` (a VBox for `implicit_row_scene` rows),
@@ -240,7 +248,8 @@ The button `%ImportButton` ("Import…", the end of `TopBar/Row`) opens `%Import
 - Id encoding (`LZString.decompress_from_encoded_uri` → a string of digits): `I` — `1` + base(3) + subtype(3) + rarity(1) + uniqueId (≥ 2 digits);
   `U` — subtype(3) + uniqueId; `A` — affixId. An idol `(x, y)` → `IdolGrid.key(y - 1, x - 1)`; sealed and corrupted affixes are appended
   to `affixes`, a corrupted idol gets `corrupted: true`. Slots: head→helmet, chest→body, waist→belt, feet→boots, hands→gloves,
-  weapon1→weapon, weapon2→offhand, idol_altar→altar. Not supported: the Weaver tree and idols, set ids (`S`); blessings come as `{timelineID: {id, ir}}`
+  weapon1→weapon, weapon2→offhand, idol_altar→altar. Weaver idols in `idols` import like any idol; skipped with a warning: the Weaver tree and
+  `weaverTreeContainers` (Woven Echoes and uniques socketed in it change echoes, not the character); not supported: set ids (`S`); blessings come as `{timelineID: {id, ir}}`
   (`I` base 34, subtype = the blessing id, roll = `ir[0]`), checked on `letools_ApbrXYvx.json`.
 
 ## Import by account through Maxroll — `scripts/import/maxroll_import_panel.gd` (`class_name MaxrollImportPanel extends VBoxContainer`), `scripts/engine/maxroll_import.gd` (`MaxrollImport`)

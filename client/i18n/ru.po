@@ -110,6 +110,12 @@ msgstr " × попаданий %s"
 msgid " − %s (shred)"
 msgstr " − %s (шред)"
 
+msgid "%s: %d Weaver idols, above the limit of %d — the game does not let them into the grid"
+msgstr "%s: Weaver-идолов %d, больше лимита %d — игра не пустит их в сетку"
+
+msgid "Weaver idols: %d / %d"
+msgstr "Weaver-идолов: %d / %d"
+
 msgid "\"%s\" is off (Conditions tab)"
 msgstr "выключено «%s» (вкладка «Условия»)"
 
@@ -11788,8 +11794,8 @@ msgstr "Временный бафф за каждый удар по врагу"
 msgid "Tentacles of Static Orb"
 msgstr "Щупальца Static Orb"
 
-msgid "The Weaver tree and Weaver idols are not supported, skipped."
-msgstr "Дерево Weaver и идолы Weaver не поддерживаются, пропущены."
+msgid "The Weaver tree is skipped: it changes echoes, not the character."
+msgstr "Дерево Weaver пропущено: оно меняет эхо, а не персонажа."
 
 msgid "The curse hits the target every time it is hit (by any source); casting it deals no damage itself, recasting only refreshes the curse."
 msgstr "Проклятие бьёт цель каждый раз, когда по ней попадают (любым источником); само применение урона не наносит, повторное применение только обновляет проклятие."
@@ -12997,6 +13003,9 @@ msgstr "Зомби неподвижны (без движения и прыжка
 
 msgid "Zombies from direct use only"
 msgstr "Только зомби от прямого применения"
+
+msgid "above the altar limit, the game does not let them into the grid"
+msgstr "больше лимита алтаря, игра не пустит их в сетку"
 
 msgid "activation"
 msgstr "активация"

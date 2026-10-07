@@ -206,9 +206,14 @@ An idol is stored in `Build.items` under the key `idol_<row>_<col>` (the top-lef
 (Small −0.83, Grand −0.33, etc.). Rewards for opening slots are considered received.
 Altar (`Build.items["altar"]`, base 41, `engine/altar_mods.gd` `AltarMods.apply`): the grid `idols.json data[sub]`, cells
 `+100` are refracted; properties SP 130 (`tags` = IdolAltarPropertyID): 1–4 — the effect of idol affixes/enchantments in
-refracted cells ×(1 + x) (`ItemMods.item_mods(..., effect_scale)`), 9–19 and 22–30 — stats × the number of suitable idols
+refracted cells ×(1 + x) (`ItemMods.item_mods(..., effect_scale)`; prefixes/suffixes scale standard and Weaver affixes,
+enchantments scale IdolEnchantment ones, other special types — corrupted etc. — are not scaled: `ItemEquipManager.UpdateStats`,
+`EpochExtensions.IsAffectedByAffectOfStandardPrefixesOrSuffixes`), 9–19 and 22–30 — stats × the number of suitable idols
 (corrupted ones — the `corrupted` flag, heretical/omen/weaver ones — by the subtype name), 20 — SP 117 against bosses per
-unique/legendary idol, 21 — CDR under the size-order condition, limits — notes.
+unique/legendary idol, 21 — CDR under the size-order condition, limits — notes. Weaver idols (subtypes "… Weaver Idol" of
+bases 25–28; the only ones IdolWeaver affixes roll on, the second affix may be a standard one): property 5 caps their number
+(`AltarMods.weaver_limit`, `IdolsItemContainer.CanPlaceNewWeaverIdol`; no cap when the rounded value is below 1, i.e. without
+the property); above the cap the calculation keeps them and adds a note, the Idols tab shows a warning.
 
 ### 5.4.2 Unique items and sets (07d §2.1–2.3)
 An item with `unique: uniqueID` and `unique_rolls[rollID]` (roll byte, 255 by default): the base's implicits + the unique's mods.

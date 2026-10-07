@@ -28,6 +28,14 @@ autowrap_mode = 3
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="AltarIcon" type="TextureRect" parent="Left/AltarRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="AltarLabel" type="Label" parent="Left/AltarRow"]
 layout_mode = 2
 text = "Altar"
@@ -43,137 +51,153 @@ layout_mode = 2
 disabled = true
 text = "Edit altar"
 
-[node name="Grid" type="GridContainer" parent="Left"]
+[node name="GridStack" type="MarginContainer" parent="Left"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Grid" type="GridContainer" parent="Left/GridStack"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 columns = 5
 
-[node name="Cell00" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell00" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 0
 metadata/col = 0
 
-[node name="Cell01" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell01" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 0
 metadata/col = 1
 
-[node name="Cell02" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell02" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 0
 metadata/col = 2
 
-[node name="Cell03" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell03" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 0
 metadata/col = 3
 
-[node name="Cell04" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell04" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 0
 metadata/col = 4
 
-[node name="Cell10" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell10" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 1
 metadata/col = 0
 
-[node name="Cell11" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell11" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 1
 metadata/col = 1
 
-[node name="Cell12" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell12" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 1
 metadata/col = 2
 
-[node name="Cell13" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell13" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 1
 metadata/col = 3
 
-[node name="Cell14" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell14" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 1
 metadata/col = 4
 
-[node name="Cell20" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell20" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 2
 metadata/col = 0
 
-[node name="Cell21" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell21" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 2
 metadata/col = 1
 
-[node name="Cell22" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell22" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 2
 metadata/col = 2
 
-[node name="Cell23" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell23" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 2
 metadata/col = 3
 
-[node name="Cell24" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell24" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 2
 metadata/col = 4
 
-[node name="Cell30" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell30" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 3
 metadata/col = 0
 
-[node name="Cell31" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell31" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 3
 metadata/col = 1
 
-[node name="Cell32" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell32" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 3
 metadata/col = 2
 
-[node name="Cell33" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell33" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 3
 metadata/col = 3
 
-[node name="Cell34" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell34" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 3
 metadata/col = 4
 
-[node name="Cell40" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell40" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 4
 metadata/col = 0
 
-[node name="Cell41" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell41" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 4
 metadata/col = 1
 
-[node name="Cell42" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell42" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 4
 metadata/col = 2
 
-[node name="Cell43" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell43" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 4
 metadata/col = 3
 
-[node name="Cell44" parent="Left/Grid" instance=ExtResource("2_cell")]
+[node name="Cell44" parent="Left/GridStack/Grid" instance=ExtResource("2_cell")]
 layout_mode = 2
 metadata/row = 4
 metadata/col = 4
+
+[node name="Pictures" type="Control" parent="Left/GridStack"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="WeaverLimit" type="Label" parent="Left"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
 
 [node name="EditorHint" type="Label" parent="."]
 unique_name_in_owner = true

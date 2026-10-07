@@ -164,7 +164,7 @@ static func to_build(response: Dictionary) -> Dictionary:
 	var weaver_used: bool = weaver is Dictionary and weaver.get("selected") is Dictionary and not weaver["selected"].is_empty()
 	var containers: Variant = data.get("weaverTreeContainers")
 	if weaver_used or (containers is Array and not containers.is_empty()):
-		warnings.append(LE.t("The Weaver tree and Weaver idols are not supported, skipped."))
+		warnings.append(LE.t("The Weaver tree is skipped: it changes echoes, not the character."))
 	return doc
 
 

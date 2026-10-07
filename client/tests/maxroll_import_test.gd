@@ -6,7 +6,7 @@ extends Node
 ## Run: Godot_console.exe --headless --path client res://tests/maxroll_import_test.tscn
 
 const FIXTURE_DIR: String = "res://tests/fixtures/"
-const WEAVER_WARNING: String = "The Weaver tree and Weaver idols are not supported, skipped."
+const WEAVER_WARNING: String = "The Weaver tree is skipped: it changes echoes, not the character."
 
 var _failed: int = 0
 

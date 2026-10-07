@@ -288,7 +288,7 @@ static func to_build(save: Dictionary) -> Dictionary:
 	doc["items"] = items
 	doc["blessings"] = _blessings(blessing_items, warnings)
 	if weaver_used:
-		warnings.append(LE.t("The Weaver tree and Weaver idols are not supported, skipped."))
+		warnings.append(LE.t("The Weaver tree is skipped: it changes echoes, not the character."))
 	return doc
 
 

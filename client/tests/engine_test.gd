@@ -827,7 +827,38 @@ func _idol_altar() -> void:
 		if mod.property == prop_id and mod.source.contains(idol_aff["name"]):
 			idol_total += mod.added
 	_check("non-refracted idol affix unscaled", idol_total, plain)
+	_weaver_idols()
 	Build.items = saved
+
+
+## Weaver idols (docs/ENGINE.md §5.4.1): refracted scaling by affix kind and the altar's Weaver idol limit.
+func _weaver_idols() -> void:
+	var scale: Dictionary = {"prefix": 2.0, "suffix": 3.0, "enchant": 5.0}
+	_check("weaver prefix (826) scales as a prefix", float(scale.get(ItemMods.scale_key(GameData.affix(826)), 1.0)), 2.0)
+	_check("weaver suffix (835) scales as a suffix", float(scale.get(ItemMods.scale_key(GameData.affix(835)), 1.0)), 3.0)
+	var enchant: Dictionary = GameData.affix(892)  # IdolEnchantment, grand / large / ornate / huge / adorned idols
+	var corrupted: Dictionary = GameData.affix(1029)  # Corrupted, adorned idols
+	_check("idol enchantment scales as an enchant", float(scale.get(ItemMods.scale_key(enchant), 1.0)), 5.0)
+	_check("corrupted idol affix is not scaled", float(scale.get(ItemMods.scale_key(corrupted), 1.0)), 1.0)
+	for slot: String in Build.items.keys():
+		if IdolGrid.is_idol_key(slot) or slot == IdolGrid.ALTAR_SLOT:
+			Build.clear_item(slot)
+	_check("no altar: no Weaver idol limit", AltarMods.weaver_limit(Build.items), 0.0)
+	# Jagged Altar (sub 1): implicit WeaverIdolLimit 2; three Small Weaver Idols (base 25, sub 2) in its open cells
+	Build.set_item(IdolGrid.ALTAR_SLOT, ItemCompare.new_item(41, 1, []))
+	_check("Jagged Altar: Weaver idol limit 2", AltarMods.weaver_limit(Build.items), 2.0)
+	var placed: int = 0
+	for row in range(5):
+		for col in range(5):
+			if placed < 3 and IdolGrid.fits(Build.items, row, col, 25):
+				Build.set_item(IdolGrid.key(row, col), ItemCompare.new_item(25, 2, []))
+				placed += 1
+	_check("three Weaver idols placed", placed, 3.0)
+	_check("Weaver idols counted", AltarMods.idol_counts(Build.items)["weaver"], 3.0)
+	_check("one Weaver idol above the limit", AltarMods.weaver_excess(Build.items), 1.0)
+	var notes: Array[String] = []
+	AltarMods.apply(Build, StatStore.new(), notes)
+	_check("note about the Weaver idol limit", 1.0 if notes.any(func(n: String) -> bool: return n.contains("above the limit of 2")) else 0.0, 1.0)
 
 
 ## Curse that deals damage when the cursed enemy is hit (Bone Curse, docs/ENGINE.md §9.3): the event rate is own hits × 3 +

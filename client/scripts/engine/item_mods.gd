@@ -27,11 +27,15 @@ static func slot_label(slot: String, item: Dictionary) -> String:
 	return LE.t(str(SLOT_NAMES.get(slot, slot)))
 
 
-## Key of an affix in an effect_scale dictionary: idol enchantments / weaver affixes "enchant", otherwise "prefix"/"suffix".
+## Key of an affix in an effect_scale dictionary: idol enchantments "enchant"; standard and Weaver affixes "prefix" /
+## "suffix" (EpochExtensions.IsAffectedByAffectOfStandardPrefixesOrSuffixes: special types 0 and 5); other special
+## types (corrupted, …) "" — not scaled (ItemEquipManager.UpdateStats).
 static func scale_key(affix: Dictionary) -> String:
-	var special: String = str(affix.get("specialAffixType", ""))
-	if special == "IdolEnchantment" or special == "IdolWeaver":
+	var special: String = str(affix.get("specialAffixType", "Standard"))
+	if special == "IdolEnchantment":
 		return "enchant"
+	if special != "Standard" and special != "IdolWeaver":
+		return ""
 	return "prefix" if str(affix.get("type", "")) == "PREFIX" else "suffix"
 
 
