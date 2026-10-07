@@ -228,8 +228,8 @@ static func _player(saved: Variant) -> Dictionary:
 	var player: Dictionary = _merged(BuildScript.default_player_state(), saved)
 	var buffs: Dictionary = {}
 	for key: Variant in player["buffs"] if player["buffs"] is Dictionary else {}:
-		if str(key).is_valid_int() and int(player["buffs"][key]) > 0:
-			buffs[int(key)] = int(player["buffs"][key])
+		if str(key).is_valid_int():
+			buffs[int(key)] = maxf(float(player["buffs"][key]), 0.0)  # 0 = set by hand to none
 	player["buffs"] = buffs
 	return player
 

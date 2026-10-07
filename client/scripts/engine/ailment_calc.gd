@@ -15,8 +15,10 @@ const ENEMY_TICK_K: float = 0.4
 ## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
 ## `zone` (one entry of `zones()`): the applications of a zone that applies ailments every `interval` seconds to the
 ## enemies in it (RepeatedlyApplyAilmentsInRadius, no hit); `uses` is then ignored.
+## `events_text` explains where `uses` (hits on the target per second) comes from. Positive ailments (Dusk Shroud, Haste …)
+## go to you, not to the target: `applied` entries with `self` and the section «Buffs on you».
 static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[String], curse_hit: bool = false,
-		zone: Dictionary = {}) -> Dictionary:
+		zone: Dictionary = {}, events_text: String = "") -> Dictionary:
 	var health: int = SkillCalc._health_tags(build)
 	var ability_tags: int = int(ctx["tags"]) | health
 	var chances: Dictionary = _chances(ctx, ability_tags, curse_hit, zone)
@@ -24,8 +26,11 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 	if not zone.is_empty():
 		uses = 1.0 / float(zone["interval"])
 		unit = LE.t("zone applications")
+	elif events_text != "":
+		unit = LE.t("hits on the target")
 	var sections: Array = []
 	var applied_rows: Array = []
+	var self_rows: Array = []
 	var enemy_total: float = 0.0
 	var applied: Array[Dictionary] = []
 	var ids: Array = chances.keys()
@@ -40,7 +45,8 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		var duration: float = float(ail.get("duration", 0.0)) * (1.0 + float(c["inc_dur"]))
 		var max_inst: int = int(ail.get("maxInstances", 0))
 		var stacks: float = rate * duration if max_inst <= 0 else minf(rate * duration, float(max_inst))
-		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst})
+		var on_self: bool = int(ail.get("positive", 0)) != 0
+		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst, "self": on_self})
 		var chance_text: PackedStringArray = [LE.t("Chance per hit: %s (expected number of stacks = chance, 06d §1.1)") % LE.fmt_pct(c["chance"])]
 		chance_text.append_array(c["lines"])
 		if not zone.is_empty():
@@ -49,7 +55,13 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		elif curse_hit:
 			chance_text.append(LE.t("Every hit on the cursed target counts (yours and others\'); the generic \"chance on hit\" from items and passives does not apply to them."))
 		else:
-			chance_text.append(LE.t("One hit on the target per skill use counts."))
+			chance_text.append(events_text if events_text != "" else LE.t("One hit on the target per skill use counts."))
+		if on_self:
+			self_rows.append({"label": LE.t("%s: stacks on you") % name, "text": LE.fmt_num(stacks),
+				"breakdown": "\n".join(chance_text) + "\n" + LE.t("Gains per second: %s × %s = %s; duration %s s%s → on average %s stacks. Used for \"Buffs on me\" unless a number is set on the Conditions tab.") % [
+					LE.fmt_num(uses), LE.fmt_pct(c["chance"]), LE.fmt_num(rate), LE.fmt_num(duration),
+					"" if max_inst <= 0 else LE.t(", maximum %d") % max_inst, LE.fmt_num(stacks)]})
+			continue
 		if not _deals_periodic_damage(ail):
 			applied_rows.append({"label": LE.t("%s: stacks on target") % name, "text": LE.fmt_num(stacks),
 				"breakdown": "\n".join(chance_text) + LE.t("\nApplications per second: %s × %s = %s; duration %s s%s → on average %s stacks.\nUsed as the enemy's stacks unless a number is set on the Conditions tab.") % [
@@ -61,6 +73,8 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		enemy_total += float(r["enemy_dps"])
 	if not applied_rows.is_empty():
 		sections.append({"title": LE.t("Non-damaging ailments"), "rows": applied_rows})
+	if not self_rows.is_empty():
+		sections.append({"title": LE.t("Buffs on you"), "rows": self_rows})
 	for conv: Dictionary in ctx.get("ailment_conversions", []):
 		if GameData.ailment_id_by_name(str(conv["from"])) < 0 or GameData.ailment_id_by_name(str(conv["to"])) < 0:
 			notes.append(LE.t("Node \"%s\": conversion %s → %s not recognised") % [conv["node"], conv["from"], conv["to"]])

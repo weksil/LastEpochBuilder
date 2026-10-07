@@ -574,7 +574,7 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Reset"
-tooltip_text = "Zero the stacks of all buffs on you"
+tooltip_text = "Return all buffs on you to the automatic values of the selected skill"
 
 [node name="BuffSummary" type="Label" parent="Root/Columns/Right/BuffCard/VBox"]
 unique_name_in_owner = true

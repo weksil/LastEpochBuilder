@@ -1057,6 +1057,10 @@ func _projectiles() -> void:
 	print("  Umbral Blades DPS one %s, all %s" % [dps_one, dps_all])
 	_check("Umbral Blades: all / one = 2", dps_all / maxf(dps_one, 0.0001), 2.0, 0.01)
 	EnemyAilments.enabled = true
+	# the ailment chances roll per hit on the target: the breakdown names the projectiles hitting it and the mode
+	var hits_text: String = SkillCalc._hit_events_text({"rate": 0.0, "kind": "primary", "per_use": 1.0}, 2.0, 1.0,
+		{"factor": 1.5, "mode": "average"}, 3.0, false)
+	_flag("ailment hits text: projectiles × mode", hits_text.contains("1.5") and hits_text.contains(LE.t("Average")))
 	_check("mode survives save/load", 1.0 if str(BuildCodec.to_dict(Build)["skills"][0]["projectile_mode"]) == "all" else 0.0, 1.0)
 	Build.set_skill(0, "th39")  # Summon Thorn Totem: the totem fires 4 thorns that share one hit list
 	var totem: Dictionary = SkillCalc.compute(Build, 0)
@@ -1189,6 +1193,18 @@ func _automatic_enemy_ailments() -> void:
 	_check("stacks wiped every 4 s, applied 1/s for 2 s: 2 − 4 / 8", EnemyAilments.consumed_load(1.0, 2.0, 4.0), 1.5)
 	var with_auto: float = _dps(SkillCalc.compute(Build, 0))
 	_flag("automatic shreds raise the DPS", with_auto > 614489.05 * 1.5)
+	# buffs on you from the skill's hits: Dusk Shroud 60% per use of a melee / throwing attack that hits (Veil of Night,
+	# Shadow Master), Crimson Shroud 30% (Scarlet Stream) up to its 3 stacks
+	var buffs: Dictionary = EnemyAilments.buffs(Build, 0)
+	var dusk: Dictionary = buffs.get(GameData.ailment_id_by_name("DuskShroud"), {})
+	var uses: float = float(SkillCalc.compute(Build, 0)["rates"]["uses"])
+	_check("Dusk Shroud on you = 60% × uses/s × 4 s", float(dusk.get("stacks", 0.0)), 0.6 * uses * 4.0, 0.001)
+	_check("Crimson Shroud on you: its limit of 3", float(buffs.get(GameData.ailment_id_by_name("CrimsonShroud"), {}).get("stacks", 0.0)), 3.0, 0.001)
+	_flag("Dusk Shroud is not an enemy ailment", not auto.has(GameData.ailment_id_by_name("DuskShroud")))
+	for id: int in buffs:
+		Build.set_player_buff(id, 0.0)
+	var bdoc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
+	_check("a buff set to 0 by hand survives the build code", float(bdoc["player"]["buffs"].get(GameData.ailment_id_by_name("DuskShroud"), -1.0)), 0.0)
 	for id: int in auto:
 		Build.set_enemy_ailment(id, 0.0)
 	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 614489.05, 700.0)
@@ -1197,6 +1213,7 @@ func _automatic_enemy_ailments() -> void:
 	var doc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
 	_check("an explicit 0 survives the build code", float(doc["enemy"]["ailments"].get(armour, -1.0)), 0.0)
 	Build.clear_enemy_ailments()
+	Build.clear_player_buffs()
 	# presence: a condition «vs X» counts the share of time the ailment is on the target
 	var e: Dictionary = EnemyAilments.effective({"ailments": {}}, {7: {"stacks": 0.4, "uptime": 0.33}})
 	_check("presence of an automatic ailment = its uptime", Enemy.presence_id(e, 7), 0.33)

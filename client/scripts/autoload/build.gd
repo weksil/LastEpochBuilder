@@ -700,16 +700,23 @@ func reset_player_conditions() -> void:
 	changed.emit()
 
 
-func set_player_buff(ailment_id: int, stacks: int) -> void:
+## Sets the stacks of a buff on you by hand (0 included: «never on me»); the automatic value no longer applies.
+func set_player_buff(ailment_id: int, stacks: float) -> void:
 	var buffs: Dictionary = player_state.get("buffs", {}) as Dictionary
-	if stacks > 0:
-		buffs[ailment_id] = stacks
-	elif ailment_id in buffs:
-		buffs.erase(ailment_id)
+	buffs[ailment_id] = maxf(stacks, 0.0)
 	player_state["buffs"] = buffs
 	changed.emit()
 
 
+## Returns one buff on you to the average kept while the selected skill is used (EnemyAilments.buffs).
+func clear_player_buff(ailment_id: int) -> void:
+	var buffs: Dictionary = player_state.get("buffs", {}) as Dictionary
+	if buffs.erase(ailment_id):
+		player_state["buffs"] = buffs
+		changed.emit()
+
+
+## Returns every buff on you to its automatic value.
 func clear_player_buffs() -> void:
 	player_state["buffs"] = {}
 	changed.emit()

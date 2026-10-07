@@ -702,6 +702,23 @@ hand, so `1 + more × presence` is the expected factor; «per stack» reads the 
 `PRESENT_SHARE` = 0.5, D?). `EnemyAilments.enabled = false` turns it off for tests that compare with in-game measurements
 on a dummy.
 
+**Buffs on you** («Buffs on me»: `Build.player_state.buffs`, an explicit 0 included; `Build.clear_player_buff` returns one
+to automatic) work the same way through `EnemyAilments.buffs(build, slot)`. Gains:
+- positive ailments among the chances of the skill's hits (`AilmentCalc` marks them `self`: section «Buffs on you», never
+  an enemy ailment) — tree models such as Hail of Arrows' Dusk Shroud chance;
+- «on you» prefab ailments per use (`ApplyAilmentToCreator`);
+- PlayerProperty chances (`PP_BUFFS`, summed by `player_property` over passives, the mastery bonus, affixes and unique
+  effects): 102 Dusk Shroud and 107 Crimson Shroud once per use of a melee or throwing attack that hits
+  (`CharacterMutator.OnFirstMeleeOrThrowingHit`), 97 Dusk Shroud per enemy hit taken, 470 per dodge (the attack, interval and
+  dodge chance of the Defense tab);
+- Dusk Shroud per consumed shadow (CreateShadow property 6; shadows consumed per second as in `ShadowCalc.sustain_rows`).
+Stacks = min(Σ gains/s × duration, maxInstances) with the same parallel sources as the enemy ailments.
+`EnemyAilments.apply(build, slot)` / `restore` put both the enemy ailments and the buffs into the build around
+`SkillCalc.compute`, `DefenseCalc.compute` and the character stats panel (the selected skill).
+
+The ailment sections explain the hits per second that roll the chances (`SkillCalc._hit_events_text`): uses/s × per use ×
+hits per use × projectiles hitting the target by the slot's projectile mode (one / average / all).
+
 ## 10. Effective health — `engine/defense_calc.gd` (`class_name DefenseCalc`)
 
 The "Defense" tab, in the spirit of Path of Building's "Maximum hit taken" / "Total EHP": one enemy attack is run through

@@ -17,17 +17,17 @@ const EVENT_NAMES: Dictionary = {
 ## {title, sections: [{title, rows: [{label, text, breakdown}]}], notes: [String]}
 ## Values of Build.skills[slot].projectile_mode: how many projectiles of one use hit the target (default "average").
 const PROJECTILE_MODES: Array[String] = ["one", "average", "all"]
+const PROJECTILE_MODE_NAMES: Dictionary = {"one": "One projectile", "average": "Average", "all": "All projectiles"}
 
 
-## The enemy ailments the calculation sees: the Conditions values plus the averages the skill keeps on the target
-## (EnemyAilments, docs/ENGINE.md §9.11); `auto_ailments` of the result lists the averages.
+## The enemy ailments and the buffs on you the calculation sees: the Conditions values plus the averages kept while the
+## skill is used (EnemyAilments, docs/ENGINE.md §9.11); `auto_ailments` / `auto_buffs` of the result list the averages.
 static func compute(build: Node, slot: int) -> Dictionary:
-	var saved: Dictionary = build.enemy
-	var auto: Dictionary = EnemyAilments.auto(build, slot)
-	build.enemy = EnemyAilments.effective(saved, auto)
+	var saved: Dictionary = EnemyAilments.apply(build, slot)
 	var result: Dictionary = _compute(build, slot)
-	build.enemy = saved
-	result["auto_ailments"] = auto
+	EnemyAilments.restore(build, saved)
+	result["auto_ailments"] = saved["auto"]
+	result["auto_buffs"] = saved["buffs"]
 	return result
 
 
@@ -153,7 +153,8 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		# a maintained DoT is applied by the casts: ailment chances roll per cast, not per damage event
 		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else (uses if is_dot else events)
 		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed, "gain_events": hit_events})
-		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse)
+		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse, {},
+			_hit_events_text(comp, uses, hits, proj, hit_events, is_dot))
 		_tag_applied(ail, str(comp["kind"]), str(comp["name"]))
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
@@ -392,6 +393,20 @@ static func _inputs_result(build: Node, slot: int, inputs: Array[Dictionary]) ->
 
 
 ## Store with the mods meant for this component only (component_mods of the skill, matched by ability name).
+## Where the hits on the target per second of a component come from (the ailment chances roll per hit): uses/s × per use ×
+## hits per use × projectiles hitting the target (the slot's projectile mode); a fixed rate for triggers and minions.
+static func _hit_events_text(comp: Dictionary, uses: float, hits: float, proj: Dictionary, events: float, is_dot: bool) -> String:
+	if is_dot:
+		return LE.t("A maintained DoT rolls its chances once per cast: uses/s %s.") % LE.fmt_num(uses)
+	if float(comp["rate"]) > 0.0 or comp["kind"] == "trigger" or comp["kind"] == "curse_hit":
+		return LE.t("Hits on the target per second: %s (fixed rate of the component).") % LE.fmt_num(events)
+	var text: String = LE.t("Hits on the target per second = uses/s %s × per use %s × hits per use %s") % [
+		LE.fmt_num(uses), LE.fmt_num(float(comp["per_use"])), LE.fmt_num(hits)]
+	if not proj.is_empty() and not comp.get("single_projectile", false):
+		text += LE.t(" × projectiles hitting the target %s (mode «%s»)") % [LE.fmt_num(float(proj["factor"])), LE.t(PROJECTILE_MODE_NAMES.get(str(proj["mode"]), str(proj["mode"])))]
+	return text + " = %s" % LE.fmt_num(events)
+
+
 ## Marks the applications of an AilmentCalc result with the kind and the name of their source (EnemyAilments: parallel
 ## sources of the other bar skills, the breakdown on the Conditions tab).
 static func _tag_applied(ail: Dictionary, kind: String, source: String) -> void:

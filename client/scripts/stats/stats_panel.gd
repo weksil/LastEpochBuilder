@@ -88,9 +88,12 @@ func _collect_items() -> Array[Dictionary]:
 	items.append(_row_item("", tr("Level"), str(Build.level)))
 	items.append(_row_item("", tr("Passive points"), str(Build.spent_points())))
 
+	# the buffs on you of the "Buffs on me" list without a number set take the averages of the selected skill
+	var saved: Dictionary = EnemyAilments.apply(Build, Build.selected_skill)
 	var g: Dictionary = BuildMods.global_store(Build)
 	var global_store: StatStore = g["store"]
 	var char_rows: Array[Dictionary] = CharacterCalc.compute(global_store, Build)
+	EnemyAilments.restore(Build, saved)
 
 	var groups: Dictionary = {}
 	for row: Dictionary in char_rows:

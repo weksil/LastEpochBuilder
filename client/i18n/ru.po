@@ -14788,8 +14788,8 @@ msgstr "Активные тени"
 msgid "Buffs on me (stacks)"
 msgstr "Баффы на мне (стаки)"
 
-msgid "Zero the stacks of all buffs on you"
-msgstr "Обнулить стаки всех баффов на вас"
+msgid "Return all buffs on you to the automatic values of the selected skill"
+msgstr "Вернуть всем баффам на вас автоматические значения выбранного умения"
 
 msgid "buff"
 msgstr "бафф"
@@ -14902,8 +14902,8 @@ msgstr "Шанс эха %s (%s) проверяется раз в %s с, пока
 msgid "Event rate: %s per second."
 msgstr "Частота события: %s в секунду."
 
-msgid "Automatic: the average the selected skill keeps on the target"
-msgstr "Авто: среднее, которое выбранное умение держит на цели"
+msgid "Automatic: the average kept while the selected skill is used"
+msgstr "Авто: среднее, которое держится, пока используется выбранное умение"
 
 msgid "auto"
 msgstr "авто"
@@ -14943,3 +14943,42 @@ msgstr "%s на %d стаках: наложений %s/с / %d = %s ударов
 
 msgid "More damage against rares and bosses (%s)"
 msgstr "Больше урона по редким и боссам (%s)"
+
+msgid "hits on the target"
+msgstr "попаданий по цели"
+
+msgid "%s: stacks on you"
+msgstr "%s: стаков на вас"
+
+msgid "Gains per second: %s × %s = %s; duration %s s%s → on average %s stacks. Used for \"Buffs on me\" unless a number is set on the Conditions tab."
+msgstr "Получений в секунду: %s × %s = %s; длительность %s с%s → в среднем %s стаков. Берётся для «Баффы на мне», если на вкладке «Условия» не задано своё число."
+
+msgid "Buffs on you"
+msgstr "Баффы на вас"
+
+msgid "A maintained DoT rolls its chances once per cast: uses/s %s."
+msgstr "Поддерживаемый DoT бросает шансы раз за применение: применений/с %s."
+
+msgid "Hits on the target per second: %s (fixed rate of the component)."
+msgstr "Попаданий по цели в секунду: %s (собственная частота компонента)."
+
+msgid "Hits on the target per second = uses/s %s × per use %s × hits per use %s"
+msgstr "Попаданий по цели в секунду = применений/с %s × за применение %s × попаданий за применение %s"
+
+msgid " × projectiles hitting the target %s (mode «%s»)"
+msgstr " × снарядов попадает в цель %s (режим «%s»)"
+
+msgid "on use"
+msgstr "при применении"
+
+msgid "melee or throwing attack that hits, %s per use"
+msgstr "попавшая атака ближнего боя или метательная, %s за применение"
+
+msgid "consumed shadows, %s each"
+msgstr "поглощённые тени, %s за каждую"
+
+msgid "Defense tab attack: every %s s, dodge chance %s, %s per %s"
+msgstr "Атака вкладки «Защита»: раз в %s с, шанс уклонения %s, %s за %s"
+
+msgid "hit taken"
+msgstr "полученный удар"

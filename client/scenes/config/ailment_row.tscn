@@ -46,7 +46,7 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-tooltip_text = "Automatic: the average the selected skill keeps on the target"
+tooltip_text = "Automatic: the average kept while the selected skill is used"
 text = "auto"
 
 [node name="StacksSpin" type="SpinBox" parent="HBox"]
