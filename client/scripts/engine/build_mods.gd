@@ -339,6 +339,8 @@ static func _passive_model(target: String) -> Dictionary:
 static func _passive_unmodelled(notes: Array[String], title: String, effect: Dictionary) -> void:
 	if ShadowCalc.handles_effect(effect):
 		return  # CreateShadow properties: counted by the shadow components (ShadowCalc)
+	if MinionCalc.handles_effect(effect):
+		return  # summon properties: minion stats and summon limits (MinionCalc.MINION_PROPERTIES, MinionCount)
 	notes.append(LE.t("Passive \"%s\": %s — not counted") % [title, _effect_label(effect)])
 
 

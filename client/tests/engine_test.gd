@@ -330,6 +330,24 @@ func _minion_limits() -> void:
 	var mg: Dictionary = SkillCalc.compute(Build, 1)
 	_flag("Summon Skeletal Mage: the mage's Dread Bolt is its damage", str(mg["sections"]).contains("Skeleton Mage") and _dps(mg) > 0.0)
 	_check("Skeletal Mages: base limit 2", _type_limit("Skeletal Mages"), 2.0)
+	# Tyrant's Legion: +4% physical / poison penetration for skeletons per point (AbilityProperty 7, 8)
+	var warrior_comp: Dictionary = {}
+	for c: Dictionary in SkillComponents.collect(Build, 0, GameData.get_ability("ss37kl"), BuildMods.skill_store(Build, 0, BuildMods.global_store(Build)["store"])):
+		if str(c["name"]).begins_with("Skeleton Warrior"):
+			warrior_comp = c
+	_check("Tyrant's Legion ×3: skeletons' physical penetration", (warrior_comp["store"] as StatStore).query(LE.PENETRATION, LE.PHYSICAL).added if not warrior_comp.is_empty() else -1.0, 0.12, 0.0001)
+	_flag("Tyrant's Legion: no «not counted» note for the skeleton penetration", not str(BuildMods.global_store(Build)["notes"]).contains("Tyrant"))
+	# minion AI priority: Bone Golem's Big Slam («Maul», 6 s cooldown) when ready, the melee fills the rest, Rampage (after it) never
+	var golem_ab: Dictionary = GameData.get_ability("bg36nl")
+	var golem: Array[Dictionary] = MinionCalc.components(BuildMods.global_store(Build)["store"], golem_ab, [], Build)
+	var names: Array = golem.map(func(c: Dictionary) -> String: return str(c["name"]))
+	var slam: float = -1.0
+	for c: Dictionary in golem:
+		if str(c["name"]).contains("Maul"):
+			slam = float(c["rate"])
+	_check("Big Slam once per 6 s cooldown", slam, 1.0 / 6.0, 0.001)
+	_flag("Bone Golem melee fills the rest of the time", str(names).contains("golemMelee") or names.size() >= 2)
+	_flag("Rampage after the melee is never used", not str(names).contains("Rampage"))
 	Build.set_class(class_id)
 	Build.passives = saved_passives
 	for i: int in range(saved_skills.size()):

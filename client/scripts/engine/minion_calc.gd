@@ -37,6 +37,63 @@ static func _read_json(path: String) -> Variant:
 	return JSON.parse_string(FileAccess.get_file_as_string(path))
 
 
+## AbilityProperties of a summon that are stats of its minions (ability_property_fields_c.json, AbilityStatsMutatorManager
+## fields: addedCritChanceForSkeletons, increasedSummonSkeletonDamage, physicalPenetrationForSkeletons,
+## poisonPenetrationForSkeletons, summonSkeletonAddedArmor, summonSkeletonIncAttackSpeed / IncCastSpeed /
+## IncCooldownRecoverySpeed, addedCritChanceForSkeletonMages, increasedSkeletonMageDamage): summon name ->
+## {id, index, props: [{special, stat (SP name), tags, mod}]}.
+const MINION_PROPERTIES: Dictionary = {
+	"SummonSkeleton": {"id": "summonSkeleton", "index": 120, "props": [
+		{"special": 0, "stat": "CriticalChance", "mod": "added"},
+		{"special": 3, "stat": "Damage", "mod": "increased"},
+		{"special": 7, "stat": "Penetration", "tags": "Physical", "mod": "added"},
+		{"special": 8, "stat": "Penetration", "tags": "Poison", "mod": "added"},
+		{"special": 16, "stat": "Armour", "mod": "added"},
+		{"special": 17, "stat": "AttackSpeed", "mod": "increased"},
+		{"special": 18, "stat": "CastSpeed", "mod": "increased"},
+		{"special": 19, "stat": "IncreasedCooldownRecoverySpeed", "mod": "added"},
+	]},
+	"SummonMage": {"id": "summonMage", "index": 291, "props": [
+		{"special": 0, "stat": "CriticalChance", "mod": "added"},
+		{"special": 5, "stat": "Damage", "mod": "increased"},
+	]},
+}
+
+
+## Minion mods from MINION_PROPERTIES of the summon (passives, items, uniques; ShadowCalc.ability_property sums them).
+static func property_mods(build: Node, summon_name: String) -> Array[StatMod]:
+	var out: Array[StatMod] = []
+	var spec: Dictionary = MINION_PROPERTIES.get(summon_name, {})
+	for prop: Dictionary in spec.get("props", []):
+		var pp: Dictionary = ShadowCalc.ability_property(build, str(spec["id"]), int(spec["index"]), int(prop["special"]))
+		var sp: int = GameData.sp_id(str(prop["stat"]))
+		if float(pp["value"]) == 0.0 or sp < 0:
+			continue
+		out.append(StatMod.make(sp, str(prop["mod"]), float(pp["value"]), LE.tag_mask(str(prop.get("tags", ""))),
+			", ".join(pp["lines"]), 0))
+	return out
+
+
+## The AbilityProperty of a passive / item effect is counted for minions (MINION_PROPERTIES) or summon limits
+## (MinionCount.LIMIT_PROPERTIES).
+static func handles_effect(effect: Dictionary) -> bool:
+	var stat: Variant = effect.get("stat")
+	if not stat is Dictionary or not (stat as Dictionary).has("abilityID"):
+		return false
+	var id: String = str(stat["abilityID"])
+	var special: int = int(str(stat.get("abilityPropertyIndex", "-1")))
+	for spec: Dictionary in MINION_PROPERTIES.values():
+		if str(spec["id"]) == id:
+			for prop: Dictionary in spec["props"]:
+				if int(prop["special"]) == special:
+					return true
+	for list: Array in MinionCount.LIMIT_PROPERTIES.values():
+		for prop: Dictionary in list:
+			if str(prop["id"]) == id and int(prop["special"]) == special:
+				return true
+	return false
+
+
 ## Minion record by actor name ({} if none).
 static func minion_by_actor(actor: String) -> Dictionary:
 	_load()
@@ -105,6 +162,7 @@ static func minion_store(player_store: StatStore, summon_ab: Dictionary, minion:
 	return store
 
 
+## Use duration of a minion ability: its castSpeedOverrides entry, else the ability's own, else the first override.
 static func _use_duration(minion: Dictionary, ability: Dictionary) -> float:
 	var first: float = 0.0
 	for entry: Variant in minion.get("castSpeedOverrides", []):
@@ -115,9 +173,45 @@ static func _use_duration(minion: Dictionary, ability: Dictionary) -> float:
 			return duration
 		if first <= 0.0:
 			first = duration
-	if first > 0.0:
-		return first
-	return float(ability.get("useDuration", 0.0))
+	var own: float = float(ability.get("useDuration", 0.0))
+	return own if own > 0.0 else first
+
+
+## Most uses per second the charges or the cooldown of a minion ability allow (the minion record's ability entry, else
+## abilities.json, plus addedCharges / addedChargeRegen of the minion's mutators aimed at it), sped up by the minion's
+## cooldown recovery; INF when the ability has neither.
+static func _use_cap(minion: Dictionary, ability: Dictionary, store: StatStore) -> float:
+	var rec: Dictionary = ability
+	for entry: Variant in minion.get("abilities", []):
+		if entry is Dictionary and entry.get("ability") == ability.get("name"):
+			rec = entry
+	var charges: float = _num_or_zero(rec.get("maxCharges"))
+	var regen: float = _num_or_zero(rec.get("chargesGainedPerSecond"))
+	var cooldown: float = _num_or_zero(rec.get("cooldown"))
+	var mutators: Variant = minion.get("mutators", {})
+	if mutators is Dictionary:
+		for list: Variant in (mutators as Dictionary).values():
+			for m: Variant in list:
+				if m is Dictionary and m.get("abilityRef") == ability.get("name"):
+					var nz: Dictionary = m.get("nonZero", {})
+					charges += float(nz.get("addedCharges", 0.0))
+					regen += float(nz.get("addedChargeRegen", 0.0))
+	var cap: float = INF
+	if charges > 0.0 and regen > 0.0:
+		cap = regen
+	elif cooldown > 0.0:
+		cap = 1.0 / cooldown
+	if is_inf(cap):
+		return cap
+	var cdr: int = GameData.sp_id("IncreasedCooldownRecoverySpeed")
+	if cdr >= 0:
+		var q: StatQuery = store.query(cdr, int(ability.get("tags", 0)))
+		cap *= maxf(1.0 + q.added + q.increased, 0.0)
+	return cap
+
+
+static func _num_or_zero(v: Variant) -> float:
+	return 0.0 if v == null else float(v)
 
 
 static func _first_damage(rec: Dictionary) -> Dictionary:
@@ -149,6 +243,7 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 		var minion: Dictionary = item[0]
 		var mods: Array = minion_mods.duplicate()
 		mods.append_array(actor_mods.get(str(minion.get("actorName", "")), []))
+		mods.append_array(property_mods(build, summon_name))
 		var store: StatStore = minion_store(player_store, summon_ab, minion, mods)
 		var names: Array = (minion.get("abilityList", []) as Array).duplicate()
 		if names.is_empty():
@@ -156,24 +251,40 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 				if inline is Dictionary:
 					names.append(inline.get("ability", ""))
 		var count: float = float(item[1])
+		# the minion AI (UsingMultipleAbilitiesAI.chooseAbility) takes the first ability of its list that is not on cooldown
+		# and has a charge: abilities with a cooldown / charges are used whenever ready, the first one without takes all
+		# the remaining time, the ones after it are never used (the target is assumed within range of every ability, D?)
+		var free: float = 1.0
+		var order: int = 0
 		for ab_name: Variant in names:
+			if free <= 0.0:
+				break
 			var ability: Dictionary = _abilities.get(str(ab_name), {})
-			var entry: Dictionary = _first_damage(ability)
-			if entry.is_empty():
-				continue
 			var duration: float = _use_duration(minion, ability)
-			if duration <= 0.0:
+			if ability.is_empty() or duration <= 0.0:
 				continue
+			order += 1
 			var tags: int = int(ability.get("tags", 0))
 			var is_cast: bool = (tags & LE.SPELL) != 0 or int(ability.get("speedScaler", 2)) == 3
 			var speed_q: StatQuery = store.query(LE.CAST_SPEED if is_cast else LE.ATTACK_SPEED, tags)
 			var speed: float = (1.0 + speed_q.added) * (1.0 + speed_q.increased) * speed_q.more
 			var per_second: float = speed * 1.1 / duration
+			var cap: float = _use_cap(minion, ability, store)
+			var rate: float = free * per_second
+			if not is_inf(cap):
+				rate = minf(cap, rate)
+			var share: float = rate / per_second if per_second > 0.0 else 0.0
+			free -= share
+			var entry: Dictionary = _first_damage(ability)
+			if entry.is_empty() or rate <= 0.0:
+				continue
+			var limit_text: String = "" if is_inf(cap) else LE.t(", limited to %s/s by its cooldown or charges") % LE.fmt_num(cap)
 			result.append({
 				"name": "%s: %s" % [minion.get("actorName", "?"), ability.get("abilityName", ab_name)],
 				"kind": "minion", "ab": ability, "base": entry, "per_use": 0.0,
-				"rate": per_second * count, "store": store,
-				"note": LE.t("×%s minions, %s attacks/s each") % [LE.fmt_num(count), LE.fmt_num(per_second)],
+				"rate": rate * count, "store": store,
+				"note": LE.t("×%s minions, %s uses/s each (priority %d, %s of the time%s)") % [LE.fmt_num(count), LE.fmt_num(rate),
+					order, LE.fmt_pct(share), limit_text],
 			})
 	return result
 

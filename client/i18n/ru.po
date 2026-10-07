@@ -13718,9 +13718,6 @@ msgstr "× скорость атаки оружия %s = %s"
 msgid "×%s (with the PetResisted tag: ×%s)"
 msgstr "×%s (с тегом PetResisted: ×%s)"
 
-msgid "×%s minions, %s attacks/s each"
-msgstr "×%s миньонов, %s атак/с каждый"
-
 msgid "— empty —"
 msgstr "— пусто —"
 
@@ -15133,3 +15130,9 @@ msgstr "по типам: %s"
 
 msgid "Skeleton warriors and archers"
 msgstr "Скелеты-воины и лучники"
+
+msgid ", limited to %s/s by its cooldown or charges"
+msgstr ", не чаще %s/с из-за перезарядки или зарядов"
+
+msgid "×%s minions, %s uses/s each (priority %d, %s of the time%s)"
+msgstr "×%s миньонов, %s применений/с каждый (приоритет %d, %s времени%s)"

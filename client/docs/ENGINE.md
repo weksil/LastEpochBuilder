@@ -514,7 +514,18 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   rogues with «Adds rogues», at most one warrior with «Max one warrior»; mages, cryomancers, pyromancers, death knights),
   and every member is a minion component with its own record (`MinionCalc.minion_by_actor`). The per-type stat lists
   (`warriorStatList`, `archerStatList`, `rogueStatList`) have the scope `minion:<actor>` (`minion_actor_mods` of the skill
-  store), so they reach only that type. DPS = DPS of one × the number. The models that scale with a minion count
+  store), so they reach only that type. DPS = DPS of one × the number.
+- Ability choice (`MinionCalc.components`): MADStateController gives a minion with two or more ability ranges
+  `UsingMultipleAbilitiesAI`, whose `chooseAbility` takes the first ability of the list that is not on cooldown and has a
+  charge. So an ability with a cooldown or charges (`_use_cap`: the minion record's cooldown / maxCharges /
+  chargesGainedPerSecond plus `addedCharges` / `addedChargeRegen` of the minion's mutators, × the minion's cooldown
+  recovery) is used whenever ready, the first one without takes the rest of the time and the abilities after it are never
+  used; abilities without damage take their time too. Ranges and health thresholds of the prefab's AbilityRangeList are
+  not extracted: the target is assumed within range of every ability (D?).
+- Summon AbilityProperties that are minion stats (`MinionCalc.MINION_PROPERTIES`: Summon Skeleton crit chance,
+  increased damage, physical / poison penetration, armour, attack / cast speed, cooldown recovery; Summon Skeletal Mage
+  crit chance and increased damage) are added to every minion of the summon (`property_mods`); `handles_effect` keeps
+  their passives (and the summon limit properties) out of the «not counted» notes. The models that scale with a minion count
   (`per: input:<key>` of `MinionCount.COUNT_KEYS`: `minions` = all minions but totems, `totems`, `wolves`, `raptors`,
   `crows` = `storm_crows`) read the same card: a number set by hand, else the sum of the summoned types it covers. These
   keys are never per-skill fields (`EffectModels.inputs` drops them), so passives and uniques («per minion you control»,
