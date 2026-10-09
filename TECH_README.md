@@ -68,7 +68,7 @@ build_web.ps1    builds the browser version (see "Web build")
 release/         README.txt shipped inside the release zip
 PLAN.md          verdict, architecture, phases, risks
 BACKLOG.md       deferred tasks
-research/        research notes (01…08: 08_build_optimization.md — the damage optimization method) and data
+research/        research notes (01…09: 08_build_optimization.md — the damage optimization method, 09_dump_navigation.md — map of the decompiled game dump and where to look) and data
   02_assets/     texts and images of the formulas from the in-game guide (PNGs are in Git LFS)
   data/          enums, tables and JSON with game data (data/game/*.json)
 client/          Godot project

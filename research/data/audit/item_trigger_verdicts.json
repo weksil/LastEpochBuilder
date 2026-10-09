@@ -1,0 +1,1676 @@
+{
+ "entries": [
+  {
+   "section": "player",
+   "key": "186",
+   "model": {
+    "kind": "trigger",
+    "ability": "SprigganSummonVines",
+    "on": "second",
+    "chance": "v",
+    "when": [
+     "player:moving"
+    ],
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnUpdateTick: 1.0 s timer (constant 0x184561C18 = 1.0, the same literal RngElement.Roll uses as 100%); each tick Roll(pp), then StateController.IsMoving, then constructAbilityObject(getAbility(227)). The Roll is made every second even when not moving.",
+   "carriers": "Eterras Path"
+  },
+  {
+   "section": "player",
+   "key": "156",
+   "model": {
+    "kind": "trigger",
+    "ability": "AxeThrow",
+    "on": "hit",
+    "chance": "v",
+    "icd": 1,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [
+    "cooldown starts after a success: real rate = r*p/(1+r*p*icd), planner uses min(r*p, 1/icd) (systemic)"
+   ],
+   "facts": "OnHit, no tag filter: pp>0 and axeThrowCooldownIndex>=axeThrowCooldown(1.0, .ctor) then Roll(pp); on success index=0 (cooldown starts only on success).",
+   "carriers": "Riverbend Grasp"
+  },
+  {
+   "section": "player",
+   "key": "661",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonStormSprite",
+    "on": "totem_summon",
+    "chance": 1,
+    "count": 4,
+    "icd": 3,
+    "note": "on totem summon; up to 2 times per 6 sec",
+    "confidence": "D?"
+   },
+   "verdict": "unknown",
+   "issues": [
+    "count=4 per proc UNKNOWN (pp is only tested >0 in OnAbilityUse)"
+   ],
+   "facts": "OnAbilityUse: if stormSpritesOnTotem>0 and ability tags bit14 (Totem; any totem skill, not only Storm Totem) and ProcTimeTracker stormSpritePTT (.ctor limit 2, interval 6.0) -> ONE constructAbilityObject(getAbility(275)). pp is only compared >0 at this site; where the value 4 (sprite count) is used is not established.",
+   "carriers": "Tempest Maw"
+  },
+  {
+   "section": "player",
+   "key": "4",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonBee",
+    "on": "second",
+    "chance": 1,
+    "count": "v",
+    "icd": 10,
+    "note": "v bees per 10 sec",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnUpdateTick: interval=10/beesPer10Seconds; when beesPer10SecondsCooldownIndex>=interval -> index=0 and ONE cast of getAbility(353) at the player (actor alive).",
+   "carriers": "Apiarists Smoker/Suit/Comb, idol affixes p4"
+  },
+  {
+   "section": "player",
+   "key": "28",
+   "model": {
+    "kind": "trigger",
+    "ability": "WaterOrb",
+    "on": "hit",
+    "chance": "v",
+    "icd": 3,
+    "when": [
+     "enemy:boss_or_rare"
+    ],
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit: if pp!=0 and waterOrbCooldownIndex>=3.0 (literal) -> Roll(pp) THEN Actor.isRareOrBoss(target); index=0 only if rare/boss; cast getAbility(92).",
+   "carriers": "Ucenui Sphere"
+  },
+  {
+   "section": "player",
+   "key": "30",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonAreksFlesh",
+    "on": "hit_taken",
+    "chance": 1,
+    "icd": 20,
+    "note": "if after hit health is below 50%",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HitDamageTaken (only when HitEvents.Hit): flag canSummonAreksFlesh and areksFleshRemainingCooldown<=0 and health fraction after the hit <0.5 and not dying: cooldown=areksFleshCooldown(.ctor 20.0), cast getAbility(0x16f=367). No Roll (value is a flag).",
+   "carriers": "Arek Bones"
+  },
+  {
+   "section": "player",
+   "key": "37",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonWeapon",
+    "on": "hit_taken",
+    "chance": "v",
+    "icd": 2,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HitDamageTaken: Roll(pp) and chanceToForgeWeaponWhenHitIndex>=Cooldown(.ctor 2.0), actor not dying: cast getAbility(220).",
+   "carriers": "Sunforged Cuirass"
+  },
+  {
+   "section": "player",
+   "key": "40",
+   "model": {
+    "kind": "trigger",
+    "ability": "VoidRift",
+    "on": "hit",
+    "chance": "v",
+    "icd": 3,
+    "note": "tooltip says 2 sec cooldown, code says 3 sec",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit, no tag filter: Roll(pp) and chanceToCastVoidRiftOnHitIndex>=Cooldown(.ctor 3.0); index=0; cast getAbility(87). The model note 'code says 3 s' is right.",
+   "carriers": "Locket of the Forgotten Knight"
+  },
+  {
+   "section": "player",
+   "key": "42",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireTrail",
+    "on": "hit_taken",
+    "chance": "v",
+    "icd": 5,
+    "note": "only on crit received",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "chance semantics: model chance='v' (0.25-0.35) but the code casts with 100% on every received crit when off the 5 s cooldown"
+   ],
+   "facts": "HitDamageTaken: the condition is only (chanceToCastFireTrailWhenYouAreCrit>0) && (fireTrailIndex>=fireTrailCooldown(.ctor 5.0)) && (hitEvents & HitEvents.Crit(2)); then index=0 and cast getAbility(378). There is NO RngElement.Roll with this field anywhere (all uses are this >0 test and the OnUpdateTick timer). The rolled value is not a probability.",
+   "carriers": "Fiery Dragon Shoes"
+  },
+  {
+   "section": "player",
+   "key": "75",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonMercenary",
+    "on": "second",
+    "chance": 1,
+    "count": "v",
+    "icd": 15,
+    "note": "merc update every 15 sec",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [
+    "count 'v' per 15 s would be wrong for pp>1 (pp is a cap); irrelevant for the only carrier"
+   ],
+   "facts": "OnUpdateTick: mercenaryUpdateRemainingCooldown=15.0 (0x41700000); on expiry, if numberOfMinions(ability 418) < crossbowMercs: ONE constructAbilityObject(getAbility(418)) (no loop seen). pp is a minion cap; the only carrier has pp=1.0 so count 'v'=1 is consistent.",
+   "carriers": "Melvern Writ"
+  },
+  {
+   "section": "player",
+   "key": "32",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "hit_taken",
+    "chance": "v",
+    "icd": 0.3333,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HitDamageTaken: Roll(pp) then ProcTimeTracker fireAuraWhenHitPTT (limit 3, interval 1.0) -> cast getAbility(162) at the player.",
+   "carriers": "Dark Shroud of Cinders; affixes p32"
+  },
+  {
+   "section": "player",
+   "key": "81",
+   "model": {
+    "kind": "trigger",
+    "ability": "AbyssalEchoes",
+    "on": "hit",
+    "chance": "v",
+    "icd": 3,
+    "when": [
+     "enemy:boss_or_rare"
+    ],
+    "note": "also on melee kill",
+    "confidence": "D?"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "wrong condition: model requires boss_or_rare on hit; code = ANY melee hit, plus melee kills (event 'kill' missing)",
+    "melee filter missing (note only)"
+   ],
+   "facts": "OnHit: if (tags & Melee) and chanceToCastAbyssalEchoes..Index>=Cooldown(.ctor 3.0): Roll(pp) -> cast getAbility(118), index=0. There is NO Actor.isRareOrBoss test in this block. OnKill has the same block (tags&Melee, cooldown ready -> Roll(pp) -> cast). The cooldown field is shared by OnHit and OnKill.",
+   "carriers": "Trident of the Last Abyss"
+  },
+  {
+   "section": "player",
+   "key": "76",
+   "model": {
+    "kind": "trigger",
+    "ability": "AlluvionWave",
+    "on": "use",
+    "chance": "v",
+    "icd": 1,
+    "note": "melee hits only",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee tag filter only in note, not skill_any/skill_mask"
+   ],
+   "facts": "OnAbilityObjectCreated (ability object of a melee ability being created; ability tags bit9; useType in {Indirect, Direct, SummonerCastDirect}): Roll(pp) and alluvionWaveOnMeleeAttackIndex>=Cooldown(.ctor 1.0) -> cast getAbility(426).",
+   "carriers": "Alluvion"
+  },
+  {
+   "section": "player",
+   "key": "83",
+   "model": {
+    "kind": "trigger",
+    "ability": "DragonfireNova",
+    "on": "minion_use",
+    "chance": "v",
+    "icd": 0.3333,
+    "note": "on minion ability use, up to 3 times per second",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnAbilityUse: ability tags bit13 (Minion): Roll(pp) then PTT dragonfireNovaPTT (3 per 1.0 s) and hasDragonfireNovaMutator -> nearest minion casts getAbility(427).",
+   "carriers": "Dragonflame Edict"
+  },
+  {
+   "section": "player",
+   "key": "133",
+   "model": {
+    "kind": "trigger",
+    "ability": "Anchor of Oblivion Wave",
+    "on": "hit_taken",
+    "chance": 1,
+    "icd": 2,
+    "note": "if hit leaves you below endurance threshold; you are slowed",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HitDamageTaken: flag castsAnchorOfOblivionWave and remainingAnchorOfOblivionCooldown<=0 and endurance threshold >= health after the hit: cooldown=2.0 (0x40000000), cast getAbility(516). The slow is not verified.",
+   "carriers": "Anchor of Oblivion"
+  },
+  {
+   "section": "player",
+   "key": "134",
+   "model": {
+    "kind": "trigger",
+    "ability": "HeorotUniqueBowIcicle",
+    "on": "hit",
+    "chance": "v",
+    "note": "bow hits only",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "bow filter only in note"
+   ],
+   "facts": "OnHit: pp>0 and (tags bit11 Bow): Roll(pp) -> cast getAbility(518=0x206); no cooldown.",
+   "carriers": "Reign of Winter; affix 969"
+  },
+  {
+   "section": "player",
+   "key": "138",
+   "model": {
+    "kind": "trigger",
+    "ability": "Aurora Amulet Spell",
+    "on": "hit_taken",
+    "chance": 1,
+    "icd": 20,
+    "note": "if hit leaves health below 30%; Haste for v sec and full recovery",
+    "confidence": "D?"
+   },
+   "verdict": "unknown",
+   "issues": [
+    "threshold semantics UNKNOWN"
+   ],
+   "facts": "damageTaken(flat,percent): pp > const and auroraAmuletRemainingCooldown<=0 and a damage-vs-health comparison against constant [0x184561DC]; on success cooldown=20.0 (0x41A00000), Haste for pp seconds, restore to full health next update. The 'below 30%' threshold constant was not decoded.",
+   "carriers": "Aurora Time Glass"
+  },
+  {
+   "section": "player",
+   "key": "153",
+   "model": {
+    "kind": "trigger",
+    "ability": "Tornado",
+    "on": "hit",
+    "chance": "v",
+    "icd": 1.5,
+    "note": "stationary fire tornado; up to 2 times per 3 sec",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit (no tag filter seen): Roll(pp) then PTT fireTornadoOnHitPTT (limit 2, interval 3.0).",
+   "carriers": "Rule of the Simoon"
+  },
+  {
+   "section": "player",
+   "key": "155",
+   "model": {
+    "kind": "trigger",
+    "ability": "LightningBlast",
+    "on": "hit",
+    "chance": "v",
+    "note": "after melee hit with hit; +2 chains",
+    "confidence": "D?"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "event is 'first hit of each melee use', not every hit; melee filter missing"
+   ],
+   "facts": "OnFirstMeleeHit(ability,target,crit,kill,tags,useType) fires once per melee attack use (flag hasHitSinceMeleeAttackLastUsed, reset in OnAbilityUse for tags&Melee): Roll(pp) -> cast getAbility(39).",
+   "carriers": "Battlemage Endeavour"
+  },
+  {
+   "section": "player",
+   "key": "166",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonStormTotem",
+    "on": "hit",
+    "chance": "v",
+    "icd": 8,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [
+    "cooldown starts after a success (systemic)"
+   ],
+   "facts": "OnHit, no tag filter: pp>0 && remainingSummonStormTotemOnHitCooldown<=0 -> Roll(pp); on success (actor not dying) cooldown=8.0 (0x41000000), cast getAbility(195).",
+   "carriers": "Stormcarved Testament"
+  },
+  {
+   "section": "player",
+   "key": "174",
+   "model": {
+    "kind": "trigger",
+    "ability": "Smite",
+    "on": "kill",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnKill: Roll(pp) -> Smite (0xd8=216) at a random nearby enemy; no cooldown, no tag filter.",
+   "carriers": "The Judicator"
+  },
+  {
+   "section": "player",
+   "key": "184",
+   "model": {
+    "kind": "trigger",
+    "ability": "ThornShield",
+    "on": "use",
+    "chance": "v",
+    "note": "on direct use of physical ability",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "Physical tag filter missing (note only)"
+   ],
+   "facts": "OnAbilityUse (direct use): pp>0 and AbilityTooltipTagInfoProvider tags has bit0 (Physical): Roll(pp) -> cast getAbility(24). No cooldown.",
+   "carriers": "Hazelroot"
+  },
+  {
+   "section": "player",
+   "key": "203",
+   "model": {
+    "kind": "trigger",
+    "ability": "DragonSongExplosion",
+    "on": "crit",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnCrit(ability,target): Roll(pp); ability != dragonSongExplosion(602); cast getAbility(602). Also fired from ShieldThrowMutator.ShieldThrowRicochet. No cooldown.",
+   "carriers": "Dragonsong"
+  },
+  {
+   "section": "player",
+   "key": "212",
+   "model": {
+    "kind": "trigger",
+    "ability": "Sacrifice",
+    "on": "minion_death",
+    "chance": "v",
+    "icd": 0.5,
+    "note": "on minion with lowest health",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnMinionDeath: Roll(pp) then PTT sacrificeLowestHealthMinionOnMinionDeathPTT (2 per 1.0 s).",
+   "carriers": "Pact Severance"
+  },
+  {
+   "section": "player",
+   "key": "247",
+   "model": {
+    "kind": "trigger",
+    "ability": "Meteor",
+    "on": "crit",
+    "chance": "v",
+    "scope": "global",
+    "note": "only if mana > 0",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "missing condition: requires the Meteor skill mutator and excludes crits of Meteor itself"
+   ],
+   "facts": "OnCrit: Roll(pp); current mana > 0; hasMeteorMutator (the character must have the Meteor skill) and ability != Meteor (id 7); cast at the nearest enemy. No cooldown.",
+   "carriers": "Harbinger of Stars"
+  },
+  {
+   "section": "player",
+   "key": "253",
+   "model": {
+    "kind": "trigger",
+    "ability": "Shurikens",
+    "on": "block",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnBlock: Roll(pp) -> Shurikens (id 263) at the nearest enemy; no cooldown.",
+   "carriers": "Bos Anarchy"
+  },
+  {
+   "section": "player",
+   "key": "264",
+   "model": {
+    "kind": "trigger",
+    "ability": "Burning Dagger",
+    "on": "hit",
+    "chance": "v",
+    "icd": 0.5,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit: Roll(pp) then PTT chanceToThrowBurningDaggerOnHitPTT (2 per 1.0 s) -> getAbility(489).",
+   "carriers": "Pillagers Gold"
+  },
+  {
+   "section": "player",
+   "key": "265",
+   "model": {
+    "kind": "trigger",
+    "ability": "Burning Dagger",
+    "on": "potion",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "onPotionUse: Roll(pp) -> getAbility(489); no limit.",
+   "carriers": "Pillagers Gold"
+  },
+  {
+   "section": "player",
+   "key": "398",
+   "model": {
+    "kind": "trigger",
+    "ability": "ShieldThrow",
+    "on": "block",
+    "chance": "v",
+    "icd": 0.5,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "DamageTakenFromAttacker (blocked-hit path): Roll(pp) then PTT shieldThrowOnBlockPTT (2 per 1.0 s) -> castAtTargetFromConstructorAfterDelay(ability 267).",
+   "carriers": "Sigeons Reprisal"
+  },
+  {
+   "section": "player",
+   "key": "444",
+   "model": {
+    "kind": "trigger",
+    "ability": "VoidwinterBolt",
+    "on": "hit",
+    "chance": "v",
+    "icd": 0.25,
+    "note": "by Javelin or melee hit; up to 8 times per 2 sec",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee-or-Javelin filter in note only"
+   ],
+   "facts": "OnHit: Roll(pp); then (tags bit9 Melee) OR ability is javelin/fallingJavelin/javelinLightningSpear; PTT voidwinterBoltPTT (8 per 2.0 s) plus minVoidwinterBoltInterval 0.2 s spacing -> getAbility(0x319).",
+   "carriers": "Bane of Winter"
+  },
+  {
+   "section": "player",
+   "key": "448",
+   "model": {
+    "kind": "trigger",
+    "ability": "Smite",
+    "on": "hit",
+    "chance": "v",
+    "icd": 0.3333,
+    "note": "by melee hit; up to 3 times per second",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee filter in note only"
+   ],
+   "facts": "OnHit: Roll(pp); requires (tags & 0x200 Melee); limiter = float[3] of recent cast times (cast allowed if the slot is <= now-1.0) => 3 per 1.0 s; min spacing minSmiteFromMeleeHitInterval 0.15 s; getAbility(0xd8) at a random nearby enemy.",
+   "carriers": "Palarus Sacred Light"
+  },
+  {
+   "section": "player",
+   "key": "457",
+   "model": {
+    "kind": "trigger",
+    "ability": "StaticOrb",
+    "on": "evade",
+    "chance": "v",
+    "note": "on Evade use, costs 90% ability mana",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnEvadeUse: Roll(pp) -> getAbility(782) Static Orb; no cooldown.",
+   "carriers": "Triboelectra"
+  },
+  {
+   "section": "player",
+   "key": "480",
+   "model": {
+    "kind": "trigger",
+    "ability": "Doom Pulse",
+    "on": "cast",
+    "chance": 1,
+    "note": "on direct casting of Fire/Cold/Lightning/Necrotic/Void spell",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "missing 1 s per-element cooldown",
+    "element filter (Fire/Cold/Lightning/Necrotic/Void) in note only"
+   ],
+   "facts": "OnAbilityUse: flag; separate timestamps per element (doomPulseOnFire/Cold/Lightning/Necrotic/VoidSpellUseLastTime): the cast happens if for some element present in the ability tags (8/4/2/0x20/0x10) the last cast of THAT element is >1.0 s old (timestamp updated), then getAbility(0x31d). No Roll (flag).",
+   "carriers": "Celestial Doom"
+  },
+  {
+   "section": "player",
+   "key": "508",
+   "model": {
+    "kind": "trigger",
+    "ability": "Smite",
+    "on": "hit",
+    "chance": "v",
+    "icd": 1.6667,
+    "note": "up to 6 times per 10 sec; resets on potion use",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit: Roll(pp) then PTT smiteOnHitPotionResettablePTT (6 per 10.0 s); the PTT is reset in onPotionUse. getAbility(216).",
+   "carriers": "Orians Descent"
+  },
+  {
+   "section": "player",
+   "key": "526",
+   "model": {
+    "kind": "trigger",
+    "ability": "Glacier",
+    "on": "evade",
+    "chance": "v",
+    "confidence": "D?",
+    "note": "Evade creates Glacier along path"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "StartedEvadeAbilityUse: Roll(pp) -> getAbility(47) along the evade path; no cooldown.",
+   "carriers": "Dominance of the Tundra"
+  },
+  {
+   "section": "player",
+   "key": "558",
+   "model": {
+    "kind": "trigger",
+    "ability": "GatheringStormMelee",
+    "on": "evade",
+    "chance": 1,
+    "confidence": "D?",
+    "note": "After Dodge near enemy"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "AfterUsingEvade: flag; cast Gathering Storm when the evade ends next to an enemy (distance not decoded).",
+   "carriers": "Lightning in a Bottle"
+  },
+  {
+   "section": "player",
+   "key": "570",
+   "model": {
+    "kind": "trigger",
+    "ability": "Wildfire Wisp",
+    "on": "second",
+    "chance": "v",
+    "confidence": "D?",
+    "count": 1,
+    "note": "Chance every second to create fire spirit near burning enemy"
+   },
+   "verdict": "unknown",
+   "issues": [],
+   "facts": "OnUpdateTick: per-second timer, Roll(pp) -> create Wildfire Wisp near an ignited enemy; the ignited-enemy search conditions were not decoded.",
+   "carriers": "Wildfire Embers"
+  },
+  {
+   "section": "player",
+   "key": "577",
+   "model": {
+    "kind": "trigger",
+    "ability": "Vengeance",
+    "on": "movement",
+    "chance": 1,
+    "confidence": "D?",
+    "count": "v",
+    "icd": 6,
+    "note": "After movement skill, up to 2 times per 12 sec"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "AfterMovementSkillUse: PTT attackWithVengeanceAfterUsingAMovementSkillPTT (2 per 12.0 s); pp = number of enemies attacked per proc.",
+   "carriers": "Onslaught of Cerata"
+  },
+  {
+   "section": "player",
+   "key": "579",
+   "model": {
+    "kind": "trigger",
+    "ability": "PrimordialBloodSplatter",
+    "on": "kill",
+    "chance": "v",
+    "confidence": "D",
+    "icd": 0.4,
+    "note": "Up to 5 times per 2 sec"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnKill: Roll(pp) then PTT primordialBloodSplatterOnKillPTT (5 per 2.0 s) -> getAbility(863) with bleed chance = min(20, bleed stacks on target)*primordialBloodBleedStackConversionRatio.",
+   "carriers": "Carrion of Creation"
+  },
+  {
+   "section": "player",
+   "key": "581",
+   "model": {
+    "kind": "trigger",
+    "ability": "FlameWard",
+    "on": "movement",
+    "chance": "v",
+    "confidence": "D?",
+    "icd": 8,
+    "note": "After movement skill in 16 m from boss/rare, up to 2 times per 16 sec"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "AfterMovementSkillUse: Roll(pp), TryGetNearbyValidEnemy (boss/rare within range), PTT (2 per 16.0 s) -> getAbility(336).",
+   "carriers": "Horn of the Bone Wisp"
+  },
+  {
+   "section": "player",
+   "key": "11",
+   "model": {
+    "kind": "trigger",
+    "ability": "AvalancheSnowballAoE",
+    "on": "use",
+    "chance": "v",
+    "icd": 0.3333,
+    "skill_any": "Spell",
+    "note": "Avalanche Boulder on spell cast, up to 3 per second",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnAbilityUse (direct use): tags bit8 Spell: Roll(pp) then PTT ...OnSpellCastPTT (3 per 1.0 s) -> Avalanche boulder (210) at a random enemy within range (needs an enemy nearby).",
+   "carriers": "idol affix p11"
+  },
+  {
+   "section": "player",
+   "key": "12",
+   "model": {
+    "kind": "trigger",
+    "ability": "AvalancheSnowballAoE",
+    "on": "use",
+    "chance": "v",
+    "icd": 0.3333,
+    "skill_any": "Melee",
+    "note": "Avalanche Boulder on melee attack, up to 3 per second",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnAbilityUse: tags bit9 Melee: Roll(pp) then PTT ...OnMeleeAttackPTT (3 per 1.0 s, separate tracker from p11) -> getAbility(210).",
+   "carriers": "idol affix p12"
+  },
+  {
+   "section": "player",
+   "key": "26",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "crit",
+    "chance": "v",
+    "icd": 0.3333,
+    "note": "Fire Aura on crit, up to 3 per second",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnCrit: Roll(pp) then PTT fireAuraOnCritPTT (3 per 1.0 s) -> getAbility(162).",
+   "carriers": "affixes p26"
+  },
+  {
+   "section": "player",
+   "key": "31",
+   "model": {
+    "kind": "trigger",
+    "ability": "ElementalNova",
+    "on": "hit_taken",
+    "chance": "v",
+    "note": "Elemental Nova when hit",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "DamageTakenFromAttacker: Roll(elementalNovaWhenHitChance) (tree), if it fails Roll(pp); either success casts getAbility(12). No cooldown.",
+   "carriers": "affixes p31"
+  },
+  {
+   "section": "player",
+   "key": "44",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "kill",
+    "chance": "v",
+    "icd": 0.3333,
+    "skill_any": "Fire",
+    "note": "Fire Aura on kill with fire skills, up to 3 per second",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnKill: tags bit3 Fire (skill tags): Roll(pp) then PTT fireAuraOnKillPTT (3 per 1.0 s) -> getAbility(162).",
+   "carriers": "affixes p44"
+  },
+  {
+   "section": "player",
+   "key": "49",
+   "model": {
+    "kind": "trigger",
+    "ability": "VoidRift",
+    "on": "kill",
+    "chance": "v",
+    "note": "Void Rift on kill",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnKill: Roll(pp) -> getAbility(87); no cooldown.",
+   "carriers": "affixes p49"
+  },
+  {
+   "section": "player",
+   "key": "54",
+   "model": {
+    "kind": "trigger",
+    "ability": "Smite",
+    "on": "hit",
+    "chance": "v",
+    "icd": 0.2,
+    "skill_any": "Throwing",
+    "note": "Smite on throwing hit, up to 10 per 2 seconds",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "OnHit: tags bit10 Throwing: Roll(pp) -> AttemptSmiteFromThrowingHit: at most 10 casts per 2.0 s (list of cast times; the count within 2.0 s must be <10).",
+   "carriers": "affixes p54"
+  },
+  {
+   "section": "player",
+   "key": "73",
+   "model": {
+    "kind": "trigger",
+    "ability": "PoisonNova",
+    "on": "hit_taken",
+    "chance": "v",
+    "note": "Poison Nova when hit",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HitDamageTaken: Roll(pp) -> getAbility(259); no cooldown.",
+   "carriers": "affixes p73"
+  },
+  {
+   "section": "ability",
+   "key": "61:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonPrimalSerpent",
+    "on": "kill",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "cast ability: the kill path summons summonSerpent (field +0x240); model says SummonPrimalSerpent",
+    "chance = skill-tree base + item (additive); model uses the item only"
+   ],
+   "facts": "SerpentStrikeMutator.OnKill: AbilityAcceptableForEvents(ability) gate; Roll(getSnakeOnKillChance = mutator field snakeOnKillChance(+0x130) + item stat +0x5fc) -> TryToSummonSnake (summonSerpent, +0x240). TryToSummonPrimalSnake (+0x248) is only called from OnMinionHit (boss with ailment 7, stat +0x618).",
+   "carriers": "Vipertail"
+  },
+  {
+   "section": "ability",
+   "key": "270:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonStormTotem",
+    "on": "hit",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "TempestStrikeMutator.OnHit: hit by Tempest Strike (own/variant abilities): Roll(stat +0x110) -> getAbility(0xc3=195); no limiter seen.",
+   "carriers": "Boardman Plank; affix 782"
+  },
+  {
+   "section": "ability",
+   "key": "137:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "RipBlood",
+    "on": "hit",
+    "chance": "v",
+    "icd": 2,
+    "note": "melee hit only; on 5 nearest targets",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "RipBloodMutator.OnHit: dae.ability == Rip Blood (mutator ability +0x88) and (tags & Melee 0x200) and cooldown field +0x1b0<=0: Roll(stat +0x1498) -> cooldown=2.0, cast on 5 targets. Only hits by Rip Blood itself roll.",
+   "carriers": "Eulogy of Blood"
+  },
+  {
+   "section": "ability",
+   "key": "318:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "Maelstrom",
+    "on": "second",
+    "chance": "v",
+    "icd": 3,
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "chance>100% gives extra casts (StochasticRound), not capped at 1",
+    "each cast also costs mana (mana check)"
+   ],
+   "facts": "MaelstromMutator.OnMutatorUpdate: idolAutoCastIndex vs idolAutoCastCooldown(3.0, 0x40400000); on expiry n = RngElement.StochasticRound(stat +0x41c) and for each n: BaseMana.hasEnoughManaToUse -> reduceMana(cost) -> Maelstrom cast.",
+   "carriers": "Eye of Storms; idol affix 221"
+  },
+  {
+   "section": "ability",
+   "key": "517:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "GasparSetSwipe",
+    "on": "cast",
+    "chance": "v",
+    "icd": 3,
+    "note": "on direct fire spell cast",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "shared cooldown across the 3 pieces; model gives each its own 3 s",
+    "2pc set bonus 517:4 (-50% cooldown) not modelled",
+    "routing: entry is bound to ability index 517 but its event comes from other skills' uses"
+   ],
+   "facts": "GasparSetSwipeMutator.onAbilityUse (listens to the player's ability use, not to GasparSetSwipe): Roll(stat +0x2244) for a direct fire spell; ONE shared proc cooldown field (+0x190) = getProcCooldown = 3.0*(1 - stat +0x2250); Gaspar 2pc set bonus = 517:4 = 0.5 => 1.5 s. The cooldown is shared by the Fire/Cold/Lightning pieces.",
+   "carriers": "Gaspar Will; affix 792"
+  },
+  {
+   "section": "ability",
+   "key": "517:3",
+   "model": {
+    "kind": "trigger",
+    "ability": "GasparSetSwipe",
+    "on": "cast",
+    "chance": "v",
+    "icd": 3,
+    "note": "on direct lightning spell cast",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "shared cooldown",
+    "2pc bonus not modelled",
+    "routing"
+   ],
+   "facts": "same as 517:1 for lightning spells (stat +0x224c).",
+   "carriers": "Gaspar Acuity; affix 790"
+  },
+  {
+   "section": "ability",
+   "key": "517:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "GasparSetSwipe",
+    "on": "cast",
+    "chance": "v",
+    "icd": 3,
+    "note": "on direct cold spell cast",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "shared cooldown",
+    "2pc bonus not modelled",
+    "routing"
+   ],
+   "facts": "same as 517:1 for cold spells (stat +0x2248).",
+   "carriers": "Gaspar Insight; affix 791"
+  },
+  {
+   "section": "ability",
+   "key": "339:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "EarthquakeSlam",
+    "on": "movement",
+    "chance": "v",
+    "icd": 2.5,
+    "note": "after non-channelled movement ability, up to 2 times per 5 sec",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "EarthquakeSlamMutator.onReachedMovementSkillDestination(movementCancelled, channelled): channelled==false, Roll(stat +0x150), not cancelled, PTT (2 per 5.0 s).",
+   "carriers": "Bhuldar Wrath"
+  },
+  {
+   "section": "ability",
+   "key": "162:4",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "potion",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "FireAuraMutator.onPotionUse: Roll(stat +0x764) -> Fire Aura cast (needs the Fire Aura mutator = skill present); no limit.",
+   "carriers": "Herkir Vessel"
+  },
+  {
+   "section": "ability",
+   "key": "120:5",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonSkeleton",
+    "on": "minion_death",
+    "chance": "v",
+    "note": "skeleton re-summon after 3 sec",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [
+    "chance adds to the skill-tree resummon chance"
+   ],
+   "facts": "SummonSkeletonMutator.OnSkeletonDeath: chance = mutator field (+464, tree) + item stat (+0x1844); Roll; resummon delayed 3.0 s (0x40400000).",
+   "carriers": "Unique Skeleton Shield, Unbroken Legion; affix 815"
+  },
+  {
+   "section": "ability",
+   "key": "185:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "JadeDust",
+    "on": "hit",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "HarvestMutator.OnHit(ability,target): stat +0x191c != 0 -> Roll -> cast getAbility(0x214=532) at the target; no limit.",
+   "carriers": "Lethal Concentration"
+  },
+  {
+   "section": "ability",
+   "key": "533:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "Smite",
+    "on": "hit",
+    "chance": "v",
+    "when": [
+     "enemy:boss_or_rare"
+    ],
+    "note": "after Multi-hit",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "event is once per use (first hit), model uses every hit"
+   ],
+   "facts": "MultistrikeMutator.OnHit: dae.ability == Multistrike and flag +0x1ac==0; the flag is set to 1 on the first hit; Roll(stat +0x1284); target must be rare/boss. Only the first hit of each use rolls.",
+   "carriers": "Aurelis"
+  },
+  {
+   "section": "ability",
+   "key": "97:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "AxeThrow",
+    "on": "second",
+    "chance": 1,
+    "note": "while Warpath is channelled",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "WarpathMutator.Mutate: bool stat +0xf94 attaches an Axe Throw (getAbility 0xab) emitter to the Warpath object with interval 1/((x*y)/0.1+1); the base 1 s matches 'every second', stat 97:3 speeds it up.",
+   "carriers": "Vortex Pennant"
+  },
+  {
+   "section": "ability",
+   "key": "146:3",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonWraith",
+    "on": "kill",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "SummonWraithMutator.OnKill: Roll(stat +0x1ab4) on any kill by a player ability -> cast Summon Wraith near the corpse; no limit.",
+   "carriers": "The Ghost Maker"
+  },
+  {
+   "section": "ability",
+   "key": "146:4",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonWraith",
+    "on": "kill",
+    "chance": "v",
+    "note": "kill dealt by Wraith",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "SummonWraithMutator.OnMinionKill: only if the killing minion's creator ability == SummonWraith: Roll(stat +0x1ab8) -> cast Summon Wraith.",
+   "carriers": "The Ghost Maker"
+  },
+  {
+   "section": "ability",
+   "key": "370:6",
+   "model": {
+    "kind": "trigger",
+    "ability": "InfernalShade",
+    "on": "kill",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "InfernalShadeMutator.OnKill: Roll(stat +0x14e0) on a player kill -> cast Infernal Shade. Two PTT ctors exist in the class (2 per 5 s, 2 per 1 s); which one gates this cast was not decoded.",
+   "carriers": "The Ghost Maker"
+  },
+  {
+   "section": "ability",
+   "key": "146:5",
+   "model": {
+    "kind": "trigger",
+    "ability": "InfernalShade",
+    "on": "kill",
+    "chance": "v",
+    "note": "kill dealt by Wraith",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "SummonWraithMutator.OnMinionKill: independent Roll(stat +0x1abc) for wraith kills -> getAbility(0x172=370 Infernal Shade).",
+   "carriers": "The Ghost Maker"
+  },
+  {
+   "section": "ability",
+   "key": "294:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "Static",
+    "on": "hit_taken",
+    "chance": "v",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "StaticMutator.WhenHit: Roll(stat +2352) (second roll, after the 15-charges roll) sets the cast flag; no cooldown in this function.",
+   "carriers": "Static Shell"
+  },
+  {
+   "section": "ability",
+   "key": "694:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "second",
+    "chance": "v",
+    "note": "while you stand on Glyph of Dominion",
+    "confidence": "D?"
+   },
+   "verdict": "unknown",
+   "issues": [],
+   "facts": "GlyphOfDominionMutator reads stat +0xa18 (ISIL +2584) per second while standing on the glyph; the roll mechanics were not decoded.",
+   "carriers": "Transcribers Graver"
+  },
+  {
+   "section": "ability",
+   "key": "708:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "LightningBlast",
+    "on": "crit",
+    "chance": "v",
+    "icd": 0.3333,
+    "note": "not more than 3 times per second",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "FrostClawMutator.OnCrit: Roll(stat +2040) then EpochExtensions.TryReplaceLowest(list of 3 floats, now, 1.0) => max 3 per 1.0 s; cast Lightning Blast.",
+   "carriers": "Dragoraths Claw"
+  },
+  {
+   "section": "ability",
+   "key": "261:3",
+   "model": {
+    "kind": "trigger",
+    "ability": "Warlock 04 Chthonic Fissure",
+    "on": "hit",
+    "chance": "v",
+    "note": "vs boss/rare, if no active Fissure",
+    "confidence": "D?"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "SoulFeastMutator.OnHit: Roll(stat +0x19e0) per hit; target rare/boss; only if no Chthonic Fissure exists (list +0x260 empty after RemoveNullEntries); cast getAbility(0x2d2).",
+   "carriers": "Wheel of Torment"
+  },
+  {
+   "section": "ability",
+   "key": "722:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "Flame Whip",
+    "on": "use",
+    "chance": "v",
+    "note": "instead of releasing Fissure spirits",
+    "confidence": "D?"
+   },
+   "verdict": "unknown",
+   "issues": [],
+   "facts": "ChthonicFissureMutator.getTags/Mutate read stat +0x1a70 (ISIL +6768) as a replacement chance for releasing spirits; the branch structure was not decoded.",
+   "carriers": "Spine of Malatros"
+  },
+  {
+   "section": "ability",
+   "key": "61:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonLocust",
+    "on": "hit",
+    "chance": "v",
+    "icd": 0.6667,
+    "note": "not more than 3 times per 2 sec",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "SerpentStrikeMutator.OnHit: Roll(stat +0x600) then locustSpawnPTT (3 per 2.0 s) -> getAbility(0x246=582).",
+   "carriers": "Plague Dragons Tongue"
+  },
+  {
+   "section": "ability",
+   "key": "108:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "Javelin",
+    "on": "use",
+    "chance": "v",
+    "note": "on Riposte",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "RiposteMutator.Mutate (each Riposte use): Roll(stat +0x109c) -> Javelin flag on the riposte object.",
+   "carriers": "Phalanx"
+  },
+  {
+   "section": "ability",
+   "key": "489:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "Burning Dagger Throw",
+    "on": "hit",
+    "chance": "v",
+    "confidence": "D?",
+    "icd": 0.25,
+    "note": "On melee fire hit, doubled for Dancing Strikes, up to 4 times per second"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "chance>100% yields more than one dagger (StochasticRound); model caps at one cast",
+    "melee+fire filter in note only"
+   ],
+   "facts": "BurningDaggerMutator.OnDetailedHit: n = RngElement.StochasticRound(stat +0x1c98, out count); requires (tags & 0x208)==0x208 Melee+Fire; one PTT (4 per 1.0 s, +0x120) then n daggers.",
+   "carriers": "Kuzons Fury; affix 961"
+  },
+  {
+   "section": "ability",
+   "key": "580:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "Falconer 04 Explosive Trap",
+    "on": "second",
+    "chance": 1,
+    "confidence": "D?",
+    "note": "Bladestorm throws Explosive Trap every second, spending mana at 120%"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "BladestormThrowMutator.OnMutatorUpdate: bool +0x1e1d; accumulator >1.0 s per storm; for each active Bladestorm: nearest enemy, mana cost x1.2, Explosive Trap.",
+   "carriers": "Artifice of Devastation"
+  },
+  {
+   "section": "ability",
+   "key": "550:2",
+   "model": {
+    "kind": "trigger",
+    "ability": "EarthquakeSlam",
+    "on": "hit",
+    "chance": 1,
+    "confidence": "D?",
+    "icd": 0.5,
+    "note": "At 30+ Storm Stacks: spends 20 stacks and 50% Earthquake mana"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "UpheavalMutator.OnHit: flag +0x6a1, storm stacks >=30, mana>0, PTT (+0x120, 1 per 0.5 s) -> expend 20 stacks and cast Earthquake (0x153).",
+   "carriers": "Natural Wrath"
+  },
+  {
+   "section": "ability",
+   "key": "78:9",
+   "model": {
+    "kind": "trigger",
+    "ability": "VolcanicOrb",
+    "on": "use",
+    "chance": "v",
+    "confidence": "D?",
+    "icd": 3,
+    "note": "Fire Volcanic Orb on direct fire melee hit or movement"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee/traversal + Fire filters in note only"
+   ],
+   "facts": "VolcanicOrbMutator.OnStartedUsingAbility (direct use of any ability): needs (ability tags bit9 Melee) or the traversal flag; Roll(fire stat +0xa54) and tags&Fire(8); PTT (+0x1b0, 1 per 3.0 s) -> orb.",
+   "carriers": "Keplahans Pyrolith; affix 960"
+  },
+  {
+   "section": "ability",
+   "key": "78:10",
+   "model": {
+    "kind": "trigger",
+    "ability": "VolcanicOrb",
+    "on": "use",
+    "chance": "v",
+    "confidence": "D?",
+    "icd": 3,
+    "note": "Cold Volcanic Orb on direct cold melee hit or movement"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee/traversal + Cold filters in note only"
+   ],
+   "facts": "same for Cold: Roll(stat +0xa58) with tags&Cold(4); separate PTT (+0x1b8, 1 per 3.0 s).",
+   "carriers": "Keplahans Cryolith; affix 959"
+  },
+  {
+   "section": "ability",
+   "key": "209:15",
+   "model": {
+    "kind": "trigger",
+    "ability": "Avalanche",
+    "on": "hit",
+    "chance": 1,
+    "confidence": "D?",
+    "icd": 0.2,
+    "note": "Melee hits trigger Avalanche boulder at target, up to 5 times per second"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee filter in note only"
+   ],
+   "facts": "AvalancheSnowballMutator.OnHitAvalanche: hits by Avalanche (own/+0x1f8) go to the crit branch; otherwise requires (tags&0x200 Melee); flag +0x378; PTT (+0x128, 5 per 1.0 s); no Roll (always).",
+   "carriers": "Heorots Repose"
+  },
+  {
+   "section": "ability",
+   "key": "71:11",
+   "model": {
+    "kind": "trigger",
+    "ability": "Upheaval",
+    "on": "use",
+    "chance": "v",
+    "confidence": "D?",
+    "note": "Only at mana above half; spends 100% Upheaval mana"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "EntanglingRootsMutator.Mutate (each cast): stat +0x5cc>0 and mana fraction >0.5: Roll -> reduceMana(Upheaval cost) and cast Upheaval (0x226).",
+   "carriers": "Caretakers Wrath"
+  },
+  {
+   "section": "ability",
+   "key": "253:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "MarrowShards",
+    "on": "use",
+    "chance": "v",
+    "note": "Marrow Shards when you cast Transplant",
+    "confidence": "D"
+   },
+   "verdict": "unknown",
+   "issues": [],
+   "facts": "TransplantMutator reads stat +0x159c (ISIL +5532) but the Roll site was not decoded.",
+   "carriers": "affixes 317/435 (no unique)"
+  },
+  {
+   "section": "component",
+   "key": "22:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "SwarmOfBees",
+    "on": "hit",
+    "chance": 0.1,
+    "icd": 8,
+    "note": "melee hits only",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee filter in note only"
+   ],
+   "facts": "Keepers_Gloves: onHitEvent, (raw ability.tags & Melee 0x200), literal 0.1 chance, cooldown 8 s (starts ready), getAbility(63).",
+   "carriers": "Keepers Gloves"
+  },
+  {
+   "section": "component",
+   "key": "32:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "TundraNova",
+    "on": "hit",
+    "chance": 0.15,
+    "note": "chance doubled vs undead; cold abilities only",
+    "confidence": "D"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "cold filter and undead doubling in note only"
+   ],
+   "facts": "Frozen_Ire: onHitEventDetailed: Roll(0.15) else vs Undead Roll(0.176471) (=0.30 total); then hasTags(Cold incl. fake tags) and ability != tundraNova; no cooldown; getAbility(315).",
+   "carriers": "Frozen Ire"
+  },
+  {
+   "section": "component",
+   "key": "40:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonSkeletonHarvester",
+    "on": "kill",
+    "chance": 0.2,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "Bone_Harvester: onKillEvent, Roll(0.2), no cooldown, getAbility(122).",
+   "carriers": "Bone Harvester"
+  },
+  {
+   "section": "component",
+   "key": "42:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "PontifexCremate",
+    "on": "kill",
+    "chance": 1,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "Torch_Of_The_Pontifex: every kill (any ability), 100%, getAbility(121).",
+   "carriers": "Torch Of The Pontifex"
+  },
+  {
+   "section": "component",
+   "key": "48:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireShardNova",
+    "on": "hit",
+    "chance": 0.3,
+    "note": "Magma Shards; melee hits only",
+    "confidence": "D?"
+   },
+   "verdict": "wrong",
+   "issues": [
+    "melee filter in note only"
+   ],
+   "facts": "Volcanus: onHitEvent, (ability.tags & Melee 0x200), literal 0.3, no cooldown, getAbility(117).",
+   "carriers": "Volcanus"
+  },
+  {
+   "section": "component",
+   "key": "52:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "SoulEruption",
+    "on": "kill",
+    "chance": 0.2,
+    "note": "every 5th kill per 10 sec",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [
+    "approximation valid for kill rate >= 0.5/s"
+   ],
+   "facts": "Soul_Bastion: each kill adds a 10.0 s charge; at >=5 live charges: Soul Eruption and charges cleared. 'chance 0.2 per kill' equals this only when kills >=5 per 10 s (approximation).",
+   "carriers": "Soul Bastion"
+  },
+  {
+   "section": "component",
+   "key": "54:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "LightningExplosion",
+    "on": "stun",
+    "chance": 1,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "Strong_Mind: Stunned.enterEvent: Lightning Explosion (67) every time you are stunned; no chance/cooldown.",
+   "carriers": "Strong Mind"
+  },
+  {
+   "section": "component",
+   "key": "65:0",
+   "model": {
+    "kind": "trigger",
+    "ability": "SummonIllusoryTree",
+    "on": "hit_taken",
+    "chance": 0.1,
+    "icd": 15,
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "Arboreal_Circuit: player hitDamageEvent, cooldown 15 s (starts ready), literal 0.1, getAbility(62).",
+   "carriers": "Arboreal Circuit"
+  },
+  {
+   "section": "component",
+   "key": "74:1",
+   "model": {
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "second",
+    "chance": 1,
+    "icd": 1,
+    "when": [
+     "input:channelling"
+    ],
+    "input": {
+     "key": "channelling",
+     "label": "You direct ability",
+     "default": true
+    },
+    "note": "per second while directing, free",
+    "confidence": "D"
+   },
+   "verdict": "correct",
+   "issues": [],
+   "facts": "Ignivar_Head: update tick; every >1.0 s while using a channelled ability: Fire Aura (162), no mana/cooldown.",
+   "carriers": "Ignivar Head"
+  }
+ ],
+ "unmodelled": [
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p1",
+   "what": "Chance to cast Lightning Strike when you use a skill that costs >=10 mana (idol affix 214)",
+   "evidence": "CharacterMutator.OnManaSpent, field chanceToCastLightningAtRandomNearbyOnTenManaSpent"
+  },
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p5",
+   "what": "Chance on hit to summon a Thorn Totem (idol 218)",
+   "evidence": "OnHit Roll chanceOnHitToSummonThornTotem, actor not dying, PTT chanceOnHitToSummonThormTotemPTT 1 per 1.0 s, getAbility(58)"
+  },
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p9",
+   "what": "Chance to cast Healing Nova when hit (idol 222)",
+   "evidence": "HitDamageTaken Roll chanceToCastHealingNovaWhenHit, getAbility(76)"
+  },
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p10",
+   "what": "Earthquake Aftershock on melee attack (idol 223)",
+   "evidence": "OnAbilityUse Roll chanceToCastAftershockAtNearbyOnMeleeAttack, requires hasEarthquakeMutator, PTT aftershockOnMeleePTT 10 per 2.0 s"
+  },
+  {
+   "kind": "PlayerProperty idol/equipment",
+   "key": "p29",
+   "what": "Chance to gain Lightning Aegis when hit (idol 243, equipment 395)",
+   "evidence": "HitDamageTaken Roll chanceToCastLightningAegisWhenHit, getAbility(68)"
+  },
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p52",
+   "what": "Divine Bolt when you use a 0 mana skill (idol 275)",
+   "evidence": "OnManaSpent field chanceToCastDivineBoltOn0ManaSkillUse; OnHit also has chanceToCastDivineBoltOnMeleeHit (getAbility 213, PTT) with no PP index found"
+  },
+  {
+   "kind": "PlayerProperty equipment",
+   "key": "p158",
+   "what": "Freezing Concoction on potion use (belt affix 67)",
+   "evidence": "onPotionUse Roll freezingConcoctionOnPotionUseChance, getAbility(549)"
+  },
+  {
+   "kind": "PlayerProperty equipment",
+   "key": "p338",
+   "what": "Bees summoned on potion use (belt affix 714)",
+   "evidence": "onPotionUse, remainingDelayForCastingBeesAfterPotionUse 0.5 s"
+  },
+  {
+   "kind": "PlayerProperty idol",
+   "key": "p539",
+   "what": "Acid Flask on bow hit (idol 937)",
+   "evidence": "OnHit Roll acidFlaskChanceOnBowHit with bt 0Bh (Bow), PTT acidFlaskChanceOnBowHitPTT 1 per 3.0 s, getAbility(50)"
+  },
+  {
+   "kind": "PlayerProperty (no carrier)",
+   "key": "p51 / p66 / p68 / p386 / p428 / p695 / p702",
+   "what": "Manifest Strike on melee hit, Divine Bolt while channelling, Avalanche on spell crit, Caltrops on dodge, Frost Claw on first melee hit, Bloodice shard on cast, Ice Nova on boss/rare hit",
+   "evidence": "CharacterMutator Roll sites exist; no unique or affix carries them (p68 only through the Halvar set)"
+  },
+  {
+   "kind": "Set bonus",
+   "key": "Halvars 3pc (p68)",
+   "what": "100% chance to cast Avalanche Boulder when you crit with a spell",
+   "evidence": "OnCrit Roll chanceToCastAvalancheSnowballOnSpellCrit, avalancheSnowballOnSpellCritIndex>=Cooldown(1.0), tags&256"
+  },
+  {
+   "kind": "Set bonus",
+   "key": "Apiarists 3pc (p634)",
+   "what": "You have a Queen Bee (summon)",
+   "evidence": "OnUpdateTick summonQueenBee"
+  },
+  {
+   "kind": "Set bonus",
+   "key": "Caretakers 2pc (71:13)",
+   "what": "You cast Entangling Roots every 3 seconds while moving",
+   "evidence": "ability property 71:13 exists, no reader decoded"
+  },
+  {
+   "kind": "Set bonus",
+   "key": "Gaspars 2pc (517:4)",
+   "what": "-50% Decimate cooldown (3 s -> 1.5 s); affects the Gaspar triggers",
+   "evidence": "GasparSetSwipeMutator.getProcCooldown = 3.0*(1-stat 0x2250)"
+  },
+  {
+   "kind": "Unique PlayerProperty",
+   "key": "p329",
+   "what": "Box of Hydrae: chance to invoke Hydrahedron on kill with fire skills (9 s cooldown)",
+   "evidence": "OnKill Roll chanceToInvokeHydrahedronOnKillWithFireSkills, timeLastCastHydrahedronOnKill"
+  },
+  {
+   "kind": "Unique PlayerProperty",
+   "key": "p415",
+   "what": "Orians Sun Seal: autocast Sigils of Hope every 6 s above half mana",
+   "evidence": "CharacterMutator field sigilsOfHopeAutocastManaConsumptionAndCooldownPercentage"
+  },
+  {
+   "kind": "Unique PlayerProperty",
+   "key": "p479 / p594 / p591 / p616 / p578",
+   "what": "Flames of Midnight (Wandering Spirit on fire/necrotic/void use), Evolutions End (Rift Beast on boss below 40%, 40 s cooldown), Hydra Arc (repeat bow attack after evade), Tyrants Skull, Chorus of the Anurok (summons)",
+   "evidence": "CharacterMutator flag fields"
+  },
+  {
+   "kind": "Unique AbilityProperty",
+   "key": "468:6 / 114:0 / 216:6 / 146:7 / 405:2 / 17:12 / 782:11 / 689:30",
+   "what": "Penumbra (Shadow Dagger on Lethal Mirage hit), Shadow Beacon (Devouring Orbs), Palarus (Smite at 2 extra targets), Wraithlords Harbour, Phase Point (Black Arrow on dodge), Laups Path (Thorn Totems), Death Dance, Gordian Prism",
+   "evidence": "ability_property_fields entries exist, no model"
+  },
+  {
+   "kind": "SP 127 affixes",
+   "key": "966 / 972",
+   "what": "modelled via CAST_FOR_TAGS_EVENTS {1 hit, 2 crit}: the game consumer of SP 127 and the meaning of specialTag were NOT located in the decomp",
+   "evidence": "UNKNOWN"
+  }
+ ],
+ "systemic": [
+  "RngElement.Roll(chance): chance<=0 false, chance>=1.0 true (ISIL RngElement.Roll, constant 0x184561C18 = 1.0): chance>100% = one guaranteed cast, NOT several (except StochasticRound users: BurningDaggerMutator, MaelstromMutator, FlameReave, GatheringStorm1, RingOfShields, ShadowRend)",
+  "ProcTimeTracker.TryProc: array of N timestamps, a proc is accepted if some slot is older than T; 'N per T' = sliding window, max N/T. Roll happens before TryProc, so only successful rolls take a slot",
+  "'... Cooldown/Index' fields (not PTT): the cooldown starts only after a successful roll; expected rate = 1/(icd + 1/(p*r)), the planner's min(p*r, 1/icd) overestimates near the knee",
+  "Events come from DamageStatsHolder.applyDamage -> AbilityEventListener.DetailedAbilityEvent for abilities created by the player (also item/trigger-cast abilities) -> triggered abilities' hits can themselves roll on-hit/crit/kill triggers",
+  "HitDamageTaken fires only for HitEvents.Hit (not DoT); OnAbilityUse only for the player's own (direct) ability uses, not for abilities constructed by item triggers",
+  "Level of the cast ability: constructAbilityObject -> applyTemporaryStats: ability asset levelScaling x CharacterDataTracker level (player character level) + attributeScaling x player attributes + item/tree stats keyed by the ability id; AbilityMutatorManager.getMutator(ability) supplies skill-tree mods only if a mutator for that ability exists (dictionary lookup, null otherwise). There is no per-item level."
+ ]
+}
