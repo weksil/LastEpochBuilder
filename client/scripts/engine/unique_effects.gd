@@ -7,6 +7,7 @@ const SKILL_KINDS: Array[String] = ["trigger", "component", "minion_stat", "para
 const DERIVED_SOURCES: Array[String] = ["GlobalConditionalDamage(more)", "DamagePerStackOfAilment", "AilmentConversion"]
 ## Trigger events of the character, not of a skill's own uses or hits: such an item trigger is attached to one skill
 ## only (the first filled slot), otherwise every skill on the bar would count it again.
+const BAR_SIZE: int = 5
 const CHARACTER_EVENTS: Array[String] = ["second", "hit_taken", "block", "dodge", "potion"]
 ## Event of SP 127 ChanceToCastForTags by its specialTag.
 const CAST_FOR_TAGS_EVENTS: Dictionary = {1: "hit", 2: "crit"}
@@ -174,7 +175,7 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 ## first filled slot, -1 if the bar is empty.
 static func first_skill_slot(build: Node) -> int:
 	var filled: int = -1
-	for slot: int in range(build.skills.size()):
+	for slot: int in range(mini(build.skills.size(), BAR_SIZE)):  # not the temporary slot of the basic attack (GrantedCalc)
 		var ab: Dictionary = GameData.get_ability(str((build.skills[slot] as Dictionary).get("ability", "")))
 		if ab.is_empty():
 			continue

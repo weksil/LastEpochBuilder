@@ -265,8 +265,8 @@ msgstr "%s: неизвестная база %d / подтип %d, пропуще
 msgid "%s: unknown unique item %d, skipped."
 msgstr "%s: неизвестный уникальный предмет %d, пропущен."
 
-msgid "%s; chance %s × count %s → %s/s"
-msgstr "%s; шанс %s × число %s → %s/с"
+msgid "%s; chance %s%s × count %s → %s/s"
+msgstr "%s; шанс %s%s × число %s → %s/с"
 
 msgid "(%s base + %s) × (1 + %s) × %s = %s%s"
 msgstr "(%s база + %s) × (1 + %s) × %s = %s%s"
@@ -15368,8 +15368,8 @@ msgstr "Учтён в"
 msgid "Damage"
 msgstr "Урон"
 
-msgid "This skill is not on the skill bar. Its damage is already counted inside the calculation of bar slot %d (\"%s\") as a triggered component; this entry is a view of that component with its own breakdown and does not add anything to the totals (nothing is counted twice)."
-msgstr "Этого навыка нет на панели. Его урон уже учтён в расчёте слота панели %d (\"%s\") как компонент от триггера; эта запись — представление этого компонента со своей разбивкой и не добавляет ничего к итогам (ничего не учитывается дважды)."
+msgid "This skill is not on the skill bar. Its damage is already counted inside the calculation of %s (\"%s\") as a triggered component; this entry is a view of that component with its own breakdown and does not add anything to the totals (nothing is counted twice)."
+msgstr "Этого навыка нет на панели. Его урон уже учтён в расчёте %s (\"%s\") как компонент от триггера; эта запись — представление этого компонента со своей разбивкой и не добавляет ничего к итогам (ничего не учитывается дважды)."
 
 msgid "\nThe same skill is also triggered by bar slots: %s (shown for the first one only)."
 msgstr "\nТот же навык также вызывается от слотов панели: %s (показано только для первого)."
@@ -15448,3 +15448,37 @@ msgstr "Имя вашего аккаунта отображается в игр�
 
 msgid " (chance ×2: fewer than %d active)"
 msgstr " (шанс ×2: активно меньше %d)"
+
+msgid "bar slot %d"
+msgstr "слота панели %d"
+
+msgid "the basic attack"
+msgstr "базовой атаки"
+
+msgid "basic attack"
+msgstr "базовая атака"
+
+msgid "Basic attack"
+msgstr "Базовая атака"
+
+msgid "The attack every character has: weapon damage, attack speed of the equipped weapon (a bow attack with a bow). It is not on the skill bar and is not part of any bar skill's DPS. Skill level 1; hits and event rates use defaults."
+msgstr "Атака, которая есть у любого персонажа: урон оружия, скорость атаки экипированного оружия (атака луком при луке). Её нет на панели навыков, и она не входит в DPS навыков панели. Уровень навыка 1; число попаданий и частоты событий — по умолчанию."
+
+msgid " (a chance above 100%% counts as 100%%, was %s)"
+msgstr " (шанс выше 100%% считается за 100%%, был %s)"
+
+msgid " ×2 (%s active %s < %d)"
+msgstr " ×2 (%s активно %s < %d)"
+
+msgid " (no doubling: %s active %s ≥ %d)"
+msgstr " (без удвоения: %s активно %s ≥ %d)"
+
+msgid "estimated"
+msgstr "оценка"
+
+msgid "This skill is not on the skill bar and no bar skill casts it: only the basic attack does, and the basic attack is not part of any bar skill's DPS. The numbers below are not included in the totals of the bar skills."
+msgstr "Этого навыка нет на панели, и ни один навык панели его не вызывает: его вызывает только базовая атака, а она не входит в DPS навыков панели. Числа ниже не включены в итоги навыков панели."
+
+msgid "Active Fire Auras (0 = estimate)"
+msgstr "Активных Fire Aura (0 = оценка)"
+

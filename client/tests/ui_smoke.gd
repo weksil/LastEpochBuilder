@@ -416,7 +416,7 @@ func _ready() -> void:
 		Build.passives.erase(38)
 		Build.changed.emit()
 		await _frames(3)
-		if calcs._virtual_id != "" or skill_select.selected != 0 or skill_select.item_count != 5:
+		if calcs._virtual_id != "" or skill_select.selected != 0 or skill_select.item_count != 7:
 			failed = true
 			print("FAIL: the granted skill stays selected after its source is removed")
 	BuildCodec.apply(Build, kept)

@@ -3966,12 +3966,14 @@
 "kind": "trigger",
 "double_below": 3,
 "input": {
-"default": 1,
+"default": 0,
 "key": "fire_auras",
-"label": "Active Fire Auras"
+"label": "Active Fire Auras (0 = estimate)"
 },
-"note": "On move or melee hits; x2 at low aura count",
-"on": "second"
+"note": "Chance per melee attack; x2 at low aura count",
+"on": "use",
+"skill_any": "Melee",
+"stack_duration": 4
 },
 "CharacterMutator.flowGenOrProcCritMulti": {
 "confidence": "D",

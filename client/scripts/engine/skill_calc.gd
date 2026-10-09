@@ -503,8 +503,26 @@ static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float
 	var chance: float = float(trig.get("chance", 1.0))
 	var count: float = float(trig.get("count", 1.0))
 	var icd: float = float(trig.get("icd", 0.0))
+	# a chance above 100% (an increased or doubled one) is a sure activation per event, not several
+	var chance_note: String = ""
+	if chance > 1.0:
+		chance_note = LE.t(" (a chance above 100%% counts as 100%%, was %s)") % LE.fmt_pct(chance)
+		chance = 1.0
+	if trig.has("double_below"):
+		# the chance doubles while fewer auras than the limit are active: the manual number, else casts per second × stack duration
+		var plain: float = event * chance * count
+		var active: float = float(trig.get("active_manual", 0.0))
+		var estimated: bool = active <= 0.0
+		if estimated:
+			active = plain * float(trig.get("stack_duration", 0.0))
+		if active < float(trig["double_below"]):
+			chance_note += LE.t(" ×2 (%s active %s < %d)") % [LE.t("estimated") if estimated else LE.t("set"), LE.fmt_num(active), int(trig["double_below"])]
+			chance = minf(chance * 2.0, 1.0)
+		else:
+			chance_note += LE.t(" (no doubling: %s active %s ≥ %d)") % [LE.t("estimated") if estimated else LE.t("set"), LE.fmt_num(active), int(trig["double_below"])]
 	var rate: float = event * chance * count
-	var line: String = LE.t("%s; chance %s × count %s → %s/s") % [text, LE.fmt_pct(chance), LE.fmt_num(count), LE.fmt_num(rate)]
+	var line: String = LE.t("%s; chance %s%s × count %s → %s/s") % [text, LE.fmt_pct(chance), chance_note, LE.fmt_num(count), LE.fmt_num(rate)]
+	# the trigger's limit: activations per second are min(limit, possible activations)
 	if icd > 0.0:
 		var cap: float = count / icd
 		if rate > cap:

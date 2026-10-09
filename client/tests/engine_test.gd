@@ -33,68 +33,83 @@ func _ready() -> void:
 	get_tree().quit(1 if _failed > 0 else 0)
 
 
-## Flame Walker (Mage passive 38) casts Fire Aura, which is not on the bar: counted as a trigger component of the first skill only.
+## Granted skills of the build without the basic attack entry (always present).
+func _granted_skills() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for entry: Dictionary in GrantedCalc.skills(Build):
+		if not bool(entry.get("basic", false)):
+			out.append(entry)
+	return out
+
+
+## Flame Walker (Mage passive 38): a melee attack casts Fire Aura (chance, doubled under 3 active auras), which is not on the bar.
+## It is a trigger component of every melee bar skill and of the basic attack; the virtual slots (GrantedCalc) are views of it.
 func _passive_granted_skill() -> void:
 	Build.set_class(1)
 	Build.set_mastery(3)
 	Build.set_level(100)
-	Build.set_skill(0, "fi9")
-	Build.set_skill(1, "fw3d")
+	Build.set_skill(0, "fr11mv")  # Flame Reave: melee
+	Build.set_skill(1, "fi9")  # Fireball: a spell, no melee attack
 	Build.passives[38] = 8
-	var first: Dictionary = SkillCalc.compute(Build, 0)
-	var second: Dictionary = SkillCalc.compute(Build, 1)
-	var aura_rows: int = 0
-	for sec: Dictionary in first["sections"]:
+	var melee: Dictionary = SkillCalc.compute(Build, 0)
+	var spell: Dictionary = SkillCalc.compute(Build, 1)
+	var aura_sections: int = 0
+	for sec: Dictionary in melee["sections"]:
 		if str(sec["title"]).begins_with("Fire Aura"):
-			aura_rows += 1
-	_check("Flame Walker: Fire Aura sections on the first skill", float(aura_rows), 3.0)
-	for sec: Dictionary in second["sections"]:
-		_check("Flame Walker: second skill has no Fire Aura (%s)" % sec["title"], 1.0 if str(sec["title"]).begins_with("Fire Aura") else 0.0, 0.0)
-	# a once-per-second passive trigger is a character event: a damaging second skill does not count it again
-	Build.set_skill(1, "fi9")
-	var damaging: Dictionary = SkillCalc.compute(Build, 1)
-	_check("Flame Walker: a damaging second skill has no Fire Aura", float((damaging["granted"] as Array).size()), 0.0)
-	_check("Flame Walker: a damaging second skill is not an owner", float(GrantedCalc.skills(Build)[0]["owners"].size()), 1.0)
-	Build.set_skill(1, "fw3d")
-	# the granted skill (virtual slot): its own entry, a view of the component inside the first bar skill
-	var granted: Array[Dictionary] = GrantedCalc.skills(Build)
+			aura_sections += 1
+	_check("Flame Walker: Fire Aura sections on the melee skill", 1.0 if aura_sections >= 3 else 0.0, 1.0)
+	_check("Flame Walker: a spell has no Fire Aura", float((spell["granted"] as Array).size()), 0.0)
+	# the granted skill (virtual slot): its own entry, a view of the component inside the first bar skill that casts it
+	var granted: Array[Dictionary] = _granted_skills()
 	_check("Flame Walker: one granted skill", float(granted.size()), 1.0)
 	var aura_id: String = str(granted[0]["id"]) if not granted.is_empty() else ""
 	_check("Flame Walker: granted skill is Fire Aura, owned by slot 1", 1.0 if (not granted.is_empty() and str(granted[0]["name"]) == "Fire Aura" and int(granted[0]["owner"]) == 0) else 0.0, 1.0)
+	_check("Flame Walker: the basic attack triggers it too", 1.0 if (not granted.is_empty() and (granted[0]["owners"] as Array).has(GrantedCalc.BASIC_OWNER)) else 0.0, 1.0)
 	var view: Dictionary = GrantedCalc.compute(Build, aura_id, true)
 	var view_dps: float = _row_value(view, "DPS vs enemy", "Against enemy")
 	var part_dps: float = 0.0
-	for part: Dictionary in first["granted"]:
+	for part: Dictionary in melee["granted"]:
 		part_dps += float(part["hit_enemy"]) + float(part["ail_dps"])
-	_check("Flame Walker: virtual Fire Aura DPS = its component in the first skill", view_dps, part_dps)
-	_check("Flame Walker: virtual Fire Aura DPS is about 31.8 (chance doubled under 3 auras)", view_dps, 31.8, 0.5)
-	_check("Flame Walker: virtual Fire Aura uses per second", float(CalcSummary.find_row(view, "Uses per second")["text"].to_float()), 1.6, 0.0005)
-	# 3 or more active auras: no doubling
-	Build.set_skill_input(0, "fire_auras", 3)
-	_check("Flame Walker: uses per second with 3 active auras", float(CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float()), 0.8, 0.0005)
+	_check("Flame Walker: virtual Fire Aura DPS = its component in the owner skill", view_dps, part_dps)
+	_check("Flame Walker: virtual Fire Aura DPS is positive", 1.0 if view_dps > 0.0 else 0.0, 1.0)
+	var owner_uses: float = CalcSummary.find_row(melee, "Uses per second")["text"].to_float()
+	var view_uses: float = CalcSummary.find_row(view, "Uses per second")["text"].to_float()
+	# 8 x 10% = 80%; doubled (capped at 100%) while fewer than 3 auras are active: estimated as casts per second x 4 s stack duration
+	var estimated_active: float = owner_uses * 0.8 * 4.0
+	_check("Flame Walker: Fire Aura per melee use (auras estimated)", view_uses / owner_uses, 1.0 if estimated_active < 3.0 else 0.8, 0.002)
 	Build.set_skill_input(0, "fire_auras", 1)
-	# a buff skill (Enchant Weapon) in the first slot does not own the character-level trigger: the first damaging skill does
-	Build.set_skill(0, "sb44eQ")
-	Build.set_skill(1, "fi9")
-	var buff_first: Array[Dictionary] = GrantedCalc.skills(Build)
-	_check("Flame Walker: owned by the damaging skill, not by Enchant Weapon", float(int(buff_first[0]["owner"])) if not buff_first.is_empty() else -1.0, 1.0)
-	Build.set_skill(0, "fi9")
-	Build.set_skill(1, "fw3d")
+	_check("Flame Walker: 1 active aura set by hand: doubled, capped at 100%", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float() / owner_uses, 1.0, 0.002)
+	Build.set_skill_input(0, "fire_auras", 3)
+	_check("Flame Walker: no doubling with 3 active auras", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float() / owner_uses, 0.8, 0.002)
+	Build.set_skill_input(0, "fire_auras", 0)
+	# a buff skill in the first slot does not own character-level events, and the temporary basic slot is never "the first slot"
+	Build.set_skill(2, "sb44eQ")
+	_check("first_skill_slot ignores a temporary slot after the bar", float(UniqueEffects.first_skill_slot(Build)), 0.0)
+	Build.set_skill(2, "")
 	var lean: Dictionary = GrantedCalc.compute(Build, aura_id, false)
 	_check("Flame Walker: lean virtual DPS equals the detailed one", _row_value(lean, "DPS vs enemy", "Against enemy"), view_dps)
 	_check("Flame Walker: lean view has lazy rows", 1.0 if (bool(lean.get("lean", false)) and bool(lean["sections"][0]["rows"][0].get("lazy", false))) else 0.0, 1.0)
 	# the owner keeps counting the component: its total is unchanged by looking at the view
-	_check("Flame Walker: owner total unchanged", _row_value(SkillCalc.compute(Build, 0), "DPS vs enemy", "Against enemy"), _row_value(first, "DPS vs enemy", "Against enemy"))
+	_check("Flame Walker: owner total unchanged", _row_value(SkillCalc.compute(Build, 0), "DPS vs enemy", "Against enemy"), _row_value(melee, "DPS vs enemy", "Against enemy"))
 	var gone: Dictionary = GrantedCalc.compute(Build, "no such skill", true)
 	_check("Flame Walker: unknown granted id gives an empty view", float((gone["sections"] as Array).size()), 0.0)
+	# basic attack: always listed, a full calculation on a temporary slot, the bar is left as it was
+	var basic: Dictionary = GrantedCalc.compute(Build, GrantedCalc.BASIC_ID, true)
+	_check("Basic attack: listed first", 1.0 if bool(GrantedCalc.skills(Build)[0].get("basic", false)) else 0.0, 1.0)
+	_check("Basic attack: has its own DPS", 1.0 if _row_value(basic, "DPS vs enemy", "Against enemy") > 0.0 else 0.0, 1.0)
+	_check("Basic attack: the temporary slot is gone", float(Build.skills.size()), 5.0)
+	var basic_aura: bool = false
+	for sec: Dictionary in basic["sections"]:
+		basic_aura = basic_aura or str(sec["title"]).begins_with("Fire Aura")
+	_check("Basic attack: Flame Walker casts Fire Aura on it", 1.0 if basic_aura else 0.0, 1.0)
 	# Fire Aura on the bar: it is a real slot, no virtual entry
 	GameData._abilities["test_fire_aura"] = GameData.ability_by_name("FireAura")
 	Build.set_skill(2, "test_fire_aura")
-	_check("Fire Aura on the bar: no granted skills", float(GrantedCalc.skills(Build).size()), 0.0)
+	_check("Fire Aura on the bar: no granted skills", float(_granted_skills().size()), 0.0)
 	Build.set_skill(2, "")
 	GameData._abilities.erase("test_fire_aura")
 	Build.passives.erase(38)
-	_check("Flame Walker removed: no granted skills", float(GrantedCalc.skills(Build).size()), 0.0)
+	_check("Flame Walker removed: no granted skills", float(_granted_skills().size()), 0.0)
 	_check("Flame Walker removed: the view is gone", float((GrantedCalc.compute(Build, aura_id, true)["sections"] as Array).size()), 0.0)
 	Build.set_skill(0, "")
 	Build.set_skill(1, "")

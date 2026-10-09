@@ -590,7 +590,16 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   a `SkillCalc.compute`-shaped view built from the owner's result: the same rate (event × chance × count, icd cap), the same
   numbers, level 1 (no level of its own), and no new damage — the owner keeps counting the component, so nothing is counted
   twice. The selection is kept by the tab (never in `Build.selected_skill`, which stays a bar slot). Character events (`second`,
-  `hit_taken`, …) of passives are counted in the first filled slot only.
+  `hit_taken`, …) of passives are counted in the first slot whose skill deals damage by itself only (`UniqueEffects.first_skill_slot`;
+  a skill's own events `use` / `hit` / `crit` count in every skill). The rate is `event × min(1, chance) × count`, capped at
+  `count / icd` (min(limit, possible activations)); a chance above 100% is a sure activation, not several. A trigger limited to
+  skill tags (`skill_any`, Flame Walker: Melee) is counted in the skills with the tag. `double_below` (Flame Walker: the chance
+  doubles under 3 active Fire Auras): the number is the skill input `fire_auras` or, at 0, the undoubled casts per second ×
+  `stack_duration` (4 s, ability description).
+- The basic attack (`BasicPlayerAttack`, ba1; `BasicPlayerBowAttack` with a bow) is always the first virtual slot: a full
+  calculation on a temporary slot after the bar (`GrantedCalc.with_basic_slot`, removed afterwards; level 1, default hits and
+  event rates). It is not part of any bar skill's DPS; skills it triggers (Flame Walker casts on a melee attack) are listed as
+  granted skills owned by the basic attack when no bar skill casts them.
 
 ### 9.7 Skill buffs on the character and passives on skill mutators
 - **Scope `global`** (§9.1; `stat`, `stat_list`, buffs on use, `statsInForm`, `statsWhileActive` …): `_add_scoped` puts the

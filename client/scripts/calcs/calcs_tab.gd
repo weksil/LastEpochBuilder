@@ -110,7 +110,7 @@ func _populate_skill_options() -> void:
 				skill_name = GameData.display_name(ability)
 		names.append("%d. %s" % [i + 1, skill_name])
 	for entry: Dictionary in _granted:
-		names.append(tr("%s (granted)") % str(entry["name"]))
+		names.append(GrantedCalc.label(entry))
 	var key: String = "|".join(names) + "#" + ",".join(granted_ids)
 	if key != _skill_options_key:
 		_skill_options_key = key

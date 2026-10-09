@@ -373,7 +373,7 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 				result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
-## Triggers written into the character mutator by passives (Flame Walker: Fire Aura each second): the cast skill is not on
+## Triggers written into the character mutator by passives (Flame Walker: Fire Aura on a melee attack): the cast skill is not on
 ## the bar, so the triggers join the skill's own ones. Events of the character (not the skill's own uses and hits) are counted in the first
 ## filled slot only, otherwise every skill on the bar would count them again; a use triggered by another skill is not a
 ## character event.
@@ -390,6 +390,11 @@ static func _add_passive_triggers(build: Node, slot: int, result: Dictionary) ->
 			if str(model.get("kind", "")) != "trigger":
 				continue
 			var on: String = str(model.get("on", "use"))
+			# a trigger limited to skills with a tag (Flame Walker: melee attacks)
+			if model.has("skill_any"):
+				var cast_tags: int = int(GameData.ability_by_name(str(result.get("main_name", ""))).get("tags", 0))
+				if (cast_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
+					continue
 			if (UniqueEffects.CHARACTER_EVENTS.has(on) or not SkillCalc.OWN_EVENTS.has(on)) and slot != UniqueEffects.first_skill_slot(build):
 				continue
 			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
@@ -990,13 +995,16 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		"trigger":
 			# a chance that grows with a stat (Chaos Rip: per 1 max mana) is the model value with its «per» source
 			var chance: float = x if model.has("per") else _num(model.get("chance", 1.0), v)
-			# Flame Walker: the chance doubles while fewer than «double_below» of the skill's own auras are active (input)
-			if model.has("double_below") and model.has("input") and EffectModels.source("input:" + str(model["input"]["key"]), ctx, model) < float(model["double_below"]):
-				chance *= 2.0
-				title += LE.t(" (chance ×2: fewer than %d active)") % int(model["double_below"])
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
 				"chance": chance, "count": _num(model.get("count", 1.0), v), "single_projectile": bool(model.get("single_projectile", false)),
 				"icd": float(model.get("icd", 0.0)), "node": title})
+			# Flame Walker: the chance doubles while fewer than «double_below» auras are active (SkillCalc.trigger_rate); the number
+			# is the input (0 = estimate: undoubled casts per second × «stack_duration»)
+			if model.has("double_below"):
+				var last: Dictionary = result["triggers"][-1]
+				last["double_below"] = float(model["double_below"])
+				last["stack_duration"] = float(model.get("stack_duration", 0.0))
+				last["active_manual"] = EffectModels.source("input:" + str(model["input"]["key"]), ctx, model) if model.has("input") else 0.0
 		"component":
 			result["components"].append({"ability": str(model["ability"]), "count": _num(model.get("count", 1.0), v), "node": title})
 		"flag":
