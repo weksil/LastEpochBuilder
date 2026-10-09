@@ -3964,6 +3964,12 @@
 "chance": "v",
 "confidence": "D?",
 "kind": "trigger",
+"double_below": 3,
+"input": {
+"default": 1,
+"key": "fire_auras",
+"label": "Active Fire Auras"
+},
 "note": "On move or melee hits; x2 at low aura count",
 "on": "second"
 },

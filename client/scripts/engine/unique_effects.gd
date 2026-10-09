@@ -169,12 +169,20 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			store.add(mod)
 
 
-## First slot of the bar that holds a skill (-1 if none): character-event item triggers are counted there.
+## Slot of the bar that character-level triggers (item and passive triggers on "second", hit taken, kill …) are counted in:
+## the first skill that deals damage by itself (a buff such as Enchant Weapon would only show them as a side effect), else the
+## first filled slot, -1 if the bar is empty.
 static func first_skill_slot(build: Node) -> int:
+	var filled: int = -1
 	for slot: int in range(build.skills.size()):
-		if str((build.skills[slot] as Dictionary).get("ability", "")) != "":
+		var ab: Dictionary = GameData.get_ability(str((build.skills[slot] as Dictionary).get("ability", "")))
+		if ab.is_empty():
+			continue
+		if filled < 0:
+			filled = slot
+		if ab.get("primaryDamage") is Dictionary and not (ab["primaryDamage"] as Dictionary).is_empty():
 			return slot
-	return -1
+	return filled
 
 
 ## Stat model that belongs to the skill (minion or damage-component scope), not to the character.

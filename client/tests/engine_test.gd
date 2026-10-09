@@ -67,8 +67,19 @@ func _passive_granted_skill() -> void:
 	for part: Dictionary in first["granted"]:
 		part_dps += float(part["hit_enemy"]) + float(part["ail_dps"])
 	_check("Flame Walker: virtual Fire Aura DPS = its component in the first skill", view_dps, part_dps)
-	_check("Flame Walker: virtual Fire Aura DPS is about 15.9", view_dps, 15.9, 0.5)
-	_check("Flame Walker: virtual Fire Aura uses per second", float(CalcSummary.find_row(view, "Uses per second")["text"].to_float()), 0.8, 0.0005)
+	_check("Flame Walker: virtual Fire Aura DPS is about 31.8 (chance doubled under 3 auras)", view_dps, 31.8, 0.5)
+	_check("Flame Walker: virtual Fire Aura uses per second", float(CalcSummary.find_row(view, "Uses per second")["text"].to_float()), 1.6, 0.0005)
+	# 3 or more active auras: no doubling
+	Build.set_skill_input(0, "fire_auras", 3)
+	_check("Flame Walker: uses per second with 3 active auras", float(CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float()), 0.8, 0.0005)
+	Build.set_skill_input(0, "fire_auras", 1)
+	# a buff skill (Enchant Weapon) in the first slot does not own the character-level trigger: the first damaging skill does
+	Build.set_skill(0, "sb44eQ")
+	Build.set_skill(1, "fi9")
+	var buff_first: Array[Dictionary] = GrantedCalc.skills(Build)
+	_check("Flame Walker: owned by the damaging skill, not by Enchant Weapon", float(int(buff_first[0]["owner"])) if not buff_first.is_empty() else -1.0, 1.0)
+	Build.set_skill(0, "fi9")
+	Build.set_skill(1, "fw3d")
 	var lean: Dictionary = GrantedCalc.compute(Build, aura_id, false)
 	_check("Flame Walker: lean virtual DPS equals the detailed one", _row_value(lean, "DPS vs enemy", "Against enemy"), view_dps)
 	_check("Flame Walker: lean view has lazy rows", 1.0 if (bool(lean.get("lean", false)) and bool(lean["sections"][0]["rows"][0].get("lazy", false))) else 0.0, 1.0)

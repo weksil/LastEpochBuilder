@@ -879,7 +879,7 @@ static func _apply_field_models(target: String, v: float, source: String, title:
 ## does (not its scope, note or confidence).
 const SIGNATURE_KEYS: Array[String] = ["stat", "mod", "tags", "param", "resource", "ability", "when", "text", "label", "count", "chance",
 	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "inverse", "at_least", "below",
-	"base_cooldown", "single_projectile", "v_caps_source"]
+	"base_cooldown", "single_projectile", "v_caps_source", "double_below"]
 
 
 static func _model_signature(m: Dictionary) -> String:
@@ -990,6 +990,10 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		"trigger":
 			# a chance that grows with a stat (Chaos Rip: per 1 max mana) is the model value with its «per» source
 			var chance: float = x if model.has("per") else _num(model.get("chance", 1.0), v)
+			# Flame Walker: the chance doubles while fewer than «double_below» of the skill's own auras are active (input)
+			if model.has("double_below") and model.has("input") and EffectModels.source("input:" + str(model["input"]["key"]), ctx, model) < float(model["double_below"]):
+				chance *= 2.0
+				title += LE.t(" (chance ×2: fewer than %d active)") % int(model["double_below"])
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
 				"chance": chance, "count": _num(model.get("count", 1.0), v), "single_projectile": bool(model.get("single_projectile", false)),
 				"icd": float(model.get("icd", 0.0)), "node": title})

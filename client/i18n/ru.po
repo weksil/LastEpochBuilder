@@ -15445,3 +15445,6 @@ msgstr "%s — %s, %s, уровень %d"
 
 msgid "Your account name is shown under the health bar above your character in game."
 msgstr "Имя вашего аккаунта отображается в игре под полосой здоровья над персонажем."
+
+msgid " (chance ×2: fewer than %d active)"
+msgstr " (шанс ×2: активно меньше %d)"
