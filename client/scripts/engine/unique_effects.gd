@@ -153,7 +153,9 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			var ctx: Dictionary = result["ctx"]
 			var prev_slot: Variant = ctx.get("item_slot", "")
 			ctx["item_slot"] = e["slot"]
+			ctx["character"] = e["ability_index"] < 0  # PlayerProperty / affix casts are made by the character
 			BuildMods._apply_model(model, e["pp"], e["label"], e["label"], result)
+			ctx.erase("character")
 			ctx["item_slot"] = prev_slot
 			continue
 		var ctx2: Dictionary = {"build": build, "store": store, "slot": -1, "item_slot": e["slot"]}

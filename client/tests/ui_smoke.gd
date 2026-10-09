@@ -389,7 +389,7 @@ func _ready() -> void:
 	var kept_slot: int = Build.selected_skill
 	Build.set_class(1)
 	Build.set_mastery(3)
-	Build.set_skill(0, "fi9")
+	Build.set_skill(0, "fr11mv")  # a Melee skill: Flame Walker casts while it is in use
 	Build.passives[38] = 8
 	Build.selected_skill = 0
 	Build.changed.emit()
@@ -397,7 +397,7 @@ func _ready() -> void:
 	var skill_select: OptionButton = calcs.get_node("%SkillSelect")
 	var granted_index: int = -1
 	for i in range(skill_select.item_count):
-		if skill_select.get_item_metadata(i) is String and skill_select.get_item_metadata(i) != "":
+		if skill_select.get_item_metadata(i) is String and skill_select.get_item_metadata(i) == "FireAura":
 			granted_index = i
 	if granted_index < 0:
 		failed = true

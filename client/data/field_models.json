@@ -216,6 +216,7 @@
 "ability": "AcidFlask",
 "chance": "v",
 "confidence": "D",
+"cooldown": true,
 "icd": 5,
 "kind": "trigger",
 "note": "Flask falls under you on hit taken",
@@ -821,6 +822,7 @@
 "ability": "LightningBlast",
 "chance": 1,
 "confidence": "D?",
+"cooldown": true,
 "icd": 2,
 "kind": "trigger",
 "note": "No more than once per 2 s, spends mana",
@@ -1384,7 +1386,9 @@
 "ability": "Aura of Decay Cold Retaliation",
 "chance": "v",
 "confidence": "D",
+"icd": 4,
 "kind": "trigger",
+"note": "At most 1 per 4 s (ProcTimeTracker)",
 "on": "hit_taken"
 },
 "AuraOfDecayMutator.incFesterGainWhileChanneling": {
@@ -2497,9 +2501,11 @@
 "BoneCurseMutator.boneCurseOnHitForDurationOnCast": {
 "ability": "BoneCurse",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 1,
 "kind": "trigger",
-"note": "Only during window after direct use",
+"note": "Only during the window after a direct use; 1 s re-cast cooldown that starts after a cast",
 "on": "hit"
 },
 "BoneCurseMutator.boneEruptionDelay": {
@@ -2807,6 +2813,7 @@
 "ability": "BoneCurse",
 "chance": 1,
 "confidence": "D",
+"cooldown": true,
 "icd": 6,
 "kind": "trigger",
 "on": "hit",
@@ -2863,10 +2870,10 @@
 "ChaosBoltsMutator.harvestChanceOnHitPerDex": {
 "ability": "Harvest",
 "chance": "v",
-"confidence": "D?",
-"icd": 1,
+"confidence": "D",
+"icd": 0.333,
 "kind": "trigger",
-"note": "Chance = Dexterity × value, no more than once per second",
+"note": "Chance = Dexterity x value; at most 3 per second",
 "on": "hit",
 "per": "attr:dex"
 },
@@ -3278,11 +3285,14 @@
 "CharacterMutator.arcaneLightningTargets": {
 "ability": "ArcaneLightning",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
 "count": "v",
+"icd": 5,
 "kind": "trigger",
-"note": "Number of Arcane Lightning uses",
-"on": "cast"
+"note": "On a hit of a Lightning skill; one 5 s cooldown that starts after a cast; count = number of targets",
+"on": "hit",
+"skill_any": "Lightning"
 },
 "CharacterMutator.arcaneMomentumStatsPerStack": {
 "confidence": "D",
@@ -3629,10 +3639,12 @@
 "CharacterMutator.chanceToCastDivineBoltOnMeleeHit": {
 "ability": "DivineBolt",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"icd": 0.5,
 "kind": "trigger",
-"note": "Only on melee hit",
-"on": "hit"
+"note": "Melee hit only; at most 2 per second; the real chance is value x (1 + increasedChanceToCastDivineBoltOnMeleeHit)",
+"on": "hit",
+"skill_any": "Melee"
 },
 "CharacterMutator.chanceToCastLightningEverySecondWhileChannelling": {
 "ability": "PrimalLightning",
@@ -3652,10 +3664,13 @@
 "CharacterMutator.chanceToCastLightningOnCast": {
 "ability": "PrimalLightning",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 1,
 "kind": "trigger",
-"note": "Storm Bolt on spell use",
-"on": "cast"
+"note": "Storm Bolt on a Spell skill use; 1 s cooldown that starts after a cast (shared with the channelling tick)",
+"on": "cast",
+"skill_any": "Spell"
 },
 "CharacterMutator.chanceToCastLightningOnMeleeHit": {
 "ability": "PrimalLightning",
@@ -3747,16 +3762,21 @@
 "CharacterMutator.chanceToSummonHealingTotemWhenHit": {
 "ability": "SummonHealingTotem",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 5,
 "kind": "trigger",
+"note": "5 s cooldown that starts after a summon",
 "on": "hit_taken"
 },
 "CharacterMutator.chanceToSummonVineOnKill": {
 "ability": "SummonVineAtTarget",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 2,
 "kind": "trigger",
-"note": "Vine on kill",
+"note": "Vine on kill; 2 s cooldown that starts after a cast",
 "on": "kill"
 },
 "CharacterMutator.chanceToVoidAbsorbOnKill": {
@@ -3954,10 +3974,12 @@
 "CharacterMutator.fireAuraChanceOnFirstMeleeHit": {
 "ability": "FireAura",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"icd": 0.333,
 "kind": "trigger",
-"note": "Only first melee hit",
-"on": "hit"
+"note": "Once per Melee skill use (first hit); at most 3 per second",
+"on": "use",
+"skill_any": "Melee"
 },
 "CharacterMutator.fireAuraChanceWhileMovingOrMeleeDoubleUnder3": {
 "ability": "FireAura",
@@ -3970,9 +3992,9 @@
 "key": "fire_auras",
 "label": "Active Fire Auras (0 = estimate)"
 },
-"note": "Chance per melee attack; x2 at low aura count",
-"on": "use",
-"skill_any": "Melee",
+"moving_or_melee": true,
+"note": "1 s tick, one roll; casts while moving or a Melee ability is in use; x2 under 3 active auras",
+"on": "second",
 "stack_duration": 4
 },
 "CharacterMutator.flowGenOrProcCritMulti": {
@@ -4426,8 +4448,11 @@
 "CharacterMutator.maelstromWhenHitChance": {
 "ability": "Maelstrom",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 3,
 "kind": "trigger",
+"note": "3 s cooldown that starts after a cast",
 "on": "hit_taken"
 },
 "CharacterMutator.manaConsumedByPositiveCostMeleeOrBowAttacks": {
@@ -4901,8 +4926,11 @@
 "CharacterMutator.retributionWhenHitChance": {
 "ability": "Retribution",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 0.2,
 "kind": "trigger",
+"note": "0.2 s cooldown that starts after a cast",
 "on": "hit_taken"
 },
 "CharacterMutator.revenantMoreDamagePerMinionSkillLevel": {
@@ -5114,9 +5142,11 @@
 "CharacterMutator.summonRevenantWhenYouDropBelowHalfHealth": {
 "ability": "SummonRevenant",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 10,
 "kind": "trigger",
-"note": "Revenant summon when health falls below 50%",
+"note": "Revenant summon when health falls below 50%; 10 s cooldown",
 "on": "hit_taken"
 },
 "CharacterMutator.summonSkeletonVanguardOnKillChance": {
@@ -5674,10 +5704,10 @@
 "CinderStrikeMutator.firstStrikeFlaskChance": {
 "ability": "ExplosiveFlask",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "Unstable Flask on first hit",
-"on": "hit"
+"note": "Unstable Flask on the first new enemy hit of the explosion (once per explosion); the chance is capped at 100%",
+"on": "use"
 },
 "CinderStrikeMutator.firstStrikeIgniteDuration": {
 "ailment": "Ignite",
@@ -6464,9 +6494,11 @@
 "DarkQuiverMutator.arrowChanceOnBowAttack": {
 "ability": "Dark Quiver Create Arrow",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 3,
 "kind": "trigger",
-"note": "On skill use with bow",
+"note": "On a Bow skill use (the planner counts uses of this skill); 3 s cooldown that starts after a cast",
 "on": "use"
 },
 "DarkQuiverMutator.arrowGivenMoreDamagePerShadow": {
@@ -7905,7 +7937,7 @@
 "DivineFlareMutator.divineFlareRecastChancePerSymbol": {
 "ability": "DivineFlare",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
 "input": {
 "default": 3,
 "key": "sigils",
@@ -7913,9 +7945,10 @@
 "max": 10
 },
 "kind": "trigger",
-"note": "Repeats of Divine Flare per each absorbed symbol on hit to rare or boss",
+"note": "Repeats of Divine Flare: floor(symbols x value) + a roll on the fraction, on a hit on a rare or boss",
 "on": "hit",
 "per": "input:sigils",
+"stochastic": true,
 "when": [
 "enemy:boss_or_rare"
 ]
@@ -8570,9 +8603,10 @@
 "DreamslashMutator.shadowChanceOnHitPerAilmentStack": {
 "ability": "CreateShadow",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"icd": 1,
 "kind": "trigger",
-"note": "Chance = value × number of bleed stacks on target",
+"note": "Chance = value x number of bleed stacks on the target; at most 1 per second",
 "on": "hit"
 },
 "DreamslashMutator.shadowResummonChance": {
@@ -8984,9 +9018,10 @@
 "EnchantWeaponMutator.chanceToZapOnMelee": {
 "ability": "OldDischarge",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"icd": 1,
 "kind": "trigger",
-"note": "Zap on melee hit",
+"note": "Zap on a melee hit; at most 1 per second (interval 1 - zapActiveReducedCooldown while the enchant is active)",
 "on": "hit"
 },
 "EnchantWeaponMutator.chanceZapReplacedByLightningBlast": {
@@ -9043,10 +9078,10 @@
 "EnchantWeaponMutator.iceShardOnMeleeHitChance": {
 "ability": "IceShard",
 "chance": "v",
-"confidence": "D?",
-"icd": 1,
+"confidence": "D",
+"icd": 0.5,
 "kind": "trigger",
-"note": "Limit 2 per 2 s, chance x3 while active",
+"note": "Melee hit; at most 2 per second, chance x3 while active",
 "on": "hit"
 },
 "EnchantWeaponMutator.increasedBoostDuration": {
@@ -9200,6 +9235,7 @@
 "ability": "EntanglingRoots",
 "chance": 1,
 "confidence": "D",
+"cooldown": true,
 "icd": 20,
 "kind": "trigger",
 "note": "Auto-use on stun, cooldown 20 s",
@@ -9893,9 +9929,10 @@
 "ExplosiveTrapMutator.chainDetonation": {
 "ability": "DetonatingArrow",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"icd": 0.2,
 "kind": "trigger",
-"note": "Detonating arrow on trap explosion, up to 10 per 2 s",
+"note": "Detonating arrow on trap explosion, at most 10 per 2 s",
 "on": "end"
 },
 "ExplosiveTrapMutator.chanceForBallistaOnDetonation": {
@@ -10687,9 +10724,11 @@
 "FalconryMutator.protectiveScreechOnPlayerLowLife": {
 "ability": "Falconer 00.3 Helping Screech",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 10,
 "kind": "trigger",
-"note": "Scream at you at low health",
+"note": "Scream at you at low health; 10 s cooldown",
 "on": "hit_taken",
 "when": [
 "player:low_life"
@@ -11252,7 +11291,8 @@
 "chance": 1,
 "confidence": "D",
 "kind": "trigger",
-"on": "hit"
+"note": "Once per use (first new enemy hit, limit 1)",
+"on": "use"
 },
 "FirebrandMutator.chanceToSpreadFlamesOnIgnitedHit": {
 "ailment": "SpreadingFlames",
@@ -14796,7 +14836,9 @@
 "ability": "SuperIceVortex",
 "chance": "v",
 "confidence": "D",
+"icd": 2,
 "kind": "trigger",
+"note": "At most 2 per 4 s",
 "on": "hit"
 },
 "GlacierMutator.chanceToCreateIceVortex1": {
@@ -15753,7 +15795,10 @@
 "ability": "SummonBloodWraith",
 "chance": "v",
 "confidence": "D",
+"cooldown": true,
+"icd": 2,
 "kind": "trigger",
+"note": "2 s cooldown that starts after a summon",
 "on": "kill"
 },
 "HarvestMutator.coldConversion": {
@@ -17247,8 +17292,10 @@
 "ability": "SunderingThorns",
 "chance": "v",
 "confidence": "D",
+"cooldown": true,
+"icd": 4,
 "kind": "trigger",
-"note": "Only if Sundering Thorns not on cooldown",
+"note": "Only if Sundering Thorns is not on cooldown; base 4 s cooldown (divided by 1 + increasedSunderingThornsCooldownRecovery, not modelled)",
 "on": "hit"
 },
 "IceThornsMutator.thornShieldCritAvoidance": {
@@ -17276,7 +17323,10 @@
 "ability": "SummonThornTotem",
 "chance": "v",
 "confidence": "D",
+"cooldown": true,
+"icd": 3,
 "kind": "trigger",
+"note": "3 s cooldown that starts after a summon",
 "on": "kill"
 },
 "IceThornsMutator.thornTrailOnKillChance": {
@@ -18561,8 +18611,8 @@
 "chance": "v",
 "confidence": "D",
 "kind": "trigger",
-"note": "Spark Nova on first hit",
-"on": "hit"
+"note": "Spark Nova on the first hit (once per use)",
+"on": "use"
 },
 "LightningBlastMutator.convertToCold": {
 "confidence": "D",
@@ -18958,19 +19008,18 @@
 "MaelstromMutator.chanceToAutoCastOnHit": {
 "ability": "Maelstrom",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
 "icd": 2,
 "kind": "trigger",
-"note": "Only on rare or boss hit",
-"on": "hit",
-"when": [
-"enemy:boss_or_rare"
-]
+"note": "On any hit (no rare/boss check in the code); 2 s cooldown that starts after a cast",
+"on": "hit"
 },
 "MaelstromMutator.chanceToAutoCastOnKill": {
 "ability": "Maelstrom",
 "chance": "v",
 "confidence": "D?",
+"cooldown": true,
 "icd": 2,
 "kind": "trigger",
 "on": "kill"
@@ -19292,10 +19341,10 @@
 "ManaStrikeMutator.lightningStrikeOnHit": {
 "ability": "MageLightning",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "Mana Arc on new enemy with mana > 0; costs 10 mana",
-"on": "hit"
+"note": "Mana Arc on the first hit of a new enemy with mana > 0; costs 10 mana",
+"on": "use"
 },
 "ManaStrikeMutator.manaGainOnHitWhileOutOfMana": {
 "confidence": "D",
@@ -20426,6 +20475,7 @@
 "ability": "Multistrike",
 "chance": "v",
 "confidence": "D?",
+"cooldown": true,
 "icd": 1,
 "kind": "trigger",
 "note": "Without first hit",
@@ -20665,6 +20715,7 @@
 "ability": "Smoke Bomb",
 "chance": 1,
 "confidence": "D?",
+"cooldown": true,
 "icd": 10,
 "kind": "trigger",
 "note": "Smoke bomb after jump, no more than once per 10 s",
@@ -20713,6 +20764,7 @@
 "ability": "ChainingIceNova",
 "chance": 1,
 "confidence": "D?",
+"cooldown": true,
 "icd": 3,
 "kind": "trigger",
 "on": "hit"
@@ -21843,10 +21895,10 @@
 "RadiantLanceMutator.castsJudgementOnEliteHit": {
 "ability": "Judgement",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "On first hit vs rare/boss",
-"on": "hit",
+"note": "Judgement on the first hit of a rare/boss (limit 1)",
+"on": "use",
 "when": [
 "enemy:boss_or_rare"
 ]
@@ -22862,10 +22914,10 @@
 "RipBloodMutator.splatterChance": {
 "ability": "BloodSplatter",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "Splash chance on hit vs new enemy",
-"on": "hit"
+"note": "Splash chance on the hit of a new enemy (once per use against one target)",
+"on": "use"
 },
 "RipBloodMutator.splatterStats": {
 "confidence": "D",
@@ -25115,6 +25167,7 @@
 "ability": "ScorpionAbility",
 "chance": 1,
 "confidence": "D",
+"cooldown": true,
 "count": 2,
 "icd": 12,
 "kind": "trigger",
@@ -27586,8 +27639,8 @@
 "chance": "v",
 "confidence": "D",
 "kind": "trigger",
-"note": "Only first Smite hit on direct use",
-"on": "hit"
+"note": "Only the first Smite hit after a direct use (one roll per use)",
+"on": "use"
 },
 "SmiteMutator.healthRegenOnHeal": {
 "confidence": "D",
@@ -29509,6 +29562,7 @@
 "ability": "StaticOrb",
 "chance": "v",
 "confidence": "D",
+"cooldown": true,
 "icd": 5,
 "kind": "trigger",
 "note": "Repeat chance on hit vs rare/boss",
@@ -33050,8 +33104,10 @@
 "SwipeMutator.clawTotemOnHitChance": {
 "ability": "SummonClawTotem",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
+"icd": 4,
 "kind": "trigger",
+"note": "At most 1 per 4 s (limit shared with the on-kill chance)",
 "on": "hit",
 "when": [
 "enemy:boss_or_rare"
@@ -33061,7 +33117,9 @@
 "ability": "SummonClawTotem",
 "chance": "v",
 "confidence": "D",
+"icd": 4,
 "kind": "trigger",
+"note": "At most 1 per 4 s (limit shared with the on-hit chance)",
 "on": "kill"
 },
 "SwipeMutator.cullPercent": {
@@ -33160,10 +33218,10 @@
 "SwipeMutator.spiritWolvesOnFirstHitChance": {
 "ability": "SpiritWolves",
 "chance": "v",
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
 "note": "First hit only per use",
-"on": "hit"
+"on": "use"
 },
 "SwipeMutator.stormClawEvery3Seconds": {
 "confidence": "D",
@@ -33765,8 +33823,8 @@
 "label": "In form"
 },
 "kind": "trigger",
-"note": "First hit per use; 75% Storm mana cost",
-"on": "hit",
+"note": "First melee hit per use; 75% Storm mana cost",
+"on": "use",
 "when": [
 "input:transformed"
 ]
@@ -34022,10 +34080,10 @@
 "TempestStrikeColdMutator.useStormStackOn1stHit": {
 "ability": "GatheringStormMelee",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "First hit spends storm stack",
-"on": "hit"
+"note": "First hit spends a storm stack (once per use)",
+"on": "use"
 },
 "TempestStrikeLightMutator.addedManaCost": {
 "confidence": "D",
@@ -34325,10 +34383,10 @@
 "TempestStrikeLightMutator.useStormStackOn1stHit": {
 "ability": "GatheringStormMelee",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "First hit spends storm stack",
-"on": "hit"
+"note": "First hit spends a storm stack (once per use)",
+"on": "use"
 },
 "TempestStrikePhysMutator.addedManaCost": {
 "confidence": "D",
@@ -34645,10 +34703,10 @@
 "TempestStrikePhysMutator.useStormStackOn1stHit": {
 "ability": "GatheringStormMelee",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
 "kind": "trigger",
-"note": "First hit spends storm stack",
-"on": "hit"
+"note": "First hit spends a storm stack (once per use)",
+"on": "use"
 },
 "ThornShieldMutator.autoRecastChance": {
 "ability": "ThornShield",
@@ -35334,9 +35392,11 @@
 "TransplantMutator.useBoneArmor": {
 "ability": "BoneArmor",
 "chance": 1,
-"confidence": "D?",
+"confidence": "D",
+"cooldown": true,
+"icd": 10,
 "kind": "trigger",
-"note": "On teleport, with cooldown",
+"note": "On teleport; 10 s cooldown that starts after a cast",
 "on": "use"
 },
 "TransplantMutator.wardOnHitVsSpiritPlagued": {

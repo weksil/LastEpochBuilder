@@ -42,3 +42,8 @@ p329, 415, 479, 594, 591, 616, 578; hard-coded CharacterMutator casts (31 of 90 
 ## Granted abilities
 `category: nodeGranted` (189) = tooltip hint only (`SkillTreeNode.abilityGrantedByNode` is read only by tooltip/UI code); real grants are mutator writes,
 CharacterMutator code and item/affix properties. 58 of the 189 are not referenced by the planner. UNKNOWN: form bars composition, prefab castChance values.
+
+## Status of the fixes (2026-10-09)
+Applied: Flame Walker as a 1 s tick (moving or Melee ability in use); `cooldown` / `stochastic` / `skill_any` keys in the trigger rate; character casts in the
+global store; 49 entries of field_models.json and 27 of unique_effect_models.json corrected (limits, event, tags, cooldown kind). Not expressible yet
+(engine support needed) and unmodelled casts: `research/audit_followups_field.md`, `research/audit_followups_unique.md`.

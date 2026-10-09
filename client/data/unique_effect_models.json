@@ -582,6 +582,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 1,
+   "cooldown": true,
    "confidence": "D"
   },
   "661": {
@@ -675,6 +676,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 3,
+   "cooldown": true,
    "when": [
     "enemy:boss_or_rare"
    ],
@@ -686,6 +688,7 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 20,
+   "cooldown": true,
    "note": "if after hit health is below 50%",
    "confidence": "D"
   },
@@ -713,6 +716,7 @@
    "on": "hit_taken",
    "chance": "v",
    "icd": 2,
+   "cooldown": true,
    "confidence": "D"
   },
   "39": {
@@ -726,6 +730,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 3,
+   "cooldown": true,
    "note": "tooltip says 2 sec cooldown, code says 3 sec",
    "confidence": "D"
   },
@@ -733,9 +738,10 @@
    "kind": "trigger",
    "ability": "FireTrail",
    "on": "hit_taken",
-   "chance": "v",
+   "chance": 1,
    "icd": 5,
-   "note": "only on crit received",
+   "cooldown": true,
+   "note": "no roll: casts on every received crit when off the 5 s cooldown (starts at the cast); the item value is not a probability; enter crits taken per second as hit taken events",
    "confidence": "D"
   },
   "239": {
@@ -860,11 +866,10 @@
    "on": "hit",
    "chance": "v",
    "icd": 3,
-   "when": [
-    "enemy:boss_or_rare"
-   ],
-   "note": "also on melee kill",
-   "confidence": "D?"
+   "cooldown": true,
+   "skill_any": "Melee",
+   "note": "any Melee hit (no rare or boss condition) or Melee kill; 3 s cooldown starts after the cast and is shared by hits and kills (only hits are counted here)",
+   "confidence": "D"
   },
   "76": {
    "kind": "trigger",
@@ -872,7 +877,9 @@
    "on": "use",
    "chance": "v",
    "icd": 1,
-   "note": "melee hits only",
+   "cooldown": true,
+   "skill_any": "Melee",
+   "note": "Melee attack: roll, then a 1 s cooldown that starts after the cast",
    "confidence": "D"
   },
   "82": {
@@ -920,6 +927,7 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 2,
+   "cooldown": true,
    "note": "if hit leaves you below endurance threshold; you are slowed",
    "confidence": "D?"
   },
@@ -928,6 +936,7 @@
    "ability": "HeorotUniqueBowIcicle",
    "on": "hit",
    "chance": "v",
+   "skill_any": "Bow",
    "note": "bow hits only",
    "confidence": "D"
   },
@@ -963,6 +972,7 @@
    "on": "hit_taken",
    "chance": 1,
    "icd": 20,
+   "cooldown": true,
    "note": "if hit leaves health below 30%; Haste for v sec and full recovery",
    "confidence": "D?"
   },
@@ -1023,10 +1033,11 @@
   "155": {
    "kind": "trigger",
    "ability": "LightningBlast",
-   "on": "hit",
+   "on": "use",
    "chance": "v",
-   "note": "after melee hit with hit; +2 chains",
-   "confidence": "D?"
+   "skill_any": "Melee",
+   "note": "once per Melee use, on the first hit of the use (the use must hit an enemy); +2 chains",
+   "confidence": "D"
   },
   "157": {
    "kind": "flag",
@@ -1104,6 +1115,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 8,
+   "cooldown": true,
    "confidence": "D"
   },
   "167": {
@@ -1184,7 +1196,8 @@
    "ability": "ThornShield",
    "on": "use",
    "chance": "v",
-   "note": "on direct use of physical ability",
+   "skill_any": "Physical",
+   "note": "on direct use of a Physical skill",
    "confidence": "D"
   },
   "190": {
@@ -1835,7 +1848,8 @@
    "on": "hit",
    "chance": "v",
    "icd": 0.3333,
-   "note": "by melee hit; up to 3 times per second",
+   "skill_any": "Melee",
+   "note": "Melee hits only; up to 3 per second (3 casts per 1.0 s, at least 0.15 s apart)",
    "confidence": "D"
   },
   "450": {
@@ -1955,8 +1969,11 @@
    "ability": "Doom Pulse",
    "on": "cast",
    "chance": 1,
-   "note": "on direct casting of Fire/Cold/Lightning/Necrotic/Void spell",
-   "confidence": "D"
+   "icd": 1,
+   "cooldown": true,
+   "skill_any": "Fire|Cold|Lightning|Necrotic|Void",
+   "note": "on direct use of a skill with a Fire, Cold, Lightning, Necrotic or Void tag (the code has no Spell test); no roll; each element has its own 1 s timer counted from the cast, the model counts one timer",
+   "confidence": "D?"
   },
   "481": {
    "kind": "stat",
@@ -3311,6 +3328,7 @@
    "on": "hit",
    "chance": "v",
    "icd": 2,
+   "cooldown": true,
    "note": "melee hit only; on 5 nearest targets",
    "confidence": "D"
   },
@@ -3326,8 +3344,10 @@
    "kind": "trigger",
    "ability": "Maelstrom",
    "on": "second",
-   "chance": "v",
+   "chance": 1,
+   "count": "v",
    "icd": 3,
+   "note": "a 3 s timer; each expiry casts StochasticRound(v) Maelstroms, v per 3 s on average; every cast also spends mana (not modelled)",
    "confidence": "D"
   },
   "318:1": {
@@ -3349,7 +3369,8 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "on direct fire spell cast",
+   "cooldown": true,
+   "note": "on direct fire spell cast; each element has its own cooldown timer (fire, cold, lightning), 3 s x (1 - set bonus 517:4), counted from the cast",
    "confidence": "D"
   },
   "517:3": {
@@ -3358,7 +3379,8 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "on direct lightning spell cast",
+   "cooldown": true,
+   "note": "on direct lightning spell cast; each element has its own cooldown timer (fire, cold, lightning), 3 s x (1 - set bonus 517:4), counted from the cast",
    "confidence": "D"
   },
   "517:2": {
@@ -3367,7 +3389,8 @@
    "on": "cast",
    "chance": "v",
    "icd": 3,
-   "note": "on direct cold spell cast",
+   "cooldown": true,
+   "note": "on direct cold spell cast; each element has its own cooldown timer (fire, cold, lightning), 3 s x (1 - set bonus 517:4), counted from the cast",
    "confidence": "D"
   },
   "505:0": {
@@ -3707,12 +3730,12 @@
   "533:2": {
    "kind": "trigger",
    "ability": "Smite",
-   "on": "hit",
+   "on": "use",
    "chance": "v",
    "when": [
     "enemy:boss_or_rare"
    ],
-   "note": "after Multi-hit",
+   "note": "first hit of each Multistrike use only (roll before the rare or boss test)",
    "confidence": "D"
   },
   "536:2": {
@@ -5424,9 +5447,10 @@
    "ability": "Burning Dagger Throw",
    "on": "hit",
    "chance": "v",
-   "confidence": "D?",
    "icd": 0.25,
-   "note": "On melee fire hit, doubled for Dancing Strikes, up to 4 times per second"
+   "stochastic": true,
+   "note": "On Melee Fire hit (code needs both tags, not modelled), doubled for Dancing Strikes, up to 4 procs per second; a chance above 100% gives several daggers (StochasticRound)",
+   "confidence": "D?"
   },
   "214:14": {
    "kind": "conversion",
@@ -5778,7 +5802,9 @@
    "on": "hit",
    "chance": 0.1,
    "icd": 8,
-   "note": "melee hits only",
+   "cooldown": true,
+   "skill_any": "Melee",
+   "note": "Melee hits only; 8 s cooldown starts after the cast, ready at start",
    "confidence": "D"
   },
   "23:1": {
@@ -5882,7 +5908,8 @@
    "ability": "TundraNova",
    "on": "hit",
    "chance": 0.15,
-   "note": "chance doubled vs undead; cold abilities only",
+   "skill_any": "Cold",
+   "note": "Cold hits only (not Tundra Nova itself); 15% chance, doubled against Undead (30% in total, not modelled)",
    "confidence": "D"
   },
   "33:0": {
@@ -5943,8 +5970,9 @@
    "ability": "FireShardNova",
    "on": "hit",
    "chance": 0.3,
-   "note": "Magma Shards; melee hits only",
-   "confidence": "D?"
+   "skill_any": "Melee",
+   "note": "Magma Shards; Melee hits only",
+   "confidence": "D"
   },
   "51:1": {
    "kind": "stat",
@@ -6041,6 +6069,7 @@
    "on": "hit_taken",
    "chance": 0.1,
    "icd": 15,
+   "cooldown": true,
    "confidence": "D"
   },
   "66:1": {

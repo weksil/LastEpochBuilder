@@ -15482,3 +15482,9 @@ msgstr "Этого навыка нет на панели, и ни один на�
 msgid "Active Fire Auras (0 = estimate)"
 msgstr "Активных Fire Aura (0 = оценка)"
 
+msgid "; cooldown %s s starts after a cast: %s/s"
+msgstr "; перезарядка %s с начинается после каста: %s/с"
+
+msgid "%s — counted when: the character is moving (Conditions) or a Melee skill is in use"
+msgstr "%s — считается, когда: персонаж движется (Условия) или используется умение с тегом Melee"
+

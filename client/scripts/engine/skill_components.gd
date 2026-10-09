@@ -71,7 +71,9 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		if rate <= 0.0:
 			continue
 		var label: String = str(trig.get("label", ""))
-		result.append(_component(label if label != "" else str(sub.get("name", "")), "trigger", sub, entry, 1.0, rate, str(trig.get("note", label))))
+		var trig_comp: Dictionary = _component(label if label != "" else str(sub.get("name", "")), "trigger", sub, entry, 1.0, rate, str(trig.get("note", label)))
+		trig_comp["character"] = bool(trig.get("character", false))
+		result.append(trig_comp)
 
 	# minions summoned by the skill (§9.4): own stores built from the player's snapshot
 	if (not MinionCalc.minions_for(ab_name).is_empty() or MinionCount.GROUPS.has(ab_name)) and s.get("store") is StatStore:

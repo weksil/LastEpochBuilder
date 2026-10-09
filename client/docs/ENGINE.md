@@ -591,11 +591,15 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   numbers, level 1 (no level of its own), and no new damage — the owner keeps counting the component, so nothing is counted
   twice. The selection is kept by the tab (never in `Build.selected_skill`, which stays a bar slot). Character events (`second`,
   `hit_taken`, …) of passives are counted in the first slot whose skill deals damage by itself only (`UniqueEffects.first_skill_slot`;
-  a skill's own events `use` / `hit` / `crit` count in every skill). The rate is `event × min(1, chance) × count`, capped at
-  `count / icd` (min(limit, possible activations)); a chance above 100% is a sure activation, not several. A trigger limited to
-  skill tags (`skill_any`, Flame Walker: Melee) is counted in the skills with the tag. `double_below` (Flame Walker: the chance
-  doubles under 3 active Fire Auras): the number is the skill input `fire_auras` or, at 0, the undoubled casts per second ×
-  `stack_duration` (4 s, ability description).
+  a skill's own events `use` / `hit` / `crit` count in every skill). The rate is `event × min(1, chance) × count`; the limit is either a
+  ProcTimeTracker window (default: at most `count / icd` per second) or, with `cooldown: true`, a cooldown field that starts after a
+  SUCCESSFUL roll (`count / (icd + count / rate)`); `stochastic: true` (StochasticRound fields) lets a chance above 100% give several
+  casts, otherwise it is one guaranteed cast. `skill_any` limits a trigger to skills with a tag. Casts of the character (passive of
+  the character mutator, player property of an item/affix: `character` on the trigger) are built with the player's own stats (global
+  store), not the stats of the skill in use (game code: the player constructor with no mutator). Sources: research/10_trigger_audit.md.
+- Flame Walker (`CharacterMutator.OnUpdateTick`): `on: second`, one roll per 1 s tick, chance 10% per point doubled while fewer than 3
+  (`double_below`) Fire Auras are active (input `fire_auras`, 0 = estimate: casts per second × `stack_duration` 4 s), cast only while the
+  character moves (Conditions) or a Melee skill is in use (`moving_or_melee`; the skill is assumed to be used all the time).
 - The basic attack (`BasicPlayerAttack`, ba1; `BasicPlayerBowAttack` with a bow) is always the first virtual slot: a full
   calculation on a temporary slot after the bar (`GrantedCalc.with_basic_slot`, removed afterwards; level 1, default hits and
   event rates). It is not part of any bar skill's DPS; skills it triggers (Flame Walker casts on a melee attack) are listed as

@@ -505,7 +505,7 @@ static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float
 	var icd: float = float(trig.get("icd", 0.0))
 	# a chance above 100% (an increased or doubled one) is a sure activation per event, not several
 	var chance_note: String = ""
-	if chance > 1.0:
+	if chance > 1.0 and not bool(trig.get("stochastic", false)):
 		chance_note = LE.t(" (a chance above 100%% counts as 100%%, was %s)") % LE.fmt_pct(chance)
 		chance = 1.0
 	if trig.has("double_below"):
@@ -522,8 +522,14 @@ static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float
 			chance_note += LE.t(" (no doubling: %s active %s ≥ %d)") % [LE.t("estimated") if estimated else LE.t("set"), LE.fmt_num(active), int(trig["double_below"])]
 	var rate: float = event * chance * count
 	var line: String = LE.t("%s; chance %s%s × count %s → %s/s") % [text, LE.fmt_pct(chance), chance_note, LE.fmt_num(count), LE.fmt_num(rate)]
-	# the trigger's limit: activations per second are min(limit, possible activations)
-	if icd > 0.0:
+	# the trigger's limit: a cooldown that starts after a successful roll gives 1 / (icd + 1 / possible rate); a ProcTimeTracker
+	# window allows at most count / icd per second: activations per second are min(limit, possible activations)
+	if icd > 0.0 and bool(trig.get("cooldown", false)):
+		if rate > 0.0:
+			var with_cd: float = count / (icd + count / rate)
+			line += LE.t("; cooldown %s s starts after a cast: %s/s") % [LE.fmt_num(icd), LE.fmt_num(with_cd)]
+			rate = with_cd
+	elif icd > 0.0:
 		var cap: float = count / icd
 		if rate > cap:
 			line += LE.t("; capped by cooldown %s s: %s/s") % [LE.fmt_num(icd), LE.fmt_num(cap)]
@@ -643,8 +649,12 @@ static func _component_store(store: StatStore, s: Dictionary, comp: Dictionary) 
 	if comp.get("store") is StatStore:
 		return comp["store"]
 	var extra: Array[StatMod] = []
+	# a cast made by the character (passive, item property) is built with the player's own stats (game code: the player's
+	# constructor with no mutator of the skill in use): the global store, not the skill's tree
+	if bool(comp.get("character", false)) and s.get("global_store") is StatStore:
+		store = s["global_store"]
 	# a skill triggered by this skill's tree gets the tree's «triggered» mods (Deadly Plot)
-	if comp["kind"] == "trigger":
+	elif comp["kind"] == "trigger":
 		for mod: StatMod in s.get("triggered_mods", []):
 			extra.append(mod)
 	var by_name: Variant = s.get("component_mods", {})

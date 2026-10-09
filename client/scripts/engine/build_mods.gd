@@ -196,6 +196,8 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 		# resource models that passed their conditions: {model, v, x, source} (the Defense tab turns them into recovery)
 		"resources": [] as Array[Dictionary],
 		"ctx": {"build": build, "store": store, "slot": slot, "item_slot": "", "use": use},
+		# the global store: casts of the character (passives, item properties) are computed in it, not in the skill's store
+		"global_store": global,
 	}
 	if slot < 0 or slot >= build.skills.size():
 		return result
@@ -373,13 +375,14 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 				result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
-## Triggers written into the character mutator by passives (Flame Walker: Fire Aura on a melee attack): the cast skill is not on
+## Triggers written into the character mutator by passives (Flame Walker: Fire Aura on a 1 s tick): the cast skill is not on
 ## the bar, so the triggers join the skill's own ones. Events of the character (not the skill's own uses and hits) are counted in the first
 ## filled slot only, otherwise every skill on the bar would count them again; a use triggered by another skill is not a
 ## character event.
 static func _add_passive_triggers(build: Node, slot: int, result: Dictionary) -> void:
 	if str(result["ctx"].get("use", "")) == "triggered":
 		return
+	result["ctx"]["character"] = true
 	for entry: Dictionary in _passive_entries(build):
 		var points: int = entry["points"]
 		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
@@ -390,15 +393,11 @@ static func _add_passive_triggers(build: Node, slot: int, result: Dictionary) ->
 			if str(model.get("kind", "")) != "trigger":
 				continue
 			var on: String = str(model.get("on", "use"))
-			# a trigger limited to skills with a tag (Flame Walker: melee attacks)
-			if model.has("skill_any"):
-				var cast_tags: int = int(GameData.ability_by_name(str(result.get("main_name", ""))).get("tags", 0))
-				if (cast_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
-					continue
 			if (UniqueEffects.CHARACTER_EVENTS.has(on) or not SkillCalc.OWN_EVENTS.has(on)) and slot != UniqueEffects.first_skill_slot(build):
 				continue
 			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
 			_apply_model(model, v, entry["source"], entry["title"], result)
+	result["ctx"].erase("character")
 
 
 ## First part of the target ("A & B") that has a field model.
@@ -993,11 +992,29 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 			if str(model.get("kind", "")) == "resource" and result.has("resources"):
 				result["resources"].append({"model": model, "v": v, "x": x, "source": source})
 		"trigger":
+			# a trigger limited to skills with a tag fires from those skills only (the tags of the ability in use)
+			if model.has("skill_any"):
+				var cast_tags: int = int(GameData.ability_by_name(str(result.get("main_name", ""))).get("tags", 0))
+				if (cast_tags & LE.tag_mask(str(model["skill_any"]))) == 0:
+					return
+			# Flame Walker rolls on a 1 s tick and casts only while the character moves or a Melee ability is in use; the skill is
+			# assumed to be used all the time (the share of the time is not in the game data)
+			if bool(model.get("moving_or_melee", false)):
+				var melee: bool = (int(GameData.ability_by_name(str(result.get("main_name", ""))).get("tags", 0)) & LE.MELEE) != 0
+				if not (melee or bool(ctx["build"].player_state.get("moving", false))):
+					result["notes"].append(LE.t("%s — counted when: the character is moving (Conditions) or a Melee skill is in use") % title)
+					return
 			# a chance that grows with a stat (Chaos Rip: per 1 max mana) is the model value with its «per» source
 			var chance: float = x if model.has("per") else _num(model.get("chance", 1.0), v)
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
 				"chance": chance, "count": _num(model.get("count", 1.0), v), "single_projectile": bool(model.get("single_projectile", false)),
-				"icd": float(model.get("icd", 0.0)), "node": title})
+				"icd": float(model.get("icd", 0.0)), "node": title,
+				# limit kind: a cooldown that starts after a successful roll (rate 1 / (icd + 1 / (chance × events))) or, by default,
+				# a ProcTimeTracker window (at most count / icd); stochastic: the chance above 100% gives several casts (StochasticRound)
+				"cooldown": bool(model.get("cooldown", false)), "stochastic": bool(model.get("stochastic", false)),
+				# cast by the character (passive of the character mutator, player property of an item): the game builds it with the
+				# player's own stats, not with the stats of the skill in use
+				"character": bool(ctx.get("character", false))})
 			# Flame Walker: the chance doubles while fewer than «double_below» auras are active (SkillCalc.trigger_rate); the number
 			# is the input (0 = estimate: undoubled casts per second × «stack_duration»)
 			if model.has("double_below"):

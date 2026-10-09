@@ -42,14 +42,15 @@ func _granted_skills() -> Array[Dictionary]:
 	return out
 
 
-## Flame Walker (Mage passive 38): a melee attack casts Fire Aura (chance, doubled under 3 active auras), which is not on the bar.
-## It is a trigger component of every melee bar skill and of the basic attack; the virtual slots (GrantedCalc) are views of it.
+## Flame Walker (Mage passive 38), game code CharacterMutator.OnUpdateTick: a 1 s tick, one roll (10% per point, doubled while fewer
+## than 3 Fire Auras are active, at most 100%), the cast happens while the character moves or a Melee ability is in use. Fire Aura is not
+## on the bar: a character event, counted in the first skill that deals damage; the virtual slots (GrantedCalc) are views of it.
 func _passive_granted_skill() -> void:
 	Build.set_class(1)
 	Build.set_mastery(3)
 	Build.set_level(100)
 	Build.set_skill(0, "fr11mv")  # Flame Reave: melee
-	Build.set_skill(1, "fi9")  # Fireball: a spell, no melee attack
+	Build.set_skill(1, "fi9")  # Fireball: a spell
 	Build.passives[38] = 8
 	var melee: Dictionary = SkillCalc.compute(Build, 0)
 	var spell: Dictionary = SkillCalc.compute(Build, 1)
@@ -57,14 +58,12 @@ func _passive_granted_skill() -> void:
 	for sec: Dictionary in melee["sections"]:
 		if str(sec["title"]).begins_with("Fire Aura"):
 			aura_sections += 1
-	_check("Flame Walker: Fire Aura sections on the melee skill", 1.0 if aura_sections >= 3 else 0.0, 1.0)
-	_check("Flame Walker: a spell has no Fire Aura", float((spell["granted"] as Array).size()), 0.0)
-	# the granted skill (virtual slot): its own entry, a view of the component inside the first bar skill that casts it
+	_check("Flame Walker: Fire Aura sections on the first damaging skill", 1.0 if aura_sections >= 3 else 0.0, 1.0)
+	_check("Flame Walker: a character event is counted once (not in the second skill)", float((spell["granted"] as Array).size()), 0.0)
 	var granted: Array[Dictionary] = _granted_skills()
 	_check("Flame Walker: one granted skill", float(granted.size()), 1.0)
 	var aura_id: String = str(granted[0]["id"]) if not granted.is_empty() else ""
 	_check("Flame Walker: granted skill is Fire Aura, owned by slot 1", 1.0 if (not granted.is_empty() and str(granted[0]["name"]) == "Fire Aura" and int(granted[0]["owner"]) == 0) else 0.0, 1.0)
-	_check("Flame Walker: the basic attack triggers it too", 1.0 if (not granted.is_empty() and (granted[0]["owners"] as Array).has(GrantedCalc.BASIC_OWNER)) else 0.0, 1.0)
 	var view: Dictionary = GrantedCalc.compute(Build, aura_id, true)
 	var view_dps: float = _row_value(view, "DPS vs enemy", "Against enemy")
 	var part_dps: float = 0.0
@@ -72,17 +71,21 @@ func _passive_granted_skill() -> void:
 		part_dps += float(part["hit_enemy"]) + float(part["ail_dps"])
 	_check("Flame Walker: virtual Fire Aura DPS = its component in the owner skill", view_dps, part_dps)
 	_check("Flame Walker: virtual Fire Aura DPS is positive", 1.0 if view_dps > 0.0 else 0.0, 1.0)
-	var owner_uses: float = CalcSummary.find_row(melee, "Uses per second")["text"].to_float()
-	var view_uses: float = CalcSummary.find_row(view, "Uses per second")["text"].to_float()
-	# 8 x 10% = 80%; doubled (capped at 100%) while fewer than 3 auras are active: estimated as casts per second x 4 s stack duration
-	var estimated_active: float = owner_uses * 0.8 * 4.0
-	_check("Flame Walker: Fire Aura per melee use (auras estimated)", view_uses / owner_uses, 1.0 if estimated_active < 3.0 else 0.8, 0.002)
+	# one roll per second: 8 x 10% = 80%; the estimated active auras 0.8 x 4 s = 3.2 are not under 3: no doubling
+	_check("Flame Walker: 0.8 casts per second (one 1 s tick, 80%)", CalcSummary.find_row(view, "Uses per second")["text"].to_float(), 0.8, 0.0005)
 	Build.set_skill_input(0, "fire_auras", 1)
-	_check("Flame Walker: 1 active aura set by hand: doubled, capped at 100%", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float() / owner_uses, 1.0, 0.002)
+	_check("Flame Walker: 1 active aura set by hand: doubled, capped at 100%", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float(), 1.0, 0.0005)
 	Build.set_skill_input(0, "fire_auras", 3)
-	_check("Flame Walker: no doubling with 3 active auras", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float() / owner_uses, 0.8, 0.002)
+	_check("Flame Walker: 3 active auras: no doubling", CalcSummary.find_row(GrantedCalc.compute(Build, aura_id, true), "Uses per second")["text"].to_float(), 0.8, 0.0005)
 	Build.set_skill_input(0, "fire_auras", 0)
-	# a buff skill in the first slot does not own character-level events, and the temporary basic slot is never "the first slot"
+	# a spell bar that neither moves nor uses a Melee ability: no cast (the game checks IsMoving or a Melee ability in use)
+	Build.set_skill(0, "fi9")
+	_check("Flame Walker: a stationary spell bar casts no Fire Aura", float(_granted_skills().size()), 0.0)
+	Build.player_state["moving"] = true
+	_check("Flame Walker: the same bar while moving casts it", float(_granted_skills().size()), 1.0)
+	Build.player_state["moving"] = false
+	Build.set_skill(0, "fr11mv")
+	# the temporary slot of the basic attack is never "the first slot": a buff skill does not own character events
 	Build.set_skill(2, "sb44eQ")
 	_check("first_skill_slot ignores a temporary slot after the bar", float(UniqueEffects.first_skill_slot(Build)), 0.0)
 	Build.set_skill(2, "")
@@ -98,10 +101,6 @@ func _passive_granted_skill() -> void:
 	_check("Basic attack: listed first", 1.0 if bool(GrantedCalc.skills(Build)[0].get("basic", false)) else 0.0, 1.0)
 	_check("Basic attack: has its own DPS", 1.0 if _row_value(basic, "DPS vs enemy", "Against enemy") > 0.0 else 0.0, 1.0)
 	_check("Basic attack: the temporary slot is gone", float(Build.skills.size()), 5.0)
-	var basic_aura: bool = false
-	for sec: Dictionary in basic["sections"]:
-		basic_aura = basic_aura or str(sec["title"]).begins_with("Fire Aura")
-	_check("Basic attack: Flame Walker casts Fire Aura on it", 1.0 if basic_aura else 0.0, 1.0)
 	# Fire Aura on the bar: it is a real slot, no virtual entry
 	GameData._abilities["test_fire_aura"] = GameData.ability_by_name("FireAura")
 	Build.set_skill(2, "test_fire_aura")
@@ -1375,7 +1374,7 @@ func _shadows_echoes_buffs() -> void:
 	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
 	EnemyAilments.enabled = false
-	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 28122.0, 30.0)  # omen idols use omenIdolAffixEffectModifier (was 27852.5)
+	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 28007.0, 30.0)  # omen idols use omenIdolAffixEffectModifier (was 27852.5); casts of the character (item properties) are built in the global store, not in the skill's (was 28122); item cooldowns that start after a cast give 1 / (icd + 1 / rate) (was 28079)
 	EnemyAilments.enabled = true
 
 
