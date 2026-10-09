@@ -12,7 +12,7 @@ const KEY_ROW_LABEL: String = "DPS vs enemy"
 ## [title marker (English source, translated at match time), rank]: sections are shown in rank order (damage, conversions,
 ## crit, speed, ailments, parameters, enemy, sustain). A marker must start the title or follow a "Component: " prefix.
 const SECTION_RULES: Array = [
-	["Against enemy", 6], ["Sustain", 7], ["Skill parameters", 5], ["Speed and mana", 3],
+	["Granted skill", -1], ["Against enemy", 6], ["Sustain", 7], ["Skill parameters", 5], ["Speed and mana", 3],
 	["Penetration", 2], ["Crit", 2], ["Conversions and tags", 1], ["Damage per use (before enemy)", 0],
 	["Effect damage over its whole duration (before enemy)", 0], ["Damage per hit on the cursed target (before enemy)", 0],
 	["Ailment: %s", 4], ["Non-damaging ailments", 4],
@@ -24,6 +24,11 @@ const SECTION_RULES: Array = [
 
 var _pending: bool = false
 var _skill_options_key: String = ""
+## Granted skill (GrantedCalc) shown instead of a bar slot, "" for a bar skill. Not stored in the build: Build.selected_skill
+## always stays a valid bar slot.
+var _virtual_id: String = ""
+var _granted: Array[Dictionary] = []
+var _real_slot: int = 0
 var _input_signature: String = ""
 var _input_rows: Array[SkillInputRow] = []
 var _section_signature: String = ""
@@ -53,15 +58,26 @@ func _ready() -> void:
 
 func _on_visibility_changed() -> void:
 	if is_visible_in_tree():
+		_populate_skill_options()
 		_schedule_update()
 
 
 func _on_build_changed() -> void:
+	# another view moved the selected bar slot: follow it
+	if _virtual_id != "" and Build.selected_skill != _real_slot:
+		_virtual_id = ""
 	_populate_skill_options()
 	_schedule_update()
 
 
 func _on_skill_selected(index: int) -> void:
+	var id: Variant = skill_select.get_item_metadata(index)
+	if id is String and id != "":
+		_virtual_id = id
+		_schedule_update()
+		return
+	_virtual_id = ""
+	_real_slot = index
 	Build.selected_skill = index
 	_schedule_update()
 
@@ -75,6 +91,14 @@ func _schedule_update() -> void:
 
 
 func _populate_skill_options() -> void:
+	if is_visible_in_tree():
+		_granted = GrantedCalc.skills(Build)
+	var granted_ids: Array[String] = []
+	for entry: Dictionary in _granted:
+		granted_ids.append(str(entry["id"]))
+	# the granted skill is gone after a change of the build: back to the bar slot
+	if _virtual_id != "" and not granted_ids.has(_virtual_id) and is_visible_in_tree():
+		_virtual_id = ""
 	var names: PackedStringArray = []
 	for i in range(5):
 		var skill: Dictionary = Build.skills[i] if i < Build.skills.size() else {}
@@ -85,14 +109,27 @@ func _populate_skill_options() -> void:
 			if not ability.is_empty():
 				skill_name = GameData.display_name(ability)
 		names.append("%d. %s" % [i + 1, skill_name])
-	var key: String = "|".join(names)
+	for entry: Dictionary in _granted:
+		names.append(tr("%s (granted)") % str(entry["name"]))
+	var key: String = "|".join(names) + "#" + ",".join(granted_ids)
 	if key != _skill_options_key:
 		_skill_options_key = key
 		skill_select.clear()
-		for item_text: String in names:
-			skill_select.add_item(item_text)
-	if skill_select.selected != Build.selected_skill:
-		skill_select.select(Build.selected_skill)
+		for i in range(5):
+			skill_select.add_item(names[i])
+		if not _granted.is_empty():
+			skill_select.add_separator(tr("Granted skills"))
+			for i in range(_granted.size()):
+				skill_select.add_item(names[5 + i])
+				skill_select.set_item_metadata(skill_select.item_count - 1, granted_ids[i])
+	var selected: int = Build.selected_skill
+	if _virtual_id != "":
+		for i in range(skill_select.item_count):
+			if skill_select.get_item_metadata(i) == _virtual_id:
+				selected = i
+	_real_slot = Build.selected_skill
+	if skill_select.selected != selected:
+		skill_select.select(selected)
 
 
 func _update_calcs() -> void:
@@ -100,7 +137,11 @@ func _update_calcs() -> void:
 	if not is_visible_in_tree():
 		return
 	# breakdowns are built only while a row is expanded; otherwise the rows show "+" and build them on demand
-	var result: Dictionary = SkillCalc.compute(Build, Build.selected_skill, not _expanded.is_empty())
+	var result: Dictionary
+	if _virtual_id != "":
+		result = GrantedCalc.compute(Build, _virtual_id, not _expanded.is_empty())
+	else:
+		result = SkillCalc.compute(Build, Build.selected_skill, not _expanded.is_empty())
 	_lean = bool(result.get("lean", false))
 	summary.show_result(result)
 	_update_inputs(result)
@@ -117,7 +158,9 @@ func _update_inputs(result: Dictionary) -> void:
 		hits_spin.set_value_no_signal(hits)
 
 	var inputs: Array = result.get("inputs", [])
-	var sig: PackedStringArray = [str(Build.selected_skill)]
+	# a granted skill edits the event rates of the bar skill that owns it
+	var input_slot: int = int(result.get("input_slot", Build.selected_skill))
+	var sig: PackedStringArray = [str(input_slot), _virtual_id]
 	for inp: Dictionary in inputs:
 		sig.append("%s|%s" % [str(inp.get("key", "")), "f" if inp.get("value", 0) is bool else "n"])
 	var signature: String = ";".join(sig)
@@ -130,11 +173,11 @@ func _update_inputs(result: Dictionary) -> void:
 		for inp: Dictionary in inputs:
 			var row: SkillInputRow = input_row_scene.instantiate() as SkillInputRow
 			inputs_container.add_child(row)
-			row.setup(Build.selected_skill, inp)
+			row.setup(input_slot, inp)
 			_input_rows.append(row)
 		return
 	for i in range(inputs.size()):
-		_input_rows[i].update_input(Build.selected_skill, inputs[i])
+		_input_rows[i].update_input(input_slot, inputs[i])
 
 
 # --- sections ------------------------------------------------------------------------

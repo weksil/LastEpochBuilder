@@ -383,6 +383,45 @@ func _ready() -> void:
 		print("FAIL: the stats panel DPS card has no tooltip")
 	# buffs panel lists the equipped skills
 	print("buff rows: %d" % calcs.get_node("%Buffs").get_node("%List").get_child_count())
+	# granted skills (virtual slots) in the skill selector: Flame Walker grants Fire Aura; picking it shows its own breakdown and
+	# never touches Build.selected_skill; removing the passive drops the selection back to a bar slot
+	var kept: Dictionary = BuildCodec.from_dict(BuildCodec.to_dict(Build))
+	var kept_slot: int = Build.selected_skill
+	Build.set_class(1)
+	Build.set_mastery(3)
+	Build.set_skill(0, "fi9")
+	Build.passives[38] = 8
+	Build.selected_skill = 0
+	Build.changed.emit()
+	await _frames(3)
+	var skill_select: OptionButton = calcs.get_node("%SkillSelect")
+	var granted_index: int = -1
+	for i in range(skill_select.item_count):
+		if skill_select.get_item_metadata(i) is String and skill_select.get_item_metadata(i) != "":
+			granted_index = i
+	if granted_index < 0:
+		failed = true
+		print("FAIL: the skill selector has no granted skill for Flame Walker")
+	else:
+		skill_select.select(granted_index)
+		skill_select.item_selected.emit(granted_index)
+		await _frames(3)
+		print("granted skill shown: %s" % calcs.get_node("%Summary").get_node("%SkillTitle").text)
+		if Build.selected_skill != 0 or calcs._virtual_id == "" or calcs._row_nodes.is_empty():
+			failed = true
+			print("FAIL: picking a granted skill changed the bar selection or shows no rows")
+		if calcs.get_node("%Summary").get_node("%DpsTile").get_node("%Value").text == "—":
+			failed = true
+			print("FAIL: the granted skill has no DPS in the headline")
+		Build.passives.erase(38)
+		Build.changed.emit()
+		await _frames(3)
+		if calcs._virtual_id != "" or skill_select.selected != 0 or skill_select.item_count != 5:
+			failed = true
+			print("FAIL: the granted skill stays selected after its source is removed")
+	BuildCodec.apply(Build, kept)
+	Build.selected_skill = kept_slot
+	await _frames(3)
 	# defense tab: a boss preset through the dropdown, corruption typed in the tab goes to the enemy, tiles filled
 	tabs.current_tab = 6
 	await _frames(3)

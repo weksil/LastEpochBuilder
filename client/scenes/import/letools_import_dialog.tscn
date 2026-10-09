@@ -1,13 +1,14 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/import/letools_import_dialog.gd" id="1_script"]
 [ext_resource type="Theme" path="res://theme/main_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://scenes/import/maxroll_import_panel.tscn" id="3_maxroll"]
+[ext_resource type="PackedScene" path="res://scenes/import/save_import_panel.tscn" id="4_save"]
 
 [node name="LEToolsImportDialog" type="Window"]
 title = "Import a build"
 initial_position = 1
-size = Vector2i(760, 600)
+size = Vector2i(760, 720)
 visible = false
 transient = true
 exclusive = true
@@ -106,6 +107,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 autowrap_mode = 3
+
+[node name="SavePanel" parent="Panel/Margin/Layout/SourceTabs" instance=ExtResource("4_save")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
 
 [node name="ButtonRow" type="HBoxContainer" parent="Panel/Margin/Layout"]
 layout_mode = 2

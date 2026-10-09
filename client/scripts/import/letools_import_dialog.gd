@@ -1,7 +1,7 @@
 class_name LEToolsImportDialog extends Window
 
-## Dialog "Import a build" with two source tabs. "Maxroll account" is MaxrollImportPanel (its own scene and script);
-## "Last Epoch Tools": link -> planner page -> data hash -> planner_data JSON -> LEToolsImport -> Build.
+## Dialog "Import a build" with three source tabs. "Maxroll account" is MaxrollImportPanel and "Save file" is
+## SaveImportPanel (own scenes and scripts); "Last Epoch Tools": link -> planner page -> data hash -> planner_data JSON -> LEToolsImport -> Build.
 ## A pasted raw JSON (starting with "{") is imported without network access. All nodes are defined in the scene.
 
 signal imported
@@ -25,9 +25,11 @@ func _ready() -> void:
 	close_requested.connect(hide)
 	%SourceTabs.set_tab_title(0, tr("Maxroll account"))
 	%SourceTabs.set_tab_title(1, tr("Last Epoch Tools link"))
+	%SourceTabs.set_tab_title(2, tr("Save file"))
 	# The browser build cannot read lastepochtools.com: its CORS allows only its own origin.
 	%SourceTabs.set_tab_hidden(1, OS.has_feature("web"))
 	%MaxrollPanel.imported.connect(imported.emit)
+	%SavePanel.imported.connect(imported.emit)
 	about_to_popup.connect(_on_about_to_popup)
 	%LoadButton.pressed.connect(_on_load_pressed)
 	%CloseButton.pressed.connect(hide)
@@ -40,7 +42,7 @@ func _ready() -> void:
 func _on_about_to_popup() -> void:
 	if %SourceTabs.current_tab == 0:
 		%MaxrollPanel.get_node("%AccountEdit").grab_focus.call_deferred()
-	else:
+	elif %SourceTabs.current_tab == 1:
 		%LinkEdit.grab_focus.call_deferred()
 
 

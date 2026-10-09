@@ -7,6 +7,7 @@ signal selected(slot_index: int)
 var _current_ability: String = ""
 var _block_signals: bool = false
 var _options_key: String = ""
+var _extra_ability: String = ""  # shown ability that is not in the class list (granted by an item or imported)
 
 
 func _ready() -> void:
@@ -43,6 +44,7 @@ func _on_build_changed() -> void:
 		var ability_name: String = ability.get("abilityName", ability_id)
 		%SkillSelect.add_item(ability_name)
 		%SkillSelect.set_item_metadata(%SkillSelect.item_count - 1, ability_id)
+	_extra_ability = ""
 	_block_signals = false
 
 	sync()
@@ -64,10 +66,10 @@ func sync() -> void:
 		%SkillSelect.select(0)
 		_current_ability = ""
 	else:
-		for i in range(%SkillSelect.item_count):
-			if %SkillSelect.get_item_metadata(i) == ability_id:
-				%SkillSelect.select(i)
-				break
+		var found: int = _find_ability(ability_id)
+		if found < 0:
+			found = _add_extra_ability(ability_id)
+		%SkillSelect.select(found)
 		_current_ability = ability_id
 
 	# Update level
@@ -76,6 +78,28 @@ func sync() -> void:
 	_block_signals = false
 
 	_update_points_label()
+
+
+func _find_ability(ability_id: String) -> int:
+	for i in range(%SkillSelect.item_count):
+		if %SkillSelect.get_item_metadata(i) == ability_id:
+			return i
+	return -1
+
+
+## An ability outside the class list (an imported build can hold skills granted by items or from the unlock lists) is
+## shown as an extra item at the end; the previous extra item is dropped.
+func _add_extra_ability(ability_id: String) -> int:
+	if _extra_ability != "":
+		var old: int = _find_ability(_extra_ability)
+		if old > 0:
+			%SkillSelect.remove_item(old)
+	_extra_ability = ability_id
+	var ability: Dictionary = GameData.get_ability(ability_id)
+	%SkillSelect.add_item(ability.get("abilityName", ability_id))
+	var index: int = %SkillSelect.item_count - 1
+	%SkillSelect.set_item_metadata(index, ability_id)
+	return index
 
 
 func _on_skill_selected(index: int) -> void:

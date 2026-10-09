@@ -15352,3 +15352,96 @@ msgstr "легендарный потенциал %d+"
 
 msgid "exalted"
 msgstr "экзальтированный"
+
+msgid "%s (granted)"
+msgstr "%s (выданный)"
+
+msgid "Granted skills"
+msgstr "Выданные навыки"
+
+msgid "Granted skill"
+msgstr "Выданный навык"
+
+msgid "Counted in"
+msgstr "Учтён в"
+
+msgid "Damage"
+msgstr "Урон"
+
+msgid "This skill is not on the skill bar. Its damage is already counted inside the calculation of bar slot %d (\"%s\") as a triggered component; this entry is a view of that component with its own breakdown and does not add anything to the totals (nothing is counted twice)."
+msgstr "Этого навыка нет на панели. Его урон уже учтён в расчёте слота панели %d (\"%s\") как компонент от триггера; эта запись — представление этого компонента со своей разбивкой и не добавляет ничего к итогам (ничего не учитывается дважды)."
+
+msgid "\nThe same skill is also triggered by bar slots: %s (shown for the first one only)."
+msgstr "\nТот же навык также вызывается от слотов панели: %s (показано только для первого)."
+
+msgid "No trigger events per second: set the event rate in the parameters below (the rate is read by the owning skill)."
+msgstr "Нет событий триггера в секунду: задайте частоту событий в параметрах ниже (её читает навык-владелец)."
+
+msgid "A granted skill has no skill tree and no level of its own in the build: the ability's base damage (level 1) is used, as in the owning skill's calculation. The game data gives no other level for granted casts."
+msgstr "У выданного навыка в сборке нет своего дерева навыка и уровня: используется базовый урон способности (уровень 1), как в расчёте навыка-владельца. Игровые данные не дают другого уровня для выданных применений."
+
+msgid "The trigger fires 0 times per second now, so the owning skill has no component for it."
+msgstr "Сейчас триггер срабатывает 0 раз в секунду, поэтому у навыка-владельца нет для него компонента."
+
+msgid "Save file"
+msgstr "Файл сохранения"
+
+msgid "Import a character from a save file"
+msgstr "Импорт персонажа из файла сохранения"
+
+msgid "Analyse a build from the offline character file of the game. One file is one character. The current build will be replaced."
+msgstr "Анализ сборки по офлайн-файлу персонажа из игры. Один файл — один персонаж. Текущая сборка будет заменена."
+
+msgid "On Windows the files are in this folder; they are named like 1CHARACTERSLOT_BETA_0 or CHARACTERSLOT_BETA_n (stash files cannot be imported):"
+msgstr "В Windows файлы лежат в этой папке; их имена вида 1CHARACTERSLOT_BETA_0 или CHARACTERSLOT_BETA_n (файлы запаса импортировать нельзя):"
+
+msgid "You can also drag the file from the folder onto this window."
+msgstr "Также можно перетащить файл из папки в это окно."
+
+msgid "Choose file…"
+msgstr "Выбрать файл…"
+
+msgid "Import"
+msgstr "Импорт"
+
+msgid "Choose a character save file"
+msgstr "Выберите файл сохранения персонажа"
+
+msgid "Open"
+msgstr "Открыть"
+
+msgid "Press Import to replace the current build with this character."
+msgstr "Нажмите «Импорт», чтобы заменить текущую сборку этим персонажем."
+
+msgid "Could not open %s."
+msgstr "Не удалось открыть %s."
+
+msgid "Could not read the file."
+msgstr "Не удалось прочитать файл."
+
+msgid "The file is too big (%d MB): a character save is far smaller."
+msgstr "Файл слишком большой (%d МБ): файл персонажа заметно меньше."
+
+msgid "The file is empty."
+msgstr "Файл пуст."
+
+msgid "This is a JSON file without the EPOCH prefix, not a file written by the game. Pick the character file from the game's Saves folder."
+msgstr "Это JSON-файл без префикса EPOCH, а не файл, записанный игрой. Выберите файл персонажа из папки Saves игры."
+
+msgid "This is not a Last Epoch save file: it does not start with EPOCH."
+msgstr "Это не файл сохранения Last Epoch: он не начинается с EPOCH."
+
+msgid "The save file is damaged: its data could not be read."
+msgstr "Файл сохранения повреждён: его данные не удалось прочитать."
+
+msgid "This file holds no character (stash and global data files cannot be imported). Pick a file named like 1CHARACTERSLOT_BETA_0."
+msgstr "В этом файле нет персонажа (файлы запаса и общих данных импортировать нельзя). Выберите файл с именем вида 1CHARACTERSLOT_BETA_0."
+
+msgid "Could not import the character."
+msgstr "Не удалось импортировать персонажа."
+
+msgid "%s — %s, %s, level %d"
+msgstr "%s — %s, %s, уровень %d"
+
+msgid "Your account name is shown under the health bar above your character in game."
+msgstr "Имя вашего аккаунта отображается в игре под полосой здоровья над персонажем."

@@ -583,6 +583,14 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   (1 + length_increased)`; recovery `(1 + Σincreased CDR (SP 70) + recovery_increased) × (1 + recovery_more)`;
   result `length / recovery`. `charges` (base 1) only affect a burst; in the steady state
   uses/s = min(frequency by cast speed, 1 / cooldown).
+- Granted skills (`engine/granted_calc.gd`, `class_name GrantedCalc`): an ability that a trigger casts (character-mutator passive,
+  unique or affix, skill tree node) and that is not on the bar is a "virtual slot" of the Calculations tab. `SkillCalc` tags the
+  sections of such a component (`granted`) and lists them in `result.granted` / `granted_names`; `GrantedCalc.skills(build)` is
+  the list (id = ability `name`, owner = the first bar slot whose triggers cast it), `GrantedCalc.compute(build, id, details)`
+  a `SkillCalc.compute`-shaped view built from the owner's result: the same rate (event × chance × count, icd cap), the same
+  numbers, level 1 (no level of its own), and no new damage — the owner keeps counting the component, so nothing is counted
+  twice. The selection is kept by the tab (never in `Build.selected_skill`, which stays a bar slot). Character events (`second`,
+  `hit_taken`, …) of passives are counted in the first filled slot only.
 
 ### 9.7 Skill buffs on the character and passives on skill mutators
 - **Scope `global`** (§9.1; `stat`, `stat_list`, buffs on use, `statsInForm`, `statsWhileActive` …): `_add_scoped` puts the

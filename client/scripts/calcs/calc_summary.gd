@@ -54,7 +54,7 @@ func _show_tile(tile: CalcTile, result: Dictionary, label: String, section: Stri
 	var row: Dictionary = _tile_row(result, label, section, any_section)
 	var source: Callable = Callable()
 	if bool(result.get("lean", false)) and not row.is_empty():
-		source = _detailed_breakdown.bind(Build.selected_skill, label, section, any_section)
+		source = _detailed_breakdown.bind(str(result.get("virtual_id", "")), Build.selected_skill, label, section, any_section)
 	tile.show_value(str(row.get("text", "")), sub, str(row.get("breakdown", "")), source)
 
 
@@ -65,8 +65,10 @@ static func _tile_row(result: Dictionary, label: String, section: String, any_se
 	return row
 
 
-static func _detailed_breakdown(slot: int, label: String, section: String, any_section: bool) -> String:
-	return str(_tile_row(SkillCalc.compute(Build, slot, true), label, section, any_section).get("breakdown", ""))
+## `virtual_id` is the granted skill shown instead of the bar slot (GrantedCalc), "" for a bar skill.
+static func _detailed_breakdown(virtual_id: String, slot: int, label: String, section: String, any_section: bool) -> String:
+	var full: Dictionary = GrantedCalc.compute(Build, virtual_id, true) if virtual_id != "" else SkillCalc.compute(Build, slot, true)
+	return str(_tile_row(full, label, section, any_section).get("breakdown", ""))
 
 
 ## Selector "how many projectiles of one use hit the target", only for skills that fire projectiles. Without shotgun

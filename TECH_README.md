@@ -16,9 +16,9 @@ Full plan, architecture and risks: [PLAN.md](PLAN.md).
 |---|---|
 | Formula and data research | done (`research/`) |
 | Extracted game data | ready (`research/data/game/`) |
-| Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers (a trigger of another bar skill is computed through that slot with its own tree and triggers — chains such as Flay → Chaos Bolts → Harvest; a trigger chance can scale with a stat, e.g. Chaos Rip per max mana), minions, uses repeated by active Rogue shadows and Void Knight echoes (Warpath echoes once per second through its node), health and ward on shadow creation), enemy ailments, shreds and curses kept on the target (average stacks and uptime from the chance, hits per second and duration; the skill's hits, minions and zones that apply ailments every interval, the minions and zones of the other bar skills and the skills used on cooldown; stacks spent by consuming hits; Shadow Daggers strikes at 4 stacks as a damage component) unless a number is set on the Conditions tab; the same for the "Buffs on me" list (Dusk / Crimson Shroud from passives, skill nodes and prefabs, per attack, hit taken, dodge or consumed shadow), damage conversions and skill tag changes from tree nodes (a field written into the mutators of several parts of a combo skill counts once; nodes of another bar skill aimed at this skill count for it), character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy, effective health against one enemy attack (the average monster of a level 100 monolith and the attacks of the monolith end bosses and pinnacle bosses, scaled by area level and corruption; dodge/block conversions, conditional defenses of the character mutator, damage taken as another type, delayed damage; maximum hit taken, hits to die with regeneration, ward, leech and on-hit recovery between hits). The test vectors from the research pass |
-| Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, a Defense tab with effective health against boss attacks, Conditions with a filter by source, a stats panel with highlighting of changes, saved builds and a shareable build code (as in Path of Building) |
-| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), import from a local offline save file (a character is imported by account name through Maxroll or by a Last Epoch Tools link; the Weaver tree is not imported, set ids of LE Tools are not imported). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
+| Calculation engine (GDScript, `client/scripts/engine/`) | the shared layer works: stat model, mod sources (class, passives, items, unique items and set bonuses, unique special effects from the model table (784 of 866, the rest are ordinary mods and the altar), special passive lists, idol altars, idols, attributes, blessings, skill tree), models for all 4890 skill tree mutator fields and special stat lists (stats, speed, mana, cooldown, parameters, triggers, sub-skills, minion stats), a skill as a set of damage components (main hit, sub-skills (one sub-skill from the prefab and a tree node is one component with a detonation count), damage from code, supported periodic damage of a single instance (Spirit Plague: damage over the whole action and per second, no crit), curse damage on hitting the target — frequency from two inputs, "your hits" (by default taken from the skill bar) and "minion and ally hits", triggers (a trigger of another bar skill is computed through that slot with its own tree and triggers — chains such as Flay → Chaos Bolts → Harvest; a trigger chance can scale with a stat, e.g. Chaos Rip per max mana; skills cast by passives of the character mutator that are not on the bar, e.g. Flame Walker → Fire Aura, join the first bar skill as trigger components with their own sections, and are listed as virtual skill slots on the Calculations tab), minions, uses repeated by active Rogue shadows and Void Knight echoes (Warpath echoes once per second through its node), health and ward on shadow creation), enemy ailments, shreds and curses kept on the target (average stacks and uptime from the chance, hits per second and duration; the skill's hits, minions and zones that apply ailments every interval, the minions and zones of the other bar skills and the skills used on cooldown; stacks spent by consuming hits; Shadow Daggers strikes at 4 stacks as a damage component) unless a number is set on the Conditions tab; the same for the "Buffs on me" list (Dusk / Crimson Shroud from passives, skill nodes and prefabs, per attack, hit taken, dodge or consumed shadow), damage conversions and skill tag changes from tree nodes (a field written into the mutators of several parts of a combo skill counts once; nodes of another bar skill aimed at this skill count for it), character stats, skill damage, crit, speed, ailment damage (Ignite, Bleed, Poison, etc.: chance, stacks, damage per stack, limits), "in-game" DPS and DPS vs enemy, effective health against one enemy attack (the average monster of a level 100 monolith and the attacks of the monolith end bosses and pinnacle bosses, scaled by area level and corruption; dodge/block conversions, conditional defenses of the character mutator, damage taken as another type, delayed damage; maximum hit taken, hits to die with regeneration, ward, leech and on-hit recovery between hits). The test vectors from the research pass |
+| Client (Godot 4.7) | working MVP: passives, 5 skills with trees (tree visuals from the game client: icons, frames, backgrounds, ornaments, connections), 11 item slots with affixes, idol grid, player and enemy conditions, a Calculations tab with a totals strip, skill buffs on the character and a breakdown of every number, a Defense tab with effective health against boss attacks, Conditions with a filter by source, a stats panel with highlighting of changes, saved builds and a shareable build code (as in Path of Building), character import from an offline save file (web and desktop), virtual skill slots for granted skills on the Calculations tab |
+| Not done | base buffs defined in prefab data rather than in code (Flame Ward 30%, Focus, Rebuke, etc. — their numbers were not found in the dump), the Weaver tree is not imported, set ids of LE Tools are not imported (character import itself works: by account name through Maxroll, by a Last Epoch Tools link or from an offline save file). Damage is calculated against a single target: ailment spreading, chains and area damage to other enemies are not part of DPS. Special effects that reduce to behavior without numbers (immunities, AI, visuals) are listed under "Not counted". What is not counted in a specific build is shown in the "Not counted" section of the Calculations tab |
 
 Deferred tasks are in [BACKLOG.md](BACKLOG.md).
 
@@ -68,7 +68,7 @@ build_web.ps1    builds the browser version (see "Web build")
 release/         README.txt shipped inside the release zip
 PLAN.md          verdict, architecture, phases, risks
 BACKLOG.md       deferred tasks
-research/        research notes (01…07n) and data
+research/        research notes (01…08: 08_build_optimization.md — the damage optimization method) and data
   02_assets/     texts and images of the formulas from the in-game guide (PNGs are in Git LFS)
   data/          enums, tables and JSON with game data (data/game/*.json)
 client/          Godot project
@@ -76,22 +76,25 @@ client/          Godot project
   assets/items/  item type icons from the game client (PNGs in Git LFS; tools/extract/extract_item_icons.py)
   assets/equipment/  equipment and unique item pictures from the game client (lossy WebP in Git LFS; tools/extract/extract_item_pictures.py)
   assets/idols/  idol, unique idol and altar pictures from the game client (lossy WebP in Git LFS; tools/extract/extract_item_pictures.py)
+  assets/hints/  hint picture of the in-game name label next to the account name field (account_name_hint.webp)
   i18n/          ru.po — Russian translation (msgid = English source text)
   data/          the client's hand-written tables: unique_effect_models.json (unique special effects),
                  field_models.json (models of mutator fields and special stat lists, ENGINE.md §9)
   docs/          ENGINE.md — engine specification, UI.md — contract for UI scripts
-  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, defense/, stats/, trees/, builds/, loot_filter/, common/
-  scripts/       logic (.gd): autoload/ (Settings, GameData, Build, BuildHistory — undo / redo), engine/ (calculations), UI scripts in folders matching the scenes
+  scenes/        UI scenes (.tscn): main, passives/, skills/, items/, config/, calcs/, defense/, stats/, trees/, builds/, loot_filter/, common/, import/
+  scripts/       logic (.gd): autoload/ (Settings, GameData, Build, BuildHistory — undo / redo), engine/ (calculations; granted_calc.gd — virtual
+                 skill slots, save_import.gd — offline save file), import/ (import dialogs and panels, save_import_panel.gd), UI scripts in folders matching the scenes
   tests/         headless checks: engine_test (test vectors), ui_smoke (run through all tabs), trees_test, minion_test, letools_import_test, maxroll_import_test,
-                 layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test, loot_filter_test,
-                 readme_screenshots (captures docs/screenshots, needs a window), perf_bench (engine timing and golden output)
+                 save_import_test, skill_slot_import_test, layout_test, relevance_test, i18n_test, build_codec_test, build_history_test, defense_test, loot_filter_test,
+                 readme_screenshots (captures docs/screenshots, needs a window), perf_bench (engine timing and golden output);
+                 fixtures/ (saved responses and the synthetic offline save save_synthetic.json)
   export_presets.cfg  export preset "Windows Desktop"
   theme/         main_theme.tres — the shared theme and style variations
   addons/        the godot_ai plugin
 ```
 
 Not part of the repository (kept locally, see `.gitignore`):
-`dump/` and `tools/` (client decompilation, Ghidra, Cpp2IL, scripts), `build/` (release output), machine-specific files
+`dump/` and `tools/` (client decompilation, Ghidra, Cpp2IL, scripts, `tools/optimizer/` — the build optimizer of research/08), `build/` (release output), machine-specific files
 (`.mcp.json`, `.serena/project.local.yml`, IDE folders, Godot `override.cfg` / `export_credentials.cfg`), notes
 derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
 `abilities_code_damage.json`), agent briefs, `client/.godot/`, logs.
@@ -171,6 +174,9 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   Holy Aura, Symbols of Hope, Enchant Weapon, Firebrand, Aura of Decay, Dark Quiver) and sections in a fixed order: damage components (main hit, sub-skills,
   triggers, minions — Summon Skeleton and Summon Skeletal Mage split between the types of their rotation), conversions and final tags, crit and penetration, speed, mana and cooldown, ailments (a section for each), skill parameters from the tree,
   DPS vs enemy (hit without crit and with crit as on the dummy, average hit, per component and the total), sustain (leech, health/mana/ward per hit).
+  Virtual skill slots: skills cast by triggers that are not on the bar (e.g. Fire Aura cast by Flame Walker) are listed in the skill selector
+  under a "Granted skills" separator as "<name> (granted)". Their breakdown is a view of the trigger component the owning bar slot already counts,
+  so the owner's total is unchanged; the skill level is shown as 1 (no level model for granted casts). `Build.selected_skill` is never a virtual value.
   "+" expands the breakdown (in a monospace font; expanded rows do not collapse on recalculation), "Not counted" is a collapsible block.
 - **Defense** — effective health against one enemy attack, as "Maximum hit taken" / "Total EHP" in Path of Building. Two dropdowns:
   the group, then its attack. Groups: the average monster of a level 100 monolith (hit with every damage type, melee hit, ranged hit,
@@ -204,14 +210,19 @@ derived directly from disassembly (`05_*`, `06?_dump_*`, `07j_*`,
   legendary affixes) and set items, idols with their affixes, and a rule that hides the other normal / magic / rare items. Rules, affixes and
   uniques can be unchecked in a tree. The filter is saved into the game's Filters folder (Windows build), as a file, downloaded (browser) or
   copied as XML. The format follows `ItemFiltering.ItemFilter` of the game code and the game's own filter files (client/docs/UI.md "Loot filter").
-- **Import** (the "Import…" button in the top bar) — two tabs:
+- **Import** (the "Import…" button in the top bar) — three tabs:
   - "Maxroll account": the account name → the character list (`GET planners.maxroll.gg/lastepoch/characters/<account>`) → pick a
-    character → `GET …/<account>/<name>`. The answer is the game's offline-save JSON with binary item blobs (`research/07e`), the
+    character → `GET …/<account>/<name>`. A hint picture next to the account field shows where the name is in the game (the in-game name label under the health bar; `client/assets/hints/`). The answer is the game's offline-save JSON with binary item blobs (`research/07e`), the
     profile on Maxroll must be public. The last account name is kept in `user://settings.cfg`.
   - "Last Epoch Tools link": a build by a lastepochtools.com/planner/<code> link (or by pasted planner_data JSON). On a timeout
     (HTTPRequest.RESULT_TIMEOUT) the dialog waits 3 s and retries, up to 3 times.
 
-  Both give class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings. The current build is replaced;
+  - "Save file": the game's offline character file (`%USERPROFILE%\AppData\LocalLow\Eleventh Hour Games\Last Epoch\Saves`,
+    files like `1CHARACTERSLOT_BETA_0`; `SaveImport` strips the `EPOCH` prefix and reuses `MaxrollImport.to_build`, files over 20 MB,
+    stash / global files and JSON without the prefix are refused with a message). Desktop: a file dialog (the Saves folder by default);
+    browser: a hidden `<input type="file">` opened from the button handler through `JavaScriptBridge`, or a file dropped onto the page.
+
+  All three give class, mastery, level, passives, 5 skills with trees, items, idols with altar, blessings. The current build is replaced;
   unsupported things (Weaver; set items of LE Tools) and unrecognized ids are listed as warnings.
 - **Stats** (on the right) — attributes, resources, defenses, resistances; a row's tooltip is its breakdown.
 
@@ -226,6 +237,8 @@ Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/relevan
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/i18n_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/letools_import_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/maxroll_import_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/save_import_test.tscn
+Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/skill_slot_import_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/defense_test.tscn
 Godot_v4.7-stable_win64_console.exe --headless --path client res://tests/loot_filter_test.tscn
 ```
@@ -245,11 +258,14 @@ the XML parses and has the game's rule order, legendary and exalted rules, unche
 filter to load in the game by hand);
 `minion_test` checks the transfer of player stats to a minion (07d §1.1);
 `layout_test` imports an example build and checks that every tab fits a 1600 px wide window (long texts wrap);
+`engine_test` also checks the virtual skill slot of Fire Aura (Flame Walker), and `ui_smoke` selects it and checks the fallback to the bar slot;
+`skill_slot_import_test` checks that every imported skill of the fixture builds shows in its Skills tab dropdown (skills outside the class list included);
 `letools_import_test` checks import from Last Epoch Tools (LZString, ids, links, the saved response `tests/fixtures/letools_A83KxJq5.json`,
 skills taken from the specialized trees rather than the skill bar (`letools_Q0V58LLX.json`), applying to `Build`, the button in the top bar); `letools_live` (not part of the suite, needs network) loads a live link through the dialog;
 `maxroll_import_test` checks the Maxroll import (URLs, the character list `maxroll_list_jessrabbit.json`, item blob versions 1–6,
 sealed / corrupted / primordial affixes, the characters `maxroll_char_palading.json` and `maxroll_char_chudlet.json` with altars, idols,
 blessings and a set item, applying to `Build`); `maxroll_live` (not part of the suite, needs network) imports a live character through the dialog;
+`save_import_test` checks the offline save import (file guards, the synthetic save `tests/fixtures/save_synthetic.json` with old / new item blobs and unknown ids, applying to `Build`, the panel; it also reads the local game saves read-only and prints a summary);
 `trees_test` checks that tree nodes have icons from the game client and that every node of all 136 current skill trees and 5 passive trees can be taken
 (obsolete version 0 trees — Fire Shield, Ice Ward, etc. — are skipped).
 
@@ -333,7 +349,7 @@ the copy. Test locally: `python -m http.server -d build/web 8060`, open `http://
   the download small; new images there need the same import settings.
 - `user://` (settings, saved builds) lives in the browser IndexedDB. The "open the saves folder" button is hidden there.
 - Clipboard: Godot copies to the system clipboard; Ctrl+V in a text field pastes from it (Godot reads the browser paste event).
-- Import: the Last Epoch Tools tab is hidden (lastepochtools.com sends CORS only for its own origin); the Maxroll import works
+- Import: the Last Epoch Tools tab is hidden (lastepochtools.com sends CORS only for its own origin); the Maxroll import and the save file import (a file chosen or dropped, read in the page) work
   (Maxroll sends CORS for any origin), as does a build code pasted in "Builds…".
 - Publishing: `.github/workflows/pages.yml` runs on pushes to `main` that touch the client, the data or the build script, and by
   hand (Actions → "Web build to GitHub Pages"). Repository settings → Pages → Source must be "GitHub Actions".

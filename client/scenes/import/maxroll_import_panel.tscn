@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/import/maxroll_import_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://tnvhpikppcla" path="res://assets/hints/account_name_hint.webp" id="2_hint"]
 
 [node name="MaxrollImportPanel" type="VBoxContainer"]
 theme_override_constants/separation = 8
@@ -33,6 +34,26 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Find characters"
+
+[node name="AccountHintRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AccountHintPicture" type="TextureRect" parent="AccountHintRow"]
+custom_minimum_size = Vector2(300, 247)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_hint")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AccountHintCaption" type="Label" parent="AccountHintRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"MutedLabel"
+text = "Your account name is shown under the health bar above your character in game."
+autowrap_mode = 3
 
 [node name="CharacterList" type="ItemList" parent="."]
 unique_name_in_owner = true

@@ -164,6 +164,10 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	var ail_notes: Array[String] = []
 	var sustain_hits: Array[Dictionary] = []
 	var main_crit: float = 0.0
+	# skills the build casts through triggers that are not on the bar (GrantedCalc shows each as its own entry)
+	var granted_names: Dictionary = granted_trigger_names(build, slot, str(ab.get("name", "")), s.get("triggers", []))
+	var granted: Array[Dictionary] = []
+	var granted_main: String = ""
 	if components.is_empty():
 		notes.push_front(LE.t("The skill has no hit damage in its main component (damage is set by code or sub-skills) — speed, mana and ailments are shown."))
 		if not head_ctx["conversion_rows"].is_empty():
@@ -198,6 +202,7 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 				components.append_array(EnemyAilments.threshold_components(build, store, comp_results, notes))
 			continue
 		var prefix: String = "" if idx == 0 else "%s: " % comp["name"]
+		var first_section: int = sections.size()
 		var comp_store: StatStore = _component_store(store, s, comp)
 		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, comp.get("conversions", s["conversions"]), notes, comp["base"])
 		var is_curse: bool = comp["kind"] == "curse_hit"
@@ -255,14 +260,31 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 			extra_enemy_sections.append({"title": prefix + LE.t("Against enemy"), "rows": comp_enemy})
 		comp_results.append({"name": str(comp["name"]), "hit_enemy": float(comp_speed["enemy_dps"]),
 			"ail": ail, "events": events})
+		var comp_ability: String = str((comp["ab"] as Dictionary).get("name", ""))
+		if comp["kind"] == "trigger" and granted_names.has(comp_ability):
+			for k in range(first_section, sections.size()):
+				if str((sections[k] as Dictionary)["title"]) != LE.t("Speed and mana"):
+					_tag_granted(sections[k], comp_ability, prefix)
+			if idx > 0:
+				_tag_granted(extra_enemy_sections[extra_enemy_sections.size() - 1], comp_ability, prefix)
+			else:
+				granted_main = comp_ability
+			granted.append({"ability": comp_ability, "name": str(comp["name"]), "rate": events, "note": str(comp["note"]),
+				"hit_enemy": float(comp_speed["enemy_dps"]), "ail_dps": float(ail["enemy_dps"]), "enemy_rows": comp_enemy.size()})
 		idx += 1
 		# after the skill's own components: the strikes of threshold ailments it builds up (Shadow Daggers at 4 stacks)
 		if idx == own_count:
 			components.append_array(EnemyAilments.threshold_components(build, store, comp_results, notes))
 	# zones of the skill, its parts and the abilities its nodes grant that apply ailments every interval without a hit
 	for zr: Dictionary in _zone_results(build, ab, s, components, store, notes, ail_notes):
+		var zone_granted: bool = granted_names.has(str(zr["ability"]))
 		for section: Dictionary in zr["ail"]["sections"]:
 			sections.append({"title": "%s: %s" % [zr["name"], section["title"]], "rows": section["rows"]})
+			if zone_granted:
+				_tag_granted(sections[sections.size() - 1], str(zr["ability"]), "")
+		if zone_granted:
+			granted.append({"ability": str(zr["ability"]), "name": str(zr["name"]), "rate": 0.0, "note": "", "zone": true,
+				"hit_enemy": 0.0, "ail_dps": float(zr["ail"]["enemy_dps"]), "enemy_rows": 0})
 		comp_results.append(zr)
 	if comp_results.is_empty():
 		comp_results.append({"name": "", "hit_enemy": 0.0, "ail": {"sections": [], "enemy_dps": 0.0, "applied": []}, "events": uses})
@@ -302,6 +324,8 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	if not param_rows.is_empty():
 		sections.append({"title": LE.t("Skill parameters"), "rows": param_rows})
 	sections.append({"title": LE.t("Against enemy"), "rows": enemy_rows})
+	if granted_main != "":
+		(sections[sections.size() - 1] as Dictionary)["granted_main"] = granted_main
 	sections.append_array(extra_enemy_sections)
 	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
 	sustain_rows.append_array(ShadowCalc.sustain_rows(build, ab, s, uses))
@@ -326,7 +350,31 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		applied.append_array(cr["ail"].get("applied", []))
 	result["ailments_applied"] = applied
 	result["resources"] = s.get("resources", [])
+	result["granted"] = granted
+	result["granted_names"] = granted_names.keys()
 	return result
+
+
+## Abilities the skill's triggers cast that are not on the bar and deal damage or have a zone: {ability name: true}. Each is a
+## granted skill (GrantedCalc): its component stays inside this skill's calculation.
+static func granted_trigger_names(build: Node, slot: int, ab_name: String, triggers: Array) -> Dictionary:
+	var out: Dictionary = {}
+	for trig: Variant in triggers:
+		if not trig is Dictionary:
+			continue
+		var trig_name: String = str(trig.get("ability", ""))
+		if trig_name == "" or trig_name == ab_name or SkillComponents.bar_slot_of(build, slot, trig_name) >= 0:
+			continue
+		var sub: Dictionary = GameData.ability_by_name(trig_name)
+		if not sub.is_empty() and not (SkillComponents._first_damage(sub).is_empty() and AilmentCalc.zones(sub).is_empty()):
+			out[trig_name] = true
+	return out
+
+
+## Marks a section as belonging to a granted skill; `strip` is the prefix of its title that names the component.
+static func _tag_granted(section: Dictionary, ability: String, strip: String) -> void:
+	section["granted"] = ability
+	section["strip"] = strip
 
 
 ## A specialized skill triggered by this one (component kind "skill"): computed through its own slot as a triggered use at the
@@ -569,7 +617,7 @@ static func _zone_results(build: Node, ab: Dictionary, s: Dictionary, components
 			var label: String = LE.t("Zone \"%s\"") % str(zone["name"])
 			_tag_applied(ail, "zone", label)
 			if not ail["applied"].is_empty():
-				out.append({"name": label, "hit_enemy": 0.0, "ail": ail, "events": 1.0 / float(zone["interval"])})
+				out.append({"name": label, "ability": zab_name, "hit_enemy": 0.0, "ail": ail, "events": 1.0 / float(zone["interval"])})
 	return out
 
 

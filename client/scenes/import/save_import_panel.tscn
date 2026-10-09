@@ -1,0 +1,96 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/import/save_import_panel.gd" id="1_script"]
+
+[node name="SaveImportPanel" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Import a character from a save file"
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Analyse a build from the offline character file of the game. One file is one character. The current build will be replaced."
+autowrap_mode = 3
+
+[node name="PathHint" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "On Windows the files are in this folder; they are named like 1CHARACTERSLOT_BETA_0 or CHARACTERSLOT_BETA_n (stash files cannot be imported):"
+autowrap_mode = 3
+
+[node name="PathEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%USERPROFILE%\\AppData\\LocalLow\\Eleventh Hour Games\\Last Epoch\\Saves"
+editable = false
+selecting_enabled = true
+
+[node name="WebHint" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "You can also drag the file from the folder onto this window."
+autowrap_mode = 3
+
+[node name="ChooseRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChooseButton" type="Button" parent="ChooseRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Choose file…"
+
+[node name="FileLabel" type="Label" parent="ChooseRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="SummaryLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+autowrap_mode = 3
+
+[node name="ImportRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ImportButton" type="Button" parent="ImportRow"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+disabled = true
+text = "Import"
+
+[node name="StatusScroll" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatusLabel" type="Label" parent="StatusScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="FileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Choose a character save file"
+initial_position = 1
+size = Vector2i(760, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+use_native_dialog = true

@@ -389,7 +389,8 @@ static func _add_passive_triggers(build: Node, slot: int, result: Dictionary) ->
 			var model: Dictionary = _passive_model(target)
 			if str(model.get("kind", "")) != "trigger":
 				continue
-			if not SkillCalc.OWN_EVENTS.has(str(model.get("on", "use"))) and slot != UniqueEffects.first_skill_slot(build):
+			var on: String = str(model.get("on", "use"))
+			if (UniqueEffects.CHARACTER_EVENTS.has(on) or not SkillCalc.OWN_EVENTS.has(on)) and slot != UniqueEffects.first_skill_slot(build):
 				continue
 			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
 			_apply_model(model, v, entry["source"], entry["title"], result)
