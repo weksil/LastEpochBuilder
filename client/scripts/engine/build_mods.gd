@@ -218,6 +218,7 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 	_add_other_skill_nodes(build, slot, result)
 
 	_add_skill_passives(build, ability, result)
+	_add_passive_triggers(build, slot, result)
 	BUFF_SKILLS.apply(build, slot, ability, result)
 	_add_ability_scaling(build, ability, global, store, result["conversions"])
 	UniqueEffects.apply_skill(build, ability, result)
@@ -372,6 +373,28 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 				result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
 
+## Triggers written into the character mutator by passives (Flame Walker: Fire Aura each second): the cast skill is not on
+## the bar, so the triggers join the skill's own ones. Events of the character (not the skill's own uses and hits) are counted in the first
+## filled slot only, otherwise every skill on the bar would count them again; a use triggered by another skill is not a
+## character event.
+static func _add_passive_triggers(build: Node, slot: int, result: Dictionary) -> void:
+	if str(result["ctx"].get("use", "")) == "triggered":
+		return
+	for entry: Dictionary in _passive_entries(build):
+		var points: int = entry["points"]
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
+			var target: String = str(effect.get("target", ""))
+			if points < int(effect.get("minPoints", 0)) or not target.begins_with("CharacterMutator."):
+				continue
+			var model: Dictionary = _passive_model(target)
+			if str(model.get("kind", "")) != "trigger":
+				continue
+			if not SkillCalc.OWN_EVENTS.has(str(model.get("on", "use"))) and slot != UniqueEffects.first_skill_slot(build):
+				continue
+			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
+			_apply_model(model, v, entry["source"], entry["title"], result)
+
+
 ## First part of the target ("A & B") that has a field model.
 static func _passive_model(target: String) -> Dictionary:
 	for part: String in target.split(" & "):
@@ -479,6 +502,8 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 			var line: String = LE.t("Passive \"%s\": %s") % [title, text]
 			if not notes.has(line):
 				notes.append(line)
+		"trigger":
+			pass  # the cast skill is not on the bar: counted with the skills (_add_passive_triggers)
 		_:
 			_passive_unmodelled(notes, title, effect)
 

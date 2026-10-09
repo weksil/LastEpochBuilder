@@ -24,12 +24,35 @@ func _ready() -> void:
 	_item_compare()
 	_projectiles()
 	_item_triggers()
+	_passive_granted_skill()
 	_shadows_echoes_buffs()
 	_review_damage_fixes()
 	_review_mod_fixes()
 	_lean_and_cache()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
+
+
+## Flame Walker (Mage passive 38) casts Fire Aura, which is not on the bar: counted as a trigger component of the first skill only.
+func _passive_granted_skill() -> void:
+	Build.set_class(1)
+	Build.set_mastery(3)
+	Build.set_level(100)
+	Build.set_skill(0, "fi9")
+	Build.set_skill(1, "fw3d")
+	Build.passives[38] = 8
+	var first: Dictionary = SkillCalc.compute(Build, 0)
+	var second: Dictionary = SkillCalc.compute(Build, 1)
+	var aura_rows: int = 0
+	for sec: Dictionary in first["sections"]:
+		if str(sec["title"]).begins_with("Fire Aura"):
+			aura_rows += 1
+	_check("Flame Walker: Fire Aura sections on the first skill", float(aura_rows), 3.0)
+	for sec: Dictionary in second["sections"]:
+		_check("Flame Walker: second skill has no Fire Aura (%s)" % sec["title"], 1.0 if str(sec["title"]).begins_with("Fire Aura") else 0.0, 0.0)
+	Build.passives.erase(38)
+	Build.set_skill(0, "")
+	Build.set_skill(1, "")
 
 
 func _check(label: String, got: float, want: float, eps: float = 0.0005) -> void:

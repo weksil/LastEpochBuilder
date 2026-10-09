@@ -3965,10 +3965,7 @@
 "confidence": "D?",
 "kind": "trigger",
 "note": "On move or melee hits; x2 at low aura count",
-"on": "second",
-"when": [
-"player:moving"
-]
+"on": "second"
 },
 "CharacterMutator.flowGenOrProcCritMulti": {
 "confidence": "D",
