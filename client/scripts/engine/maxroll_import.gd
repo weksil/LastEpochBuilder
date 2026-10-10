@@ -366,7 +366,7 @@ static func _idols(idols: Array, items: Dictionary, warnings: Array[String]) -> 
 		items[IdolGrid.key(row, col)] = item
 
 
-## Blessing items (base 34): id = subtype, roll = the first implicit roll, slot = the first timeline of the blessing.
+## Blessing items (base 34): id = subtype, roll = the first implicit roll, rolls = all implicit rolls, slot = the first timeline of the blessing.
 static func _blessings(blessing_items: Array, warnings: Array[String]) -> Dictionary:
 	var result: Dictionary = {}
 	for decoded: Dictionary in blessing_items:
@@ -377,7 +377,7 @@ static func _blessings(blessing_items: Array, warnings: Array[String]) -> Dictio
 			warnings.append(LE.t("Blessing %d is unknown, skipped.") % blessing_id)
 			continue
 		var timeline_id: int = int(timelines[0].get("timelineID", -1))
-		result[timeline_id] = {"id": blessing_id, "roll": int(decoded["implicit_rolls"][0])}
+		result[timeline_id] = {"id": blessing_id, "roll": int(decoded["implicit_rolls"][0]), "rolls": (decoded["implicit_rolls"] as Array).duplicate()}
 	return result
 
 

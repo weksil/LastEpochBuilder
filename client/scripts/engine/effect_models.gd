@@ -227,7 +227,7 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 				total += _attribute(store, ATTR_SP[key])
 			return float(total)
 		"added":
-			return store.query_untagged(GameData.sp_id(arg)).added
+			return store.query(GameData.sp_id(arg), 0, 0, 0, false).added
 		"weapon_added":
 			# added damage of one tag (melee …) on the equipped weapons: implicits and affixes of the weapon and off-hand items
 			var tag: int = LE.tag_mask(arg.capitalize())
@@ -241,9 +241,9 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 						sum += mod.added
 			return sum
 		"value":
-			return store.query_untagged(GameData.sp_id(arg)).value()
+			return store.query(GameData.sp_id(arg), 0, 0, 0, false).value()
 		"increased":
-			return store.query_untagged(GameData.sp_id(arg)).increased
+			return store.query(GameData.sp_id(arg), 0, 0, 0, false).increased
 		"added_exact":
 			var sp: int = GameData.sp_id(arg)
 			var mask: int = int(per.get_slice(":", 2))

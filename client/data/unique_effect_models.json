@@ -4175,7 +4175,7 @@
   "445:0": {
    "kind": "stat",
    "stat": "ManaEfficiency",
-   "mod": "increased",
+   "mod": "added",
    "confidence": "D"
   },
   "50:2": {

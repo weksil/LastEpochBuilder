@@ -408,7 +408,7 @@ static func _convert_item(raw: Dictionary, label: String, warnings: Array[String
 
 
 ## Blessings of the planner: {timelineID: {id, ir}} (an empty build sends []; a list of null / {id, ir} is also accepted).
-## Id: base 34, sub = blessing id; roll = ir[0].
+## Id: base 34, sub = blessing id; roll = ir[0], rolls = ir (one roll byte per implicit).
 static func _blessings(raw_blessings: Variant, warnings: Array[String]) -> Dictionary:
 	var result: Dictionary = {}
 	var entries: Array = []  # [timeline id or -1, raw]
@@ -437,7 +437,14 @@ static func _blessings(raw_blessings: Variant, warnings: Array[String]) -> Dicti
 			timeline_id = int(timelines[0].get("timelineID", -1))
 		var rolls: Variant = raw.get("ir")
 		var roll: int = int(rolls[0]) if rolls is Array and not rolls.is_empty() else 255
-		result[timeline_id] = {"id": blessing_id, "roll": roll}
+		var implicit_rolls: Array = []
+		if rolls is Array:
+			for r: Variant in rolls:
+				implicit_rolls.append(clampi(int(r), 0, 255))
+		var stored: Dictionary = {"id": blessing_id, "roll": roll}
+		if not implicit_rolls.is_empty():
+			stored["rolls"] = implicit_rolls
+		result[timeline_id] = stored
 	return result
 
 

@@ -1100,3 +1100,37 @@ Status after the defence wave (working tree, not committed). Part 2 findings, gr
 - character_calc.gd "Damage taken from hits" row ignores the specialTag mask (see #68).
 - #71 limit and #69 residual (only the f7 queue feeds pending slow damage) are documented, not data-settled.
 - Wording: PP 96 label "Health on sliding hit" should read Glancing Blow.
+
+# Fix status (mana)
+
+Status after the mana wave (working tree, not committed). Re-read in this wave: BaseMana.getManaCost(Ability) ISIL lines 418-505 (the decompile drops the efficiency division and the minimum, so ISIL is the authority), Stats.GetStatValue (Stats.c:2093), BaseMana level and attribute loops (ISIL 242-286, 361-383), vtable slot 0xBE8 = getAddedManaCostDivider (SwarmbladeSummonHiveMutator getAddedManaCostDivider calls slot 0xBE8 and getIncreasedManaCost calls 0xBF8), DreamslashMutator.getMinimumManaCost, DecoyMutator.getAddedManaCostDivider, JavelinMutator sign flip (ISIL 764, 771).
+
+| # | Status | Note / unblocker |
+|---|---|---|
+| 18 | PARTIAL | Efficiency (SP 69, extra 0 only), SP 66 cost stats (extra = ability index, zero matches), minimumManaCost floor, zero clamp, attribute and level scaling of SP 66 / 69 read as the game does. Not modelled: BaseMana+0x98 prefab divider (taken as 0); mutator overrides of getMinimumManaCost (Fireball, Healing Hands, Sprigg Vale Bolt, Aura of Decay, ...) and of GetMoreManaCost (Ballista, Frost Wall, Glyph of Dominion, Meteor, Runic Invocation), noManaCost and getAttributeScaling overrides. Unblocker: read those override bodies. Vectors: engine_test.gd _mana_cost_audit. |
+| 100 | PARTIAL | 20 divider models increased to added ManaEfficiency; 6 'mana increased -f' divider models are ManaEfficiency added f; Decoy unique 445:0 added; Javelin next melee is -f ManaCost (factor -1); Frost Wall wall pass is a flag (its more -f belongs to Glyph / Runic Invocation, not modelled). Still approximate: DetonatingArrow costsZeroMana and IceThorns freeIfUsing2hMelee (mana increased -1). |
+
+# Fix status (part 3)
+
+Status after the part 3 wave (working tree, not committed in this wave). The headless suite (15 tests) passes. `tools/models/validate.py` takes batch files, not the merged JSON, so edited `field_models.json` entries were checked by hand against its rules. #18 and #100 have their own section above ("Fix status (mana)").
+
+| # | Status | Note / unblocker |
+|---|---|---|
+| 18 | PARTIAL | See "Fix status (mana)". Efficiency, SP 66 cost, minimum floor, zero clamp and scaling modelled; prefab divider and mutator overrides not. |
+| 19 | NOT TOUCHED | Channel cost per second was not part of this wave (the channel efficiency query was aligned with #18 only). Unblocker: model `BaseMana.setChannelCost` / `consumeManaFromChannel` drain rate. |
+| 1 | FIXED | Movement speed row is `(1 + sum increased) * product more - 1` of the untagged SP 9 query; added is the base speed (Stats_GetTotalModifier, SpeedManager.updateSpeed). Follow-up: the game also skips a stat whose special byte differs from the argument, so the row should use the strict `query(MOVESPEED, 0, 0, 0, false)`; impact probably nil (no SP 9 special-tagged mod checked). |
+| 34 | FIXED | Same change as #1 (character sheet row). |
+| 4 | FIXED | `StatMod.quotient_more` matches Stats_QuotientStat (x = -1 gives 0; no 0.01 floor); used by `StatMod.make` and both item_mods sites. |
+| 5 | PARTIAL | Scaled-more clamp removed (multiplyValues is linear). Endurance floor: SKIPPED, the setter of the PrecalculatedStatsHolder +0xc0 field is not in the extracted dump, so whether the upstream sum is floored is unknown. Parry floor: SKIPPED, no call site of GetParryChance in the decomp, the consumer is unverified. |
+| 6 | FIXED | `StatStore.query` has `any_special`; `query_untagged` ignores special as ApplyExternalStats does for non-special SPs. Callers that need the strict form (effect_models sources) use `query(..., false)`. Sheet attributes use `BuildMods.attribute_value`. No current number changes. |
+| 31 | SKIPPED | Lunge `Ability.stopRange` (0x174) and `subtractStopRangeForManaCostPerDistance` (0xC8) are not extracted, the distance helper FUN_1803ed2c0 (planar vs 3D) is unidentified, and there is no per-skill distance input. Once known, the term is an extra `added` argument of `mana_parts`. |
+| 36 | FIXED | Refracted multiplier applied to the already-rounded rolled value (AffixList.ChangeAffixModifier: `rounded * (extra + 1)`, no re-round). |
+| 37 | FIXED | Optional per-implicit `rolls` on blessings (build_mods, LE Tools / Maxroll importers, codec, UI label). Review follow-up: `blessing_row._on_build_changed` assigns the slider value, and a changed value fires `set_blessing`, which stores `{id, roll}` and drops `rolls`; use `set_value_no_signal` or keep `rolls` when the roll is unchanged. Not covered by unit tests. |
+| 38 | FIXED | Altar property 21 is a pairwise test of top edge and area over all idols (UpdateStatsFromAltarMods), columns ignored. Volatile Reversal fixture DPS expectation updated (1694101.45 to 1688563.45) accordingly; orientation rests on the GetSlotState reading `matrix[x][len-1-y]`. |
+| 43a | FIXED | Heretical / omen / weaver classification from subtype mapping and `affixEffectiveness` instead of names; identical to the name rule on all idol subtypes in items.json. |
+| 43b | SKIPPED | Idol limits: the float-to-int helper FUN_1803ecf60 used by the CanPlaceNew*Idol tails is not found in the extracted dump, so round vs truncate is unverified. Unblocker: its definition. |
+| 43c | SKIPPED | Slot unlock needs a new build input (unlocked-rewards byte at container +0xa0, default 0xff, from quests) and a product decision; current all-unlocked equals the game's default byte. |
+| 43d | SKIPPED | Missing-roll defaults: no game fact settles them (arrays always exist in saved items). `_add_blessings` defaults to 0 while codec and UI default to 255; unreachable in practice, cosmetic. |
+| 61 | REFUTED | No change. The mod effect is f(c) - 1 but stats scale by (effect + 1) = f(c), so `0.01*f(c)` (0.005*f(c) for DoT) in `enemy.gd corruption_more()` is already correct. |
+| 66 | SKIPPED | No extracted table lists, per passive node, skill node and unique, the AilmentIDs granted or read (text-only `flag` models), nor the full set of shadow-creating abilities. The premise "impossible to set" is false: `config_tab.gd` shows every control under "Show all". |
+| 100 | PARTIAL | See "Fix status (mana)". Divider fields are added ManaEfficiency (vtable 0xBE8 = getAddedManaCostDivider). Javelin sign rests on the Xor negation idiom (constant unread). DetonatingArrow `costsZeroMana` and IceThorns `freeIfUsing2hMelee` stay `mana increased -1`. |

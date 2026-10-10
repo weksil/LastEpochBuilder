@@ -60,17 +60,17 @@ func mods_of(property: int) -> Array[StatMod]:
 ## Query mods for a property with optional filtering.
 ## Filters:
 ## - property must equal
-## - mod.special == 0 or mod.special == special
+## - mod.special == 0 or mod.special == special (not tested when any_special)
 ## - mod.extra == extra or (extra_zero_matches and mod.extra == 0)
 ## - LE.tags_match(mod.tags, check_tags)
-func query(property: int, check_tags: int = 0, special: int = 0, extra: int = 0, extra_zero_matches: bool = true) -> StatQuery:
+func query(property: int, check_tags: int = 0, special: int = 0, extra: int = 0, extra_zero_matches: bool = true, any_special: bool = false) -> StatQuery:
 	var result = StatQuery.new()
 
 	var current: StatStore = self
 	while current != null:
 		for mod: StatMod in current._own_of(property):
-			# Check special
-			if mod.special != 0 and mod.special != special:
+			# Check special (BaseStats.ApplyExternalStats does not test it: any_special)
+			if not any_special and mod.special != 0 and mod.special != special:
 				continue
 
 			# Check extra
@@ -94,10 +94,11 @@ func query(property: int, check_tags: int = 0, special: int = 0, extra: int = 0,
 	return result
 
 
-## Query mods for a property with no tags/special/extra filtering.
-## Only mods with tags == 0 and extra == 0 and special == 0 are included.
+## Base-stat aggregation of BaseStats.ApplyExternalStats: only mods with tags == 0 and extra == 0 are included, whatever
+## their specialTag (the byte is read only for SP 6, 42, 43, 120, 128: do not use this for them).
+## The strict Stats.GetTotal* semantic (special 0) is query(property, 0, 0, 0, false).
 func query_untagged(property: int) -> StatQuery:
-	return query(property, 0, 0, 0, false)
+	return query(property, 0, 0, 0, false, true)
 
 
 ## Sum the added values of mods for multiple properties (untagged only).

@@ -16,9 +16,17 @@ var chance_scaled: int = 0  # With ailment_only: the more value is multiplied by
 var holder_only: bool = false  # Damage more of a DamageConditionalEffect on the skill's DamageStatsHolder: hits and the holder's own damage, never the ailments it applies (AilmentCalc skips it)
 
 
+## Stats.QuotientStat / Stats.StatOfType(QUOTIENT): more = 1/(1+x) - 1, and 0 when x is exactly -1
+## (Stats.c Stats_QuotientStat: `if (param_3 == -1.0) { fVar2 = 0.0; } else { fVar2 = 1.0 / (param_3 + 1.0) - 1.0; }`).
+static func quotient_more(x: float) -> float:
+	if x == -1.0:
+		return 0.0
+	return 1.0 / (x + 1.0) - 1.0
+
+
 ## Create a StatMod with the given parameters.
 ## kind: "added" | "increased" | "more" | "quotient"
-## quotient: more = 1/(1+x) - 1
+## quotient: more = 1/(1+x) - 1 (quotient_more)
 static func make(prop: int, kind: String, value: float, tag_mask: int = 0, src: String = "", special_id: int = 0, extra_id: int = 0) -> StatMod:
 	var mod = StatMod.new()
 	mod.property = prop
@@ -35,9 +43,8 @@ static func make(prop: int, kind: String, value: float, tag_mask: int = 0, src: 
 		"more":
 			mod.more.append(value)
 		"quotient":
-			# quotient -> more: 1/(1+x) - 1
-			# x <= -1 would divide by zero or flip the sign: the divisor is floored
-			mod.more.append(1.0 / maxf(1.0 + value, 0.01) - 1.0)
+			# quotient -> more: 1/(1+x) - 1, no floor (x < -1 gives the negative value the game gives)
+			mod.more.append(quotient_more(value))
 		_:
 			push_error("Unknown mod kind: " + kind)
 
@@ -60,9 +67,9 @@ func scaled(n: float) -> StatMod:
 	copy.increased = increased * n
 	copy.more = more.duplicate()
 
+	# Stats.Stat.multiplyValues: every more value × n with no clamp, the factor (1 + m·n) may go negative
 	for i in range(copy.more.size()):
-		# a scaled more below -100% would give a negative multiplier: stops at ×0
-		copy.more[i] = maxf(copy.more[i] * n, -1.0)
+		copy.more[i] = copy.more[i] * n
 
 	return copy
 

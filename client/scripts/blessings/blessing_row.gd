@@ -105,7 +105,8 @@ func _on_build_changed() -> void:
 	var roll: int = int(blessing_data.get("roll", 255))
 
 	_current_blessing_id = selected_id
-	%RollSlider.value = roll
+	# no signal: a value_changed here would call Build.set_blessing and drop the stored per-implicit rolls
+	%RollSlider.set_value_no_signal(roll)
 
 	# Update select
 	var index: int = %BlessingSelect.get_item_index(selected_id)
@@ -127,13 +128,20 @@ func _update_value_label() -> void:
 
 	var roll: int = int(%RollSlider.value)
 	var parts: Array[String] = []
+	# the per-implicit rolls of the build; a moved slider drops them (Build.set_blessing), so the single roll applies
+	var stored: Dictionary = Build.blessings.get(int(_timeline.get("timelineID", -1)), {})
+	if int(stored.get("roll", -1)) != roll:
+		stored = {}
 
-	for implicit: Dictionary in blessing.get("implicits", []):
+	var implicits: Array = blessing.get("implicits", [])
+	for j in range(implicits.size()):
+		var implicit: Dictionary = implicits[j]
 		var modType: String = str(implicit.get("modType", "ADDED"))
 		var value: float = float(implicit.get("value", 0.0))
 		var maxValue: float = float(implicit.get("maxValue", value))
 		var rounding: String = str(implicit.get("rounding", "Integer"))
-		var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0.0)
+		var implicit_roll: int = BuildMods.blessing_roll(stored, j) if not stored.is_empty() else roll
+		var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, implicit_roll, 0.0)
 		parts.append(_effect_line(implicit, ItemCompare.format_value(implicit, rolled_value)))
 
 	%ValueLabel.text = "\n".join(parts)

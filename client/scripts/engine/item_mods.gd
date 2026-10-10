@@ -43,7 +43,7 @@ static func scale_key(affix: Dictionary) -> String:
 ## slot: item slot name ("helmet", "body", etc.)
 ## item: Dictionary with {base: int, sub: int, implicit_rolls: Array[int], affixes: Array[{id, tier, roll}]}
 ## effect_scale: optional multipliers of the affix effect {"prefix", "suffix", "enchant"} (default 1) — idols in refracted
-## altar slots (AltarMods); applied to the affix effect modifier like the base's affixEffectModifier.
+## altar slots (AltarMods); multiplies each rolled property value (after rounding, without re-rounding: AffixList.ChangeAffixModifier).
 ## Returns: Array[StatMod] for implicits and affixes. Cached by the arguments and the locale (CalcCache): the array is a
 ## copy, the StatMods are shared and must not be changed.
 static func item_mods(slot: String, item: Dictionary, effect_scale: Dictionary = {}) -> Array[StatMod]:
@@ -122,8 +122,7 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 			"MORE":
 				mod.more.append(rolled)
 			"QUOTIENT":
-				# quotient -> more: 1/(1+x) - 1
-				mod.more.append(1.0 / (1.0 + rolled) - 1.0)
+				mod.more.append(StatMod.quotient_more(rolled))
 
 		mod.source = LE.t("%s: %s (implicit)") % [slot_name, implicit.get("propertyName", "Unknown")]
 		mods.append(mod)
@@ -176,8 +175,9 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 		var item_aem: float = OMEN_IDOL_AEM if omen else float(base.get("affixEffectModifier", 0.0))
 		var std_aem: float = affix.get("standardAffixEffectModifier", 0.0)
 		var m: float = AffixMath.effect_modifier(item_aem, std_aem)
-		if not effect_scale.is_empty():
-			m = (1.0 + m) * float(effect_scale.get(scale_key(affix), 1.0)) - 1.0
+		# Refracted-slot multiplier (1 + altar props 1-4): AffixList.ChangeAffixModifier multiplies the value that is already
+		# rounded with m by it, and does not round again
+		var refracted: float = float(effect_scale.get(scale_key(affix), 1.0)) if not effect_scale.is_empty() else 1.0
 
 		# Process each property in this affix
 		var properties: Array = affix.get("properties", [])
@@ -200,6 +200,8 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 
 			# Calculate rolled value
 			var rolled: float = AffixMath.roll_value(lo, hi, rounding, mod_type, roll, m)
+			if refracted != 1.0:
+				rolled = AffixMath.f32(AffixMath.f32(rolled) * AffixMath.f32(refracted))
 
 			# Create mod
 			var property: int = prop.get("property", 0)
@@ -222,8 +224,7 @@ static func _item_mods(slot: String, item: Dictionary, effect_scale: Dictionary)
 				"MORE":
 					mod.more.append(rolled)
 				"QUOTIENT":
-					# quotient -> more: 1/(1+x) - 1
-					mod.more.append(1.0 / (1.0 + rolled) - 1.0)
+					mod.more.append(StatMod.quotient_more(rolled))
 
 			var affix_name: String = affix.get("name", "Unknown")
 			mod.source = "%s: %s T%d" % [slot_name, affix_name, tier]

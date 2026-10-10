@@ -53,7 +53,7 @@ Fields: `property: int`, `special: int = 0`, `tags: int = 0`, `extra: int = 0`, 
 `increased: float`, `more: Array[float]`, `source: String` (display text for the breakdown:
 `Passive "Arcanist" ×3`, `Helmet: Added Health T5`).
 - `static func make(property, kind: String, value: float, tags := 0, source := "", special := 0, extra := 0) -> StatMod`
-  `kind`: `"added" | "increased" | "more" | "quotient"`; quotient → more `1/(1+x) − 1`.
+  `kind`: `"added" | "increased" | "more" | "quotient"`; quotient → more `1/(1+x) − 1` (0 at x == −1, no floor: x < −1 gives the negative value the game gives, `StatMod.quotient_more`).
 - `func scaled(n: float) -> StatMod` — a copy where added, increased **and every more** are multiplied by n (linearly, 06a §6.6).
 - `func describe() -> String` — `"+12 (source)"`, `"+30% inc (source)"`, `"×1.15 more (source)"`.
 
@@ -66,12 +66,15 @@ Query result: `added: float`, `increased: float`, `more: float = 1.0` (product),
 ### `engine/stat_store.gd` (`class_name StatStore extends RefCounted`)
 - `var mods: Array[StatMod]`, `var parent: StatStore = null`.
 - `add(mod)`, `add_all(arr)`, `all_mods() -> Array[StatMod]` (own + the parent chain).
-- `query(property, check_tags := 0, special := 0, extra := 0, extra_zero_matches := true) -> StatQuery`.
-  A mod matches if: `property` is equal; `mod.special == 0 or mod.special == special`;
+- `query(property, check_tags := 0, special := 0, extra := 0, extra_zero_matches := true, any_special := false) -> StatQuery`.
+  A mod matches if: `property` is equal; `mod.special == 0 or mod.special == special` (not tested when `any_special`);
   `mod.extra == extra or (extra_zero_matches and mod.extra == 0)`; `LE.tags_match(mod.tags, check_tags)`.
   added are summed, increased are summed, each more → `more *= (1+m)`.
-- `query_untagged(property) -> StatQuery` — only mods with `tags == 0 and extra == 0 and special == 0`
-  (this is how the game collects health, armor and other defenses, 06a §4.1).
+- `query_untagged(property) -> StatQuery` — mods with `tags == 0 and extra == 0`, any specialTag
+  (`BaseStats.ApplyExternalStats`: this is how the game collects health, armor and other defenses, 06a §4.1).
+  The strict `Stats.GetTotal*` semantic is `query(p, 0, 0, 0, false)`.
+- Attributes (sheet): `BuildMods.attribute_value` = round(Σ added any tags of the attribute + Σ added SP 46)
+  (`CharacterStats.ApplyCoreAttributeModifiers`).
 - `sum_added_untagged(properties: Array) -> float` and `untagged_mods(properties: Array) -> Array[StatMod]`.
 
 ## 3. Build state — autoload `Build`
@@ -208,11 +211,13 @@ An idol is stored in `Build.items` under the key `idol_<row>_<col>` (the top-lef
 (Small −0.83, Grand −0.33, etc.). Rewards for opening slots are considered received.
 Altar (`Build.items["altar"]`, base 41, `engine/altar_mods.gd` `AltarMods.apply`): the grid `idols.json data[sub]`, cells
 `+100` are refracted; properties SP 130 (`tags` = IdolAltarPropertyID): 1–4 — the effect of idol affixes/enchantments in
-refracted cells ×(1 + x) (`ItemMods.item_mods(..., effect_scale)`; prefixes/suffixes scale standard and Weaver affixes,
+refracted cells ×(1 + x) (`ItemMods.item_mods(..., effect_scale)`; the multiplier is applied to each property's value already rounded to its grid and the result is not re-rounded (`AffixList.ChangeAffixModifier`); prefixes/suffixes scale standard and Weaver affixes,
 enchantments scale IdolEnchantment ones, other special types — corrupted etc. — are not scaled: `ItemEquipManager.UpdateStats`,
 `EpochExtensions.IsAffectedByAffectOfStandardPrefixesOrSuffixes`), 9–19 and 22–30 — stats × the number of suitable idols
-(corrupted ones — the `corrupted` flag, heretical/omen/weaver ones — by the subtype name), 20 — SP 117 against bosses per
-unique/legendary idol, 21 — CDR under the size-order condition, limits — notes. Weaver idols (subtypes "… Weaver Idol" of
+(corrupted ones — the `corrupted` flag; heretical — the subtype is in the base's `IdolEnchantmentSubtypeMapping` values; omen —
+affixEffectiveness `OmenIdol`; Weaver — base 25 sub 2, bases 26–28 sub 1: `ItemData.IsHereticalIdol`, `IsOmenIdol`, `isWeaverIdol`), 20 — SP 117 against bosses per
+unique/legendary idol, 21 — CDR if no larger idol has a higher top edge than a smaller one (all pairs, any columns;
+`IdolsItemContainer.UpdateStatsFromAltarMods`), limits — notes. Weaver idols (subtypes "… Weaver Idol" of
 bases 25–28; the only ones IdolWeaver affixes roll on, the second affix may be a standard one): property 5 caps their number
 (`AltarMods.weaver_limit`, `IdolsItemContainer.CanPlaceNewWeaverIdol`; no cap when the rounded value is below 1, i.e. without
 the property); above the cap the calculation keeps them and adds a note, the Idols tab shows a warning.
@@ -359,7 +364,7 @@ Plus skill mods: `attributeScaling[]` — each Stat × the attribute value (int)
   text `"min(res,75)% (uncapped X%)"`.
   "Damage taken from hits" / "… from DoT": per type `(1+added)(1+inc)·Πmore` for `query(6, HIT|DOT | type)`
   (the text is a value or a range across types); Ward per second (92), ward decay threshold (119).
-- "Other": Movement speed `query(9).more − 1` as %, Ward retention (16), Thorns (85) `(1 + Σinc)·Σadded` (no more), Crit avoidance (89) `Σadded·Πmore` (no increased).
+- "Other": Movement speed `(1 + Σinc)·Πmore − 1` of `query_untagged(9)` as % (Stats.GetTotalModifier; added is the base speed and is not counted), Ward retention (16), Thorns (85) `(1 + Σinc)·Σadded` (no more), Crit avoidance (89) `Σadded·Πmore` (no increased).
 Each row: `breakdown` — from `StatQuery.breakdown()` plus a formula explanation.
 
 ## 8. Skill — `engine/skill_calc.gd` (`class_name SkillCalc`)
@@ -409,7 +414,7 @@ Breakdown for each type: base, added (list of mods), Σinc (list), Πmore (list)
   The cast time `useDuration / speedScale` is floored by `minimumUseDuration` when `hasMinimumUseDuration` (Teleport, Transplant: 0.35 s → at most 2.857 uses/s) and, if below
   `useDelay / speedScale`, becomes that delay + 0.01 (`UsingAbility.InitialiseAbilityUse`). Mutator overrides of the cast (`SkillCalc.USE_OVERRIDES`) replace `useDuration` / `speedScaler`
   when their switch is a state the calculator holds: Detonating Arrow as melee 0.75, Lethal Mirage quick attack 0.75 and AttackSpeed, Radiant Lance with the Reliquary the durations of SummonReliquary.
-- Mana: `cost = (ab.manaCost + mana_added)·(1 + mana_inc)` (mana stats are not counted — a note).
+- Mana (`SkillCalc.mana_parts`, BaseMana.getManaCost): `cost = max(0, max(minimumManaCost, (manaCost + mana_added + Σadded SP 66)·(1 + mana_inc + Σincreased SP 66)·Π(1 + more SP 66) / eff))`, `eff = (1 + Σadded SP 69)·(1 + Σincreased SP 69)·Π(1 + more SP 69)`. The SP 66 query passes the skill tags (plus the health-state tags) and the ability index as extra (zero counts as a match); the SP 69 query passes extra 0 only. The skill's `addedManaCostDivider` nodes (mutator slot 0xBE8) and the SP 69 attribute / level scaling are added SP 69 mods, never increased. Attribute and level scaling of SP 66 / 69 follow `BuildMods._mana_scaling_mod`. `minimumManaCost` is the ability's own value, raised by Dreamslash's `min_mana_cost` field when that is above 0; other mutator overrides of the minimum, more, and the attribute scaling list are not modelled.
 - Cooldown: `ab.cooldown` (if present) / (1 + Σ(added + increased) of the SP 70 mods without the Minion/Totem tags), not below the `min_cooldown` param (Smoke Bomb) — shown.
   The speed and CDR queries pass the ability index (`abilityIDEnum`; extra 0 matches all); a cooldown ≤ 0 caps nothing.
 
@@ -653,9 +658,12 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   the counts a model of the build reads (ConfigRelevance group `minions`; the global store is recorded as well). The rows "Minion health", "Armor" and the resistances are in the section "Minion: <name>".
 
 ### 9.5 Blessings — `BuildMods._add_blessings` (`blessings.json`, 07a §8.2)
-`Build.blessings: {timelineID: {id: blessingId, roll: 0..255}}`, one per timeline (normal or grand — from
+`Build.blessings: {timelineID: {id: blessingId, roll: 0..255, rolls?: [0..255]}}`, one per timeline (normal or grand — from
 `timelines[].difficulties[].otherSlotBlessings/anySlotBlessings`). A blessing's implicits → StatMod like an item's implicits
-(`AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0)`), source `Blessing "…"`.
+(`AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0)`), source `Blessing "…"`. The game keeps one roll byte per
+implicit (`ItemData.implicitRolls`, read by `ItemList.GetItemImplicits` at the implicit's index): `rolls` (optional, from the
+LE Tools `ir` and the maxroll/save blob) gives implicit j its own byte through `BuildMods.blessing_roll`; an entry without it
+(older builds, a slider edit) uses `roll` for every implicit.
 
 ### 9.6 Trigger frequency and cooldown
 - The `on` event of a `trigger` model: `use` / `cast` = uses/s; `hit` = uses/s × hits (`hits`); `crit` = hit frequency

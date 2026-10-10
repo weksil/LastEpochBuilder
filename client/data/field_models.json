@@ -1575,7 +1575,7 @@
 "AvalancheMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "AvalancheMutator.additionalSmallBoulders": {
@@ -5609,7 +5609,7 @@
 "CinderStrikeMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "CinderStrikeMutator.burningDaggerManaCostReduction": {
@@ -6886,7 +6886,7 @@
 "DecoyMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "DecoyMutator.canRemoteDetonate": {
@@ -8773,7 +8773,7 @@
 "EarthquakeSlamMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "EarthquakeSlamMutator.aftershockAddedMaxCracks": {
@@ -9223,11 +9223,10 @@
 "stat": "HealthLeech"
 },
 "EntanglingRootsMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "EntanglingRootsMutator.alliesTriggerSeeds": {
 "confidence": "D",
@@ -9673,7 +9672,7 @@
 "EterrasBlessingMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "EterrasBlessingMutator.autoTargetLowestHealthCompanion": {
@@ -12011,7 +12010,7 @@
 "FlameWardMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "FlameWardMutator.additionalWard": {
@@ -13861,17 +13860,14 @@
 "param": "frequency"
 },
 "FrostWallMutator.lessManaCostForGlyphOrInvocOnHit": {
-"confidence": "D?",
+"confidence": "D",
 "input": {
 "default": true,
 "key": "wall_buff",
 "label": "Wall passed by ally"
 },
-"kind": "stat",
-"mod": "added",
-"note": "Next Glyph of Dominion or Runic Invocation x(1-f)",
-"scope": "global",
-"stat": "ManaCost",
+"kind": "flag",
+"text": "The next Glyph of Dominion / Runic Invocation after an ally passes the wall costs less mana (more -f on that skill, not counted)",
 "when": [
 "input:wall_buff"
 ]
@@ -14860,11 +14856,10 @@
 "resource": "ward"
 },
 "GlacierMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "GlacierMutator.addedRimeDuration": {
 "confidence": "D",
@@ -15055,7 +15050,7 @@
 "GlyphOfDominionMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "note": "Cost divided by (1+f)",
 "stat": "ManaEfficiency"
 },
@@ -17933,6 +17928,7 @@
 "key": "next_melee",
 "label": "Next melee hit"
 },
+"factor": -1,
 "kind": "stat",
 "mod": "added",
 "note": "Mana cost reduction",
@@ -18009,7 +18005,7 @@
 "JudgementMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "JudgementMutator.canPull": {
@@ -19034,7 +19030,7 @@
 "MaelstromMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "MaelstromMutator.additionalZapTargets": {
@@ -19685,7 +19681,7 @@
 "MarkForDeathMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "MarkForDeathMutator.bonePrison": {
@@ -19937,11 +19933,10 @@
 "mana": "added"
 },
 "MeteorMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "MeteorMutator.additionalMeteorsOnDirectCast": {
 "ability": "MeteorAoe",
@@ -22216,7 +22211,7 @@
 "RampageMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "scope": "component:Rampage",
 "stat": "ManaEfficiency"
 },
@@ -27287,7 +27282,7 @@
 "SigilsOfHopeMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "SigilsOfHopeMutator.addedMaxSymbols": {
@@ -28151,7 +28146,7 @@
 "SnapFreezeMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "SnapFreezeMutator.chillChance": {
@@ -28300,7 +28295,7 @@
 "SoulFeastMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "SoulFeastMutator.addedWardGainedPerIntelligence": {
@@ -29821,7 +29816,7 @@
 "StormTotemMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "StormTotemMutator.blizzardTotem": {
@@ -31837,7 +31832,7 @@
 "SummonVolatileZombieMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "note": "Cost divided by (1+f)",
 "stat": "ManaEfficiency"
 },
@@ -33358,7 +33353,7 @@
 "SynchronizedStrikesMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "SynchronizedStrikesMutator.addedPoisonChancePerDagger": {
@@ -33589,7 +33584,7 @@
 "TeleportMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "TeleportMutator.addedWard": {
@@ -33721,7 +33716,7 @@
 "TeleportReturnMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "stat": "ManaEfficiency"
 },
 "TeleportReturnMutator.addedWard": {
@@ -34894,11 +34889,10 @@
 "param": "duration"
 },
 "ThornTotemMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "ThornTotemMutator.chanceForDoubleDamage": {
 "confidence": "D",
@@ -35022,11 +35016,10 @@
 "param": "count"
 },
 "TornadoMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "TornadoMutator.attaches": {
 "confidence": "D",
@@ -37251,11 +37244,10 @@
 "param": "void_essence_chance"
 },
 "VolcanicOrbMutator.addedManaCostDivider": {
-"confidence": "D?",
-"factor": -1,
-"kind": "mana",
-"mana": "increased",
-"note": "Mana effectiveness: cost/(1+f), approximately"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"stat": "ManaEfficiency"
 },
 "VolcanicOrbMutator.convertToCold": {
 "confidence": "D",
@@ -37581,7 +37573,7 @@
 "WarcryMutator.addedManaCostDivider": {
 "confidence": "D?",
 "kind": "stat",
-"mod": "increased",
+"mod": "added",
 "note": "Cost divided by (1+f)",
 "stat": "ManaEfficiency"
 },

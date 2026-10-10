@@ -8,6 +8,11 @@ const ORNATE_BASE: int = 31
 const HUGE_BASE: int = 32
 const ADORNED_BASE: int = 33
 
+## ItemList.IdolEnchantmentSubtypeMapping values per base (ItemData.IsHereticalIdol): the heretical subtypes.
+const HERETICAL_SUBTYPES: Dictionary = {29: [5, 6, 7, 8, 9], 30: [5, 6, 7, 8, 9], 31: [5, 6, 7, 8, 9], 32: [5, 6, 7, 8, 9], 33: [7, 8, 9, 10, 11]}
+## ItemData.isWeaverIdol: base -> the Weaver subtype.
+const WEAVER_SUBTYPE: Dictionary = {25: 2, 26: 1, 27: 1, 28: 1}
+
 ## IdolAltarPropertyID -> {label, who, sp, kind, special?, tags?}; `who` is the idol kind counted.
 const PER_IDOL: Dictionary = {
 	9: {"label": "Dodge rating per corrupted idol", "who": "corrupted", "sp": LE.DODGE_RATING, "kind": "added"},
@@ -51,17 +56,18 @@ const KIND_LABELS: Dictionary = {
 }
 
 
-## Idol kinds of one stored idol: corrupted (item flag `corrupted: true` or a corrupted subtype), heretical / omen /
-## weaver (by subtype name), ornate / huge / adorned (by base), unique (any unique or legendary item).
+## Idol kinds of one stored idol, by the game's tests: corrupted (ItemData.corrupted flag, +0x34), heretical (the subtype is in
+## ItemList.IdolEnchantmentSubtypeMapping of the base, ItemData.IsHereticalIdol), omen (affixEffectiveness OmenIdol,
+## ItemData.IsOmenIdol), Weaver (ItemData.isWeaverIdol), ornate / huge / adorned (by base), unique (any unique or legendary item).
 static func idol_kinds(item: Dictionary) -> Dictionary:
 	var base_id: int = int(item.get("base", -1))
-	var sub: Dictionary = GameData.item_sub(base_id, int(item.get("sub", -1)))
-	var sub_name: String = str(sub.get("name", ""))
+	var sub_id: int = int(item.get("sub", -1))
+	var sub: Dictionary = GameData.item_sub(base_id, sub_id)
 	return {
-		"corrupted": bool(item.get("corrupted", false)) or int(sub.get("isCorruptedSubtype", 0)) != 0,
-		"heretical": sub_name.contains("Heretical"),
-		"omen": sub_name.contains("Omen") or str(sub.get("affixEffectiveness", "")) == "OmenIdol",
-		"weaver": sub_name.contains("Weaver"),
+		"corrupted": bool(item.get("corrupted", false)),
+		"heretical": (HERETICAL_SUBTYPES.get(base_id, []) as Array).has(sub_id),
+		"omen": str(sub.get("affixEffectiveness", "")) == "OmenIdol",
+		"weaver": WEAVER_SUBTYPE.get(base_id, -1) == sub_id,
 		"ornate": base_id == ORNATE_BASE,
 		"huge": base_id == HUGE_BASE,
 		"adorned": base_id == ADORNED_BASE,
@@ -134,20 +140,20 @@ static func weaver_excess(items: Dictionary) -> int:
 	return maxi(0, int(idol_counts(items)["weaver"]) - limit) if limit > 0 else 0
 
 
-## True if some larger idol sits above a smaller one (same column, larger area, higher row) — breaks property 21.
+## True if some larger idol has a higher top edge than a smaller one — breaks property 21. IdolsItemContainer.UpdateStatsFromAltarMods:
+## over all pairs of placed idols, the top edge of the smaller one is below the larger one's and its area is smaller; the
+## columns do not matter. Game y is bottom-up (GetSlotState reads the matrix at [x, 4 - y]), so a higher top edge is a smaller anchor row.
 static func larger_above_smaller(items: Dictionary) -> bool:
-	var rects: Array[Rect2i] = []
+	var rows: Array[int] = []  # anchor (top) row of every idol
+	var areas: Array[int] = []
 	for slot: String in items:
 		if IdolGrid.is_idol_key(slot) and items[slot].has("base"):
-			var a: Vector2i = IdolGrid.anchor(slot)
 			var size: Vector2i = IdolGrid.size_of(int(items[slot]["base"]))
-			rects.append(Rect2i(a.y, a.x, size.x, size.y))  # x = column, y = row
-	for upper: Rect2i in rects:
-		for lower: Rect2i in rects:
-			if upper.end.y > lower.position.y:
-				continue  # not strictly above
-			var overlap: bool = upper.position.x < lower.end.x and lower.position.x < upper.end.x
-			if overlap and upper.get_area() > lower.get_area():
+			rows.append(IdolGrid.anchor(slot).x)
+			areas.append(size.x * size.y)
+	for i in range(rows.size()):
+		for j in range(rows.size()):
+			if rows[i] < rows[j] and areas[i] > areas[j]:
 				return true
 	return false
 

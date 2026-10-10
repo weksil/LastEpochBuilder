@@ -14,6 +14,8 @@ func _ready() -> void:
 	_vectors()
 	_sample_build()
 	_idol_altar()
+	_blessing_rolls()
+	_larger_above_smaller()
 	_passive_field_models()
 	_dodge_per_int_cap()
 	_buff_skills()
@@ -30,6 +32,7 @@ func _ready() -> void:
 	_shadows_echoes_buffs()
 	_review_damage_fixes()
 	_speed_audit()
+	_mana_cost_audit()
 	_review_mod_fixes()
 	_skill_conversions()
 	_hit_damage_fixes()
@@ -209,6 +212,24 @@ func _vectors() -> void:
 	store.add(StatMod.make(LE.DAMAGE, "increased", 1.0, LE.COLD))
 	_check("06a T1 Fire|Spell", store.query(LE.DAMAGE, LE.FIRE | LE.SPELL).value(), 23.76)
 	_check("06a T1 Fire", store.query(LE.DAMAGE, LE.FIRE).value(), 0.0)
+
+	# Movement speed row: Stats.GetTotalModifier = (1 + Σinc) · Πmore - 1, added excluded
+	var mv_store := StatStore.new()
+	mv_store.add(StatMod.make(LE.MOVESPEED, "increased", 0.4))
+	mv_store.add(StatMod.make(LE.MOVESPEED, "increased", 0.1))
+	mv_store.add(StatMod.make(LE.MOVESPEED, "more", 0.05))
+	mv_store.add(StatMod.make(LE.MOVESPEED, "more", 0.1))
+	mv_store.add(StatMod.make(LE.MOVESPEED, "added", 5.0))
+	var mv_row: Dictionary = {}
+	for mv_r: Dictionary in CharacterCalc._compute_other(mv_store):
+		if mv_r["label"] == "Movement speed":
+			mv_row = mv_r
+	_check("Movement speed: (1 + Σinc) · Πmore - 1, added not counted", float(mv_row["value"]), 0.7325, 0.0001)
+	var mv_none: Dictionary = {}
+	for mv_r: Dictionary in CharacterCalc._compute_other(StatStore.new()):
+		if mv_r["label"] == "Movement speed":
+			mv_none = mv_r
+	_check("Movement speed: no mods gives 0", float(mv_none["value"]), 0.0, 0.0001)
 
 	# 06a T4 quotient
 	_check("quotient 0.25", StatMod.make(LE.DAMAGE, "quotient", 0.25).more[0], -0.2)
@@ -1237,7 +1258,10 @@ func _idol_altar() -> void:
 	var rounding: String = str(idol_aff["properties"][0].get("rounding", "Integer"))
 	var aem: float = AffixMath.effect_modifier(float(GameData.item_base(25).get("affixEffectModifier", 0.0)), float(idol_aff.get("standardAffixEffectModifier", 0.0)))
 	var plain: float = AffixMath.roll_value(float(rolls[0]), float(rolls[1]), rounding, "ADDED", 255, aem)
-	var scaled: float = AffixMath.roll_value(float(rolls[0]), float(rolls[1]), rounding, "ADDED", 255, (1.0 + aem) * 1.08 - 1.0)
+	# AffixList.ChangeAffixModifier: the value is rounded with the effect modifier only, then multiplied by 1.08 (no re-rounding).
+	# Hand vector: affix 118 'Idol Dodge Rating' (ADDED 26..70) on a Small Idol (base 25, aem -0.83), roll 255: plain 12, scaled 12 * 1.08 = 12.96
+	# (the former (1 + aem) * 1.08 - 1 gave 13)
+	var scaled: float = AffixMath.f32(AffixMath.f32(plain) * AffixMath.f32(1.08))
 	var g: Dictionary = BuildMods.global_store(Build)
 	var idol_total: float = 0.0
 	for mod: StatMod in g["store"].all_mods():
@@ -1267,6 +1291,55 @@ func _idol_altar() -> void:
 	_check("altar 29: healing effectiveness is an added stat", 1.0 if AltarMods.PER_IDOL[29]["kind"] == "added" else 0.0, 1.0)
 
 
+## Blessings with two implicits (docs/ENGINE.md §9.5): implicit j reads its own roll byte (ItemList.GetItemImplicits,
+## ItemData.implicitRolls); an entry without `rolls` uses its single roll for every implicit. Blessing 44 'Greed of Darkness':
+## implicit 0 = WardGain (39, ADDED 6..10), implicit 1 = WardDecayThreshold (119, ADDED 60..100), Integer rounding.
+func _blessing_rolls() -> void:
+	var saved_bl: Dictionary = Build.blessings.duplicate(true)
+	Build.blessings = {1: {"id": 44, "roll": 0, "rolls": [0, 255, 0]}}
+	_check("blessing rolls: implicit 0 with rolls[0] = 0 -> 6", _blessing_total(39), 6.0)
+	_check("blessing rolls: implicit 1 with rolls[1] = 255 -> 100 (old single roll gave 60)", _blessing_total(119), 100.0)
+	Build.blessings = {1: {"id": 44, "roll": 255, "rolls": [255, 0, 0]}}
+	_check("blessing rolls: implicit 0 with rolls[0] = 255 -> 10", _blessing_total(39), 10.0)
+	_check("blessing rolls: implicit 1 with rolls[1] = 0 -> 60", _blessing_total(119), 60.0)
+	# an entry without rolls (older builds, slider edits): one roll 128 for both implicits
+	Build.blessings = {1: {"id": 44, "roll": 128}}
+	_check("blessing without rolls: implicit 0 at roll 128 -> 8", _blessing_total(39), 8.0)
+	_check("blessing without rolls: implicit 1 at roll 128 -> 80", _blessing_total(119), 80.0)
+	Build.blessings = {1: {"id": 44, "roll": 128, "rolls": [128, 255, 3]}}
+	_check("blessing rolls: implicit 0 at rolls[0] = 128 -> 8", _blessing_total(39), 8.0)
+	_check("blessing rolls: implicit 1 at rolls[1] = 255 -> 100", _blessing_total(119), 100.0)
+	# the per-implicit rolls survive the build code; an entry without them loads without the key
+	Build.blessings = {1: {"id": 44, "roll": 0, "rolls": [0, 255, 0]}}
+	var back: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
+	_flag("blessing rolls survive the build code", str(back["blessings"][1].get("rolls", [])) == "[0, 255, 0]" and int(back["blessings"][1]["roll"]) == 0)
+	Build.blessings = {1: {"id": 44, "roll": 128}}
+	back = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
+	_flag("blessing without rolls loads without the key", not back["blessings"][1].has("rolls"))
+	Build.blessings = saved_bl
+
+
+## Property 21 (docs/ENGINE.md §5.4.1): no larger idol may have a higher top edge than a smaller one, any columns
+## (IdolsItemContainer.UpdateStatsFromAltarMods). Synthetic idols, only `base` is read; sizes from items.json: 25 Small 1x1,
+## 27 Humble 2x1, 28 Stout 1x2, 29 Grand 3x1. The key is the anchor (top-left cell).
+func _larger_above_smaller() -> void:
+	_flag("altar 21: Grand (area 3) at row 0 above Small (row 3), other columns", AltarMods.larger_above_smaller({"idol_0_0": {"base": 29}, "idol_3_4": {"base": 25}}))
+	_flag("altar 21: Small at row 0, Grand below it: no violation", not AltarMods.larger_above_smaller({"idol_0_0": {"base": 25}, "idol_3_4": {"base": 29}}))
+	_flag("altar 21: equal top edges: no violation", not AltarMods.larger_above_smaller({"idol_2_0": {"base": 29}, "idol_2_4": {"base": 25}}))
+	_flag("altar 21: Stout 1x2 at row 0 above Small at row 1, other column", AltarMods.larger_above_smaller({"idol_0_0": {"base": 28}, "idol_1_3": {"base": 25}}))
+	_flag("altar 21: Humble (larger) at the lower row: no violation", not AltarMods.larger_above_smaller({"idol_0_0": {"base": 25}, "idol_1_0": {"base": 27}}))
+
+
+## Sum of the added values of property `property` from the blessing 'Greed of Darkness' in the global store.
+func _blessing_total(property: int) -> float:
+	var g: Dictionary = BuildMods.global_store(Build)
+	var total: float = 0.0
+	for mod: StatMod in g["store"].all_mods():
+		if mod.property == property and mod.source.contains("Greed of Darkness"):
+			total += mod.added
+	return total
+
+
 ## Weaver idols (docs/ENGINE.md §5.4.1): refracted scaling by affix kind and the altar's Weaver idol limit.
 func _weaver_idols() -> void:
 	var scale: Dictionary = {"prefix": 2.0, "suffix": 3.0, "enchant": 5.0}
@@ -1276,6 +1349,17 @@ func _weaver_idols() -> void:
 	var corrupted: Dictionary = GameData.affix(1029)  # Corrupted, adorned idols
 	_check("idol enchantment scales as an enchant", float(scale.get(ItemMods.scale_key(enchant), 1.0)), 5.0)
 	_check("corrupted idol affix is not scaled", float(scale.get(ItemMods.scale_key(corrupted), 1.0)), 1.0)
+	# idol kinds by the game's tests (ItemData.IsHereticalIdol / IsOmenIdol / isWeaverIdol, the corrupted flag); sub ids from items.json
+	_flag("heretical: Grand Heorot (29, sub 5)", AltarMods.idol_kinds({"base": 29, "sub": 5})["heretical"])
+	_flag("not heretical: Grand Majasan (29, sub 4)", not AltarMods.idol_kinds({"base": 29, "sub": 4})["heretical"])
+	_flag("heretical: Heretical Adorned Heorot (33, sub 7)", AltarMods.idol_kinds({"base": 33, "sub": 7})["heretical"])
+	_flag("not heretical: Adorned Volcano (33, sub 6)", not AltarMods.idol_kinds({"base": 33, "sub": 6})["heretical"])
+	_flag("weaver: Small Weaver Idol (25, sub 2)", AltarMods.idol_kinds({"base": 25, "sub": 2})["weaver"])
+	_flag("weaver: Minor Weaver Idol (26, sub 1)", AltarMods.idol_kinds({"base": 26, "sub": 1})["weaver"])
+	_flag("not weaver: Small Lagonian Idol (26, sub 0)", not AltarMods.idol_kinds({"base": 26, "sub": 0})["weaver"])
+	_flag("omen: Grand Primal Omen Idol (29, sub 10)", AltarMods.idol_kinds({"base": 29, "sub": 10})["omen"])
+	_flag("not omen: Grand Ash Idol (29, sub 15)", not AltarMods.idol_kinds({"base": 29, "sub": 15})["omen"])
+	_flag("corrupted: the item flag (29, sub 0)", AltarMods.idol_kinds({"base": 29, "sub": 0, "corrupted": true})["corrupted"])
 	for slot: String in Build.items.keys():
 		if IdolGrid.is_idol_key(slot) or slot == IdolGrid.ALTAR_SLOT:
 			Build.clear_item(slot)
@@ -1730,7 +1814,7 @@ func _shadows_echoes_buffs() -> void:
 	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
 	EnemyAilments.enabled = false
-	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 1694101.45, 1700.0)  # was 43718: Time Rot takes the character damage modifier (CharacterAilmentMutator.GetAilmentDamageModifier: (speed f + 1)(Time Rot chance f + 1)(Slow chance f + 1) - 1 = x75 here, #52), earlier: cooldown recovery sums the ADDED SP 70 of gear/passives with the increased part (was 28007); omen idols use omenIdolAffixEffectModifier (was 27852.5); casts of the character (item properties) are built in the global store, not in the skill's (was 28122); item cooldowns that start after a cast give 1 / (icd + 1 / rate) (was 28079)
+	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 1688563.45, 1700.0)  # was 1694101.45: property 21 (larger idol above a smaller one) tests top edges over all idol pairs, columns do not matter (IdolsItemContainer.UpdateStatsFromAltarMods, #38); earlier, was 43718: Time Rot takes the character damage modifier (CharacterAilmentMutator.GetAilmentDamageModifier: (speed f + 1)(Time Rot chance f + 1)(Slow chance f + 1) - 1 = x75 here, #52), earlier: cooldown recovery sums the ADDED SP 70 of gear/passives with the increased part (was 28007); omen idols use omenIdolAffixEffectModifier (was 27852.5); casts of the character (item properties) are built in the global store, not in the skill's (was 28122); item cooldowns that start after a cast give 1 / (icd + 1 / rate) (was 28079)
 	EnemyAilments.enabled = true
 
 
@@ -1882,11 +1966,32 @@ func _review_damage_fixes() -> void:
 	var cd0: Dictionary = SkillCalc.cooldown_info({"cooldown": 1.0}, StatStore.new(), 0, {"cooldown": {"length_added": -3.0}})
 	_check("cooldown never negative", float(cd0["cd"]), 0.0)
 	# mod guards
-	var q: StatMod = StatMod.make(LE.DAMAGE, "quotient", -1.0, 0, "test")
-	_check("quotient at -100% is finite", 1.0 if is_finite(q.more[0]) else 0.0, 1.0)
+	# quotient: Stats.QuotientStat, 0 at x == -1, no floor
+	_check("quotient at -1 is 0 (QuotientStat)", StatMod.make(LE.DAMAGE, "quotient", -1.0, 0, "test").more[0], 0.0)
+	_check("quotient 1.0 = 1/2 - 1", StatMod.make(LE.DAMAGE, "quotient", 1.0, 0, "test").more[0], -0.5)
+	_check("quotient -0.5 = 1/0.5 - 1", StatMod.make(LE.DAMAGE, "quotient", -0.5, 0, "test").more[0], 1.0)
+	_check("quotient -1.5 = 1/(-0.5) - 1", StatMod.make(LE.DAMAGE, "quotient", -1.5, 0, "test").more[0], -3.0)
+	# scaled more: multiplyValues, no clamp
 	var sc: StatMod = StatMod.make(LE.DAMAGE, "more", -0.4, 0, "test").scaled(5.0)
-	_check("scaled more stops at x0", 1.0 + sc.more[0], 0.0)
+	_check("scaled more is not clamped: -0.4 x 5 = -2.0 -> factor -1.0", 1.0 + sc.more[0], -1.0)
+	_check("scaled more -0.1 x 3", StatMod.make(LE.DAMAGE, "more", -0.1, 0, "test").scaled(3.0).more[0], -0.3)
 	_check("scaled more normal", 1.0 + StatMod.make(LE.DAMAGE, "more", 0.1, 0, "test").scaled(2.0).more[0], 1.2)
+	# specialTag: base aggregation counts it, the strict GetTotal* query does not (unless the special matches)
+	var base_store := StatStore.new()
+	base_store.add(StatMod.make(LE.HEALTH, "added", 100.0, 0, "plain"))
+	base_store.add(StatMod.make(LE.HEALTH, "added", 50.0, 0, "special", 3))
+	base_store.add(StatMod.make(LE.HEALTH, "added", 7.0, LE.FIRE, "tagged"))
+	_check("base aggregation counts a specialTag mod, not a tagged one", base_store.query_untagged(LE.HEALTH).added, 150.0)
+	_check("GetTotalAdded(property) with special 0 drops the specialTag mod", base_store.query(LE.HEALTH, 0, 0, 0, false).added, 100.0)
+	_check("GetTotalAdded(property, special 3) takes both", base_store.query(LE.HEALTH, 0, 3, 0, false).added, 150.0)
+	# sheet attributes: Σ added of the attribute and SP 46 with any tags
+	var attr_store := StatStore.new()
+	attr_store.add(StatMod.make(LE.STRENGTH, "added", 10.0, LE.MELEE, "tagged"))
+	attr_store.add(StatMod.make(LE.STRENGTH, "added", 5.0, 0, "plain"))
+	attr_store.add(StatMod.make(LE.ALL_ATTRIBUTES, "added", 2.0, 0, "all", 3))
+	var attr_rows: Array[Dictionary] = CharacterCalc._compute_attributes(attr_store)
+	_check("sheet Strength = round(10 + 5 + 2) any tags", float(attr_rows[0]["value"]), 17.0)
+	_check("sheet Vitality gets only the SP 46 mod", float(attr_rows[1]["value"]), 2.0)
 	# the minion copy keeps the curse flag
 	var flagged: StatMod = StatMod.make(LE.AILMENT_CHANCE, "added", 0.1, 0, "test", 1)
 	flagged.on_curse_hit = true
@@ -1901,6 +2006,73 @@ func _review_damage_fixes() -> void:
 ## Speed audit: UsingAbility.InitialiseAbilityUse (minimumUseDuration floor, cast delay floor), mutator overrides of the cast
 ## (DetonatingArrow / LethalMirage / RadiantLance), the stat-kind speed nodes of speedScaler 54 skills and the weapon attack rate tag test
 ## (CharacterStats.getPropertyMultiplier).
+
+## Mana cost (BaseMana.getManaCost, ISIL lines 463-505): efficiency SP 69 with extra 0, cost SP 66 with the ability index,
+## minimumManaCost floor, zero clamp, attribute / level scaling of SP 66 / 69 (BuildMods._mana_scaling_mod). Hand-computed.
+func _mana_cost_audit() -> void:
+	print("--- mana cost")
+	var ab: Dictionary = {"manaCost": 10.0, "minimumManaCost": 0.0, "abilityIDEnum": {"value": 5}}
+	var s: Dictionary = {"mana_added": 2.0, "mana_inc": 0.0}
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.MANA_COST, "increased", -0.2, 0, "gear"))
+	store.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.2, 0, "gear"))
+	# (10 + 2) x (1 - 0.2) / (1 + 0.2) = 8
+	_check("mana: added, increased, efficiency", float(SkillCalc.mana_parts(ab, store, 0, 5, s)["cost"]), 8.0)
+	# efficiency increased 0.5: eff = 1.2 x 1.5 = 1.8
+	store.add(StatMod.make(LE.MANA_EFFICIENCY, "increased", 0.5, 0, "gear"))
+	_check("mana: efficiency increased", float(SkillCalc.mana_parts(ab, store, 0, 5, s)["cost"]), 9.6 / 1.8)
+	# efficiency mod with another extra tag (this ability's index too) is not read: the SP 69 query has extra 0 only
+	store.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 1.0, 0, "ability-bound", 0, 5))
+	_check("mana: efficiency with an extra is ignored", float(SkillCalc.mana_parts(ab, store, 0, 5, s)["cost"]), 9.6 / 1.8)
+	# cost mod with this ability's extra counts, another ability's does not: 12 x (1 - 0.2 - 0.5) / 1.8 = 2
+	store.add(StatMod.make(LE.MANA_COST, "increased", -0.5, 0, "this ability", 0, 5))
+	store.add(StatMod.make(LE.MANA_COST, "increased", -0.9, 0, "other ability", 0, 6))
+	_check("mana: cost extra of this ability only", float(SkillCalc.mana_parts(ab, store, 0, 5, s)["cost"]), 12.0 * 0.3 / 1.8)
+	# tagged added -2 (Melee) applies to a Melee skill only: (10 + 2 - 2) x 0.8 / 1.2 and (10 + 2) x 0.8 / 1.2
+	var t := StatStore.new()
+	t.add(StatMod.make(LE.MANA_COST, "increased", -0.2, 0, "gear"))
+	t.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.2, 0, "gear"))
+	t.add(StatMod.make(LE.MANA_COST, "added", -2.0, LE.MELEE, "passive"))
+	_check("mana: tagged added, melee skill", float(SkillCalc.mana_parts(ab, t, LE.MELEE, 5, s)["cost"]), 10.0 * 0.8 / 1.2)
+	_check("mana: tagged added, non-melee skill", float(SkillCalc.mana_parts(ab, t, 0, 5, s)["cost"]), 8.0)
+	# more -50%: 12 x 0.8 x 0.5 / 1.2 = 4
+	t.add(StatMod.make(LE.MANA_COST, "more", -0.5, 0, "more"))
+	_check("mana: more", float(SkillCalc.mana_parts(ab, t, 0, 5, s)["cost"]), 12.0 * 0.8 * 0.5 / 1.2)
+	# minimumManaCost 9 raises the cost 8 to 9; a negative result is 0
+	var ab_min: Dictionary = {"manaCost": 10.0, "minimumManaCost": 9.0, "abilityIDEnum": {"value": 5}}
+	var plain := StatStore.new()
+	plain.add(StatMod.make(LE.MANA_COST, "increased", -0.2, 0, "gear"))
+	plain.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.2, 0, "gear"))
+	_check("mana: minimumManaCost", float(SkillCalc.mana_parts(ab_min, plain, 0, 5, s)["cost"]), 9.0)
+	var neg := StatStore.new()
+	neg.add(StatMod.make(LE.MANA_COST, "increased", -2.0, 0, "x"))
+	_check("mana: never negative", float(SkillCalc.mana_parts(ab, neg, 0, 5, s)["cost"]), 0.0)
+	# divider nodes are ADDED efficiency: 16 / (1 + 0.4 + 0.2) = 10 (the old increased model gave 16 x 0.6 = 9.6)
+	var dv := StatStore.new()
+	dv.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.4, 0, "node"))
+	dv.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.2, 0, "gear"))
+	_check("mana: divider is added efficiency", float(SkillCalc.mana_parts({"manaCost": 16.0, "minimumManaCost": 0.0}, dv, 0, 7, {"mana_added": 0.0, "mana_inc": 0.0})["cost"]), 10.0)
+	# scaling stats: SP 69 attribute scaling takes addedValue x n only (increased and more dropped, tags and extra dropped)
+	var rec69: StatMod = BuildMods.stat_from_record({"property": 69, "addedValue": 0.02, "increasedValue": 0.02, "moreValues": [0.1], "tags": 5, "extraTag": 3}, "t")
+	var m69: StatMod = BuildMods._mana_scaling_mod(rec69, 10.0, false)
+	_check("scaling SP69 added x n", m69.added, 0.2)
+	_check("scaling SP69 increased ignored", m69.increased, 0.0)
+	_check("scaling SP69 more ignored", float(m69.more.size()), 0.0)
+	_check("scaling SP69 tags and extra dropped", float(m69.extra + m69.tags), 0.0)
+	# SP 66 scaling: level scaling addedValue flat, increasedValue x level (50): 3 and 0.5; attribute scaling x n (10): 30 and 0.1
+	var rec66: StatMod = BuildMods.stat_from_record({"property": 66, "addedValue": 3.0, "increasedValue": 0.01}, "t")
+	_check("level scaling SP66 added flat", BuildMods._mana_scaling_mod(rec66, 50.0, true).added, 3.0)
+	_check("level scaling SP66 increased x level", BuildMods._mana_scaling_mod(rec66, 50.0, true).increased, 0.5)
+	_check("attribute scaling SP66 added x n", BuildMods._mana_scaling_mod(rec66, 10.0, false).added, 30.0)
+	_check("attribute scaling SP66 increased x n", BuildMods._mana_scaling_mod(rec66, 10.0, false).increased, 0.1)
+	# field models: divider nodes are ADDED ManaEfficiency, Javelin's next melee reduction is -f ManaCost, Frost Wall writes no ManaCost
+	var mm: Dictionary = FieldModels.find("MeteorMutator.addedManaCostDivider")
+	_flag("#100 Meteor divider is added ManaEfficiency", str(mm.get("kind", "")) == "stat" and str(mm.get("stat", "")) == "ManaEfficiency" and str(mm.get("mod", "")) == "added")
+	_check("#100 Javelin next melee: x = -f", float(EffectModels.value(FieldModels.find("JavelinMutator.nextMeleeAttackManaCostReduction"), 10.0, {})["x"]), -10.0)
+	_flag("#100 Frost Wall writes no ManaCost", str(FieldModels.find("FrostWallMutator.lessManaCostForGlyphOrInvocOnHit").get("kind", "")) == "flag")
+	var um: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/unique_effect_models.json"))
+	_flag("#100 Decoy unique ManaEfficiency is added", um is Dictionary and str((um as Dictionary)["ability"]["445:0"].get("mod", "")) == "added")
+
 func _speed_audit() -> void:
 	print("--- speed audit")
 	var gs := GDScript.new()

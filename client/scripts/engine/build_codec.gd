@@ -33,7 +33,7 @@ static func to_dict(build: Node) -> Dictionary:
 		})
 	var blessings: Dictionary = {}
 	for timeline: Variant in build.blessings:
-		blessings[str(timeline)] = (build.blessings[timeline] as Dictionary).duplicate()
+		blessings[str(timeline)] = (build.blessings[timeline] as Dictionary).duplicate(true)
 	var enemy: Dictionary = (build.enemy as Dictionary).duplicate(true)
 	enemy["ailments"] = _string_keys(enemy.get("ailments", {}))
 	return {
@@ -115,7 +115,14 @@ static func from_dict(data: Variant) -> Dictionary:
 	for timeline: Variant in raw_blessings if raw_blessings is Dictionary else {}:
 		var blessing: Variant = raw_blessings[timeline]
 		if str(timeline).is_valid_int() and blessing is Dictionary and blessing.has("id"):
-			blessings[int(timeline)] = {"id": int(blessing["id"]), "roll": int(blessing.get("roll", 255))}
+			var entry: Dictionary = {"id": int(blessing["id"]), "roll": int(blessing.get("roll", 255))}
+			var raw_rolls: Variant = blessing.get("rolls")
+			if raw_rolls is Array and not raw_rolls.is_empty():
+				var rolls: Array = []
+				for r: Variant in raw_rolls:
+					rolls.append(clampi(int(r), 0, 255))
+				entry["rolls"] = rolls
+			blessings[int(timeline)] = entry
 
 	return {
 		"ok": true,

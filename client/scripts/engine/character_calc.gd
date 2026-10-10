@@ -50,12 +50,13 @@ static func _compute_attributes(store: StatStore) -> Array[Dictionary]:
 		var attr_id: int = attr_ids[i]
 		var attr_name: String = attr_names[i]
 
-		# Sum added from attribute and ALL_ATTRIBUTES (46)
-		var properties: Array[int] = [attr_id, LE.ALL_ATTRIBUTES]
-		var added_sum: float = store.sum_added_untagged(properties)
-		var value: int = LE.round_half_even(added_sum)
-
-		var mods: Array[StatMod] = store.untagged_mods(properties)
+		# CharacterStats.ApplyCoreAttributeModifiers: Σ added of the attribute and ALL_ATTRIBUTES (46), no tags / extra / special filter
+		var value: int = BuildMods.attribute_value(store, attr_id)
+		var mods: Array[StatMod] = []
+		for prop: int in [attr_id, LE.ALL_ATTRIBUTES]:
+			for mod: StatMod in store.mods_of(prop):
+				if mod.added != 0.0:
+					mods.append(mod)
 		var breakdown: String = _format_breakdown(mods, str(value))
 		var converted: String = BuildMods.converted_attribute(store, GameData.attribute_by_property(attr_id))
 		if converted != "":
@@ -294,15 +295,16 @@ static func _compute_defence(store: StatStore, level: int, conv: Dictionary = {}
 static func _compute_other(store: StatStore) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 
-	# Movespeed (9) - movement speed
+	# Movespeed (9) - movement speed modifier: Stats.GetTotalModifier = (1 + Σincreased) · Π(1 + more) - 1, added excluded
 	var movespeed_query: StatQuery = store.query_untagged(LE.MOVESPEED)
-	var movespeed_more: float = movespeed_query.more - 1.0
+	var movespeed_value: float = (1.0 + movespeed_query.increased) * movespeed_query.more - 1.0
 	rows.append({
 		"group": LE.t("Other"),
 		"label": LE.t("Movement speed"),
-		"value": movespeed_more,
-		"text": LE.fmt_pct(movespeed_more),
-		"breakdown": movespeed_query.breakdown() + LE.t("\nOnly the more component is used: more - 1")
+		"value": movespeed_value,
+		"text": LE.fmt_pct(movespeed_value),
+		"breakdown": movespeed_query.breakdown() + "\n" + LE.t("Game: (1 + increased) × more - 1, added is the base speed and is not counted: (1 + %s) × %s - 1 = %s") % [
+			LE.fmt_num(movespeed_query.increased), LE.fmt_num(movespeed_query.more), LE.fmt_pct(movespeed_value)]
 	})
 
 	# Ward Retention (16) - ward retention

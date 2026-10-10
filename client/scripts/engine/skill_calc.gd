@@ -1103,9 +1103,48 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 
 # --- 8.3 speed and cost -----------------------------------------------------------
 
-## Mana cost of one use: (base + added) x (1 + increased), the number of the "Mana cost" row.
-static func mana_cost(ab: Dictionary, s: Dictionary) -> float:
-	return (float(ab.get("manaCost", 0.0)) + float(s["mana_added"])) * (1.0 + float(s["mana_inc"]))
+## Mana cost of one use, BaseMana.getManaCost(Ability, channelCost = false) (ISIL BaseMana.txt, getManaCost(Ability), lines 463-505):
+##   efficiency = GetStatValue(SP 69, tags, added = 1 + addedManaCostDivider + scaling + mutator divider, extraTag 0,
+##                treatExtraTagZeroAsMatching FALSE) = (1 + Σ added) × (1 + Σ increased) × Π(1 + more)
+##   cost = GetStatValue(SP 66, tags, added = manaCost + addedManaCost + scaling, increased = scaling + mutator increased,
+##          extraTag = ability index, treatExtraTagZeroAsMatching TRUE) / efficiency
+##   result = max(0, max(minimumManaCost, cost)).
+## The skill's own divider nodes and unique effects are ADDED efficiency (the mutator's getAddedManaCostDivider, vtable 0xBE8);
+## BaseMana+0x98 (prefab addedManaCostDivider) is taken as 0. `s` is a skill_store result (mana_added / mana_inc of nodes and
+## unique effects); SP 66 / SP 69 mods of the store include the attribute and level scaling (BuildMods._add_ability_scaling).
+## Returns {cost, text, base, added, inc, more, eff, floor, mods}.
+static func mana_parts(ab: Dictionary, store: StatStore, tags: int, index: int, s: Dictionary) -> Dictionary:
+	var qc: StatQuery = store.query(LE.MANA_COST, tags, 0, index)
+	var qe: StatQuery = store.query(LE.MANA_EFFICIENCY, tags, 0, 0, false)
+	var base: float = float(ab.get("manaCost", 0.0))
+	var added: float = float(s.get("mana_added", 0.0)) + qc.added
+	var inc: float = float(s.get("mana_inc", 0.0)) + qc.increased
+	var eff: float = (1.0 + qe.added) * (1.0 + qe.increased) * qe.more
+	var cost: float = (base + added) * (1.0 + inc) * qc.more / eff if eff != 0.0 else 0.0
+	# the minimum is the ability's minimumManaCost (Ability+0xBC, AbilityMutator.getMinimumManaCost); DreamslashMutator adds its
+	# min_mana_cost field to it when the field is above 0
+	var floor_cost: float = float(ab.get("minimumManaCost", 0.0))
+	for entry: Variant in (s.get("params", {}) as Dictionary).values():
+		if entry is Dictionary and str(entry.get("param", "")) == "min_mana_cost" and entry.get("set") != null and float(entry["set"]) > 0.0:
+			floor_cost += float(entry["set"])
+	var raised: bool = cost < floor_cost
+	cost = maxf(maxf(cost, floor_cost), 0.0)
+	var lines: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s / mana efficiency %s = %s") % [
+		LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(inc), LE.fmt_num(qc.more), LE.fmt_num(eff), LE.fmt_num(cost)]]
+	if raised:
+		lines.append(LE.t("Minimum mana cost %s: the cost is raised to it") % LE.fmt_num(floor_cost))
+	return {"cost": cost, "text": "\n".join(lines), "base": base, "added": added, "inc": inc, "more": qc.more, "eff": eff,
+		"floor": floor_cost, "mods": qc.mods + qe.mods}
+
+
+## The mana cost of the skill before a calculation context exists (BuildMods._add_cost_models): the ability's tags after the tree's
+## tag changes plus the health-state tags (as _context and _query_tags build them), the ability index of _ability_index.
+static func skill_mana_cost(build: Node, ab: Dictionary, s: Dictionary) -> float:
+	var scratch: Array[String] = []
+	# the conversion's tag changes do not depend on the damage amounts (only on the rule values), so zero damage is enough
+	var no_damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	var tags: int = int(_apply_conversions(int(ab.get("tags", 0)), no_damage, s.get("conversions", []), scratch)["tags"]) | _health_tags(build)
+	return float(mana_parts(ab, s["store"], tags, _ability_index({"ab": ab}), s)["cost"])
 
 
 static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) -> Dictionary:
@@ -1178,13 +1217,14 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			b.append(LE.t("Uses/s = 1 / %s s = %s") % [LE.fmt_num(cast), LE.fmt_num(uses)])
 
 	var rows: Array = [{"label": LE.t("Uses per second"), "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
-	var mana_base: float = float(ab.get("manaCost", 0.0))
-	var mana: float = mana_cost(ab, s)
-	var mana_lines: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) = %s") % [
-		LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]]
+	var mana_info: Dictionary = mana_parts(ab, store, _query_tags(ctx), _ability_index(ctx), s)
+	var mana: float = float(mana_info["cost"])
+	var mana_lines: PackedStringArray = [str(mana_info["text"])]
 	for line: String in s.get("mana_sources", []):
 		mana_lines.append("  " + line)
-	mana_lines.append(LE.t("Added — tree nodes and properties of unique items; mana stats from affixes and passives are not counted yet."))
+	for mod: StatMod in mana_info["mods"]:
+		mana_lines.append("  " + mod.describe())
+	mana_lines.append(LE.t("Mana efficiency = (1 + Σ added) × (1 + Σ increased) × more over the SP 69 mods without an extra tag; the cost is divided by it."))
 	rows.append({"label": LE.t("Mana cost"), "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
 	var channel: Dictionary = _channel_cost(ab, ctx, s)
 	if bool(channel["has"]):
@@ -1243,7 +1283,8 @@ static func _channel_cost(ab: Dictionary, ctx: Dictionary, s: Dictionary) -> Dic
 	var index: int = _ability_index(ctx)
 	var qc: StatQuery = store.query(SP_CHANNEL_COST, tags, 0, index)
 	var qm: StatQuery = store.query(LE.MANA_COST, tags, 0, index)
-	var qe: StatQuery = store.query(LE.MANA_EFFICIENCY, tags, 0, index)
+	# the efficiency query is shared by the cast and the channel branch of getManaCost (ISIL 463): extra tag 0 only (454-463)
+	var qe: StatQuery = store.query(LE.MANA_EFFICIENCY, tags, 0, 0, false)
 	var base: float = float(ab.get("channelCost", 0.0))
 	var added: float = qc.added + qm.added
 	var inc: float = qc.increased + qm.increased + float(s["mana_inc"])

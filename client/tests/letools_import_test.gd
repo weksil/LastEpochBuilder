@@ -194,6 +194,11 @@ func _blessings() -> void:
 	for timeline: Variant in doc["blessings"]:
 		got[int(timeline)] = [doc["blessings"][timeline]["id"], doc["blessings"][timeline]["roll"]]
 	_check("blessings (timeline -> id, roll)", got, {1: [2, 171], 3: [26, 38], 5: [82, 1], 7: [98, 166]})
+	# one roll byte per implicit (the planner's ir): the fixture's ir of every timeline
+	var rolls: Dictionary = {}
+	for timeline: Variant in doc["blessings"]:
+		rolls[int(timeline)] = doc["blessings"][timeline].get("rolls", [])
+	_check("blessings (timeline -> rolls per implicit)", rolls, {1: [171, 47, 14], 3: [38, 191, 230], 5: [1, 227, 204], 7: [166, 254, 71]})
 
 
 func _apply(doc: Dictionary) -> void:

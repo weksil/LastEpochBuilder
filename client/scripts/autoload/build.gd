@@ -33,7 +33,7 @@ var items: Dictionary = {}
 ## Unequipped (inactive) equipment items, same dict shape as items[slot] (docs/UI.md "Items").
 var stash: Array[Dictionary] = []
 
-# Blessings (timelineID -> {"id": int, "roll": int})
+# Blessings (timelineID -> {"id": int, "roll": int, "rolls": Array[int] optional: one roll byte per implicit})
 var blessings: Dictionary = {}
 
 # Enemy config

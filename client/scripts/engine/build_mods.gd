@@ -235,7 +235,7 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 static func _add_cost_models(build: Node, ability: Dictionary, result: Dictionary) -> void:
 	var ctx: Dictionary = result["ctx"]
 	var tags: int = int(ability.get("tags", 0))
-	ctx["mana_cost"] = SkillCalc.mana_cost(ability, result)
+	ctx["mana_cost"] = SkillCalc.skill_mana_cost(build, ability, result)
 	for entry: Dictionary in _passive_entries(build):
 		var points: int = entry["points"]
 		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
@@ -272,11 +272,17 @@ static func _declare_buff_input(result: Dictionary) -> void:
 
 # --- 5.1.5 blessings -------------------------------------------------------
 
+## Roll byte of implicit j of a chosen blessing {id, roll, rolls?}: the game keeps one byte per implicit (ItemData.implicitRolls,
+## ItemList.GetItemImplicits); an entry without `rolls` uses its single roll for every implicit.
+static func blessing_roll(data: Dictionary, j: int) -> int:
+	var rolls: Array = data.get("rolls", [])
+	return int(rolls[j]) if j < rolls.size() else int(data.get("roll", 0))
+
+
 static func _add_blessings(build: Node, store: StatStore, _notes: Array[String]) -> void:
 	for timeline_id: Variant in build.blessings:
 		var blessing_data: Dictionary = build.blessings[timeline_id]
 		var blessing_id: int = int(blessing_data.get("id", -1))
-		var roll: int = int(blessing_data.get("roll", 0))
 		if blessing_id < 0:
 			continue
 		var blessing: Dictionary = GameData.blessing(blessing_id)
@@ -284,7 +290,8 @@ static func _add_blessings(build: Node, store: StatStore, _notes: Array[String])
 			continue
 		var display_name: String = str(blessing.get("displayName", str(blessing_id)))
 		var implicits: Array = blessing.get("implicits", [])
-		for implicit: Dictionary in implicits:
+		for j in range(implicits.size()):
+			var implicit: Dictionary = implicits[j]
 			var property: int = int(implicit.get("property", 0))
 			# Skip property 104 (IncreasedDropRate)
 			if property == 104:
@@ -293,7 +300,7 @@ static func _add_blessings(build: Node, store: StatStore, _notes: Array[String])
 			var value: float = float(implicit.get("value", 0.0))
 			var maxValue: float = float(implicit.get("maxValue", value))
 			var rounding: String = str(implicit.get("rounding", "Integer"))
-			var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, roll, 0.0)
+			var rolled_value: float = AffixMath.roll_value(value, maxValue, rounding, modType, blessing_roll(blessing_data, j), 0.0)
 			var tags: int = int(implicit.get("tags", 0))
 			var specialTag: int = int(implicit.get("specialTag", 0))
 			var extraTag: int = int(implicit.get("extraTag", 0))
@@ -1232,12 +1239,34 @@ static func _add_ability_scaling(build: Node, ability: Dictionary, global: StatS
 		var n: int = LE.round_half_even(_sum_added_any_tags(global, attr_sp) + _sum_added_any_tags(global, LE.ALL_ATTRIBUTES))
 		for stat: Dictionary in entry.get("stats", []):
 			var mod: StatMod = stat_from_record(stat, LE.t("Skill: per %s ×%d") % [LE.t(ATTRIBUTE_NAMES[index]), n])
+			if mod.property == LE.MANA_COST or mod.property == LE.MANA_EFFICIENCY:
+				store.add(_mana_scaling_mod(mod, float(n), false))
+				continue
 			_convert_scaling_type(mod, conversions)
 			store.add(mod.scaled(float(n)))
 	for entry: Dictionary in ability.get("levelScaling", []):
 		for stat: Dictionary in entry.get("stats", []):
 			var mod: StatMod = stat_from_record(stat, LE.t("Skill: per character level ×%d") % build.level)
+			if mod.property == LE.MANA_COST or mod.property == LE.MANA_EFFICIENCY:
+				store.add(_mana_scaling_mod(mod, float(build.level), true))
+				continue
 			store.add(mod.scaled(float(build.level)))
+
+
+## Attribute / level scaling of SP 66 and SP 69 is not scaled as a whole mod: BaseMana.getManaCost walks the lists itself
+## (ISIL BaseMana.txt getManaCost(Ability): attribute loop lines 242-286, level loop 361-383). SP 69 takes addedValue × n only
+## (increasedValue and more are never read). SP 66 takes addedValue × n and increasedValue × n for attribute scaling, while for
+## level scaling addedValue is flat and increasedValue × level. The tags, extraTag and specialTag of these stats are not read.
+static func _mana_scaling_mod(rec: StatMod, n: float, by_level: bool) -> StatMod:
+	var out := StatMod.new()
+	out.property = rec.property
+	out.source = rec.source
+	if rec.property == LE.MANA_EFFICIENCY:
+		out.added = rec.added * n
+	else:
+		out.added = rec.added if by_level else rec.added * n
+		out.increased = rec.increased * n
+	return out
 
 
 ## Re-types added damage of an attribute-scaling stat by the active conversion rules of ATTRIBUTE_SCALING_CONVERSIONS.

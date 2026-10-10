@@ -37,12 +37,8 @@ msgstr ""
 "\n"
 "Моды с тегами Hit/Melee/Spell/Bow/Throwing к айлментам не применяются (теги айлмента: %s)."
 
-msgid ""
-"\n"
-"Only the more component is used: more - 1"
-msgstr ""
-"\n"
-"Используется только more компонент: more - 1"
+msgid "Game: (1 + increased) × more - 1, added is the base speed and is not counted: (1 + %s) × %s - 1 = %s"
+msgstr "Игра: (1 + increased) × more - 1, added - это базовая скорость и не считается: (1 + %s) × %s - 1 = %s"
 
 msgid ""
 "\n"
@@ -311,9 +307,6 @@ msgstr ""
 "%s\n"
 "С тегом PetResisted: %s\n"
 "%s"
-
-msgid "(base %s + added %s) × (1 + %s) = %s"
-msgstr "(база %s + добавлено %s) × (1 + %s) = %s"
 
 msgid "(base %s + added %s) × (1 + %s) × %s = %s"
 msgstr "(база %s + added %s) × (1 + %s) × %s = %s"
@@ -767,9 +760,6 @@ msgstr "Добавленный физ. урон миньонов в ближне
 
 msgid "Added to Attunement chance"
 msgstr "Прибавляется к шансу от Настройки"
-
-msgid "Added — tree nodes and properties of unique items; mana stats from affixes and passives are not counted yet."
-msgstr "Добавлено — узлы дерева и свойства уникальных предметов; статы маны с аффиксов и пассивок пока не учитываются."
 
 msgid "Additional Cold damage reduction on Frozen hit"
 msgstr "Доп. снижение урона холодом при ударе по замороженному"
@@ -7313,9 +7303,6 @@ msgstr "Возврат стоимости маны"
 msgid "Mana cost share refund (has Shadow)"
 msgstr "Возврат доли стоимости маны (есть Тень)"
 
-msgid "Mana effectiveness: cost/(1+f), approximately"
-msgstr "Эффективность маны: стоимость/(1+f), приближённо"
-
 msgid "Mana every 3 sec with two-handed (for 3 sec)"
 msgstr "Мана раз в 3 с с двуручным (за 3 с)"
 
@@ -8305,9 +8292,6 @@ msgstr "Следующий Erasing Strike всегда критует"
 
 msgid "Next Erasing Strike and Void Cleave hit harder against chilled"
 msgstr "Следующие Erasing Strike и Void Cleave бьют сильнее по замедленным"
-
-msgid "Next Glyph of Dominion or Runic Invocation x(1-f)"
-msgstr "Следующий Glyph of Dominion или Runic Invocation x(1-f)"
 
 msgid "Next Judgement or Forge Strike after Javelin"
 msgstr "Следующий Judgement или Forge Strike после Javelin"
@@ -15809,3 +15793,15 @@ msgstr "Здоровье при убийстве"
 
 msgid "Health gained on stun"
 msgstr "Здоровье при оглушении"
+
+msgid "(base %s + added %s) × (1 + %s) × %s / mana efficiency %s = %s"
+msgstr "(база %s + добавлено %s) × (1 + %s) × %s / эффективность маны %s = %s"
+
+msgid "Minimum mana cost %s: the cost is raised to it"
+msgstr "Минимальная стоимость маны %s: стоимость поднята до неё"
+
+msgid "Mana efficiency = (1 + Σ added) × (1 + Σ increased) × more over the SP 69 mods without an extra tag; the cost is divided by it."
+msgstr "Эффективность маны = (1 + Σ добавлено) × (1 + Σ увеличено) × more по модам SP 69 без дополнительного тега; стоимость делится на неё."
+
+msgid "The next Glyph of Dominion / Runic Invocation after an ally passes the wall costs less mana (more -f on that skill, not counted)"
+msgstr "Следующий Glyph of Dominion / Runic Invocation после прохода союзника через стену стоит меньше маны (more -f на том умении, не считается)"
