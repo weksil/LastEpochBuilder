@@ -1001,21 +1001,21 @@ Status after waves 1 and 2 (working tree, not committed). FIXED = calculator mat
 |---|---|---|
 | 56, 59, 62 | FIXED | Stunned true for frozen (isCurrentState vcall identity inferred), mana toggle reaches conditional crit/pen, one fold per condition key. |
 | 58 | FIXED | Ailment increased effect on target debuffs already implemented (via #51b). |
-| 60 | PARTIAL | Handled arms confirmed. Remaining 43 (distance input + GetPerDistanceEffect trace), 41/42, 11, 28, 37 (see #16). |
-| 57 | SKIPPED | Puncture bleed wipe period 3 vs 4 depends on onAbilityUse vs Mutate ordering; needs UsingAbility.UseAbility event-vs-ability-object order or a usesSinceLarge trace. |
+| 60 | PARTIAL | Handled arms confirmed. 43 done (see "Fix status (enemy conditions)"). Remaining 41/42 (done there too), 11, 28; 37 done. |
+| 57 | FIXED | Wipe once per 3 uses, only with Every Third Bigger (see "Fix status (enemy conditions)"). Ordering of onAbilityUse vs Mutate does not change the period. |
 | 63 | SKIPPED | Rive3 consume rate needs Rive1 prefab comboBehaviour / comboAbilities / comboTimeLimit. |
 | 64 | SKIPPED | Soul Feast cleanse count and per-stack buff not traced (consumePoisonStacks body). |
-| 65 | SKIPPED | Product decision: separate area-level input and default needed (skill_calc.gd:1357, ailment_calc.gd:285). |
+| 65 | FIXED | Enemy armour mitigation uses Enemy.zone_level (enemy `area_level`, default 0 = enemy level). See "Fix status (enemy conditions)". |
 
 ## Wave 2: minions
 
 | # | Status | Note / unblocker |
 |---|---|---|
-| 87 | PARTIAL | Companion limit flags, half-even rounding (inferred from structure), per-type cap done. Skipped: shared budget between companion types (depends on cast order), wolf squirrel (no record), wolf special 8, Spriggan/Falconry caps. |
+| 87 | FIXED (D?) | Shared budget between companion types (maximumCompanions x 60, oldest unsummoned first; `MinionCount._share_budget` shows the counts with the largest minion DPS that fit, D?: the real choice follows the cast order), wolf with summonWolf 8 counts 120 (`MinionCount.contribution`), companion_cap with the contribution, 1-per-type flag, half-even rounding. Still missing: wolf squirrel actor (no record; squirrel conversion keeps the 60 slot share), Spriggan / Falconry caps (not capped on purpose: COMPANION_UNCAPPED). |
 | 88 | PARTIAL | Death Knight Harvest mutator target fixed. Cooldown recovery of minions UNKNOWN: ChargeManager.increasedRecoverySpeed is a prefab-serialised field not exported. |
 | 90 | PARTIAL | Net imitated by shadows. Explosive Trap needs prefab component presence; Heartseeker already modelled as trigger; Bladestorm/Dreamslash do not fit; shurikensDirectNoShadowUse has no source. |
 | 86 | PARTIAL | Increased damage (BasicMelee, Sabertooth moreHitDamage) and Skeleton Rogue cast speed done; Raptor not scaled. Remaining WolfMelee 0.15, Serpent/Vanguard BasicMelee: mutator-to-ability mapping not traced. Corpse Parasite inert. |
-| 85 | SKIPPED | Sub-ability hit counts live in prefab components (CastAtRandomPointAfterDuration, CreateAbilityObjectOnDeath), not exported. |
+| 85 | PARTIAL | Double Strike, Leap Slam, Forged Weapon slice and Scorpion combo done from prefab_sub_ability_hits (minion_sub_hits.json). Also done (D?, see "Fix status (prefab data)"): Storm Totem 6 strikes, IceBolt -> IceVortex 8 ticks, Revenant WeaponThrow -> WeaponInAir 4 hits, Tail Slam explosion 1 (its ExtraProjectiles copy shares the hit list). Still open: Rampage / Falcon dive (object lifetime tied to movement), Hive locusts (summon), fanned ExtraProjectiles (Shurikens, SpiritThorns, Thorn totem). |
 | 92 | SKIPPED | Echo guaranteedEcho, PP 58/59 buffs, tag eligibility: need jump rate, echo-rate/uptime rule, AbilityTooltipTagInfoProvider tags. |
 | 93 | SKIPPED | AbilityRangeList component values not exported. |
 
@@ -1038,12 +1038,12 @@ Status after waves 1 and 2 (working tree, not committed). FIXED = calculator mat
 
 | # | Status | Note / unblocker |
 |---|---|---|
-| 109 | PARTIAL | Component plumbing and 12 component models done. 30:0 (Undisputed) and 52:0 (Soul Bastion) stay notes: need a bleed-uptime/hit-rate stack rule and a kill-time distribution decision. |
+| 109 | FIXED (D?) | Component plumbing and 12 component models done. 30:0 (Undisputed) and 52:0 (Soul Bastion) done, see "Fix status (own rates)". |
 | 113, 114, 117, 118, 120, 121 | FIXED | Frenzy/Haste scaling, Salt the Wound conversion, Poison copies, untagged-only sources, input slot, invocation chance. |
 | 122 | PARTIAL | Bane of Winter and Truesight Glass (super crit) done. Singularity inert for one item. Skipped: pp529 Kismet (ConsumeKismetStacks not extracted), pp574 reflection chain, pp588 overkill, pp148 needs multi-mod model schema. |
 | 119 | FIXED | Conditions 117:35 and 117:40 already evaluated (see #16/#60). |
 | 124 | SKIPPED | Param-kind unique effects: re-cast code for pp235 and consumers for pp571, 881:0, 263:4, 216:6, 731:0, 689:12/13, 12:2 not extracted. |
-| 125 | SKIPPED | Recency windows (pp419, pp89, pp229/230): need a crit/use rate model decision and identity of unnamed thunk FUN_18000e8c0 (0x1b). Manual toggles kept. |
+| 125 | PARTIAL | pp419 / pp89 crit windows and pp229/230 availability done, see "Fix status (own rates)". Open: the channelled exclusion (AbilityInfo slot 0x1b, FUN_18000e8c0) is not identified. |
 
 ## Wave 2: passives and sets
 
@@ -1075,15 +1075,15 @@ Status after the defence wave (working tree, not committed). Part 2 findings, gr
 | 74b | FIXED (no change) | healthSerialisation == 1 for all 261 monsters and all 19 boss presets; always-apply is already correct for every extracted preset. |
 | 74c | SKIPPED | Spawn share of magic/rare monsters is not in extracted data. Needs MonsterRarityManager rarity roll chances per spawner/monolith difficulty. |
 | 75a | FIXED | PP 96 fires per glancing roll on a landed hit. Model label still "Health on sliding hit" (game field: Glancing Blow); wording only. |
-| 75b | FIXED | PP 33 ward requires health after the hit strictly below 35% of max. Ward amount still ignores the GainWard multiplier (see 76). |
-| 76 | SKIPPED | Ward on hit (SP 97, 30 per proc) goes through ProtectionClass.GainWard, which applies the +0x1E0 list and wardGainModifier; calculator has no ward-gain multiplier. Needs that multiplier modelled first. Also open: before-damage timing (per-hit damage distribution), sourcesOfNoWardGain writers, tagged SP 97 reader. |
-| 77a | FIXED | Health/Ward on hit count only specials the game reads (1 every hit, 7 melee, 2 per crit; 0 counts nothing). Side effect: SynchronizedStrikes `healthGainedFromShadowsCreatedWithin4Seconds` (SP 38 special 0) no longer counts; its real effect is AbilityProperty 469 and is not modelled. |
-| 77b | PARTIAL | Health on block / kill / stun added to recovery sources. Ward on block/kill/stun not added: GainWard multiplier gap, and ward on block may be granted twice (blockEvent and afterBlockEvent); needs full control-flow proof of ApplyDamage ordering or an in-game observation. |
+| 75b | FIXED | PP 33 ward requires health after the hit strictly below 35% of max. Ward amount goes through GainWard: scaled by the factor of 76 (PP 471, wardGainModifier, moreWardGenerated t = 0). |
+| 76 | FIXED | SP 97 (`ward_on_hit`: 30 x chance x (1 - dodge), DoT never; roll after the dodge, parried hits included) and the GainWard factor on every ward source (`scale_ward`): PP 471 sourcesOfNoWardGain, wardGainModifier from SP 119 inc/more, moreWardGenerated t = 0 (no extracted writer). Open: PP 472 in-combat writer of sourcesOfNoWardGain (noWardGainInCombat, player state); before-damage timing of the ward gain treated as after. |
+| 77a | FIXED | Health/Ward on hit count only specials the game reads (1 every hit, 7 melee, 2 per crit; 0 counts nothing). Side effect: SynchronizedStrikes `healthGainedFromShadowsCreatedWithin4Seconds` (SP 38 special 0) no longer counts; its real effect is AbilityProperty 469 and is not modelled. | Ward part: its rows are scaled by the GainWard factor (see 76).
+| 77b | PARTIAL | Health on block / kill / stun and ward on kill / stun (WardGain specialTag 3 / 5, GainWard factor) added to recovery sources. Ward on block still not added: GainWardOnBlock is a replica of GainWard and the double grant (blockEvent and afterBlockEvent) is not proven; needs full control-flow proof of ApplyDamage ordering or an in-game observation. |
 | 77c | SKIPPED | Freeze events (4), tagged kill/stun gains. Needs a freeze-events-per-second input/rule and the ability tags used for tagged gains (no extracted data uses them). |
 | 78 | FIXED | Ward bypass flags, health and ward caps applied in take_damage, recovery, full pool, ward equilibrium. The ProtectionClass cap block at 1067-1072 (pre-ward D) is the same item and is covered by the caps. |
 | 79 | FIXED | SP 60 current-health drain: exponential decay in recover, recovery row, ehp via timed simulation. |
 | 80a | FIXED | Affix PP "more" folded; PP 275 less DoT taken during Haste as max(-0.75, (1+inc)*pp) on DoT only. |
-| 80b | SKIPPED | PP 262 needs current mana (planner has only max mana and the low_mana flag; a user input is a design choice). PP 257/258 need attacker distance; boss_attacks.json and monster_damage.json hold no engagement distance. |
+| 80b | FIXED | PP 257/258: Conditions input attacker_distance (default 1, strict < 4.0 from Maths.distanceLessThan; the distance is an input, D?); PP 262: current mana input (0 = maximum), >= 400 non-strict. The low_mana flag stays an extra user gate (D?). |
 | 81 | SKIPPED | Formula confirmed (UsingAbility.InitialiseAbilityUse) but inputs are not extracted for boss abilities: speedScaler SP, speedMultiplier, scaler effectiveness, cap at Ability+0x64, minimumUseDuration, prefab baseUseSpeedMultiplier, CastSpeedManager overrides. Needs a new per-boss-prefab extraction of these fields. |
 | 70 | FIXED | Slow queue taken from D after the endurance-threshold step; ward does not reduce it. Gate is d_slow > 0 (f7 = 1 queues nothing). |
 | 71 | FIXED | Crit floor applied to the whole hit multiplier. Limit: when f0*(1-f7) = 0 the game yields M = 1 and the multiplicative factor gives 0; the +3.0 on 0x1cc in the crit branch is not analysed. |
@@ -1096,7 +1096,7 @@ Status after the defence wave (working tree, not committed). Part 2 findings, gr
 | 91 | SKIPPED | Shadow creation rate model is an assumption: needs per-skill creation sources and rates, which uses consume shadows, resummon interaction, and a writer of CreateShadowMutator.additionalMaximumShadows (+0x130). ShadowCalc / ENGINE.md 9.10 should call "N x max(uses/s, 1/5)" an assumption (baseDuration 5 s is confirmed, RogueShadow.cs:21). |
 
 ## Follow-ups (defence)
-- Ward gain multiplier (GainWard: +0x1E0 list, wardGainModifier +0x44) is unmodelled; it affects 75b, 76, 77a, 77b ward parts. Modelling it unblocks the ward half of those findings.
+- Ward gain multiplier (GainWard) is modelled: one factor on every ward source (PP 471, wardGainModifier from SP 119; the +0x1E0 list t is 0 without extracted writer data). Open: PP 472 in-combat writer of sourcesOfNoWardGain; ward on block (double grant unproven).
 - character_calc.gd "Damage taken from hits" row ignores the specialTag mask (see #68).
 - #71 limit and #69 residual (only the f7 queue feeds pending slow damage) are documented, not data-settled.
 - Wording: PP 96 label "Health on sliding hit" should read Glancing Blow.
@@ -1107,7 +1107,7 @@ Status after the mana wave (working tree, not committed). Re-read in this wave: 
 
 | # | Status | Note / unblocker |
 |---|---|---|
-| 18 | PARTIAL | Efficiency (SP 69, extra 0 only), SP 66 cost stats (extra = ability index, zero matches), minimumManaCost floor, zero clamp, attribute and level scaling of SP 66 / 69 read as the game does. Not modelled: BaseMana+0x98 prefab divider (taken as 0); mutator overrides of getMinimumManaCost (Fireball, Healing Hands, Sprigg Vale Bolt, Aura of Decay, ...) and of GetMoreManaCost (Ballista, Frost Wall, Glyph of Dominion, Meteor, Runic Invocation), noManaCost and getAttributeScaling overrides. Unblocker: read those override bodies. Vectors: engine_test.gd _mana_cost_audit. |
+| 18 | PARTIAL | Efficiency (SP 69, extra 0 only), SP 66 cost stats (extra = ability index, zero matches), minimumManaCost floor, zero clamp, attribute and level scaling of SP 66 / 69 read as the game does. Not modelled: BaseMana+0x98 prefab divider (confirmed 0.0 on every player prefab, prefab_mana_divider.json.gz); mutator overrides of getMinimumManaCost (Fireball, Healing Hands, Sprigg Vale Bolt, Aura of Decay, ...) and of GetMoreManaCost (Ballista, Frost Wall, Glyph of Dominion, Meteor, Runic Invocation), noManaCost and getAttributeScaling overrides. Unblocker: read those override bodies. Vectors: engine_test.gd _mana_cost_audit. |
 | 100 | PARTIAL | 20 divider models increased to added ManaEfficiency; 6 'mana increased -f' divider models are ManaEfficiency added f; Decoy unique 445:0 added; Javelin next melee is -f ManaCost (factor -1); Frost Wall wall pass is a flag (its more -f belongs to Glyph / Runic Invocation, not modelled). Still approximate: DetonatingArrow costsZeroMana and IceThorns freeIfUsing2hMelee (mana increased -1). |
 
 # Fix status (part 3)
@@ -1116,7 +1116,7 @@ Status after the part 3 wave (working tree, not committed in this wave). The hea
 
 | # | Status | Note / unblocker |
 |---|---|---|
-| 18 | PARTIAL | See "Fix status (mana)". Efficiency, SP 66 cost, minimum floor, zero clamp and scaling modelled; prefab divider and mutator overrides not. |
+| 18 | PARTIAL | See "Fix status (mana)". Efficiency, SP 66 cost, minimum floor, zero clamp and scaling modelled; prefab divider confirmed 0 (prefab_mana_divider.json.gz); mutator overrides not. |
 | 19 | NOT TOUCHED | Channel cost per second was not part of this wave (the channel efficiency query was aligned with #18 only). Unblocker: model `BaseMana.setChannelCost` / `consumeManaFromChannel` drain rate. |
 | 1 | FIXED | Movement speed row is `(1 + sum increased) * product more - 1` of the untagged SP 9 query; added is the base speed (Stats_GetTotalModifier, SpeedManager.updateSpeed). Follow-up: the game also skips a stat whose special byte differs from the argument, so the row should use the strict `query(MOVESPEED, 0, 0, 0, false)`; impact probably nil (no SP 9 special-tagged mod checked). |
 | 34 | FIXED | Same change as #1 (character sheet row). |
@@ -1134,3 +1134,129 @@ Status after the part 3 wave (working tree, not committed in this wave). The hea
 | 61 | REFUTED | No change. The mod effect is f(c) - 1 but stats scale by (effect + 1) = f(c), so `0.01*f(c)` (0.005*f(c) for DoT) in `enemy.gd corruption_more()` is already correct. |
 | 66 | SKIPPED | No extracted table lists, per passive node, skill node and unique, the AilmentIDs granted or read (text-only `flag` models), nor the full set of shadow-creating abilities. The premise "impossible to set" is false: `config_tab.gd` shows every control under "Show all". |
 | 100 | PARTIAL | See "Fix status (mana)". Divider fields are added ManaEfficiency (vtable 0xBE8 = getAddedManaCostDivider). Javelin sign rests on the Xor negation idiom (constant unread). DetonatingArrow `costsZeroMana` and IceThorns `freeIfUsing2hMelee` stay `mana increased -1`. |
+
+# Prefab data available
+
+Added after the prefab extraction wave. Files are in `research/data/game/`, scripts in `tools/extract/extract_prefab_*.py`, graph in `prefab_dependency_graph.json`; navigation and rerun commands in `09_dump_navigation.md` section 7. Calculator code is not changed. VALID = an independent re-read of sample rows and the game code agreed; PARTIAL = agreed with named gaps. Values are as serialized; nothing here is interpretation.
+
+| # | Previous status | Data file and key | What it now provides | Still missing |
+|---|---|---|---|---|
+| 85 | SKIPPED | `prefab_sub_ability_hits.json.gz` rows, join `ownerAbilities[].key` = abilities.json key | CastAtRandomPointAfterDuration (duration, castsAtStart, limitCasts, remainingCasts, abilityRef), CastAfterDuration, CreateAbilityObjectOnDeath (additionalCasts, randomExtraCasts, delay, abilityToInstantiateRef), ExtraProjectiles, DestroyAfterDuration.duration; 6030 rows; VALID. Storm Totem: LightningStorm duration 0.35, castsAtStart 1, abilityRef -> StormLightning, lifetime 2.0 | Runtime hit counts are not computed (values only); DestroyAfterDurationScaledWithStat / WhilePositiveMana subclasses not extracted; 17 AbilityRefs with keys not in keyedArray (null) |
+| 102 | SKIPPED | `prefab_ailment_zones.json.gz` `components[]` + `durations[]` | applicationInterval, radius, ailments[] with chance, targetType, useTrailTracker for 84 RepeatedlyApplyAilmentsInRadius (AuraOfDecay/AuraOfRot: Poison, chance 1.0, radius 4.0, interval 0.25); RepeatedlyHitsTargets interval (DrainLife 0.1833), DamageEnemiesWithBeam damageInterval (Disintegrate 0.25); VALID | Black Hole, Devouring Orb, Focus, Hail of Arrows, Infernal Shade have none of the four components: the tick comes from code (BlackHoleMutator.Mutate adds the component at runtime). DestroyAfterDuration rows only for reachable prefabs |
+| 20 | part 1 (beam tick) | same file, DamageEnemiesWithBeam rows | damageInterval of every beam | Whether the channel loop scales the tick with cast speed (UNKNOWN, not serialized) |
+| 81 | SKIPPED | `prefab_use_speed.json.gz` `abilities[]` (speedScaler, speedMultiplier, maximumUseSpeed, minimumUseDuration, useDelay, useDuration, ...) and `actors[]` (usingAbilityStates, castSpeedOverrides, attackCastSpeedStats) | All inputs of the boss use-time formula except the effective stat S; baseUseSpeedMultiplier 1.0 on 605 AI prefabs, 1.1 on the player; VALID | Effective Attack/Cast speed S (ActorScaler and rarity modifiers not applied); 321 actors with no serialized UsingAbility (runtime, default 1.0); 7 actors without a readable prefab (Baroness Boss: bundle missing) |
+| 82 / 22 | minion 1.1 constant | same file, `actors[].usingAbilityStates[].fields.baseUseSpeedMultiplier` | Minion value is 1.0 wherever serialized (UsingAbilityAI 10, UsingMultipleAbilitiesAI 595), 1.1 only UsingAbilityPlayer | Minions built on MADStateController (e.g. PrimalWolf): null with reason, runtime default 1.0f from the constructor |
+| 93 | SKIPPED | `prefab_range_lists.json.gz` `data[]` | ranges (minRange, engageRange, maxRange, persuitRange), healthThresholds, pursuitRangeCap, comboReplacementRanges, AbilityList.abilityRefs sibling, owner ActorData (923 of 931); PARTIAL | Index alignment of ranges and abilityRefs is UNKNOWN (no serialized link); 16 PhasedAbilityRangeList rows not extracted; bundle assets_2107f86e57599767 missing; 154 rows without AbilityList |
+| 63 | SKIPPED | `prefab_combo_abilities.json.gz` rows by `key` | Rive1: comboAbility 1, comboAbilities [Rive2 294628823, Rive3 2026006364], comboTimeLimit 3.0, comboBehaviour 0 (Cycle); VALID | Which Rive abilities the player skill uses (outside this extractor) |
+| 31 | SKIPPED | `prefab_ability_stop_range.json.gz` rows by `abilityKey` | Lunge stopRange 1.149999976, subtractStopRangeForManaCostPerDistance 0, manaCostPerDistance 1.0, manaCost 8.0; VALID | Distance helper FUN_1803ed2c0 (planar vs 3D) is unidentified; no per-skill distance input in the calculator |
+| 18 | PARTIAL | `prefab_mana_divider.json.gz` | BaseMana+0x98 addedManaCostDivider = 0.0 on all three BaseMana-family components (MainPlayer, SplitTestPlayer, Local Player); VALID. The "taken as 0" assumption is now a serialized fact | Mutator overrides of getMinimumManaCost, GetMoreManaCost, getAddedManaCostDivider (vtable 0xBE8), noManaCost, getAttributeScaling are code, not data |
+| 90 | PARTIAL | `prefab_trap_spawn_relations.json.gz` `abilities[].componentClasses`, `spawnRefs`, `spawnComponentFields` | Explosive Trap chain: Falconer 04 (CreateAbilityObjectOnDeath -> 04.1 On Ground, DestroyAfterDuration 0.3) -> MineTrigger (armingTime 0.4, ability -> 04.2 Damage), ToggleCollidersAfterDuration, StartsAtTarget; VALID | Mutator-driven spawns are not serialized; shurikensDirectNoShadowUse has no source |
+| 25 | PARTIAL | same file `spawnRefs` | Prefab spawn relations of every ability and actor | netTrap / shieldRush mutator refs are private fields not in the typetree (still missing) |
+| 88 | PARTIAL | none | - | still missing: ChargeManager has 4 serialized fields and increasedRecoverySpeed is not one; the audit premise "prefab-serialised" is wrong, the value is set at runtime (setter must be read in code) |
+| 19, 5, 43b, 66, 74c, 124, 125, 135, 96 | various | none | - | still missing: code behaviour or scene spawner data, not prefab-serialized (dependency graph, `not_serialized_gap` nodes) |
+
+Caveat for every row: bundle `assets_2107f86e57599767.bundle` (59 MB, 156 containers per `bundle_index.jsonl`) is not on disk, so its prefabs are absent from all `prefab_*` files; see `_meta.read_errors` of each file.
+
+# Fix status (prefab data)
+
+Status after the prefab-data wave (working tree, not committed). Scope: the findings that the new `research/data/game/prefab_*.json.gz` files could unblock (see "Prefab data available"). The full headless suite (15 tests plus build_codec_test and build_history_test) passes; `tools/models/validate.py` returns OK on all 45 `tools/models/out/batch_*.json`. Boss use-timing (#81, boss attack timing inputs) was dropped on user request: it is extra data, not pursued. FIXED = calculator matches game data re-read in this wave; PARTIAL = main part done, remainder named; SKIPPED = no change, missing data named.
+
+| # | Status | Note / unblocker |
+|---|---|---|
+| 85 | PARTIAL | Sub-ability chains from `prefab_sub_ability_hits` distilled into `client/data/minion_sub_hits.json` (loaded like field_models.json): Abomination Double Strike (2 hits), Bone Golem Leap Slam (x1), Forged Weapon second slice (x3), Scorpion combo end (x1), Storm Totem LightningStorm -> StormLightning (x6: 1 at start + floor(2.0 / 0.35), D?: every strike hits), Ice Bolt -> IceVortex (x8 ticks, floor(4.0 / 0.5), D?: target stays inside), Revenant SummonedRevenant 02 WeaponThrow -> WeaponInAir beam (x4, floor(0.6 / 0.15), D?), Tail Slam -> TailSlamExplosion (x1: the ExtraProjectiles copy shares the hit list through Ability.sharedHitDetector). Still open: Rampage, Falcon dive (object lifetime tied to movement), Hive locusts, fanned ExtraProjectiles (Shurikens, SpiritThorns, Thorn totem). |
+| 86 | FIXED (no change) | Minion `baseUseSpeedMultiplier` 1.0 and CastSpeedManager overrides in `prefab_use_speed` equal `minion_base_stats.json`; nothing to change. Open parts of #86 (WolfMelee 0.15, Serpent/Vanguard BasicMelee mapping) are unchanged. |
+| 82, 22 | FIXED (confirmed) | Prefab serialises 1.0 for minion states (UsingAbilityAI 10, UsingMultipleAbilitiesAI 595), 1.1 only UsingAbilityPlayer; calculator already uses 1.0. MADStateController minions rely on the constructor default 1.0f (UsingAbilityAI__ctor). |
+| 93 | SKIPPED | Range lists are extracted, but gating needs a target-distance input or an accepted default (product decision); index alignment of ranges and abilityRefs has no serialized link (UNKNOWN); health-threshold gate is inactive for all minions (already correct). 16 PhasedAbilityRangeList rows not extracted. |
+| 102 | FIXED (mechanism) | Runtime ailment zones modelled: `zone` / `zone_freq` on AilmentChance models, per-interval chance, rate = 1/interval, zone mods excluded from the hit path (`stat_mod.gd`, `effect_models.gd`, `build_mods.gd`, `ailment_calc.gd`, `skill_calc.gd`). 12 `tools/models/out` batches and `field_models.json` updated: Black Hole (0.5), Devouring Orb (0.25), Focus, Rebuke, Hail of Arrows (0.2), Infernal Shade, Profane Veil, Wandering Spirits (0.333), Dread Shade, Featherstorm, Glyph of Dominion, Smoke Bomb (freq), Drain Life (0.1833) and Chthonic Fissure (per hit). Open: zone uptime stays the convention "target stays in zone (D?)" (lifetime is run-time mutated, positional model missing); RAAIR ramp path (0x9c) not traced for these mutators; Featherstorm depends on `_component_zone_mods` name matching (unverified); Glyph of Dominion ignite-frequency node not modelled. Not settled and unchanged: Holy Aura slow (aura object hit events unknown), Storm Totem frostbite (0x168 consumer not located), Volatile Zombie vomit (SummonVolatileZombieMutator -> ZombieVomitMutator copy not traced), divineEssenceEverySecondChance, Explosive Trap duskShroud. |
+| 7 | FIXED (D?) | Void zone of every thrown hammer is a component (`SkillComponents._add_hammer_zone`, flag `HammerThrowMutator.aoeVoidDamage`): 12 ticks of 0.2 s for a returning hammer (the serialized 2.5 s cap; an earlier end of the return is not in the data, D?), 3 ticks with noReturn (0.75 s), 30 with the Iron Spiral (6.0 s, exact multiple); damage (1 + increasedAoEVoidDamage) × 8 Void (Lightning with the lightning conversion), added damage 0.05 × base, tags 0x1400, no ailments of its own. Not counted: channelled mode (skip note), the extra hammer copies (only target hits multiply the zone, like every component), terrain contact (DestroyOnInanimateCollision, player behaviour: the maximum is used). Data: `client/data/zone_ticks.json` from `tools/extract/distill_prefab_zone_ticks.py`. |
+| 50b | FIXED | Scathing Light: f × 100 × S, S = Ignite + Electrify chance of the character; for Lightning and Fire skills also the uncapped resistance × per point × 100 and the Electrify field; with Shock converted to Electrify the Shock chance and field (`AilmentCalc._scathing_light_sum`, `scathing_light_chance`; RadiantLanceMutator.GetAilmentDamageModifier, c:1822414e0). The manual input `ignite_electrify_pct` is removed. The per-point term is the node value (`instance_raw`), not the chance mod (which already holds the resistance). Physical flag from the character; Void and Fire from the skill's conversion rules (`ctx.rules`). Brand of Subjugation: not changed. |
+| 102 (leftover) | FIXED | divineEssenceEverySecondChance is one random roll per second while alive (`EnemyAilments._passive_field`, `_timed_sources`), no longer a per-hit chance at high health. Storm Totem frostbite: the chance of its Blizzard application (scope `component:Blizzard`, zone 1.0 s, enemies assumed inside, D?). |
+| 135 | PARTIAL | Divine Essence (roll per second) and Ancestral Speed (haste 3 s per use of a Totem skill, `EnemyAilments._self_sources`) FIXED. The minion kill / death haste is a flag only: its event rate depends on the fight (environment; no default). |
+| rule 4 (zone ticks) | PARTIAL | Black Hole: 10 ticks per cast (0.3 s over 2.75 s × (1 + duration increase), damageAtStart; `ZoneTicks.per_use`); channelled Black Hole keeps one tick. Other zone objects (totems, orbs, rings, beams) need their mutator code read first (not in the allowlist). |
+| 63 | FIXED | Rive third-strike ignite consumption modelled from the combo list (Rive1: comboBehaviour 0 Cycle, entries Rive2/Rive3, limit 3.0 s plus riveAddedComboTimer): `rive_third_share` (1/3 default, 0.5 skip second, 0.2 Cadence, 0 Double Slash) and `consume_events` (no wipes when the gap exceeds the limit). One OnHit per use is an accepted modelling assumption. The skip-second and timer property branches are inert until a rive1 property source exists in the data. |
+| 18 | PARTIAL | Comment and docs only: BaseMana+0x98 addedManaCostDivider is serialised 0.0 on all three player prefabs, so the "taken as 0" assumption is now a fact. Mutator overrides of getMinimumManaCost / GetMoreManaCost / getAddedManaCostDivider are code, not prefab data (unchanged). |
+| 31 | SKIPPED | Prefab gives Lunge manaCost 8, manaCostPerDistance 1.0, stopRange 1.15, subtract flag 0. Still missing: the distance helper FUN_1803ed2c0 (planar vs 3D) and a per-skill distance input. Once resolved the term is an extra `added` argument of `mana_parts` (cost = 1.0 x distance, no stop-range subtraction). |
+| 90 | SKIPPED | Explosive Trap chain is serialised, but repeating it needs `CreateShadowMutator` and `ExplosiveTrapMutator` on the same GameObject; the MainPlayer bundle `assets_d7321f5c187fdc63.bundle` is not on disk and actor rows carry no GameObject path. Heartseeker and Bladestorm unchanged. |
+| 20, 25, 81, 88, 19, 5, 43b, 66, 74c, 124, 125, 135, 96 | NOT TOUCHED | #81 dropped on user request (boss timing). Others: no prefab data settles them (see "Prefab data available", "Still missing"). |
+
+## Follow-ups (prefab data)
+- Check the 0x9c ramp path of RepeatedlyApplyAilmentsInRadius for the zone mutators.
+- `effect_models.gd` `ailment_chance:` source query and `mods_of` on the global store do not exclude zone mods; only matters if a passive reads AilmentChance from a store holding zone mods.
+- The ailment-zone vector at `compute()` level (stacks = 3) is not written; only `_chances` level is covered in `engine_test.gd` `_runtime_zones`.
+
+# Fix status (skills-mana wave)
+
+Status after the skills-mana wave (working tree, not committed). Each change was re-checked against the dump code named in the finding. The Godot suite was not run in this wave.
+
+| # | Status | Note / unblocker |
+|---|---|---|
+| 31 | FIXED | Lunge `manaCostPerDistance` × the skill input `mana_distance` (default 1, the player's entry) is added to the manaCost before the SP 66 scaling and the efficiency (UsingAbility.c 2356-2400, BaseMana.getManaCost_2 fVar9 = manaCost + distance). Ranges are not used (user decision 3). |
+| 28 | FIXED | The 11 `kind: cooldown, recovery_increased` entries are now `kind: param` rows `cooldown_event_recovery` (D?). The event rate is not counted, so nothing is added to the cooldown speed. |
+| 94 | FIXED | Same change as #28 (ChargeManager.recoverPercentRemainingCooldown is a per-event jump). |
+| 99 | PARTIAL | Drain Life `moreDamagePerDamnedStack` is capped by the node's own `maxTotalDamageToDamned` (0.21 per point) through the `max_node_field` key. The other #99 entries are unchanged. |
+| 106 | PARTIAL | `current_mana` source (Conditions tab, 0 = maximum, clamped to the maximum): Mana Strike `addedLightningPerMana` and `critChancePerMana`, Storm Bolt `moreDamagePer10CurrentMana` (cap 3) and `manaConsumptionPercentage` (cap 10, key `raw`: BaseMana.reduceMana, not divided by efficiency), PP 262 `At least 400 current mana`. Not done: the two GatheringStorm entries (`stormBoltMoreDamagePer10CurrentMana`, `stormBoltManaConsumptionPercentage`) stay on max mana. The game reads them only inside `if (GatheringStormMutator.directCastStormBoltWithStaff)` (0x1A4), which is set by the separate node "Gathering Storm Melee Bolt With Staff" (id 10), and the `when` vocabulary has no node-flag test. Read-vs-spend order of Mana Strike is D?. |
+
+# Fix status (enemy conditions)
+
+- #16/#60 cond 43 (PerDistance): FIXED with D? distance. factor = 1 + min(distance, 10) x folded more (DamageEffectMoreDamagePerDistance.apply, GlobalDamageConditionals case 0x2b). Distance is the `target_distance` player input, default 1.
+- #16/#60 cond 37 (ToPetrifiedEnemies): FIXED. StunnedConditional with StunType.Petrify (checkStunType, stunType 3) = Stunned state AND Stunned.petrified (+0xE6).
+- #16/#60 cond 41 / 42: FIXED. IsAilmentConditional on the damage source (Bleed 2 / Poison 7) x GetPerAilmentStackEffect(other ailment, 1, 200): min(stacks, 200) x folded more on the source ailment's damage only. Known gap: a folded more below 0 would hit the game's limit clamp (200 x value) differently; no extracted data has one.
+- #57 Puncture: FIXED. CleanseAilmentsOnHit only in the everyThirdBigger branch (usesSinceLarge > 2, reset to 0): uses/s / 3. Known gap: bleedConvertedToPoison (CleanseAilmentsOnHit id Poison) is not modelled by the calculator at all (the conversion kind is unread), so the Bleed wipe is the calculator's existing model.
+- #65 armour: FIXED. mitigationFromArmour with overrideLevel 0 reads ZoneInfoManager.ZoneLevel; the monster level only picks the damage-reduction row. New enemy key area_level (0 = enemy level, so saved builds keep their numbers).
+
+# Fix status (own rates)
+
+Models whose value follows the skill's own uses or hits (EffectModels input `auto`, `use_interval`, skill phase) are computed per skill in
+`BuildMods._add_cost_models` with `SkillCalc.skill_rates`. Facts re-read in dump/decomp/LE.dll: Undisputed.c (Undisputed_onHit, 0x200 melee
+hit, AilmentReceiver_hasAilment_1 ailment 2 = Bleed, counter wraps after 0x32), StatBuffs.c (addBuff_2 removes a same-named buff first), Buff.c
+(Buff(Stat, Single) has no name), Soul_Bastion.c (OnKill / OnUpdateTick: 10 s charges, cast at 5 live charges then clear), CharacterMutator.c
+(OnFirstMeleeHit flag 0xd0 cleared per Melee use in OnAbilityUse; ApplyConditionalTemporaryStats: timers 0xfe0 / 0xfe4, 0x12d8 / 0x12e0 windows,
+crit fields 0x18b8 / 0x18bc / 0xe98 / 0xe9c, UseType 1, 2, 8 arm the bow / throwing windows).
+
+- #109 30:0 Undisputed: FIXED (D?). Stacks = own melee hits/s on a bleeding target x 4 s, at most 51; +8% increased physical per stack. The
+  bleed check gates the stack gain, not the buff. Other bar skills' hits are the player's input.
+- #109 52:0 Soul Bastion: FIXED (D?). Every 5th kill within 10 s: 1/5 of the kills per second when kills/s > 0.4, else 0. Kills/s is the input
+  `events_kill`, default 1/s (evenly spaced kills assumed).
+- #122 pp148 (Jasper, Incandescent Blades): FIXED (D?). Each melee use that hits adds a 16 s stack: +2 added Fire|Melee damage and +20% Ignite
+  chance (Melee). The stack count follows the own melee uses/s.
+- #125 pp419 / pp89: FIXED (D?). Not recent: pp419; recent (crit within 4 s): pp89; the mixture is solved with the crit rate (hits/s × chance).
+  Open: channelled exclusion (AbilityInfo slot 0x1b), not identified.
+- #125 pp229 / pp230: availability default from the bar (UseType 1, 2 or 8 arming use). The arming use's frequency is player behaviour: the
+  maximum case assumes it is used right before. The window itself is UNKNOWN for the affected skill's own use rate.
+- #110 pp161-164: FIXED (D?). The enhanced use is at most one per 2 s (timer 0xfe0 / 0xfe4, set by the real use): share = min(1, 1 / (2 x uses/s)).
+  Shared timer with other qualifying skills is ignored.
+- Hammer Throw / ground zones / totems counting hits per lifetime: handled in "User decision: hits per lifetime" below (#7, rule 4, #85).
+
+
+# Fix status (user decisions)
+
+Final status of Part 2 (defence, 22 findings) after the fix waves and user decisions (working tree, not committed). The full headless suite (15 tests) and `tools/models/validate.py` pass on this tree. FIXED = calculator matches game code re-read in the wave; PARTIAL = main part done, remainder named; SKIPPED = no change, missing data named; D? = a modelling input or convention that is not a game fact (labelled as such in the UI).
+
+| # | Status | Reason / what would unblock |
+|---|---|---|
+| 68 | FIXED | Hit-event damage taken: specialTag 1 on every hit, 6 only on a blocked hit, none on DoT. Sheet row "Damage taken from hits" still queries special 0 (known gap). |
+| 67 | FIXED | more_player_property node effects collected and folded multiplicatively (PP 561, 490, 291, 252, 251, 250, 436, 437). |
+| 69 | FIXED | PP 525 is a flag; extra endurance applies only while pending slow damage > 10% max health, outside the 0.6 cap. Only the f7 queue feeds pending damage (other SlowDamageInstance sources not modelled). |
+| 73 | FIXED | Boss Damage "increased" applied per damage type (Heorot x0.865, Volcanic Shaman x0.77175). |
+| 74 | FIXED / CLOSED | 74a: rarity variants `average\|<type>\|magic` / `\|rare` (x1.6 / x1.9), default normal. 74b: healthSerialisation == 1 for all extracted monsters and bosses, always-apply already correct. 74c: spawn share is environment (user decision), the player selects the variant; no code change. |
+| 75 | FIXED | PP 96 fires per glancing roll on a landed hit; PP 33 requires health after the hit below 35% (5 s cooldown); ward goes through the GainWard factor (see 76). Label wording "sliding hit" is cosmetic. |
+| 76 | FIXED (D?) | SP 97: 30 x chance x (1 - dodge) per hit, never on DoT. GainWard factor on every ward source: PP 471 gives 0, else (1 + t) x max(wardGainModifier, -1), t = 0 (no extracted writer of moreWardGenerated). The game quirk that SP 119 inc/more scales ward gain should be confirmed in game before release. Open: PP 472 in-combat writer of sourcesOfNoWardGain (needs UsingAbilityPlayer.update / whileActive writers of +0x2a8 read). |
+| 77 | PARTIAL | 77a FIXED (only specials the game reads: 1, 7, 2; special 0 counts nothing). 77b PARTIAL: health on block / kill / stun and ward on kill / stun added; ward on block not added (GainWardOnBlock double grant unproven: needs control-flow proof of ApplyDamage ordering or in-game observation). 77c SKIPPED: freeze events and tagged kill/stun gains need FreezeEnemyOnHit component fields (new prefab extraction) and a hit-to-freeze trigger relation. |
+| 78 | FIXED | Ward bypass flags (PP 685, dotsBypassWard), health cap and ward cap applied in take_damage, recovery, full pool and ward equilibrium. |
+| 127 | FIXED | Dodge per Int is min(per-Int value, cap); the uncapped duplicate removed. |
+| 40 | FIXED | Altar property 29 is an added stat (SP 44). |
+| 41 | FIXED | Sheet defence percentages use the area level setting as ZoneLevel (zone view, not hub view). |
+| 42 | FIXED | Thorns, crit avoidance, armour, dodge, endurance threshold, block chance and parry follow the game's conversions. Block effectiveness input (holder +0x60) not re-verified. |
+| 70 | FIXED | Slow queue taken from D after the endurance-threshold step. |
+| 71 | FIXED | Crit floor applied to the whole running multiplier. Limit: f0 x (1 - f7) = 0 case and the +3.0 on 0x1cc in the crit branch not analysed. |
+| 72 | FIXED | Block converted to parry = min(0.75, parry + uncapped + min(maxBlock, block)), without f1. |
+| 79 | FIXED | SP 60 current-health drain: exponential decay in recovery and EHP. |
+| 80 | FIXED (D?) | 80a: PP 275 less DoT taken during Haste, max(-0.75, (1 + inc) x pp), DoT only. 80b: PP 257/258 use the Conditions input `attacker_distance` (default 1, strict < 4.0; the distance is an input, so D?, and default 1 now applies to ranged attackers too); PP 262 uses the `current_mana` input (0 = maximum), >= 400. |
+| 81 | SKIPPED | Formula confirmed (UsingAbility.InitialiseAbilityUse) and use-speed inputs extracted (`prefab_use_speed.json.gz`), but the boss's effective Attack/Cast speed S (ActorScaler and rarity modifiers) is not applied in data; dropped on user request (extra data, not pursued). Unblocker: effective S per boss after scaling. |
+| 89 | FIXED | Minion base armour from the prefab ignored (BaseStats overwrites the field after the stat loop). |
+| 91 | SKIPPED | Shadow creation rate is an assumption (N x max(uses/s, 1/5); baseDuration 5 s confirmed). Unblocker: per-skill creation sources and rates, resummon interaction, the writer of CreateShadowMutator.additionalMaximumShadows (+0x130). |
+| 123 | FIXED | Same change as 69 (exact path E_eff = 1 - (1 - pp525)(1 - min(endurance, 0.6)); no effect at 0 endurance). |
+
+## User decision: hits per lifetime (Hammer Throw and similar)
+- The user's rule: a skill that can hit the same enemy several times during its lifetime is counted by the number of hits per lifetime, not once. Done for the data that is extracted: Hammer Throw Void zone (#7, 12 ticks returning, 3 with noReturn, 30 with Iron Spiral, D?), Black Hole (10 ticks per cast), and the minion sub-hit chains (#85: Storm Totem x6, Ice Bolt IceVortex x8, Revenant WeaponInAir x4, Tail Slam x1, D?).
+- Open: whether the Hammer's own primary hit can re-hit the same enemy on the return is UNKNOWN in the delivered data; other zone owners (Charged Ground, Tornado, Frost Wall, Glyph of Dominion, Hail of Arrows, Devouring Orb, Chthonic Fissure, beams) need their mutator code read before a tick count is valid.

@@ -104,3 +104,44 @@ skill_conversions, skill_node_effects, tree_art, tree_node_stats, trees, unique_
 
 Claims about game behaviour must quote the evidence (file + function/field + lines) and be tagged FACT or UNKNOWN. Tooltips,
 node names and field names are not evidence of semantics (a name such as `...WhileMovingOrMelee...` only says where to look).
+
+## 7. Prefab / serialized component data (`research/data/game/prefab_*.json`)
+
+Extracted from the Unity bundles with UnityPy (embedded TypeTrees, no dummydll needed): ability prefabs via
+`Ability.abilityPrefabSoftRef` -> `bundle_index` -> GameObject, actor prefabs via `ActorData.ActorSoftRef`; the Ability assets of
+PermaLoad hold the combo and range fields themselves. Every file has a `_meta` block (source, script, schema, read_errors).
+Values are recorded as serialized; absent or unresolvable references are `null` with a reason. The dependency graph
+`prefab_dependency_graph.json` links component fields to the game functions that read them and to the audit findings
+(`tools/extract/build_prefab_dependency_graph.py`).
+
+Rerun (seconds to 15 min each; `tools/venv` has UnityPy 1.25.4; read-only on the game files; quote the names with `#`):
+
+```
+tools/venv/Scripts/python "tools/extract/extract_prefab_sub_ability_hits.py"      # ~15 min
+tools/venv/Scripts/python "tools/extract/extract_prefab_ailment_zones.py"     # ~2.5 min
+tools/venv/Scripts/python tools/extract/extract_prefab_use_speed.py                          # ~80 s
+tools/venv/Scripts/python "tools/extract/extract_prefab_range_lists.py"            # 1-2 min
+tools/venv/Scripts/python "tools/extract/extract_prefab_combo_abilities.py"                  # ~1 min
+tools/venv/Scripts/python "tools/extract/extract_prefab_ability_stop_range.py"             # seconds
+tools/venv/Scripts/python "tools/extract/extract_prefab_mana_divider.py"     # seconds
+tools/venv/Scripts/python tools/extract/extract_prefab_trap_spawn_relations.py  # ~90 s
+python tools/extract/build_prefab_dependency_graph.py                                        # graph, instant
+```
+
+Which prefab field feeds which calculator finding (finding numbers of `11_calc_audit.md`; the function is where the game reads it):
+
+| Finding | File (key) | Fields -> game reader |
+|---|---|---|
+| #85 sub-ability hits | `prefab_#85 ...` rows by `ownerAbilities[].key` | CastAtRandomPointAfterDuration.duration/abilityRef/castsAtStart/limitCasts -> `OnUpdateTick`, `SelectAOC`; CreateAbilityObjectOnDeath.additionalCasts/randomExtraCasts/delay/abilityToInstantiateRef -> `CreateAbilityObject`; ExtraProjectiles.numberOfExtraProjectiles -> `GetTotalExtraProjectiles`; DestroyAfterDuration.duration -> `OnUpdateTick` |
+| #102 / #20 zones and beams | `prefab_#102 ...` `components[].owners` + `durations` | RepeatedlyApplyAilmentsInRadius.applicationInterval/radius/ailments -> `OnUpdateTick`; RepeatedlyHitsTargets.interval; DamageEnemiesWithBeam.damageInterval. BlackHole, DevouringOrb, Focus, HailOfArrows, InfernalShade have no such component (added at runtime by the mutator) |
+| #81 boss use speed, #82/#22 minion 1.1 | `prefab_use_speed ...` `actors[]`, `abilities[]` (key = AbilityManager key) | UsingAbility*.baseUseSpeedMultiplier (+0x154) -> `beginUsingAbility`; CastSpeedManager.overrides; Ability speedScaler/speedMultiplier/maximumUseSpeed/minimumUseDuration. 321 actors get the component at runtime (null in the file, constructor default 1.0) |
+| #93 minion AI gates | `prefab_#93 ...` `data[].actorData`, `siblings` | AbilityRangeList.ranges/healthThresholds/pursuitRangeCap -> `getEngageRange`, `getMaxRange`, `getPersuitRange`. Range-to-ability index alignment is UNKNOWN |
+| #63 Rive combo | `prefab_#63 ...` rows | Ability.comboAbilities/comboTimeLimit/comboBehaviour -> `getComboAbilities`, `getComboTimeLimit`, `GetComboBehaviour` |
+| #31 Lunge | `prefab_#31 ...` rows | Ability.stopRange/subtractStopRange.../manaCostPerDistance -> `UsingAbility.UseAbility` (2355-2400) |
+| #18 mana | `prefab_#18 ...` | BaseMana.addedManaCostDivider = 0.0 -> `BaseMana.getManaCost` |
+| #90 / #25 traps, spawns | `prefab_90_25 ...` `abilities[].componentClasses`, `spawnRefs` | MineTrigger.armingTime/castDelay/ability -> `MineTrigger.Trigger`; CreateAbilityObjectOnDeath refs |
+
+Not serialized (do not look in prefabs): ChargeManager.increasedRecoverySpeed (#88), NetMutator.netTrap and
+Judgement/HealingHands shieldRush (#25), mutator mana method overrides (#18), MonsterRarityManager spawn share.
+Known holes: bundle `assets_2107f86e57599767.bundle` is listed in the index but absent on disk (Baroness Boss and its prefabs are
+missing everywhere); 16 PhasedAbilityRangeList instances are not in the #93 file; join ability rows by `key`, not by name.

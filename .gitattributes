@@ -23,3 +23,6 @@
 
 # README screenshots in plain git (shown on GitHub without LFS bandwidth)
 docs/** -filter -diff -merge
+
+# Extracted prefab component data (compressed, regenerable by tools/extract/extract_prefab_*.py)
+research/data/game/prefab_*.json.gz filter=lfs diff=lfs merge=lfs -text

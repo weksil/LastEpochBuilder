@@ -1,0 +1,1452 @@
+{
+ "_meta": {
+  "game_version": "1.5.0 (Unity 6000.4.8f1, IL2CPP)",
+  "script": "tools/extract/build_prefab_dependency_graph.py",
+  "sources": [
+   "research/data/game/prefab_*.json",
+   "dump/decomp/LE.dll/*.c (lines cited per edge)",
+   "dump/index/dump_index.sqlite (readers/callers)",
+   "research/11_calc_audit.md"
+  ],
+  "schema": {
+   "nodes[].kind": "extracted_file | prefab_component_field | game_function | audit_finding | not_serialized_gap",
+   "edges[]": "from, to, relation (extracted_in | consumed_by | unblocks | still_blocks), source (file:line), evidence_kind (dump_index readers = heuristic offset search narrowed to the class, read it before concluding; decomp read = lines opened; verifier = independent verification report of this wave; audit text = research/11_calc_audit.md; extraction)",
+   "unblocks edges": "'consumed_by' to a game function and 'unblocks' from that function to a finding; without a function the edge carries consumer=consumer_unverified"
+  },
+  "caveats": [
+   "Edges say which game code reads a field and which finding needs that value. They do not say the finding is resolved.",
+   "dump_index readers is a heuristic (offset search); each cited line was a reader per the index, not a proof of semantics.",
+   "assets_2107f86e57599767.bundle is absent on disk; its prefabs are missing from every prefab_* file (see read_errors in each file)."
+  ],
+  "counts": {
+   "nodes": 83,
+   "edges": 95
+  }
+ },
+ "nodes": [
+  {
+   "id": "file:prefab_sub_ability_hits.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_sub_ability_hits.json.gz",
+   "script": "tools/extract/extract_prefab_sub_ability_hits.py",
+   "verification": "VALID",
+   "rows": 6030,
+   "coverage_notes": "DestroyAfterDuration, CastAfterDuration, CreateAbilityObjectOnDeath, ExtraProjectiles, CastAtRandomPointAfterDuration (1200 bundles). Not listed: DestroyAfterDuration in ~2000 VFX/scenery bundles, subclasses ...ScaledWithStat / ...WhilePositiveMana, assets_2107f86e57599767.bundle (missing on disk).",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_ailment_zones.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_ailment_zones.json.gz",
+   "script": "tools/extract/extract_prefab_ailment_zones.py",
+   "verification": "VALID",
+   "rows": 449,
+   "coverage_notes": "RepeatedlyApplyAilmentsInRadius, RepeatedlyDamageEnemiesWithinRadius, DamageEnemiesWithBeam, RepeatedlyHitsTargets + DestroyAfterDuration of reachable prefabs (partial by design).",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_use_speed.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_use_speed.json.gz",
+   "script": "tools/extract/extract_prefab_use_speed.py",
+   "verification": "VALID",
+   "rows": 5385,
+   "coverage_notes": "4350 Ability rows + 1035 ActorData rows: UsingAbility*.baseUseSpeedMultiplier, CastSpeedManager.overrides, Ability speed fields. 321 actors get UsingAbility at runtime (MADStateController.Start): null with reason. 7 actors without prefab.",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_range_lists.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_range_lists.json.gz",
+   "script": "tools/extract/extract_prefab_range_lists.py",
+   "verification": "PARTIAL",
+   "rows": 931,
+   "coverage_notes": "AbilityRangeList only. Missing: 16 PhasedAbilityRangeList instances (subclass, mislabeled 'no instance' in _meta), assets_2107f86e57599767.bundle (file absent on disk). 154 rows have no AbilityList sibling.",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_combo_abilities.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_combo_abilities.json.gz",
+   "script": "tools/extract/extract_prefab_combo_abilities.py",
+   "verification": "VALID",
+   "rows": 258,
+   "coverage_notes": "Ability asset combo fields (PermaLoad); 10 rows with a null PPtr in comboAbilities.",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_ability_stop_range.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_ability_stop_range.json.gz",
+   "script": "tools/extract/extract_prefab_ability_stop_range.py",
+   "verification": "VALID",
+   "rows": 4350,
+   "coverage_notes": "Ability asset stopRange family for all 4350 Ability objects of PermaLoad.",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_mana_divider.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_mana_divider.json.gz",
+   "script": "tools/extract/extract_prefab_mana_divider.py",
+   "verification": "VALID",
+   "rows": 3,
+   "coverage_notes": "PlayerMana.addedManaCostDivider = 0.0 on all 3 BaseMana-family components of the game.",
+   "status": "extracted"
+  },
+  {
+   "id": "file:prefab_trap_spawn_relations.json.gz",
+   "kind": "extracted_file",
+   "path": "research/data/game/prefab_trap_spawn_relations.json.gz",
+   "script": "tools/extract/extract_prefab_trap_spawn_relations.py",
+   "verification": "VALID",
+   "rows": 5385,
+   "coverage_notes": "Component class list and spawn refs per ability prefab (4350) and actor prefab (1035). Mutator-driven spawns are not serialized.",
+   "status": "extracted"
+  },
+  {
+   "id": "field:DestroyAfterDuration.duration",
+   "kind": "prefab_component_field",
+   "class": "DestroyAfterDuration",
+   "field": "duration",
+   "offset": "0x88",
+   "type": "float",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAtRandomPointAfterDuration.duration",
+   "kind": "prefab_component_field",
+   "class": "CastAtRandomPointAfterDuration",
+   "field": "duration",
+   "offset": "0xA0",
+   "type": "float",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAtRandomPointAfterDuration.abilityRef",
+   "kind": "prefab_component_field",
+   "class": "CastAtRandomPointAfterDuration",
+   "field": "abilityRef",
+   "offset": "0x90",
+   "type": "AbilityRef",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAtRandomPointAfterDuration.castsAtStart",
+   "kind": "prefab_component_field",
+   "class": "CastAtRandomPointAfterDuration",
+   "field": "castsAtStart",
+   "offset": "0xC0",
+   "type": "bool",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAtRandomPointAfterDuration.limitCasts",
+   "kind": "prefab_component_field",
+   "class": "CastAtRandomPointAfterDuration",
+   "field": "limitCasts",
+   "offset": "0xAC",
+   "type": "bool",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAtRandomPointAfterDuration.remainingCasts",
+   "kind": "prefab_component_field",
+   "class": "CastAtRandomPointAfterDuration",
+   "field": "remainingCasts",
+   "offset": "0xB0",
+   "type": "int",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CreateAbilityObjectOnDeath.abilityToInstantiateRef",
+   "kind": "prefab_component_field",
+   "class": "CreateAbilityObjectOnDeath",
+   "field": "abilityToInstantiateRef",
+   "offset": "0x28",
+   "type": "AbilityRef",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CreateAbilityObjectOnDeath.additionalCasts",
+   "kind": "prefab_component_field",
+   "class": "CreateAbilityObjectOnDeath",
+   "field": "additionalCasts",
+   "offset": "0x7C",
+   "type": "int",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CreateAbilityObjectOnDeath.randomExtraCasts",
+   "kind": "prefab_component_field",
+   "class": "CreateAbilityObjectOnDeath",
+   "field": "randomExtraCasts",
+   "offset": "0x80",
+   "type": "int",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CreateAbilityObjectOnDeath.delay",
+   "kind": "prefab_component_field",
+   "class": "CreateAbilityObjectOnDeath",
+   "field": "delay",
+   "offset": "0x8C",
+   "type": "float",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:ExtraProjectiles.numberOfExtraProjectiles",
+   "kind": "prefab_component_field",
+   "class": "ExtraProjectiles",
+   "field": "numberOfExtraProjectiles",
+   "offset": "0xA4",
+   "type": "int",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:ExtraProjectiles.angle",
+   "kind": "prefab_component_field",
+   "class": "ExtraProjectiles",
+   "field": "angle",
+   "offset": "0xA0",
+   "type": "float",
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastAfterDuration.duration/abilityRef",
+   "kind": "prefab_component_field",
+   "class": "CastAfterDuration",
+   "field": "duration/abilityRef",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_sub_ability_hits.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:RepeatedlyApplyAilmentsInRadius.applicationInterval",
+   "kind": "prefab_component_field",
+   "class": "RepeatedlyApplyAilmentsInRadius",
+   "field": "applicationInterval",
+   "offset": "0x98",
+   "type": "float",
+   "extracted_in": "file:prefab_ailment_zones.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:RepeatedlyApplyAilmentsInRadius.radius/ailments[]/chance",
+   "kind": "prefab_component_field",
+   "class": "RepeatedlyApplyAilmentsInRadius",
+   "field": "radius/ailments[]/chance",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_ailment_zones.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:RepeatedlyHitsTargets.interval",
+   "kind": "prefab_component_field",
+   "class": "RepeatedlyHitsTargets",
+   "field": "interval",
+   "offset": "0xA8",
+   "type": "float",
+   "extracted_in": "file:prefab_ailment_zones.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:DamageEnemiesWithBeam.damageInterval",
+   "kind": "prefab_component_field",
+   "class": "DamageEnemiesWithBeam",
+   "field": "damageInterval",
+   "offset": "0x108",
+   "type": "float",
+   "extracted_in": "file:prefab_ailment_zones.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:UsingAbility.baseUseSpeedMultiplier",
+   "kind": "prefab_component_field",
+   "class": "UsingAbility",
+   "field": "baseUseSpeedMultiplier",
+   "offset": "0x154",
+   "type": "float",
+   "extracted_in": "file:prefab_use_speed.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:CastSpeedManager.overrides",
+   "kind": "prefab_component_field",
+   "class": "CastSpeedManager",
+   "field": "overrides",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_use_speed.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.speedScaler/speedMultiplier/maximumUseSpeed/minimumUseDuration/useDelay/useDuration",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "speedScaler/speedMultiplier/maximumUseSpeed/minimumUseDuration/useDelay/useDuration",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_use_speed.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:AbilityRangeList.ranges",
+   "kind": "prefab_component_field",
+   "class": "AbilityRangeList",
+   "field": "ranges",
+   "offset": "0x28",
+   "type": "List<AbilityRanges>",
+   "extracted_in": "file:prefab_range_lists.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:AbilityRangeList.healthThresholds/pursuitRangeCap/comboReplacementRanges",
+   "kind": "prefab_component_field",
+   "class": "AbilityRangeList",
+   "field": "healthThresholds/pursuitRangeCap/comboReplacementRanges",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_range_lists.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:AbilityList.abilityRefs",
+   "kind": "prefab_component_field",
+   "class": "AbilityList",
+   "field": "abilityRefs",
+   "offset": null,
+   "type": null,
+   "extracted_in": "file:prefab_range_lists.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.comboAbilities",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "comboAbilities",
+   "offset": "0x1D8",
+   "type": "List<Ability>",
+   "extracted_in": "file:prefab_combo_abilities.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.comboTimeLimit",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "comboTimeLimit",
+   "offset": "0x1E0",
+   "type": "float",
+   "extracted_in": "file:prefab_combo_abilities.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.comboBehaviour",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "comboBehaviour",
+   "offset": "0x1E8",
+   "type": "int enum",
+   "extracted_in": "file:prefab_combo_abilities.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.stopRange",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "stopRange",
+   "offset": "0x174",
+   "type": "float",
+   "extracted_in": "file:prefab_ability_stop_range.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.subtractStopRangeForManaCostPerDistance",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "subtractStopRangeForManaCostPerDistance",
+   "offset": "0xC8",
+   "type": "bool",
+   "extracted_in": "file:prefab_ability_stop_range.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:Ability.manaCostPerDistance",
+   "kind": "prefab_component_field",
+   "class": "Ability",
+   "field": "manaCostPerDistance",
+   "offset": "0xC4",
+   "type": "float",
+   "extracted_in": "file:prefab_ability_stop_range.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:BaseMana.addedManaCostDivider",
+   "kind": "prefab_component_field",
+   "class": "BaseMana",
+   "field": "addedManaCostDivider",
+   "offset": "0x98",
+   "type": "float",
+   "extracted_in": "file:prefab_mana_divider.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "field:MineTrigger.armingTime/usesArmingTime/castDelay/ability",
+   "kind": "prefab_component_field",
+   "class": "MineTrigger",
+   "field": "armingTime/usesArmingTime/castDelay/ability",
+   "offset": "0x40/0x3C/0x38/0x28",
+   "type": null,
+   "extracted_in": "file:prefab_trap_spawn_relations.json.gz",
+   "status": "extracted"
+  },
+  {
+   "id": "fn:AbilityRangeList_getEngageRange",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "line": 774,
+   "reads": "reads ranges (+0x28)"
+  },
+  {
+   "id": "fn:AbilityRangeList_getMaxRange",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "line": 1118,
+   "reads": "reads ranges (+0x28)"
+  },
+  {
+   "id": "fn:AbilityRangeList_getMinRange",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "line": 1164,
+   "reads": "reads ranges (+0x28)"
+  },
+  {
+   "id": "fn:AbilityRangeList_getPersuitRange_1",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "line": 1318,
+   "reads": "reads ranges (+0x28)"
+  },
+  {
+   "id": "fn:Ability_GetComboBehaviour",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/Ability.c",
+   "line": 1109,
+   "reads": "returns comboBehaviour (+0x1E8)"
+  },
+  {
+   "id": "fn:Ability_getComboAbilities",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/Ability.c",
+   "line": 14,
+   "reads": "returns comboAbilities (+0x1D8)"
+  },
+  {
+   "id": "fn:Ability_getComboTimeLimit",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/Ability.c",
+   "line": 617,
+   "reads": "returns comboTimeLimit (+0x1E0)"
+  },
+  {
+   "id": "fn:BaseMana_getManaCost",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/BaseMana.c",
+   "line": 677,
+   "reads": "reads addedManaCostDivider (+0x98); second overload at line 1043"
+  },
+  {
+   "id": "fn:CastAtRandomPointAfterDuration_OnUpdateTick",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c",
+   "line": 204,
+   "reads": "reads duration (+0xA0) and the cast counters"
+  },
+  {
+   "id": "fn:CastAtRandomPointAfterDuration_SelectAOC",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c",
+   "line": 382,
+   "reads": "reads abilityRef (+0x90)"
+  },
+  {
+   "id": "fn:CreateAbilityObjectOnDeath_CreateAbilityObject",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c",
+   "line": 49,
+   "reads": "reads additionalCasts (+0x7C)"
+  },
+  {
+   "id": "fn:CreateAbilityObjectOnDeath_createAbilityObject",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c",
+   "line": 2592,
+   "reads": "reads additionalCasts (+0x7C)"
+  },
+  {
+   "id": "fn:DamageEnemiesWithBeam_OnUpdateTick",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c",
+   "line": 148,
+   "reads": "reads damageInterval (+0x108)"
+  },
+  {
+   "id": "fn:DamageEnemiesWithBeam_getApplicationsPerSecond",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c",
+   "line": 3,
+   "reads": "reads damageInterval (+0x108)"
+  },
+  {
+   "id": "fn:DestroyAfterDuration_OnUpdateTick",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/DestroyAfterDuration.c",
+   "line": 117,
+   "reads": "reads duration (+0x88), age, ageResets"
+  },
+  {
+   "id": "fn:ExtraProjectiles_GetTotalExtraProjectiles",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/ExtraProjectiles.c",
+   "line": 349,
+   "reads": "reads numberOfExtraProjectiles (+0xA4)"
+  },
+  {
+   "id": "fn:ExtraProjectiles_MakeExtraProjectiles",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/ExtraProjectiles.c",
+   "line": 2079,
+   "reads": "reads numberOfExtraProjectiles (+0xA4)"
+  },
+  {
+   "id": "fn:MineTrigger_Trigger",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/MineTrigger.c",
+   "line": 829,
+   "reads": "lines 829-891: usesArmingTime (+0x3C), armingTime (+0x40), castDelay (+0x38)"
+  },
+  {
+   "id": "fn:RepeatedlyApplyAilmentsInRadius_OnUpdateTick",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/RepeatedlyApplyAilmentsInRadius.c",
+   "line": 825,
+   "reads": "reads applicationInterval (+0x98) at lines 782, 929, 936"
+  },
+  {
+   "id": "fn:RepeatedlyHitsTargets_OnUpdateTick",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/RepeatedlyHitsTargets.c",
+   "line": 1310,
+   "reads": "reads interval (+0xA8)"
+  },
+  {
+   "id": "fn:UsingAbilityPlayer_update",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/UsingAbilityPlayer.c",
+   "line": 6488,
+   "reads": "reads baseUseSpeedMultiplier (+0x154)"
+  },
+  {
+   "id": "fn:UsingAbility_UseAbility",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/UsingAbility.c",
+   "line": 2355,
+   "reads": "lines 2355-2400: manaCostPerDistance (+0xC4), flag +0xC8, stopRange (+0x174), distance helper FUN_1803ed2c0 (unidentified), then BaseMana_getManaCost_2"
+  },
+  {
+   "id": "fn:UsingAbility_beginUsingAbility",
+   "kind": "game_function",
+   "file": "dump/decomp/LE.dll/UsingAbility.c",
+   "line": 4398,
+   "reads": "reads baseUseSpeedMultiplier (+0x154)"
+  },
+  {
+   "id": "finding:#85",
+   "kind": "audit_finding",
+   "title": "Minion abilities whose damage is in sub-abilities",
+   "calculator": "client/scripts/engine/minion_calc.gd:219-224,282-283",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#102",
+   "kind": "audit_finding",
+   "title": "Per-second / per-tick ailment chances of channels, auras and areas",
+   "calculator": "client/scripts/engine/skill_calc.gd ~595; client/data/field_models.json (AilmentChance)",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#20",
+   "kind": "audit_finding",
+   "title": "Rate of channelled skills / beam tick interval",
+   "calculator": "client/scripts/engine/skill_calc.gd",
+   "audit_status": "see audit part 1",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#81",
+   "kind": "audit_finding",
+   "title": "Boss attack timing ignores the boss's Attack/Cast speed",
+   "calculator": "client/scripts/engine/defense_calc.gd (_ability_every, _load_presets)",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#82/#22",
+   "kind": "audit_finding",
+   "title": "Minion use rate uses the player's 1.1 constant",
+   "calculator": "client/scripts/engine/minion_calc.gd:275",
+   "audit_status": "see audit",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#93",
+   "kind": "audit_finding",
+   "title": "Minion AI priority model: range, health gates",
+   "calculator": "client/scripts/engine/minion_calc.gd:258-293",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#63",
+   "kind": "audit_finding",
+   "title": "Rive third-strike ignite consumption",
+   "calculator": "client/scripts/engine/enemy_ailments.gd:37,159-163",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#31",
+   "kind": "audit_finding",
+   "title": "Lunge manaCostPerDistance",
+   "calculator": "client/scripts/engine/skill_calc.gd:1093 (mana_parts)",
+   "audit_status": "SKIPPED",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#18",
+   "kind": "audit_finding",
+   "title": "Mana cost row (divider, minimum, overrides)",
+   "calculator": "client/scripts/engine/skill_calc.gd (mana_parts)",
+   "audit_status": "PARTIAL",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#90",
+   "kind": "audit_finding",
+   "title": "Shadow imitation list incomplete (Explosive Trap)",
+   "calculator": "client/scripts/engine/shadow_calc.gd:17",
+   "audit_status": "PARTIAL",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#25",
+   "kind": "audit_finding",
+   "title": "Mutator overrides of getUseDuration/getUseDelay; shieldRush/netTrap refs",
+   "calculator": "client/scripts/engine/skill_calc.gd:1081",
+   "audit_status": "PARTIAL",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "finding:#88",
+   "kind": "audit_finding",
+   "title": "Minion shared cooldown/charge cap",
+   "calculator": "client/scripts/engine/minion_calc.gd:193-211",
+   "audit_status": "PARTIAL",
+   "audit_file": "research/11_calc_audit.md"
+  },
+  {
+   "id": "gap:ChargeManager.increasedRecoverySpeed",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#88",
+   "reason": "Absent from the typetree (4 serialized fields only); set at runtime. Audit premise 'prefab-serialised' is wrong.",
+   "source": "scout notes (this wave)",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:NetMutator.netTrap / JudgementMutator.shieldRush / HealingHandsMutator.shieldRush",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#25",
+   "reason": "Private Ability fields not in the typetree; assigned in code.",
+   "source": "scout notes (this wave)",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:mutator mana overrides (getMinimumManaCost, GetMoreManaCost, getAddedManaCostDivider vtable 0xBE8, noManaCost, getAttributeScaling)",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#18",
+   "reason": "Method overrides are code, not serialized data; still a decompile task.",
+   "source": "extractor/verifier report #18",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:BlackHole/DevouringOrb/Focus/HailOfArrows/InfernalShade per-second ailment tick",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#102",
+   "reason": "No RepeatedlyApplyAilmentsInRadius component in the prefab; BlackHoleMutator.Mutate adds it at runtime (GetOrAdd + addChance, audit #102 evidence), so the interval is in code.",
+   "source": "research/11_calc_audit.md #102 evidence; extractor report #102",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:UsingAbility of 321 MADStateController actors",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#82/#22",
+   "reason": "Component created at runtime in MADStateController.Start; constructor default 1.0f (UsingAbility.c:3729, UsingAbilityAI.c:140).",
+   "source": "extractor/verifier report use_speed",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:sub-ability runtime hit counts",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#85",
+   "reason": "Rows give serialized values only; the hit count they imply is not computed.",
+   "source": "extractor report #85",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:range-to-ability index alignment (AbilityRangeList.ranges vs AbilityList.abilityRefs)",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#93",
+   "reason": "UNKNOWN: no serialized link; found via GetComponent.",
+   "source": "extractor/verifier report #93",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:Lunge distance helper FUN_1803ed2c0 (planar vs 3D)",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#31",
+   "reason": "Function not identified; stopRange values are extracted, the distance metric is not.",
+   "source": "research/11_calc_audit.md #31; UsingAbility.c:2372",
+   "status": "not_extractable"
+  },
+  {
+   "id": "gap:MonsterRarityManager spawn share / Haste-Frenzy per-source durations",
+   "kind": "not_serialized_gap",
+   "blocks": "finding:#74c/#124/#125/#135",
+   "reason": "Scene spawner or code behaviour, not prefab-serialized.",
+   "source": "scout notes (this wave)",
+   "status": "not_extractable"
+  }
+ ],
+ "edges": [
+  {
+   "from": "field:DestroyAfterDuration.duration",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.duration",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.abilityRef",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.castsAtStart",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.limitCasts",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.remainingCasts",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.abilityToInstantiateRef",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.additionalCasts",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.randomExtraCasts",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.delay",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:ExtraProjectiles.numberOfExtraProjectiles",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:ExtraProjectiles.angle",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastAfterDuration.duration/abilityRef",
+   "to": "file:prefab_sub_ability_hits.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:RepeatedlyApplyAilmentsInRadius.applicationInterval",
+   "to": "file:prefab_ailment_zones.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:RepeatedlyApplyAilmentsInRadius.radius/ailments[]/chance",
+   "to": "file:prefab_ailment_zones.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:RepeatedlyHitsTargets.interval",
+   "to": "file:prefab_ailment_zones.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:DamageEnemiesWithBeam.damageInterval",
+   "to": "file:prefab_ailment_zones.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:UsingAbility.baseUseSpeedMultiplier",
+   "to": "file:prefab_use_speed.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:CastSpeedManager.overrides",
+   "to": "file:prefab_use_speed.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.speedScaler/speedMultiplier/maximumUseSpeed/minimumUseDuration/useDelay/useDuration",
+   "to": "file:prefab_use_speed.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:AbilityRangeList.ranges",
+   "to": "file:prefab_range_lists.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:AbilityRangeList.healthThresholds/pursuitRangeCap/comboReplacementRanges",
+   "to": "file:prefab_range_lists.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:AbilityList.abilityRefs",
+   "to": "file:prefab_range_lists.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.comboAbilities",
+   "to": "file:prefab_combo_abilities.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.comboTimeLimit",
+   "to": "file:prefab_combo_abilities.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.comboBehaviour",
+   "to": "file:prefab_combo_abilities.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.stopRange",
+   "to": "file:prefab_ability_stop_range.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.subtractStopRangeForManaCostPerDistance",
+   "to": "file:prefab_ability_stop_range.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:Ability.manaCostPerDistance",
+   "to": "file:prefab_ability_stop_range.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:BaseMana.addedManaCostDivider",
+   "to": "file:prefab_mana_divider.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "field:MineTrigger.armingTime/usesArmingTime/castDelay/ability",
+   "to": "file:prefab_trap_spawn_relations.json.gz",
+   "relation": "extracted_in",
+   "source": "extraction script header / _meta",
+   "evidence_kind": "extraction"
+  },
+  {
+   "from": "gap:ChargeManager.increasedRecoverySpeed",
+   "to": "finding:#88",
+   "relation": "still_blocks",
+   "source": "scout notes (this wave)",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:NetMutator.netTrap / JudgementMutator.shieldRush / HealingHandsMutator.shieldRush",
+   "to": "finding:#25",
+   "relation": "still_blocks",
+   "source": "scout notes (this wave)",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:mutator mana overrides (getMinimumManaCost, GetMoreManaCost, getAddedManaCostDivider vtable 0xBE8, noManaCost, getAttributeScaling)",
+   "to": "finding:#18",
+   "relation": "still_blocks",
+   "source": "extractor/verifier report #18",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:BlackHole/DevouringOrb/Focus/HailOfArrows/InfernalShade per-second ailment tick",
+   "to": "finding:#102",
+   "relation": "still_blocks",
+   "source": "research/11_calc_audit.md #102 evidence; extractor report #102",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:UsingAbility of 321 MADStateController actors",
+   "to": "finding:#82/#22",
+   "relation": "still_blocks",
+   "source": "extractor/verifier report use_speed",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:sub-ability runtime hit counts",
+   "to": "finding:#85",
+   "relation": "still_blocks",
+   "source": "extractor report #85",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:range-to-ability index alignment (AbilityRangeList.ranges vs AbilityList.abilityRefs)",
+   "to": "finding:#93",
+   "relation": "still_blocks",
+   "source": "extractor/verifier report #93",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:Lunge distance helper FUN_1803ed2c0 (planar vs 3D)",
+   "to": "finding:#31",
+   "relation": "still_blocks",
+   "source": "research/11_calc_audit.md #31; UsingAbility.c:2372",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "gap:MonsterRarityManager spawn share / Haste-Frenzy per-source durations",
+   "to": "finding:#74c/#124/#125/#135",
+   "relation": "still_blocks",
+   "source": "scout notes (this wave)",
+   "evidence_kind": "report"
+  },
+  {
+   "from": "field:DestroyAfterDuration.duration",
+   "to": "fn:DestroyAfterDuration_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/DestroyAfterDuration.c:117",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:DestroyAfterDuration_OnUpdateTick",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "lifetime of the sub-ability object",
+   "source": "dump/decomp/LE.dll/DestroyAfterDuration.c:117",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:DestroyAfterDuration.duration",
+   "to": "fn:DestroyAfterDuration_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/DestroyAfterDuration.c:117",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:DestroyAfterDuration_OnUpdateTick",
+   "to": "finding:#102",
+   "relation": "unblocks",
+   "note": "lifetime of a damage / ailment zone",
+   "source": "dump/decomp/LE.dll/DestroyAfterDuration.c:117",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.duration",
+   "to": "fn:CastAtRandomPointAfterDuration_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c:204",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:CastAtRandomPointAfterDuration_OnUpdateTick",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "delay before the sub-ability cast",
+   "source": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c:204",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CastAtRandomPointAfterDuration.abilityRef",
+   "to": "fn:CastAtRandomPointAfterDuration_SelectAOC",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c:382",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:CastAtRandomPointAfterDuration_SelectAOC",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "which sub-ability is cast",
+   "source": "dump/decomp/LE.dll/CastAtRandomPointAfterDuration.c:382",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.additionalCasts",
+   "to": "fn:CreateAbilityObjectOnDeath_CreateAbilityObject",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c:49",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:CreateAbilityObjectOnDeath_CreateAbilityObject",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "extra sub-ability casts on death",
+   "source": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c:49",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.abilityToInstantiateRef",
+   "to": "fn:CreateAbilityObjectOnDeath_createAbilityObject",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c:2336 (addExtraStats), 1806 (ProvideSoftDependencies)",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:CreateAbilityObjectOnDeath_createAbilityObject",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "sub-ability spawned on death",
+   "source": "dump/decomp/LE.dll/CreateAbilityObjectOnDeath.c:2336 (addExtraStats), 1806 (ProvideSoftDependencies)",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.abilityToInstantiateRef",
+   "to": "finding:#90",
+   "relation": "unblocks",
+   "note": "spawn relation (Falconer 04 -> 04.1 Explosive Trap On Ground)",
+   "consumer": "consumer_unverified",
+   "source": "research/data/game/prefab_trap_spawn_relations.json.gz (verifier: key 1312313140 resolved)",
+   "evidence_kind": "extracted value"
+  },
+  {
+   "from": "field:CreateAbilityObjectOnDeath.abilityToInstantiateRef",
+   "to": "finding:#25",
+   "relation": "unblocks",
+   "note": "spawn relation (sub-ability reached from a prefab)",
+   "consumer": "consumer_unverified",
+   "source": "same file as above",
+   "evidence_kind": "extracted value"
+  },
+  {
+   "from": "field:ExtraProjectiles.numberOfExtraProjectiles",
+   "to": "fn:ExtraProjectiles_GetTotalExtraProjectiles",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/ExtraProjectiles.c:349,2079",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:ExtraProjectiles_GetTotalExtraProjectiles",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "projectile count of the object",
+   "source": "dump/decomp/LE.dll/ExtraProjectiles.c:349,2079",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CastAfterDuration.duration/abilityRef",
+   "to": "finding:#85",
+   "relation": "unblocks",
+   "note": "consumer function not read in this wave (consumer_unverified)",
+   "consumer": "consumer_unverified",
+   "source": "verifier (c): rows equal PermaLoad enumeration",
+   "evidence_kind": "extracted value"
+  },
+  {
+   "from": "field:RepeatedlyApplyAilmentsInRadius.applicationInterval",
+   "to": "fn:RepeatedlyApplyAilmentsInRadius_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/RepeatedlyApplyAilmentsInRadius.c:782,929,936",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:RepeatedlyApplyAilmentsInRadius_OnUpdateTick",
+   "to": "finding:#102",
+   "relation": "unblocks",
+   "note": "ailment application interval of a zone",
+   "source": "dump/decomp/LE.dll/RepeatedlyApplyAilmentsInRadius.c:782,929,936",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "field:RepeatedlyApplyAilmentsInRadius.radius/ailments[]/chance",
+   "to": "fn:RepeatedlyApplyAilmentsInRadius_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/RepeatedlyApplyAilmentsInRadius.c:825-1300",
+   "evidence_kind": "verifier (d): field names/offsets match DiffableCs"
+  },
+  {
+   "from": "fn:RepeatedlyApplyAilmentsInRadius_OnUpdateTick",
+   "to": "finding:#102",
+   "relation": "unblocks",
+   "note": "radius and chance per tick",
+   "source": "dump/decomp/LE.dll/RepeatedlyApplyAilmentsInRadius.c:825-1300",
+   "evidence_kind": "verifier (d): field names/offsets match DiffableCs"
+  },
+  {
+   "from": "field:RepeatedlyHitsTargets.interval",
+   "to": "fn:RepeatedlyHitsTargets_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/RepeatedlyHitsTargets.c:1310",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:RepeatedlyHitsTargets_OnUpdateTick",
+   "to": "finding:#102",
+   "relation": "unblocks",
+   "note": "hit interval (DrainLife 0.1833)",
+   "source": "dump/decomp/LE.dll/RepeatedlyHitsTargets.c:1310",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:DamageEnemiesWithBeam.damageInterval",
+   "to": "fn:DamageEnemiesWithBeam_OnUpdateTick",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c:148",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:DamageEnemiesWithBeam_OnUpdateTick",
+   "to": "finding:#102",
+   "relation": "unblocks",
+   "note": "beam tick (Disintegrate 0.25)",
+   "source": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c:148",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:DamageEnemiesWithBeam.damageInterval",
+   "to": "fn:DamageEnemiesWithBeam_getApplicationsPerSecond",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c:3",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:DamageEnemiesWithBeam_getApplicationsPerSecond",
+   "to": "finding:#20",
+   "relation": "unblocks",
+   "note": "beam application rate",
+   "source": "dump/decomp/LE.dll/DamageEnemiesWithBeam.c:3",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:UsingAbility.baseUseSpeedMultiplier",
+   "to": "fn:UsingAbility_beginUsingAbility",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:4398",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:UsingAbility_beginUsingAbility",
+   "to": "finding:#81",
+   "relation": "unblocks",
+   "note": "boss use-time divisor",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:4398",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:UsingAbility.baseUseSpeedMultiplier",
+   "to": "fn:UsingAbility_beginUsingAbility",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:4398; UsingAbilityPlayer.c:6488",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:UsingAbility_beginUsingAbility",
+   "to": "finding:#82/#22",
+   "relation": "unblocks",
+   "note": "minion use rate (1.0 serialized on UsingAbilityAI / UsingMultipleAbilitiesAI; 1.1 on UsingAbilityPlayer)",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:4398; UsingAbilityPlayer.c:6488",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:CastSpeedManager.overrides",
+   "to": "finding:#81",
+   "relation": "unblocks",
+   "note": "per-actor useDelay/useDuration override of an ability",
+   "consumer": "consumer_unverified",
+   "source": "research/11_calc_audit.md #81 fix-status row lists it as an input of UsingAbility.InitialiseAbilityUse",
+   "evidence_kind": "audit text"
+  },
+  {
+   "from": "field:CastSpeedManager.overrides",
+   "to": "finding:#25",
+   "relation": "unblocks",
+   "note": "minion castSpeedOverride (cast time source)",
+   "consumer": "consumer_unverified",
+   "source": "research/11_calc_audit.md #25 calculator note",
+   "evidence_kind": "audit text"
+  },
+  {
+   "from": "field:Ability.speedScaler/speedMultiplier/maximumUseSpeed/minimumUseDuration/useDelay/useDuration",
+   "to": "finding:#81",
+   "relation": "unblocks",
+   "note": "boss ability use time",
+   "consumer": "consumer_unverified",
+   "source": "research/11_calc_audit.md #81 fix-status row (formula: UsingAbility.InitialiseAbilityUse)",
+   "evidence_kind": "audit text"
+  },
+  {
+   "from": "field:AbilityRangeList.ranges",
+   "to": "fn:AbilityRangeList_getEngageRange",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/AbilityRangeList.c:774,1118,1164,1318",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:AbilityRangeList_getEngageRange",
+   "to": "finding:#93",
+   "relation": "unblocks",
+   "note": "engage / min / max / pursuit range per ability index",
+   "source": "dump/decomp/LE.dll/AbilityRangeList.c:774,1118,1164,1318",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:AbilityRangeList.healthThresholds/pursuitRangeCap/comboReplacementRanges",
+   "to": "fn:AbilityRangeList_getPersuitRange_1",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "evidence_kind": "verifier (d)"
+  },
+  {
+   "from": "fn:AbilityRangeList_getPersuitRange_1",
+   "to": "finding:#93",
+   "relation": "unblocks",
+   "note": "health gate and pursuit cap (HealthThresholds.Evaluate reads the same offsets)",
+   "source": "dump/decomp/LE.dll/AbilityRangeList.c",
+   "evidence_kind": "verifier (d)"
+  },
+  {
+   "from": "field:AbilityList.abilityRefs",
+   "to": "finding:#93",
+   "relation": "unblocks",
+   "note": "ability order; AbilityRangeList.Awake does GetComponent<AbilityList>(); index alignment with ranges is UNKNOWN",
+   "consumer": "consumer_unverified",
+   "source": "dump/decomp/LE.dll/AbilityRangeList.c (Awake, verifier d)",
+   "evidence_kind": "verifier"
+  },
+  {
+   "from": "field:Ability.comboAbilities",
+   "to": "fn:Ability_getComboAbilities",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/Ability.c:14",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:Ability_getComboAbilities",
+   "to": "finding:#63",
+   "relation": "unblocks",
+   "note": "combo chain members",
+   "source": "dump/decomp/LE.dll/Ability.c:14",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:Ability.comboTimeLimit",
+   "to": "fn:Ability_getComboTimeLimit",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/Ability.c:617",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:Ability_getComboTimeLimit",
+   "to": "finding:#63",
+   "relation": "unblocks",
+   "note": "combo reset time",
+   "source": "dump/decomp/LE.dll/Ability.c:617",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:Ability.comboBehaviour",
+   "to": "fn:Ability_GetComboBehaviour",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/Ability.c:1109",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:Ability_GetComboBehaviour",
+   "to": "finding:#63",
+   "relation": "unblocks",
+   "note": "Cycle (0) / Random (1)",
+   "source": "dump/decomp/LE.dll/Ability.c:1109",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "field:Ability.stopRange",
+   "to": "fn:UsingAbility_UseAbility",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2355-2400",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:UsingAbility_UseAbility",
+   "to": "finding:#31",
+   "relation": "unblocks",
+   "note": "distance minus stopRange when flag 0xC8 set and stopRange != 0",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2355-2400",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "field:Ability.subtractStopRangeForManaCostPerDistance",
+   "to": "fn:UsingAbility_UseAbility",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2365-2390",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:UsingAbility_UseAbility",
+   "to": "finding:#31",
+   "relation": "unblocks",
+   "note": "selects the stopRange-subtracting branch",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2365-2390",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "field:Ability.manaCostPerDistance",
+   "to": "fn:UsingAbility_UseAbility",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2358-2400",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:UsingAbility_UseAbility",
+   "to": "finding:#31",
+   "relation": "unblocks",
+   "note": "multiplier of the distance passed to BaseMana.getManaCost",
+   "source": "dump/decomp/LE.dll/UsingAbility.c:2358-2400",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "field:BaseMana.addedManaCostDivider",
+   "to": "fn:BaseMana_getManaCost",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/BaseMana.c:677,1043",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "fn:BaseMana_getManaCost",
+   "to": "finding:#18",
+   "relation": "unblocks",
+   "note": "prefab divider term (serialized 0.0 on every BaseMana-family component)",
+   "source": "dump/decomp/LE.dll/BaseMana.c:677,1043",
+   "evidence_kind": "dump_index readers"
+  },
+  {
+   "from": "field:MineTrigger.armingTime/usesArmingTime/castDelay/ability",
+   "to": "fn:MineTrigger_Trigger",
+   "relation": "consumed_by",
+   "source": "dump/decomp/LE.dll/MineTrigger.c:829-891",
+   "evidence_kind": "decomp read"
+  },
+  {
+   "from": "fn:MineTrigger_Trigger",
+   "to": "finding:#90",
+   "relation": "unblocks",
+   "note": "Explosive Trap arming and cast delay",
+   "source": "dump/decomp/LE.dll/MineTrigger.c:829-891",
+   "evidence_kind": "decomp read"
+  }
+ ]
+}
