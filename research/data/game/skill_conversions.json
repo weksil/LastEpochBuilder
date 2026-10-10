@@ -1,7 +1,7 @@
 {
  "gameVersion": "1.5.0",
  "source": "mutator_field_semantics_*.json (decompiled mutator code descriptions) classified into rules; tools/extract/conversions (prefilter.py, merge.py)",
- "schema": "{key \"Mutator.field\", kind conversion|tags|ailment_conversion, convert[{from,to,fraction:\"value\"|number}], tags_add[], tags_remove[], tags_when active|full_conversion, ailment_convert[{from,to}], note, trees, nodes, evidence}. fraction \"value\" = the field value set by the tree node (clamped 0..1). Confidence: text-level (D?) — verify in game.",
+ "schema": "{key \"Mutator.field\", kind conversion|tags|ailment_conversion, convert[{from,to,fraction:\"value\"|number}], tags_add[], tags_remove[], tags_when active|full_conversion, tags_remove_when full_conversion (optional: the removed tags go only with a full conversion), periodic {cooldown} (optional: only the use that finds the cooldown ready is converted; the converted share is 1 / (floor(cooldown × uses/s) + 1)), ailment_convert[{from,to}], note, trees, nodes, evidence}. fraction \"value\" = the field value set by the tree node (clamped 0..1). Confidence: text-level (D?) — verify in game.",
  "data": [
   {
    "key": "AbyssalEchoesMutator.ailmentStats",
@@ -607,26 +607,22 @@
   },
   {
    "key": "DancingStrikesMutator.bleedConvertedToPoison",
-   "kind": "conversion",
-   "convert": [
-    {
-     "from": "Physical",
-     "to": "Poison",
-     "fraction": 1
-    }
-   ],
+   "kind": "tags",
+   "convert": [],
    "tags_add": [
     "Poison"
    ],
-   "tags_remove": [
-    "Physical"
-   ],
-   "tags_when": "full_conversion",
+   "tags_remove": [],
+   "tags_when": "active",
    "tags_derived": false,
    "ailment_convert": [
     {
      "from": "Bleed",
      "to": "Poison"
+    },
+    {
+     "from": "PhysicalResistanceShred",
+     "to": "PoisonResistanceShred"
     }
    ],
    "note": "",
@@ -636,7 +632,7 @@
    "nodes": [
     "Dancing Strikes Bleed To Poison"
    ],
-   "evidence": "Bleed -> Poison: GetConversionType 1 (2 if manager fire flag), tags |= Poison (0x40) (or Physical -> Fire), ailment conversion Bleed(0x1c?)->Poison stat; Physical -> Poison penetration. bool: tags |= Poison; ailment conversion bleed -> poison "
+   "evidence": "DancingStrikesMutator.GetConversionType 1 (bleedConvertedToPoison): getTags |= Poison (0x40), hit VFX theme Poison, getTempStats AilmentConversionStat(Poison<-Bleed), (PoisonResistanceShred<-PhysicalResistanceShred), physPen as Poison penetration. Base damage is not converted (only the Fire flag 0x1c18 calls convertBaseDamage 0->1)."
   },
   {
    "key": "DeathSealMutator.coldConversionOfDeathWave",
@@ -1357,8 +1353,9 @@
    "tags_remove": [
     "Fire"
    ],
-   "tags_when": "full_conversion",
-   "tags_derived": true,
+   "tags_when": "active",
+   "tags_derived": false,
+   "tags_remove_when": "full_conversion",
    "ailment_convert": [],
    "note": "",
    "trees": [
@@ -1385,8 +1382,9 @@
    "tags_remove": [
     "Fire"
    ],
-   "tags_when": "full_conversion",
-   "tags_derived": true,
+   "tags_when": "active",
+   "tags_derived": false,
+   "tags_remove_when": "full_conversion",
    "ailment_convert": [],
    "note": "",
    "trees": [
@@ -1443,11 +1441,9 @@
    "tags_add": [
     "Lightning"
    ],
-   "tags_remove": [
-    "Fire"
-   ],
-   "tags_when": "full_conversion",
-   "tags_derived": true,
+   "tags_remove": [],
+   "tags_when": "active",
+   "tags_derived": false,
    "ailment_convert": [
     {
      "from": "Ignite",
@@ -1849,34 +1845,6 @@
     "Hail Of Arrows Fire Damage Conversion"
    ],
    "evidence": "Physical -> Fire (convertAllDamageOfType(0,1)); Bleed -> Ignite; VFX/tags/DPS. bool "
-  },
-  {
-   "key": "HammerThrowMutator.aoeVoidDamage",
-   "kind": "conversion",
-   "convert": [
-    {
-     "from": "Physical",
-     "to": "Void",
-     "fraction": 1
-    }
-   ],
-   "tags_add": [
-    "Void"
-   ],
-   "tags_remove": [
-    "Physical"
-   ],
-   "tags_when": "active",
-   "tags_derived": true,
-   "ailment_convert": [],
-   "note": "",
-   "trees": [
-    "ht16aw"
-   ],
-   "nodes": [
-    "Hammer Throw Tree Void Damage In Aoe"
-   ],
-   "evidence": "Disintegrating Aura: adds Void base damage (increasedAoEVoidDamage+1)*8 to the hit, converts physical damage (convertBaseDamage 0->3 per tag); copied to the hammer component; DPS applier; tags. bool "
   },
   {
    "key": "HarvestMutator.coldConversion",
@@ -3287,8 +3255,11 @@
    "tags_add": [
     "Lightning"
    ],
-   "tags_remove": [],
+   "tags_remove": [
+    "Physical"
+   ],
    "tags_when": "active",
+   "tags_remove_when": "full_conversion",
    "tags_derived": false,
    "ailment_convert": [],
    "note": "",
@@ -4026,7 +3997,8 @@
    "nodes": [
     "Swipe Added Lightning Damage"
    ],
-   "evidence": "Fraction of base (physical) damage converted to lightning: convertBaseDamage(0 Physical -> 3 Lightning, f); storm claw forces 1.0; getTags adds lightning; bear display tags. convertBaseDamage(Phys, Lightning, f); f=0.2p "
+   "evidence": "Fraction of base (physical) damage converted to lightning: convertBaseDamage(0 Physical -> 3 Lightning, f); storm claw forces 1.0; getTags adds lightning; bear display tags. convertBaseDamage(Phys, Lightning, f); f=0.2p ",
+   "tags_remove_when": "full_conversion"
   },
   {
    "key": "SwipeMutator.stormClawEvery3Seconds",
@@ -4041,20 +4013,21 @@
    "tags_add": [
     "Lightning"
    ],
-   "tags_remove": [
-    "Physical"
-   ],
-   "tags_when": "full_conversion",
+   "tags_remove": [],
+   "tags_when": "active",
    "tags_derived": false,
    "ailment_convert": [],
-   "note": "Conditional conversion every 3 seconds",
+   "note": "",
    "trees": [
     "sw43"
    ],
    "nodes": [
     "Swipe Lightning Damage Cooldown"
    ],
-   "evidence": "Storm Claw: every 3 s the next Swipe is converted 100% to lightning (StormClawLightningConversionEvery3Seconds) with increasedAreaWithStormClaw; reset on totem summon with the reset node. cooldown-based conversion: 100% base dmg -> lightning every 3 s "
+   "evidence": "Storm Claw: every 3 s the next Swipe is converted 100% to lightning (StormClawLightningConversionEvery3Seconds) with increasedAreaWithStormClaw; reset on totem summon with the reset node. cooldown-based conversion: 100% base dmg -> lightning every 3 s ",
+   "periodic": {
+    "cooldown": 3.0
+   }
   },
   {
    "key": "ThornShieldMutator.coldConversion",

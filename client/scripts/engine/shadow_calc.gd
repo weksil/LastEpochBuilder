@@ -1,7 +1,7 @@
 class_name ShadowCalc
 
 ## Rogue shadows (docs/ENGINE.md §9.10). A shadow (ability CreateShadow, AbilityID 469) imitates your next direct use of
-## Shadow Cascade, Shurikens, Umbral Blades, Dreamslash or Acid Flask (and indirect uses of Shadow Cascade); up to 3 are
+## Shadow Cascade, Shurikens, Umbral Blades, Dreamslash, Acid Flask or Net (and indirect uses of Shadow Cascade); up to 3 are
 ## active (ability description). The number of active shadows is the player value «shadows» of the Conditions tab: every
 ## active shadow repeats a use of an imitated skill, so the skill gets a «Shadows: …» damage component with
 ## per_use × shadows. Properties of CreateShadow (AbilityProperty 469) from passives, items and idols:
@@ -14,7 +14,10 @@ const ABILITY_ID: String = "createShadow"
 const ABILITY_INDEX: int = 469
 const BASE_MAX: float = 3.0
 ## Ability names (abilities.json `name`) that shadows imitate.
-const IMITATED: Array[String] = ["ShadowCascade", "Shurikens", "Umbral Blades 1", "Dreamslash", "AcidFlask"]
+## CreateShadowMutator.startedUsingAbility: a direct use of Net (Falconer 05, AbilityID 735) is repeated by every shadow, unconditionally.
+## Explosive Trap (Falconer 04) is not listed: its repeat depends on the ExplosiveTrapMutator component found on the same object
+## (GetComponent in Awake) and on its bow version, the component placement is not extracted.
+const IMITATED: Array[String] = ["ShadowCascade", "Shurikens", "Umbral Blades 1", "Dreamslash", "AcidFlask", "Falconer 05 Net"]
 ## AbilityProperty indices of CreateShadow counted here (their «not counted» notes are dropped).
 const HANDLED: Array[int] = [0, 1, 2, 3, 4, 5]
 const LIFETIME: float = 5.0

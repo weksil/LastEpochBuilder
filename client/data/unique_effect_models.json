@@ -6,12 +6,15 @@
   "ability": "'abilityIndex:propertyIndex' -> model; pp comes from the mod with property 58 (AbilityProperty), tags == abilityIndex, specialTag == propertyIndex; applied only to the skill whose abilityIDEnum.value == abilityIndex",
   "model.stat": "SP name (sp_enum.json); mod: added|increased|more; tags: AT names joined by '|'; ailment: AilmentID name used as specialTag",
   "model.value": "pp * clamp(source, 0, src_max) - offset ... exactly: x = pp * (source - offset) * factor, then clamped to [min, max]; without 'per' x = pp * factor",
-  "model.per": "attr:str|vit|int|dex|att, total_attr, added:<SP>, value:<SP>, increased:<SP>, added_exact:<SP>:<AT mask>, res:<damage type 0..6> (uncapped), ele_res, total_res, max_health, max_mana, endurance_threshold, enemy_stacks:<Ailment>, player:<number key>, complete_sets",
+  "model.per": "attr:str|vit|int|dex|att, total_attr, added:<SP>, value:<SP>, increased:<SP>, added_exact:<SP>:<AT mask>, res:<damage type 0..6> (uncapped), ele_res, total_res, max_health, max_mana, endurance_threshold, weapon_count:sword|dagger, total_added:<SP>:<AT mask>, mastery_points:<n>, skill_mana_cost (phase skill, per skill), enemy_stacks:<Ailment>, player:<number key>, complete_sets",
   "model.at_least / below": "{per, value}: the model applies only if the source is >= value (at_least) or < value (below)",
-  "model.when": "all must hold: enemy:<Ailment> (has stacks), enemy_any:<A>|<B>, enemy_flag:<flag>, enemy:boss_or_rare, player:<flag>, player:!<flag>, gear:dual_wield, gear:two_handed_melee, slot:<slot>",
+  "model.when": "all must hold: enemy:<Ailment> (has stacks), enemy_any:<A>|<B>, enemy_flag:<flag>, enemy:boss_or_rare, player:<flag>, player:!<flag>, gear:dual_wield, gear:two_handed_melee, gear:dual_wield_diff, gear_any:<EquipmentType,...> (a base type in either hand), slot:<slot>",
   "model.skill_any": "skill-local: applies only to skills having any of these tags",
   "model.kind": "stat (default) | mana_added (skill mana cost) | overcap_taken (Null Portent: per damage type, needs cap_pp)",
-  "model.note": "assumption shown to the user"
+  "model.note": "assumption shown to the user",
+  "model.variants": "list of overrides of the model (stat, tags, per, ...): one mod per entry, the rest of the model is shared",
+  "model.steps": "step function of the per-source: [{at_least, factor}]: the factor of the last step the source reaches; below the first step: steps_base",
+  "model.src_max_field": "cap of the per-source value = the points allocated to passive effects that write CharacterMutator.<field> (sum of their values)"
  },
  "player": {
   "45": {
@@ -32,18 +35,22 @@
    "per": "attr:int"
   },
   "141": {
-   "stat": "IncreasedAilmentEffect",
-   "mod": "added",
-   "ailment": "Bleed",
-   "per": "added:CriticalMultiplier",
-   "note": "conversion coefficient not allowed in code, taken as 1"
+    "stat": "IncreasedAilmentEffect",
+    "mod": "added",
+    "ailment": "Bleed",
+    "per": "added:CriticalMultiplier",
+    "converts": "CriticalMultiplier",
+    "note": "v × your added crit multiplier; the same amount is removed from it",
+    "confidence": "D"
   },
   "142": {
-   "stat": "IncreasedAilmentEffect",
-   "mod": "added",
-   "ailment": "Poison",
-   "per": "added:CriticalMultiplier",
-   "note": "conversion coefficient not allowed in code, taken as 1"
+    "stat": "IncreasedAilmentEffect",
+    "mod": "added",
+    "ailment": "Poison",
+    "per": "added:CriticalMultiplier",
+    "converts": "CriticalMultiplier",
+    "note": "v × your added crit multiplier; the same amount is removed from it",
+    "confidence": "D"
   },
   "154": {
    "stat": "Movespeed",
@@ -414,14 +421,16 @@
    }
   },
   "275": {
-   "stat": "DamageTaken",
-   "mod": "more",
-   "tags": "DoT",
-   "min": -0.75,
-   "when": [
-    "player:haste"
-   ],
-   "note": "without accounting for increased Haste effect"
+    "stat": "DamageTaken",
+    "mod": "more",
+    "tags": "DoT",
+    "min": -0.75,
+    "when": [
+     "player:haste"
+    ],
+    "effect_of": "Haste",
+    "note": "scaled by (1 + increased effect of Haste on you), at most -75%",
+    "confidence": "D"
   },
   "282": {
    "stat": "DamageTaken",
@@ -473,19 +482,25 @@
    ]
   },
   "602": {
-   "stat": "Damage",
-   "mod": "more",
-   "tags": "Melee",
-   "when": [
-    "player:frenzy"
-   ]
+    "stat": "Damage",
+    "mod": "more",
+    "tags": "Melee",
+    "when": [
+     "player:frenzy"
+    ],
+    "effect_of": "Frenzy",
+    "note": "scaled by (1 + increased effect of Frenzy on you)",
+    "confidence": "D"
   },
   "603": {
-   "stat": "DamageTaken",
-   "mod": "increased",
-   "when": [
-    "player:frenzy"
-   ]
+    "stat": "DamageTaken",
+    "mod": "increased",
+    "when": [
+     "player:frenzy"
+    ],
+    "effect_of": "Frenzy",
+    "note": "scaled by (1 + increased effect of Frenzy on you)",
+    "confidence": "D"
   },
   "625": {
    "stat": "BlockChance",
@@ -829,7 +844,7 @@
   "77": {
    "kind": "stat",
    "stat": "Damage",
-   "mod": "increased",
+   "mod": "more",
    "factor": 0.2,
    "when": [
     "input:deicide"
@@ -839,7 +854,7 @@
     "label": "Has Godslayer",
     "default": false
    },
-   "note": "15 sec after kill of rare/boss; multiplier 0.2 from code constant, modifier type not confirmed",
+   "note": "15 sec after kill of rare/boss; «Deicide Damage» buff: MORE Damage 0.2 (code constant)",
    "confidence": "D?"
   },
   "79": {
@@ -903,7 +918,8 @@
    "label": "Ward (flat, v), when hit leaves you at low health, 5 sec cooldown",
    "confidence": "D",
    "amount": "flat",
-   "per_second_cap": 0.2
+   "per_second_cap": 0.2,
+   "health_below": 0.35
   },
   "90": {
    "kind": "resource",
@@ -916,7 +932,7 @@
   "96": {
    "kind": "resource",
    "resource": "health",
-   "on": "hit_taken",
+   "on": "glancing",
    "label": "Health on sliding hit (flat, v)",
    "confidence": "D",
    "amount": "flat"
@@ -1062,7 +1078,9 @@
     "label": "Next void melee attack enhanced (every 2 sec)",
     "default": true
    },
-   "confidence": "D"
+   "confidence": "D",
+   "skill_all": "Void|Melee",
+   "note": "Only a use whose skill has both the Void and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
   },
   "162": {
    "kind": "stat",
@@ -1077,7 +1095,9 @@
     "label": "Next void melee attack enhanced (every 2 sec)",
     "default": true
    },
-   "confidence": "D"
+   "confidence": "D",
+   "skill_all": "Void|Melee",
+   "note": "Only a use whose skill has both the Void and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
   },
   "163": {
    "kind": "stat",
@@ -1092,7 +1112,9 @@
     "label": "Next fire melee attack enhanced (every 2 sec)",
     "default": true
    },
-   "confidence": "D"
+   "confidence": "D",
+   "skill_all": "Fire|Melee",
+   "note": "Only a use whose skill has both the Fire and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
   },
   "164": {
    "kind": "stat",
@@ -1107,7 +1129,9 @@
     "label": "Next fire melee attack enhanced (every 2 sec)",
     "default": true
    },
-   "confidence": "D"
+   "confidence": "D",
+   "skill_all": "Fire|Melee",
+   "note": "Only a use whose skill has both the Fire and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
   },
   "166": {
    "kind": "trigger",
@@ -1395,7 +1419,6 @@
    "kind": "stat",
    "stat": "Damage",
    "mod": "more",
-   "scope": "global",
    "when": [
     "input:next_move_skill"
    ],
@@ -1404,8 +1427,9 @@
     "label": "Next movement ability (every 3 sec)",
     "default": true
    },
-   "note": "movement abilities only, every 3 sec",
-   "confidence": "D?"
+   "note": "movement abilities only (the skill's own flag, skill-tree overrides are not modelled), every 3 sec",
+   "confidence": "D?",
+   "skill_flag": "countsAsMovementAbility"
   },
   "235": {
    "kind": "param",
@@ -1429,8 +1453,9 @@
     "default": 10,
     "max": 10
    },
-   "note": "3 sec per stack, up to 10",
-   "confidence": "D"
+   "note": "3 sec per stack, up to 10; Bow skills only",
+   "confidence": "D",
+   "tags": "Bow"
   },
   "211": {
    "kind": "flag",
@@ -1794,15 +1819,16 @@
    "confidence": "D?"
   },
   "411": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "added",
-   "tags": "Melee",
-   "when": [
-    "player:frenzy"
-   ],
-   "note": "value 20-30 taken as flat added damage",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "tags": "Melee",
+    "when": [
+     "player:frenzy"
+    ],
+    "effect_of": "Frenzy",
+    "note": "scaled by (1 + increased effect of Frenzy on you)",
+    "confidence": "D"
   },
   "412": {
    "kind": "flag",
@@ -1837,10 +1863,20 @@
    "confidence": "D"
   },
   "445": {
-   "kind": "flag",
-   "text": "Fraction of added melee damage applied as added spell damage to Cold/Void spells",
-   "note": "25-42%",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "copy_player": {
+     "stat": "Damage",
+     "tags_any": "Melee",
+     "only_added": true,
+     "clear_tags": "Melee",
+     "set_tags": "Spell"
+    },
+    "skill_all": "Spell",
+    "skill_any": "Cold|Void",
+    "note": "v × your added Melee damage becomes added Spell damage, for Cold and Void spells",
+    "confidence": "D"
   },
   "448": {
    "kind": "trigger",
@@ -2046,8 +2082,12 @@
     "default": 4,
     "max": 4
    },
-   "note": "ranged abilities",
-   "confidence": "D"
+   "note": "Bow skills, direct use only",
+   "confidence": "D",
+   "skill_any": "Bow",
+   "when": [
+    "use:direct"
+   ]
   },
   "507": {
    "kind": "flag",
@@ -2163,25 +2203,15 @@
    "kind": "stat",
    "stat": "Damage",
    "mod": "more",
-   "confidence": "D?",
-   "tags": "Ailment",
-   "per": "increased:Damage",
-   "note": "Witchfire: more damage = v × curse damage increase; counted from all damage increase (approximation)"
+   "confidence": "D",
+   "ailment_only": "Witchfire",
+   "per": "increased_exact:Damage:16777216",
+   "note": "Witchfire stack only: more damage = v × increased Damage with the Curse tag only (exact match)"
   },
   "525": {
-   "kind": "stat",
-   "stat": "Endurance",
-   "mod": "added",
-   "confidence": "D",
-   "when": [
-    "input:delayed_dmg"
-   ],
-   "input": {
-    "key": "delayed_dmg",
-    "label": "Delayed damage more than 10% max health",
-    "default": true
-   },
-   "note": "Damage reduction below endurance threshold"
+   "kind": "flag",
+   "text": "Extra damage reduction below the endurance threshold while delayed damage above 10% of max health is pending: counted in the Defense tab",
+   "confidence": "D"
   },
   "527": {
    "kind": "stat",
@@ -2482,15 +2512,16 @@
    "confidence": "D?"
   },
   "601": {
-   "kind": "stat",
-   "stat": "HealthLeech",
-   "mod": "added",
-   "confidence": "D",
-   "tags": "Melee",
-   "when": [
-    "player:frenzy"
-   ],
-   "note": "While Frenzy is active"
+    "kind": "stat",
+    "stat": "HealthLeech",
+    "mod": "added",
+    "tags": "Melee",
+    "when": [
+     "player:frenzy"
+    ],
+    "effect_of": "Frenzy",
+    "note": "scaled by (1 + increased effect of Frenzy on you)",
+    "confidence": "D"
   },
   "604": {
    "kind": "flag",
@@ -2688,14 +2719,15 @@
    "amount": "current_mana"
   },
   "669": {
-   "kind": "stat",
-   "stat": "IncreasedAreaForAreaSkills",
-   "mod": "added",
-   "confidence": "D",
-   "when": [
-    "player:frenzy"
-   ],
-   "note": "Multiplied by (Frenzy effect + 1)"
+    "kind": "stat",
+    "stat": "IncreasedAreaForAreaSkills",
+    "mod": "added",
+    "when": [
+     "player:frenzy"
+    ],
+    "effect_of": "Frenzy",
+    "note": "scaled by (1 + increased effect of Frenzy on you)",
+    "confidence": "D"
   },
   "667": {
    "kind": "stat",
@@ -2877,7 +2909,36 @@
    "chance": "v",
    "note": "Poison Nova when hit",
    "confidence": "D"
-  }
+  },
+  "94": {"stat": "CriticalChance", "mod": "increased", "per": "weapon_count:sword", "confidence": "D"},
+  "95": {"stat": "CriticalChance", "mod": "increased", "per": "weapon_count:dagger", "confidence": "D"},
+  "98": {"stat": "AilmentChance", "mod": "added", "ailment": "Bleed", "per": "weapon_count:sword", "confidence": "D"},
+  "99": {"stat": "AilmentChance", "mod": "added", "ailment": "Poison", "per": "weapon_count:dagger", "confidence": "D"},
+  "106": {"stat": "Damage", "mod": "more", "per": "skill_mana_cost", "factor": 0.01, "skill_any": "Bow", "confidence": "D"},
+  "146": {"stat": "Damage", "mod": "added", "tags": "Spell|Lightning", "per": "attr:int", "factor": 0.5, "confidence": "D"},
+  "171": {"stat": "AttackSpeed", "mod": "increased", "when": ["gear_any:9,5,16,12"], "variants": [{"stat": "AttackSpeed"}, {"stat": "CastSpeed"}], "confidence": "D"},
+  "195": {"stat": "AilmentChance", "mod": "added", "ailment": "Poison", "tags": "Melee", "per": "res:1", "factor": 100, "confidence": "D"},
+  "196": {"stat": "Damage", "mod": "increased", "tags": "Melee|Cold", "per": "stat_value:HealthRegen:0:0", "factor": 0.1, "max": 20, "confidence": "D"},
+  "260": {"stat": "CriticalChance", "mod": "increased", "tags": "Spell", "per": "attr:int", "confidence": "D"},
+  "305": {"stat": "IncreasedCooldownRecoverySpeed", "mod": "added", "per": "attr:int", "factor": 0.16666667, "confidence": "D"},
+  "385": {"stat": "Damage", "mod": "more", "when": ["player:haste"], "effect_of": "Haste", "confidence": "D"},
+  "420": {"stat": "Penetration", "mod": "added", "tags": "Melee|Cold", "per": "attr:str", "factor": 0.33333334, "confidence": "D"},
+  "421": {"stat": "Penetration", "mod": "added", "tags": "Spell|Lightning", "per": "attr:att", "factor": 0.2, "confidence": "D"},
+  "427": {"stat": "CriticalChance", "mod": "increased", "per": "attr:dex", "confidence": "D"},
+  "434": {"stat": "Penetration", "mod": "added", "per": "attr:str", "factor": 0.2, "variants": [{"tags": "Physical"}, {"tags": "Fire"}], "confidence": "D"},
+  "439": {"stat": "CriticalChance", "mod": "added", "tags": "Throwing", "per": "attr:dex", "factor": 0.2, "confidence": "D"},
+  "442": {"stat": "CriticalChance", "mod": "added", "per": "attr:int", "factor": 0.06666667, "confidence": "D"},
+  "483": {"stat": "EnduranceThreshold", "mod": "added", "per": "ele_res", "factor": 100, "confidence": "D"},
+  "484": {"stat": "IncreasedAilmentDuration", "mod": "added", "ailment": "Bleed", "per": "endurance_threshold", "confidence": "D"},
+  "485": {"stat": "EnduranceThreshold", "mod": "added", "per": "attr:att", "confidence": "D"},
+  "487": {"stat": "AilmentChance", "mod": "added", "ailment": "FireResShred", "per": "attr:str", "confidence": "D"},
+  "488": {"stat": "Damage", "mod": "more", "tags": "Lightning|DoT", "per": "total_added:CriticalMultiplier:2", "confidence": "D"},
+  "489": {"stat": "Penetration", "mod": "added", "tags": "Fire", "per": "stat_value:IncreasedHealing:0:0", "confidence": "D"},
+  "515": {"stat": "EnduranceThreshold", "mod": "added", "per": "attr:str", "confidence": "D"},
+  "632": {"stat": "Damage", "mod": "more", "when": ["gear:dual_wield_diff"], "confidence": "D"},
+  "662": {"stat": "Damage", "mod": "added", "tags": "Melee|Fire", "per": "res:6", "factor": 20, "confidence": "D"},
+  "689": {"stat": "AilmentChance", "mod": "added", "ailment": "Bleed", "per": "attr:str", "confidence": "D"},
+  "690": {"stat": "AilmentChance", "mod": "added", "ailment": "Ignite", "per": "attr:att", "confidence": "D"}
  },
  "ability": {
   "19:0": {
@@ -3516,24 +3577,28 @@
    "confidence": "D"
   },
   "120:6": {
-   "kind": "minion_stat",
-   "stat": "Damage",
-   "mod": "increased",
-   "tags": "Poison",
-   "per": "increased:Damage",
-   "scope": "minion",
-   "note": "multiplier v to your poison damage modifiers for Rogue Skeletons; all % increased damage is counted",
-   "confidence": "D?"
+    "kind": "minion_stat",
+    "stat": "Damage",
+    "mod": "increased",
+    "copy_player": {
+     "stat": "Damage",
+     "tags_any": "Poison"
+    },
+    "scope": "minion:Skeleton Rogue",
+    "note": "copies of your Damage modifiers with the Poison tag × v, Skeleton Rogues only",
+    "confidence": "D"
   },
   "727:17": {
-   "kind": "minion_stat",
-   "stat": "Damage",
-   "mod": "increased",
-   "tags": "Poison",
-   "per": "increased:Damage",
-   "scope": "minion",
-   "note": "multiplier v to your poison damage modifiers for the Falcon; all % increased damage is counted",
-   "confidence": "D?"
+    "kind": "minion_stat",
+    "stat": "Damage",
+    "mod": "increased",
+    "copy_player": {
+     "stat": "Damage",
+     "tags_any": "Poison"
+    },
+    "scope": "minion",
+    "note": "copies of your Damage modifiers with the Poison tag × v for the Falcon",
+    "confidence": "D"
   },
   "7:0": {
    "kind": "conversion",
@@ -4254,13 +4319,13 @@
    "confidence": "D"
   },
   "97:3": {
-   "kind": "speed",
-   "speed": "increased",
-   "scope": "component:AxeThrow",
-   "per": "increased:Damage",
-   "factor": 10,
-   "note": "per 10% more physical",
-   "confidence": "D?"
+    "kind": "speed",
+    "speed": "increased",
+    "scope": "component:AxeThrow",
+    "per": "total_modifier:Damage:1",
+    "factor": 10,
+    "note": "per 10% total physical damage modifier (increased × more)",
+    "confidence": "D"
   },
   "146:6": {
    "kind": "param",
@@ -4799,23 +4864,22 @@
    "confidence": "D?"
   },
   "689:24": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "more",
-   "tags": "Elemental",
-   "per": "attr:int",
-   "factor": 0.11,
-   "max": 0.11,
-   "when": [
-    "input:one_rune"
-   ],
-   "input": {
-    "key": "one_rune",
-    "label": "Invocation with one rune",
-    "default": true
-   },
-   "note": "chance per Intelligence × 11% (average)",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "more",
+    "tags": "Elemental",
+    "factor": 0.11,
+    "max": 0.11,
+    "when": [
+     "input:one_rune"
+    ],
+    "input": {
+     "key": "one_rune",
+     "label": "Invocation with one rune",
+     "default": true
+    },
+    "note": "chance v (flat, no Intelligence factor in the code) × 11% (average)",
+    "confidence": "D"
   },
   "689:22": {
    "kind": "flag",
@@ -4823,23 +4887,22 @@
    "confidence": "D?"
   },
   "689:25": {
-   "kind": "stat",
-   "stat": "Penetration",
-   "mod": "added",
-   "tags": "Elemental",
-   "per": "attr:int",
-   "factor": 0.22,
-   "max": 0.22,
-   "when": [
-    "input:two_runes"
-   ],
-   "input": {
-    "key": "two_runes",
-    "label": "Invocation with two runes",
-    "default": true
-   },
-   "note": "chance per Intelligence × 22% (average)",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Penetration",
+    "mod": "added",
+    "tags": "Elemental",
+    "factor": 0.22,
+    "max": 0.22,
+    "when": [
+     "input:two_runes"
+    ],
+    "input": {
+     "key": "two_runes",
+     "label": "Invocation with two runes",
+     "default": true
+    },
+    "note": "chance v (flat, no Intelligence factor in the code) × 22% (average)",
+    "confidence": "D"
   },
   "689:23": {
    "kind": "flag",
@@ -4847,23 +4910,22 @@
    "confidence": "D?"
   },
   "689:26": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "increased",
-   "tags": "Elemental",
-   "per": "attr:int",
-   "factor": 0.33,
-   "max": 0.33,
-   "when": [
-    "input:three_runes"
-   ],
-   "input": {
-    "key": "three_runes",
-    "label": "Invocation with three runes",
-    "default": true
-   },
-   "note": "chance per Intelligence × 33% (average)",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "increased",
+    "tags": "Elemental",
+    "factor": 0.33,
+    "max": 0.33,
+    "when": [
+     "input:three_runes"
+    ],
+    "input": {
+     "key": "three_runes",
+     "label": "Invocation with three runes",
+     "default": true
+    },
+    "note": "chance v (flat, no Intelligence factor in the code) × 33% (average)",
+    "confidence": "D"
   },
   "373:0": {
    "kind": "flag",
@@ -4906,13 +4968,13 @@
    "confidence": "D"
   },
   "727:3": {
-   "kind": "minion_stat",
-   "stat": "AilmentChance",
-   "mod": "added",
-   "ailment": "Bleed",
-   "per": "value:AilmentChance",
-   "note": "fraction of your Bleed chance",
-   "confidence": "D?"
+    "kind": "minion_stat",
+    "stat": "AilmentChance",
+    "mod": "added",
+    "ailment": "Bleed",
+    "per": "ailment_chance:Bleed",
+    "note": "fraction of your Bleed chance",
+    "confidence": "D"
   },
   "727:5": {
    "kind": "resource",
@@ -5724,37 +5786,27 @@
    "confidence": "D"
   },
   "12:0": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "added",
-   "tags": "Cold|Melee",
-   "factor": 30,
-   "when": [
-    "input:above65"
-   ],
-   "input": {
-    "key": "above65",
-    "label": "Health above 65%",
-    "default": true
-   },
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "tags": "Cold|Melee",
+    "factor": 30,
+    "when": [
+     "player:high_life"
+    ],
+    "confidence": "D"
   },
   "12:1": {
-   "kind": "stat",
-   "stat": "HealthLeech",
-   "mod": "added",
-   "tags": "Melee",
-   "factor": 0.3,
-   "when": [
-    "input:!above65"
-   ],
-   "input": {
-    "key": "above65",
-    "label": "Health above 65%",
-    "default": true
-   },
-   "note": "+0.3 in game units (3% in the tooltip)",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "HealthLeech",
+    "mod": "added",
+    "tags": "Melee",
+    "factor": 0.3,
+    "when": [
+     "player:!high_life"
+    ],
+    "note": "+0.3 in game units (3% in the tooltip)",
+    "confidence": "D"
   },
   "14:1": {
    "kind": "flag",
@@ -5777,14 +5829,15 @@
    "confidence": "D"
   },
   "19:0": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "added",
-   "tags": "Cold",
-   "per": "attr:dex",
-   "factor": 1,
-   "note": "+1 cold damage to attacks and spells per Dexterity; also -1% phys and cold resistance per Dexterity (not counted)",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "tags": "Cold",
+    "per": "attr:dex",
+    "factor": 1,
+    "skill_any": "Melee|Spell|Throwing|Bow",
+    "note": "+1 cold damage to attacks and spells per Dexterity; also -1% phys and cold resistance per Dexterity (not counted)",
+    "confidence": "D"
   },
   "20:0": {
    "kind": "flag",
@@ -5813,54 +5866,39 @@
    "confidence": "D"
   },
   "26:0": {
-   "kind": "stat",
-   "stat": "AilmentChance",
-   "mod": "added",
-   "tags": "Necrotic",
-   "ailment": "Chill",
-   "factor": 1,
-   "when": [
-    "input:killed_recently"
-   ],
-   "input": {
-    "key": "killed_recently",
-    "label": "Killed enemy recently",
-    "default": true
-   },
-   "note": "4 sec after kill",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "AilmentChance",
+    "mod": "added",
+    "tags": "Necrotic",
+    "ailment": "Chill",
+    "factor": 1,
+    "when": [
+     "player:killed_recently"
+    ],
+    "note": "4 sec after kill",
+    "confidence": "D"
   },
   "28:0": {
-   "kind": "stat",
-   "stat": "DamageTaken",
-   "mod": "more",
-   "factor": -0.08,
-   "when": [
-    "input:minion_killed"
-   ],
-   "input": {
-    "key": "minion_killed",
-    "label": "Minions killed enemy recently",
-    "default": true
-   },
-   "note": "4 sec",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "DamageTaken",
+    "mod": "more",
+    "factor": -0.08,
+    "when": [
+     "player:minion_killed_recently"
+    ],
+    "note": "4 sec",
+    "confidence": "D"
   },
   "28:1": {
-   "kind": "minion_stat",
-   "stat": "DamageTaken",
-   "mod": "more",
-   "factor": -0.25,
-   "when": [
-    "input:killed_recently"
-   ],
-   "input": {
-    "key": "killed_recently",
-    "label": "You killed enemy recently",
-    "default": true
-   },
-   "note": "4 sec",
-   "confidence": "D"
+    "kind": "minion_stat",
+    "stat": "DamageTaken",
+    "mod": "more",
+    "factor": -0.25,
+    "when": [
+     "player:killed_recently"
+    ],
+    "note": "4 sec",
+    "confidence": "D"
   },
   "29:0": {
    "kind": "flag",
@@ -5888,20 +5926,14 @@
    "confidence": "D"
   },
   "32:0": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "added",
-   "tags": "Cold",
-   "per": "input:level",
-   "factor": 0.2,
-   "input": {
-    "key": "level",
-    "label": "Character level",
-    "default": 100,
-    "max": 100
-   },
-   "note": "+0.2 cold damage to spells per level; also +2% chill speed and +1% necrotic resistance per level (not counted)",
-   "confidence": "D?"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "tags": "Cold",
+    "per": "level",
+    "factor": 0.2,
+    "note": "+0.2 cold damage per level (any skill); also +2% freeze rate and +1% necrotic resistance per level (not counted)",
+    "confidence": "D"
   },
   "32:1": {
    "kind": "trigger",
@@ -5943,20 +5975,14 @@
    "confidence": "D"
   },
   "41:0": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "added",
-   "tags": "Physical|Melee",
-   "per": "input:level",
-   "factor": 1,
-   "input": {
-    "key": "level",
-    "label": "Character level",
-    "default": 100,
-    "max": 100
-   },
-   "note": "also stun chance +1% when using melee per level (not counted)",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "added",
+    "tags": "Physical|Melee",
+    "per": "level",
+    "factor": 1,
+    "note": "also stun chance +1% when using melee per level (not counted)",
+    "confidence": "D"
   },
   "42:0": {
    "kind": "trigger",
@@ -6078,36 +6104,27 @@
    "confidence": "D"
   },
   "70:2": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "increased",
-   "tags": "Fire",
-   "factor": 0.6,
-   "when": [
-    "input:killed_recently"
-   ],
-   "input": {
-    "key": "killed_recently",
-    "label": "Recently killed enemy",
-    "default": true
-   },
-   "note": "4 sec",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "increased",
+    "tags": "Fire",
+    "factor": 0.6,
+    "when": [
+     "player:killed_recently"
+    ],
+    "note": "4 sec",
+    "confidence": "D"
   },
   "70:3": {
-   "kind": "stat",
-   "stat": "Armour",
-   "mod": "increased",
-   "factor": 1,
-   "when": [
-    "input:ignited"
-   ],
-   "input": {
-    "key": "ignited",
-    "label": "You are ignited",
-    "default": false
-   },
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "Armour",
+    "mod": "increased",
+    "factor": 1,
+    "at_least": {
+     "per": "player:ignite_stacks",
+     "value": 1
+    },
+    "confidence": "D"
   },
   "73:1": {
    "kind": "flag",
@@ -6115,31 +6132,31 @@
    "confidence": "D"
   },
   "74:1": {
-   "kind": "trigger",
-   "ability": "FireAura",
-   "on": "second",
-   "chance": 1,
-   "icd": 1,
-   "when": [
-    "input:channelling"
-   ],
-   "input": {
-    "key": "channelling",
-    "label": "You direct ability",
-    "default": true
-   },
-   "note": "per second while directing, free",
-   "confidence": "D"
+    "kind": "trigger",
+    "ability": "FireAura",
+    "on": "second",
+    "chance": 1,
+    "icd": 1,
+    "when": [
+     "input:uq_channelling"
+    ],
+    "input": {
+     "key": "uq_channelling",
+     "label": "You direct ability",
+     "default": true
+    },
+    "note": "per second while directing, free",
+    "confidence": "D"
   },
   "74:2": {
-   "kind": "stat",
-   "stat": "Damage",
-   "mod": "more",
-   "per": "value:CriticalChance",
-   "factor": 1,
-   "scope": "component:Disintegrate",
-   "note": "equals spell crit chance (with base 5%), no limit",
-   "confidence": "D"
+    "kind": "stat",
+    "stat": "Damage",
+    "mod": "more",
+    "per": "stat_value:CriticalChance:256:0.05",
+    "factor": 1,
+    "scope": "component:Disintegrate",
+    "note": "equals spell crit chance (with base 5%), no limit",
+    "confidence": "D"
   },
   "75:0": {
    "kind": "flag",

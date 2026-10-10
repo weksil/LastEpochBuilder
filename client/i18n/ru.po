@@ -104,6 +104,9 @@ msgstr " · скрыто %d без источника"
 msgid " · without source: %d"
 msgstr " · без источника: %d"
 
+msgid " × %s chance %s"
+msgstr " × шанс %s %s"
+
 msgid " × hits %s"
 msgstr " × попаданий %s"
 
@@ -113,8 +116,35 @@ msgstr " − %s (шред)"
 msgid "%s: %d Weaver idols, above the limit of %d — the game does not let them into the grid"
 msgstr "%s: Weaver-идолов %d, больше лимита %d — игра не пустит их в сетку"
 
+msgid "Brand of Subjugation stack only: more damage = value × the Chill chance of the character (AilmentChance stats without ability tag, FlameRushMutator.GetAilmentDamageModifier)"
+msgstr "Только стак Brand of Subjugation: больше урона = значение × шанс Chill персонажа (статы шанса айлмента без привязки к умению)"
+
+msgid "Damage modifier of the character (passives): (%s × %s + 1)(%s × %s + 1)(%s × %s + 1) − 1 = %s: lowest attack / cast / throwing speed, Time Rot chance with Void skills, Slow chance with Void skills"
+msgstr "Модификатор урона персонажа (пассивки): (%s × %s + 1)(%s × %s + 1)(%s × %s + 1) − 1 = %s: наименьшая скорость атаки / сотворения / метания, шанс Time Rot с умениями Пустоты, шанс Slow с умениями Пустоты"
+
+msgid "Damage modifier of the character (passives): Ignite chance with Fire skills %s × %s + Damned chance with Necrotic skills %s × %s = %s"
+msgstr "Модификатор урона персонажа (пассивки): шанс Ignite с умениями Огня %s × %s + шанс Damned с умениями Некротики %s × %s = %s"
+
+msgid "Damage modifier of the character (passives): Shock chance %s × %s = %s"
+msgstr "Модификатор урона персонажа (пассивки): шанс Shock %s × %s = %s"
+
+msgid "Damage modifier of this ailment only: ×%s%s (%s)"
+msgstr "Модификатор урона только этого айлмента: ×%s%s (%s)"
+
+msgid "Limit of %d stacks: a new stack displaces the stack with the least time left, its damage is lost. The new stack has no early tick, it is paid on the global ticks every %s s (phase unknown, averaged): a stack that lives %s s of its %s s manages to deal %s of its damage."
+msgstr "Лимит %d стаков: новый стак вытесняет стак с наименьшим остатком, его урон теряется. У нового стака нет раннего тика, он оплачивается на общих тиках каждые %s с (фаза неизвестна, усреднено): стак, живущий %s с из %s с, успевает нанести %s своего урона."
+
+msgid "Scathing Light stack only; the chance is entered by hand (the game sums Ignite, Electrify and mutator terms)"
+msgstr "Только стак Scathing Light; шанс вводится вручную (игра складывает шансы Ignite, Electrify и слагаемые мутатора)"
+
+msgid "The ailment holds one stack at most: a chance above 100% still applies it once per hit."
+msgstr "Айлмент держит не больше одного стака: шанс выше 100% всё равно накладывает его один раз за попадание."
+
 msgid "Weaver idols: %d / %d"
 msgstr "Weaver-идолов: %d / %d"
+
+msgid "Witchfire stack only: more damage = v × increased Damage with the Curse tag only (exact match)"
+msgstr "Только стак Witchfire: больше урона = v × увеличение урона только с тегом проклятия (точное совпадение)"
 
 msgid "\"%s\" is off (Conditions tab)"
 msgstr "выключено «%s» (вкладка «Условия»)"
@@ -468,8 +498,8 @@ msgstr "12 стаков Time Rot на цели"
 msgid "14% cap reached at 7 stacks"
 msgstr "Предел 14% достигается при 7 стаках"
 
-msgid "15 sec after kill of rare/boss; multiplier 0.2 from code constant, modifier type not confirmed"
-msgstr "15 с после убийства редкого/босса; множитель 0.2 из константы кода, тип модификатора не подтверждён"
+msgid "15 sec after kill of rare/boss; «Deicide Damage» buff: MORE Damage 0.2 (code constant)"
+msgstr "15 с после убийства редкого/босса; бафф «Deicide Damage»: больше урона 0.2 (константа кода)"
 
 msgid "15% cap"
 msgstr "Предел 15%"
@@ -501,8 +531,8 @@ msgstr "20% в секунду; щиты расходуются"
 msgid "3 or more minions"
 msgstr "Миньонов 3 и больше"
 
-msgid "3 sec per stack, up to 10"
-msgstr "3 с на стак, до 10"
+msgid "3 sec per stack, up to 10; Bow skills only"
+msgstr "3 с на стак, до 10; только умения с луком"
 
 msgid "3% more fire damage per 1% area; area does not speed up charge"
 msgstr "3% больше урона от огня за 1% области; область не ускоряет заряд"
@@ -3291,6 +3321,9 @@ msgstr "Перезарядка, с"
 
 msgid "Cooldown: %s / %s = %s s"
 msgstr "Перезарядка: %s / %s = %s с"
+
+msgid "Minimum cooldown: %s s"
+msgstr "Минимальная перезарядка: %s с"
 
 msgid "Corrupted"
 msgstr "Осквернённый"
@@ -7259,8 +7292,8 @@ msgstr "Мана ниже 50%"
 msgid "Mana cost"
 msgstr "Стоимость маны"
 
-msgid "Mana cost %s × uses/s %s × SP 99 share %s = %s/s"
-msgstr "Стоимость маны %s × применений/с %s × доля SP 99 %s = %s/с"
+msgid "(Mana cost %s × uses/s %s + channel cost %s/s) × SP 99 share %s = %s/s"
+msgstr "(Стоимость маны %s × применений/с %s + стоимость канала %s/с) × доля SP 99 %s = %s/с"
 
 msgid "Mana cost converts to crit chance"
 msgstr "Стоимость маны превращается в шанс крита"
@@ -10195,9 +10228,6 @@ msgstr "То же значение даёт и ярость"
 msgid "Scaling from Attunement instead of Vitality"
 msgstr "Масштабирование от Настройки вместо Живучести"
 
-msgid "Scathing Light damage"
-msgstr "Урон Scathing Light"
-
 msgid "Scepter in hand"
 msgstr "В руках скипетр"
 
@@ -11570,9 +11600,6 @@ msgstr "Оглушили врага недавно"
 msgid "Stygian Beam frequency"
 msgstr "частота Stygian Beam"
 
-msgid "Subjugation Mark damage per 1% chill chance"
-msgstr "Урон Клейма подчинения за 1% шанса охлаждения"
-
 msgid "Suffix"
 msgstr "Суффикс"
 
@@ -12875,9 +12902,6 @@ msgstr "Ширина щитов"
 msgid "Window of Hungering Souls after Reap/Evade"
 msgstr "Окно Hungering Souls после Reap/Evade"
 
-msgid "Witchfire: more damage = v × curse damage increase; counted from all damage increase (approximation)"
-msgstr "Witchfire: более урона = v × увеличение урона проклятий; считается от всего увеличения урона (приближение)"
-
 msgid "With bow bomb is thrown as targeted"
 msgstr "С луком бомба бросается как прицельная"
 
@@ -13027,6 +13051,9 @@ msgstr "действует · модов: %d"
 
 msgid "added %s (tags %s)"
 msgstr "added %s (теги %s)"
+
+msgid "increased %s (tags %s)"
+msgstr "увеличение %s (теги %s)"
 
 msgid "adds freeze rate 120"
 msgstr "добавляет freeze rate 120"
@@ -13412,8 +13439,8 @@ msgstr "удар миньона"
 msgid "minions under Dread Shade"
 msgstr "миньоны под Dread Shade"
 
-msgid "movement abilities only, every 3 sec"
-msgstr "только умения перемещения, раз в 3 с"
+msgid "movement abilities only (the skill's own flag, skill-tree overrides are not modelled), every 3 sec"
+msgstr "только умения перемещения (флаг самого умения, замены из дерева умений не учтены), раз в 3 с"
 
 msgid "movement speed (holyAuraIncreasedMovespeed)"
 msgstr "скорость движения (holyAuraIncreasedMovespeed)"
@@ -13574,8 +13601,8 @@ msgstr "отравлен"
 msgid "potion"
 msgstr "зелье"
 
-msgid "ranged abilities"
-msgstr "дальнобойные умения"
+msgid "Bow skills, direct use only"
+msgstr "только умения с луком, только прямое применение"
 
 msgid "rare"
 msgstr "редкий"
@@ -14266,6 +14293,15 @@ msgstr "модификатор урона атаки %s"
 msgid "%s: damage more %s%s"
 msgstr "%s: больше урона %s%s"
 
+msgid "%s: damage increased %s%s"
+msgstr "%s: увеличение урона %s%s"
+
+msgid "Magic monster"
+msgstr "Магический монстр"
+
+msgid "Rare monster"
+msgstr "Редкий монстр"
+
 msgid "Custom hit"
 msgstr "Свой удар"
 
@@ -14707,6 +14743,36 @@ msgstr "Шанс блока преобразуется в %s: вы не може
 msgid "Maximum block chance %s"
 msgstr "Максимальный шанс блока %s"
 
+msgid "Level used: zone (area) level %d from the Defense tab; in a hub the game sheet uses the character level"
+msgstr "Используется уровень зоны (area level) %d с вкладки защиты; в хабе лист персонажа в игре использует уровень персонажа"
+
+msgid "+ %s dodge rating converted to armor"
+msgstr "+ %s рейтинга уклонения, преобразованного в броню"
+
+msgid "Dodge rating converted to %s: the sheet shows 0"
+msgstr "Рейтинг уклонения преобразуется в %s: в листе персонажа 0"
+
+msgid "Block chance converted to %s: the sheet shows 0"
+msgstr "Шанс блока преобразуется в %s: в листе персонажа 0"
+
+msgid "min(%s, maximum block chance %s)"
+msgstr "min(%s, максимальный шанс блока %s)"
+
+msgid "+ block chance converted to parry: min(%s, maximum block)"
+msgstr "+ шанс блока, преобразованный в шанс парирования: min(%s, максимум блока)"
+
+msgid "+ %s dodge rating converted to endurance threshold"
+msgstr "+ %s рейтинга уклонения, преобразованного в порог стойкости"
+
+msgid "Game: (1 + increased) × added, no more: (1 + %s) × %s = %s"
+msgstr "Игра: (1 + increased) × added, без more: (1 + %s) × %s = %s"
+
+msgid "Game: added × more, no increased: %s × %s = %s"
+msgstr "Игра: added × more, без increased: %s × %s = %s"
+
+msgid "Cap of dodge rating per Intelligence"
+msgstr "Предел рейтинга уклонения от Интеллекта"
+
 msgid "Endurance applies to all damage (before ward)"
 msgstr "Выносливость действует на весь урон (до ward)"
 
@@ -14724,6 +14790,9 @@ msgstr "Не менее 400 текущей маны"
 
 msgid "Damage over time per 8% overcapped cold resistance"
 msgstr "Урон со временем за каждые 8% сопротивления холоду сверх предела"
+
+msgid "Chilled attacker"
+msgstr "Атакующий охлаждён"
 
 msgid "Slowed attacker"
 msgstr "Атакующий замедлен"
@@ -14776,8 +14845,32 @@ msgstr "Урон перенаправляется призванному мед�
 msgid "%s of the hit is taken over 4 s instead (PP 498, 564, 671)"
 msgstr "%s удара вместо этого получается за 4 с (PP 498, 564, 671)"
 
-msgid "Extra endurance %s while delayed damage is pending (PP 525)"
-msgstr "Доп. выносливость %s, пока идёт отложенный урон (PP 525)"
+msgid "Extra endurance %s while the delayed damage left exceeds a tenth of maximum health (PP 525)"
+msgstr "Доп. выносливость %s, пока оставшийся отложенный урон превышает десятую часть макс. здоровья (PP 525)"
+
+msgid "Extra damage reduction below the endurance threshold while delayed damage above 10% of max health is pending: counted in the Defense tab"
+msgstr "Доп. снижение урона ниже порога стойкости, пока отложенный урон превышает 10% макс. здоровья: учитывается во вкладке защиты"
+
+msgid "Damage over time taken while you have Haste"
+msgstr "Периодический урон, получаемый под Haste"
+
+msgid "Hit damage taken bypasses ward (PP 685)"
+msgstr "Получаемый урон от ударов обходит барьер (PP 685)"
+
+msgid "Damage over time taken bypasses ward"
+msgstr "Получаемый урон со временем обходит барьер"
+
+msgid "Current health cannot exceed %s of maximum health"
+msgstr "Текущее здоровье не может превышать %s максимального"
+
+msgid "Ward cannot exceed %s of maximum health"
+msgstr "Барьер не может превышать %s максимального здоровья"
+
+msgid "Current health drain per second"
+msgstr "Потеря текущего здоровья в секунду"
+
+msgid "Health lost every second: this share of current health, taken straight from health (ward does not absorb it)"
+msgstr "Здоровье теряется каждую секунду: эта доля текущего здоровья снимается прямо со здоровья (барьер её не поглощает)"
 
 msgid "Fire damage taken ×%s from %s fire resistance above the cap (PP 436, 437)"
 msgstr "Получаемый урон огнём ×%s от %s сопротивления огню сверх предела (PP 436, 437)"
@@ -15137,6 +15230,12 @@ msgstr "задано %s"
 msgid "× 2 (%s)"
 msgstr "× 2 (%s)"
 
+msgid "× 0.5 (skeletons halved)"
+msgstr "× 0,5 (скелетов вдвое меньше)"
+
+msgid "none (%s)"
+msgstr "ни одного (%s)"
+
 msgid "up to the maximum number of companions %s (%s)"
 msgstr "до максимума компаньонов %s (%s)"
 
@@ -15488,3 +15587,225 @@ msgstr "; перезарядка %s с начинается после каст�
 msgid "%s — counted when: the character is moving (Conditions) or a Melee skill is in use"
 msgstr "%s — считается, когда: персонаж движется (Условия) или используется умение с тегом Melee"
 
+
+msgid "Void zone of the hammer is not counted (time on target unknown); the hit stays Physical"
+msgstr "Зона Бездны вокруг молота не считается (время на цели неизвестно); удар остаётся физическим"
+
+msgid "Node \"%s\": the use that finds the cooldown (%s s, counted in real time) ready converts the base damage of type \"%s\" to \"%s\" by 100%%; at %s uses per second one use in %d is converted, so on average %s of the base damage moves before any modifier (moved %s). Uses during the cooldown get only the node's ordinary conversion (D?: uses are evenly spaced).\nRule: %s"
+msgstr "Узел «%s»: применение, заставшее готовую перезарядку (%s с, идёт в реальном времени), на 100%% превращает базовый урон типа «%s» в «%s»; при %s применений в секунду превращается одно применение из %d, то есть в среднем %s базового урона переходит до любых модификаторов (перенесено %s). Применения во время перезарядки получают только обычное превращение узла (D?: применения идут через равные промежутки).\nПравило: %s"
+
+msgid "Channel cost, mana/s"
+msgstr "Стоимость канала, мана/с"
+
+msgid "(channelCost %s + added %s) × (1 + %s) × %s / mana efficiency %s = %s per second"
+msgstr "(channelCost %s + добавлено %s) × (1 + %s) × %s / эффективность маны %s = %s в секунду"
+
+msgid "Drained every frame while channelling, on top of the Mana cost paid once at the cast. Channel cost and mana cost stats (SP 25, SP 66) share one pool."
+msgstr "Списывается каждый кадр, пока идёт канал, сверх стоимости маны, которая платится один раз при касте. Статы стоимости канала и стоимости маны (SP 25, SP 66) складываются в один пул."
+
+msgid "Only a use whose skill has both the Void and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+msgstr "Только применение умения с тегами Пустота и Ближний бой; перезарядка 2 с начинается с него (не чаще одного применения за 2 с, считается готовым)"
+
+msgid "Only a use whose skill has both the Fire and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+msgstr "Только применение умения с тегами Огонь и Ближний бой; перезарядка 2 с начинается с него (не чаще одного применения за 2 с, считается готовым)"
+
+msgid "  +%s penetration, condition \"%s\" (%s)"
+msgstr "  +%s пробивания, условие «%s» (%s)"
+
+msgid "Condition \"%s\": crit chance ×%s  (%s)"
+msgstr "Условие «%s»: шанс крита ×%s  (%s)"
+
+msgid "Condition \"%s\": crit multiplier +%s  (%s)"
+msgstr "Условие «%s»: множитель крита +%s  (%s)"
+
+msgid "Condition \"%s\": crit multiplier ×%s  (%s)"
+msgstr "Условие «%s»: множитель крита ×%s  (%s)"
+
+msgid "Super crit chance %s: the multiplier becomes %s instead of %s (+3 before the conditional more), average %s."
+msgstr "Шанс суперкрита %s: множитель становится %s вместо %s (+3 до условного «more»), в среднем %s."
+
+msgid "Brand of Deception"
+msgstr "Клеймо обмана"
+
+msgid "branded"
+msgstr "заклеймён"
+
+msgid "branded boss or rare"
+msgstr "заклеймённый босс или редкий"
+
+msgid "feared or slowed"
+msgstr "испуган или замедлен"
+
+msgid "per curse"
+msgstr "за каждое проклятие"
+
+msgid "boss or moving"
+msgstr "босс или движется"
+
+msgid "slowed or immobilized"
+msgstr "замедлен или обездвижен"
+
+msgid "netted"
+msgstr "в сети"
+
+msgid "per slow stack"
+msgstr "за стак замедления"
+
+msgid "marked by the falcon"
+msgstr "помечен соколом"
+
+msgid "Spreading Flames"
+msgstr "Распространяющееся пламя"
+
+msgid "feared"
+msgstr "испуган"
+
+msgid "per frostbite stack"
+msgstr "за стак обморожения"
+
+msgid "per shock stack"
+msgstr "за стак шока"
+
+msgid "immobilized"
+msgstr "обездвижен"
+
+msgid "Mutator changes the cast: %s"
+msgstr "Мутатор меняет применение: %s"
+
+msgid "  useDuration %s instead of %s"
+msgstr "  useDuration %s вместо %s"
+
+msgid "minimumUseDuration floor: cast time %s s"
+msgstr "Нижний предел minimumUseDuration: время применения %s с"
+
+msgid "Cast time cannot be below the cast delay: %s s"
+msgstr "Время применения не меньше задержки удара: %s с"
+
+msgid "Uses/s = 1 / %s s = %s"
+msgstr "Применений/с = 1 / %s с = %s"
+
+msgid "Places the Reliquary instead of the spear"
+msgstr "Ставит Реликварий вместо копья"
+
+msgid "Dive Bomb: the dive lands sooner (delay timers x(1-f)); the use speed does not change"
+msgstr "Пикирование: удар приходит раньше (таймеры задержки × (1 − f)); скорость применения не меняется"
+
+msgid "Falconry: a delay timer of the spawned object is shorter; the use speed does not change"
+msgstr "Соколиная охота: таймер задержки созданного объекта короче; скорость применения не меняется"
+
+msgid "boss or rare while mana is at least 50%"
+msgstr "босс или редкий при мане не ниже 50%"
+
+msgid "limited to %s: one companion of each type"
+msgstr "ограничено до %s: по одному компаньону каждого типа"
+
+msgid "limited to %s by the maximum number of companions"
+msgstr "ограничено до %s максимумом компаньонов"
+
+msgid "enemy is not at high health (Conditions tab)"
+msgstr "противник не на высоком здоровье (вкладка «Условия»)"
+
+msgid " × (1 − %s: weaker activation damage reduction)"
+msgstr " × (1 − %s: слабее снижение урона при активации)"
+
+msgid "Killed recently"
+msgstr "Убил недавно"
+
+msgid "Minions killed recently"
+msgstr "Миньоны убили недавно"
+
+msgid "character level"
+msgstr "уровень персонажа"
+
+msgid " (×%s: effect of %s on you)"
+msgstr " (×%s: эффект «%s» на вас)"
+
+msgid "scaled by (1 + increased effect of Frenzy on you)"
+msgstr "умножается на (1 + увеличение эффекта Frenzy на вас)"
+
+msgid "scaled by (1 + increased effect of Haste on you), at most -75%"
+msgstr "умножается на (1 + увеличение эффекта Haste на вас), не ниже -75%"
+
+msgid "%s chance (stats without tags)"
+msgstr "шанс %s (статы без тегов)"
+
+msgid "total modifier of %s (tags %s)"
+msgstr "суммарный модификатор %s (теги %s)"
+
+msgid "%s with base %s (tags %s)"
+msgstr "%s с базой %s (теги %s)"
+
+msgid "%s — %s × %s"
+msgstr "%s — %s × %s"
+
+msgid "%s — converted to ailment effect"
+msgstr "%s — преобразовано в силу недуга"
+
+msgid "+0.2 cold damage per level (any skill); also +2% freeze rate and +1% necrotic resistance per level (not counted)"
+msgstr "+0.2 урона холодом за уровень (любое умение); также +2% скорости заморозки и +1% сопротивления некротике за уровень (не учтено)"
+
+msgid "v × your added crit multiplier; the same amount is removed from it"
+msgstr "v × ваш добавленный крит. множитель; столько же вычитается из него"
+
+msgid "v × your added Melee damage becomes added Spell damage, for Cold and Void spells"
+msgstr "v × ваш добавленный урон ближнего боя становится добавленным уроном заклинаниями, для заклинаний холода и пустоты"
+
+msgid "copies of your Damage modifiers with the Poison tag × v, Skeleton Rogues only"
+msgstr "копии ваших модификаторов урона с тегом Poison × v, только для Skeleton Rogue"
+
+msgid "copies of your Damage modifiers with the Poison tag × v for the Falcon"
+msgstr "копии ваших модификаторов урона с тегом Poison × v для сокола"
+
+msgid "per 10% total physical damage modifier (increased × more)"
+msgstr "за каждые 10% суммарного модификатора физического урона (increased × more)"
+
+msgid "chance v (flat, no Intelligence factor in the code) × 11% (average)"
+msgstr "шанс v (плоский, в коде нет множителя от Интеллекта) × 11% (в среднем)"
+
+msgid "chance v (flat, no Intelligence factor in the code) × 22% (average)"
+msgstr "шанс v (плоский, в коде нет множителя от Интеллекта) × 22% (в среднем)"
+
+msgid "chance v (flat, no Intelligence factor in the code) × 33% (average)"
+msgstr "шанс v (плоский, в коде нет множителя от Интеллекта) × 33% (в среднем)"
+
+msgid "equipped swords"
+msgstr "экипированные мечи"
+
+msgid "equipped daggers"
+msgstr "экипированные кинжалы"
+
+msgid "total added %s (tags %s)"
+msgstr "сумма добавленного %s (теги %s)"
+
+msgid "points in mastery %s"
+msgstr "очки в мастерстве %s"
+
+msgid "mana cost of the skill"
+msgstr "стоимость маны умения"
+
+msgid "holding %s"
+msgstr "в руках: %s"
+
+msgid "dual wielding different weapon types"
+msgstr "два оружия разных типов в руках"
+
+msgid "× %s block: (1 − %s) + %s·(1 − %s)·%s damage taken on a blocked hit"
+msgstr "× %s блок: (1 − %s) + %s·(1 − %s)·%s получаемого урона блокированного удара"
+
+msgid "Damage taken on a blocked hit"
+msgstr "Получаемый урон блокированного удара"
+
+msgid "Damage taken stats of blocked hits (special tag Block) against an unblocked hit, over the damage mix of this attack"
+msgstr "Статы получаемого урона при блоке (специальный тег Block) относительно неблокированного удара, для состава урона этой атаки"
+
+msgid "    hit %s + melee hit %s + crit %s × crit chance %s"
+msgstr "    удар %s + удар в ближнем бою %s + крит %s × шанс крита %s"
+
+msgid "Health gained on block"
+msgstr "Здоровье при блоке"
+
+msgid "Health gained on kill"
+msgstr "Здоровье при убийстве"
+
+msgid "Health gained on stun"
+msgstr "Здоровье при оглушении"

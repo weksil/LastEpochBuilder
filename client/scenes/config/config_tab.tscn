@@ -178,6 +178,24 @@ text = "Frenzy on me"
 autowrap_mode = 3
 metadata/player_flag = "frenzy"
 
+[node name="KilledRecentlyCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
+focus_mode = 0
+text = "Killed recently"
+autowrap_mode = 3
+metadata/player_flag = "killed_recently"
+
+[node name="MinionKilledRecentlyCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
+focus_mode = 0
+text = "Minions killed recently"
+autowrap_mode = 3
+metadata/player_flag = "minion_killed_recently"
+
 [node name="TransformedCheck" type="CheckBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerFlags"]
 layout_mode = 2
 size_flags_horizontal = 3

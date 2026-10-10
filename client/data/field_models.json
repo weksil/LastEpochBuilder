@@ -1411,7 +1411,7 @@
 "kind": "param",
 "label": "Frequency of aura effect application",
 "mod": "increased",
-"param": "frequency"
+"param": "ailment_frequency"
 },
 "AuraOfDecayMutator.increasedRadius": {
 "confidence": "D",
@@ -1786,7 +1786,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "AvalancheSnowballMutator.physicalConversion": {
 "confidence": "D",
@@ -1943,12 +1944,11 @@
 "text": "Aerial Prowess enhances Ballista"
 },
 "BallistaMutator.placementSpeedPerDexterity": {
-"confidence": "D?",
-"kind": "stat",
-"mod": "more",
-"note": "Setup speed",
+"confidence": "D",
+"kind": "speed",
+"note": "BallistaMutator.mutateUseSpeed: use speed × (1 + Dexterity × f); Summon Ballista has speedScaler 54, so it is not a CastSpeed stat",
 "per": "attr:dex",
-"stat": "CastSpeed"
+"speed": "more"
 },
 "BallistaMutator.playerAilmentChanceEffectivenessRatio": {
 "confidence": "D",
@@ -2994,7 +2994,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:cursed"
-]
+],
+"holder_only": true
 },
 "ChaosBoltsMutator.moreDoTDamagePerMissingHealth": {
 "confidence": "D",
@@ -3127,12 +3128,24 @@
 "param": "echo_chance"
 },
 "CharacterMutator.adaptiveSpellDamageFromMaxMana": {
-"confidence": "D?",
-"kind": "stat",
-"mod": "added",
-"note": "x2 at 300 max mana, x3 at 1000",
-"scope": "global",
-"stat": "AdaptiveSpellDamage"
+  "confidence": "D",
+  "kind": "stat",
+  "mod": "added",
+  "per": "max_mana",
+  "scope": "global",
+  "stat": "Damage",
+  "tags": "Spell",
+  "steps_base": 0.0,
+  "steps": [
+    {
+      "at_least": 300,
+      "factor": 1.0
+    },
+    {
+      "at_least": 1000,
+      "factor": 2.0
+    }
+  ]
 },
 "CharacterMutator.addedCritChancePerFirebrandStackConsumed": {
 "confidence": "D",
@@ -3178,19 +3191,16 @@
 "stat": "CriticalMultiplier"
 },
 "CharacterMutator.addedDodgePerIntCap": {
-"confidence": "D?",
-"factor": 0.02,
-"kind": "stat",
+"confidence": "D",
+"kind": "param",
+"label": "Cap of dodge rating per Intelligence",
 "mod": "added",
-"note": "+2 per Intelligence, up to +100",
-"per": "attr:int",
-"scope": "global",
-"src_max": 50,
-"stat": "DodgeRating"
+"param": "dodge_per_int_cap"
 },
 "CharacterMutator.addedDodgeRatingPerInt": {
 "confidence": "D",
 "kind": "stat",
+"max_field": "addedDodgePerIntCap",
 "mod": "added",
 "per": "attr:int",
 "scope": "global",
@@ -3295,16 +3305,17 @@
 "skill_any": "Lightning"
 },
 "CharacterMutator.arcaneMomentumStatsPerStack": {
-"confidence": "D",
-"input": {
-"default": 1,
-"key": "momentum_stacks",
-"label": "Stacks of Arcane Momentum",
-"max": 10
-},
-"kind": "stat_list",
-"per": "input:momentum_stacks",
-"scope": "global"
+  "confidence": "D",
+  "input": {
+    "default": 1,
+    "key": "momentum_stacks",
+    "label": "Stacks of Arcane Momentum",
+    "max": 10
+  },
+  "kind": "stat_list",
+  "per": "input:momentum_stacks",
+  "scope": "global",
+  "src_max_field": "maxArcaneMomentumStacks"
 },
 "CharacterMutator.arcaneShieldOnFirstMeleeHit": {
 "confidence": "D",
@@ -3312,16 +3323,17 @@
 "text": "First melee hit gives stack of Arcane Shield"
 },
 "CharacterMutator.arcaneShieldStats": {
-"confidence": "D",
-"input": {
-"default": 4,
-"key": "arcane_shield",
-"label": "Stacks of Arcane Shield",
-"max": 10
-},
-"kind": "stat_list",
-"per": "input:arcane_shield",
-"scope": "global"
+  "confidence": "D",
+  "input": {
+    "default": 4,
+    "key": "arcane_shield",
+    "label": "Stacks of Arcane Shield",
+    "max": 10
+  },
+  "kind": "stat_list",
+  "per": "input:arcane_shield",
+  "scope": "global",
+  "src_max": 4
 },
 "CharacterMutator.armourAndDodgeRatingPerPerfection": {
 "confidence": "D",
@@ -3566,21 +3578,28 @@
 ]
 },
 "CharacterMutator.bleedEffectAndDurationForNextAttackFromShift": {
-"ailment": "Bleed",
-"confidence": "D?",
-"input": {
-"default": true,
-"key": "after_shift",
-"label": "Attack right after Shift"
-},
-"kind": "stat",
-"mod": "added",
-"note": "Same value also gives bleed effect",
-"scope": "global",
-"stat": "IncreasedAilmentDuration",
-"when": [
-"input:after_shift"
-]
+  "ailment": "Bleed",
+  "confidence": "D",
+  "input": {
+    "default": true,
+    "key": "after_shift",
+    "label": "Attack right after Shift"
+  },
+  "kind": "stat",
+  "mod": "added",
+  "scope": "global",
+  "stat": "IncreasedAilmentDuration",
+  "variants": [
+    {
+      "stat": "IncreasedAilmentDuration"
+    },
+    {
+      "stat": "IncreasedAilmentEffect"
+    }
+  ],
+  "when": [
+    "input:after_shift"
+  ]
 },
 "CharacterMutator.bonusCriticalStrikeChancePerIncreasedPoisonDamage": {
 "confidence": "D?",
@@ -4205,18 +4224,19 @@
 "stat": "HealthRegen"
 },
 "CharacterMutator.incManaRegenPerBladeConduit": {
-"confidence": "D",
-"input": {
-"default": 3,
-"key": "conduit_stacks",
-"label": "Stacks of Blade Conduit",
-"max": 10
-},
-"kind": "stat",
-"mod": "increased",
-"per": "input:conduit_stacks",
-"scope": "global",
-"stat": "ManaRegen"
+  "confidence": "D",
+  "input": {
+    "default": 3,
+    "key": "conduit_stacks",
+    "label": "Stacks of Blade Conduit",
+    "max": 10
+  },
+  "kind": "stat",
+  "mod": "increased",
+  "per": "input:conduit_stacks",
+  "scope": "global",
+  "stat": "ManaRegen",
+  "src_max": 6
 },
 "CharacterMutator.incManaRegenPerBlockChanceAbove50Percent": {
 "confidence": "D?",
@@ -4592,16 +4612,34 @@
 "param": "haste_frenzy_duration"
 },
 "CharacterMutator.minionPenetrationPer5PercentOvercappedResistanceForNecroticOrEle": {
-"confidence": "D?",
-"factor": 20,
-"kind": "minion_stat",
-"min": 0,
-"mod": "added",
-"note": "1% per every 5% resistance above cap (by type)",
-"offset": 0.75,
-"per": "res:4",
-"stat": "Penetration",
-"tags": "Necrotic|Elemental"
+  "confidence": "D",
+  "kind": "stat",
+  "scope": "minion",
+  "mod": "added",
+  "stat": "Penetration",
+  "per": "res:4",
+  "offset": 0.75,
+  "factor": 20,
+  "min": 0,
+  "tags": "Necrotic",
+  "variants": [
+    {
+      "per": "res:4",
+      "tags": "Necrotic"
+    },
+    {
+      "per": "res:1",
+      "tags": "Fire"
+    },
+    {
+      "per": "res:2",
+      "tags": "Cold"
+    },
+    {
+      "per": "res:3",
+      "tags": "Lightning"
+    }
+  ]
 },
 "CharacterMutator.minionStatsPerCharacterLevel": {
 "confidence": "D",
@@ -4688,34 +4726,22 @@
 ]
 },
 "CharacterMutator.moreDamagePerMeleeAttackCost": {
-"confidence": "D?",
-"input": {
-"default": 10,
-"key": "attack_cost",
-"label": "Attack mana cost",
-"max": 100
-},
-"kind": "stat",
-"mod": "more",
-"per": "input:attack_cost",
-"scope": "global",
-"stat": "Damage",
-"tags": "Melee"
+  "confidence": "D",
+  "kind": "stat",
+  "mod": "more",
+  "per": "skill_mana_cost",
+  "scope": "skill",
+  "skill_any": "Melee",
+  "stat": "Damage"
 },
 "CharacterMutator.moreDamagePerThrowingAttackCost": {
-"confidence": "D?",
-"input": {
-"default": 10,
-"key": "attack_cost",
-"label": "Attack mana cost",
-"max": 100
-},
-"kind": "stat",
-"mod": "more",
-"per": "input:attack_cost",
-"scope": "global",
-"stat": "Damage",
-"tags": "Throwing"
+  "confidence": "D",
+  "kind": "stat",
+  "mod": "more",
+  "per": "skill_mana_cost",
+  "scope": "skill",
+  "skill_any": "Throwing",
+  "stat": "Damage"
 },
 "CharacterMutator.moreDamageWithFlowMeleeOrThrow": {
 "confidence": "D?",
@@ -4734,20 +4760,16 @@
 ]
 },
 "CharacterMutator.moreDamageWithHighCostMeleeAttacks": {
-"confidence": "D",
-"input": {
-"default": true,
-"key": "high_cost_melee",
-"label": "Expensive melee attack"
-},
-"kind": "stat",
-"mod": "more",
-"scope": "global",
-"stat": "Damage",
-"tags": "Elemental",
-"when": [
-"input:high_cost_melee"
-]
+  "confidence": "D",
+  "kind": "stat",
+  "mod": "more",
+  "scope": "skill",
+  "skill_any": "Melee",
+  "stat": "Damage",
+  "at_least": {
+    "per": "skill_mana_cost",
+    "value": 10
+  }
 },
 "CharacterMutator.moreDamageWithPositiveCostMeleeOrBowAttacks": {
 "confidence": "D",
@@ -4807,13 +4829,20 @@
 "tags": "Physical"
 },
 "CharacterMutator.moreVoidDamageDoubledWithUnder30Block": {
-"confidence": "D?",
-"kind": "stat",
-"mod": "more",
-"note": "Doubles when block chance below 30%",
-"scope": "global",
-"stat": "Damage",
-"tags": "Void"
+  "confidence": "D",
+  "kind": "stat",
+  "mod": "more",
+  "per": "value:BlockChance",
+  "scope": "global",
+  "stat": "Damage",
+  "tags": "Void",
+  "steps_base": 2.0,
+  "steps": [
+    {
+      "at_least": 0.3,
+      "factor": 1.0
+    }
+  ]
 },
 "CharacterMutator.mortalCleaveOnLowHealthHitChance": {
 "confidence": "D?",
@@ -5057,10 +5086,10 @@
 ]
 },
 "CharacterMutator.statsPerMastery1Level": {
-"confidence": "D",
-"kind": "stat_list",
-"per": "points",
-"scope": "global"
+  "confidence": "D",
+  "kind": "stat_list",
+  "per": "mastery_points:1",
+  "scope": "global"
 },
 "CharacterMutator.statsPerMinion": {
 "confidence": "D",
@@ -5566,10 +5595,11 @@
 },
 "kind": "stat",
 "mod": "added",
-"note": "Limit set by separate field",
+"note": "Cap maxAddedBaseFireDamagePerIgniteRecently = 9 per point = 3 ignited targets of 3 per point",
 "per": "input:ignited_hit",
 "stat": "Damage",
-"tags": "Melee|Fire"
+"tags": "Melee|Fire",
+"src_max": 3
 },
 "CinderStrikeMutator.addedManaCost": {
 "confidence": "D",
@@ -6159,7 +6189,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "DancingStrikesMutator.moreHitDamageAgainstBleeding": {
 "confidence": "D",
@@ -6199,12 +6230,13 @@
 "DancingStrikesMutator.moreMeleeDamagePerPoisonOnTarget": {
 "confidence": "D",
 "kind": "stat",
-"max": 0.6,
 "mod": "more",
-"note": "Limit 60%",
+"note": "Cap maxMoreMeleeDamageFromPoison = 0.6 per point = 20 poison stacks of 0.03 per point",
 "per": "enemy_stacks:Poison",
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"src_max": 20,
+"holder_only": true
 },
 "DancingStrikesMutator.morePunctureDamageOnNextUse": {
 "confidence": "D",
@@ -6748,7 +6780,8 @@
 "note": "Limit 60%",
 "per": "enemy_stacks:Poison",
 "scope": "component:DeathSealWave",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "DeathSealMutator.moreDamageStatToMinionsHitWithDeathWave": {
 "confidence": "D?",
@@ -6764,7 +6797,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Poison"
-]
+],
+"holder_only": true
 },
 "DeathSealMutator.percentMissingHealthRecoveredOnEnd": {
 "amount": "missing_health",
@@ -7564,7 +7598,8 @@
 "kind": "stat",
 "mod": "more",
 "per": "enemy_stacks:Shock",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "DisintegrateMutator.moreLightningDamagePerMaxMana": {
 "confidence": "D",
@@ -7815,10 +7850,9 @@
 "stat": "Damage"
 },
 "DiveBombMutator.reducedDelay": {
-"confidence": "D?",
-"kind": "speed",
-"note": "Delay x(1-f): speed 1/(1-f)-1",
-"speed": "increased"
+"confidence": "D",
+"kind": "flag",
+"text": "Dive Bomb: the dive lands sooner (delay timers x(1-f)); the use speed does not change"
 },
 "DiveBombMutator.remainingCooldownRecoveryOnThrowOrBowThatHits": {
 "confidence": "D?",
@@ -8078,7 +8112,8 @@
 "mod": "more",
 "note": "Limit set by maxTotalDamageToDamned",
 "per": "enemy_stacks:Damned",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "DrainLifeMutator.moreDamageToLowHealth": {
 "confidence": "D",
@@ -8101,7 +8136,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "DrainLifeMutator.necroticExplosionChillDuration": {
 "confidence": "D",
@@ -8881,7 +8917,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "EarthquakeSlamMutator.moreStormBoltDamageWhenExpending": {
 "confidence": "D",
@@ -9508,7 +9545,8 @@
 "tags": "Melee",
 "when": [
 "enemy:Slow"
-]
+],
+"holder_only": true
 },
 "ErasingStrikeMutator.moreDamageWhileUsingA2hWeapon": {
 "confidence": "D",
@@ -10740,10 +10778,9 @@
 "text": "Falcon Strikes hit in a line (Razor Wings)"
 },
 "FalconryMutator.reducedDelayWithDiveBomb": {
-"confidence": "D?",
-"kind": "speed",
-"note": "Delay x(1-f): speed 1/(1-f)-1",
-"speed": "increased"
+"confidence": "D",
+"kind": "flag",
+"text": "Falconry: a delay timer of the spawned object is shorter; the use speed does not change"
 },
 "FalconryMutator.reducedFalconStrikeCooldownPercentageOnHit": {
 "confidence": "D?",
@@ -11636,7 +11673,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "FlameReaveMutator.moreGrowth": {
 "confidence": "D",
@@ -11718,18 +11756,12 @@
 "stat": "AilmentChance"
 },
 "FlameRushMutator.brandOfSubjugationMoreDamagePerChillChance": {
-"confidence": "D?",
-"factor": 0.01,
-"input": {
-"default": 0,
-"key": "chill_chance",
-"label": "Chance of chill, %",
-"max": 200
-},
+"ailment_only": "BrandOfSubjugation",
+"chance_scaled": "Chill",
+"confidence": "D",
 "kind": "stat",
 "mod": "more",
-"note": "Subjugation Mark damage per 1% chill chance",
-"per": "input:chill_chance",
+"note": "Brand of Subjugation stack only: more damage = value × the Chill chance of the character (AilmentChance stats without ability tag, FlameRushMutator.GetAilmentDamageModifier)",
 "stat": "Damage"
 },
 "FlameRushMutator.buffOverflowDurationPercentage": {
@@ -12491,7 +12523,7 @@
 },
 "FlayMutator.meleeDamagePerXHealthConsumed": {
 "confidence": "D?",
-"factor": 0.0333,
+"factor": 0.03333333333333333,
 "input": {
 "default": 90,
 "key": "health_consumed",
@@ -12502,7 +12534,9 @@
 "mod": "added",
 "per": "input:health_consumed",
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"src_max": 360,
+"note": "consumed / 30 per point, capped at 12 per point (meleePerHealthCap / spellPerWardCap): reached at 360 consumed"
 },
 "FlayMutator.meleeIncArea": {
 "confidence": "D",
@@ -12660,7 +12694,7 @@
 },
 "FlayMutator.spellDamagePerXWardConsumed": {
 "confidence": "D?",
-"factor": 0.0333,
+"factor": 0.03333333333333333,
 "input": {
 "default": 90,
 "key": "ward_consumed",
@@ -12672,7 +12706,9 @@
 "per": "input:ward_consumed",
 "scope": "component:Flay Blood Explosion",
 "stat": "Damage",
-"tags": "Spell"
+"tags": "Spell",
+"src_max": 360,
+"note": "consumed / 30 per point, capped at 12 per point (meleePerHealthCap / spellPerWardCap): reached at 360 consumed"
 },
 "FlayMutator.spellOnlyMode": {
 "confidence": "D",
@@ -12878,7 +12914,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "FlurryMutator.multiShotEvery4Attacks": {
 "ability": "RogueMultishot",
@@ -13242,7 +13279,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "ForgeStrikeMutator.morePhysDamageWithDirectUse": {
 "confidence": "D",
@@ -13619,7 +13657,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "FrostClawMutator.moreDamageWith1200Ward": {
 "at_least": {
@@ -13894,7 +13933,8 @@
 "tags": "DoT",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "FrostWallMutator.moreDamagePerSecond": {
 "confidence": "D?",
@@ -14466,7 +14506,8 @@
 "tags": "Melee",
 "when": [
 "enemy:Shock"
-]
+],
+"holder_only": true
 },
 "GatheringStormMutator.moreStormStackTriggerFrequency": {
 "confidence": "D?",
@@ -14909,7 +14950,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Chill"
-]
+],
+"holder_only": true
 },
 "GlacierMutator.moreDamageToBosses": {
 "confidence": "D",
@@ -14918,7 +14960,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "GlacierMutator.noCritMulti": {
 "confidence": "D",
@@ -15308,9 +15351,9 @@
 "confidence": "D",
 "kind": "stat",
 "mod": "more",
-"note": "14% cap reached at 7 stacks",
+"note": "ConditionalMoreDamageStat(ArmourShred) cap: 14 stacks (GlobalDamageConditionals case 0x12, limit 14 x per-stack value)",
 "per": "enemy_stacks:ArmourShred",
-"src_max": 7,
+"src_max": 14,
 "stat": "Damage",
 "tags": "DoT"
 },
@@ -15320,7 +15363,8 @@
 "mod": "more",
 "per": "enemy_stacks:Slow",
 "scope": "component:Runemaster 02.1 Glyph of Dominion Damage",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "GlyphOfDominionMutator.slowerExpansionRate": {
 "confidence": "D",
@@ -15528,7 +15572,8 @@
 "note": "30% cap",
 "per": "enemy_stacks:Bleed",
 "stat": "Damage",
-"tags": "Bow"
+"tags": "Bow",
+"holder_only": true
 },
 "HailOfArrowsMutator.moreBowDamagePerSecond": {
 "confidence": "D",
@@ -15554,7 +15599,8 @@
 "tags": "Bow",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "HailOfArrowsMutator.moreDuration": {
 "confidence": "D",
@@ -15589,9 +15635,9 @@
 "mana": "added"
 },
 "HammerThrowMutator.aoeVoidDamage": {
-"confidence": "D?",
-"kind": "conversion",
-"note": "Physical damage becomes Abyss damage; base +8 Abyss aura counted separately"
+"confidence": "D",
+"kind": "flag",
+"text": "Void zone of the hammer is not counted (time on target unknown); the hit stays Physical"
 },
 "HammerThrowMutator.baseExtraProjectiles": {
 "confidence": "D",
@@ -16944,7 +16990,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "IceBarrageMutator.moreDamageToNoDelayBolts": {
 "confidence": "D?",
@@ -18100,7 +18147,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "JudgementMutator.moreDamageToHighHealth": {
 "confidence": "D",
@@ -18124,7 +18172,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "JudgementMutator.moreHealing": {
 "confidence": "D",
@@ -18141,7 +18190,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "JudgementMutator.moreMeleeFireDamagePer10PercentIncreasedHealingEffectiveness": {
 "confidence": "D?",
@@ -18693,7 +18743,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Chill"
-]
+],
+"holder_only": true
 },
 "LightningBlastMutator.moreDamageToShocked": {
 "confidence": "D",
@@ -18702,7 +18753,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Shock"
-]
+],
+"holder_only": true
 },
 "LightningBlastMutator.reducedDamagePerChain": {
 "confidence": "D?",
@@ -19151,7 +19203,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Chill"
-]
+],
+"holder_only": true
 },
 "MaelstromMutator.moreDamageToFrozen": {
 "confidence": "D",
@@ -19160,7 +19213,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "MaelstromMutator.moreDamageWhenCastOnTotem": {
 "confidence": "D",
@@ -19606,7 +19660,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Bleed"
-]
+],
+"holder_only": true
 },
 "MarkForDeathMutator.AddedPrisonArmor": {
 "confidence": "D?",
@@ -20269,7 +20324,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Slow"
-]
+],
+"holder_only": true
 },
 "MultishotMutator.projectileUpperLimit": {
 "confidence": "D",
@@ -20469,7 +20525,8 @@
 "per": "enemy_stacks:Bleed",
 "src_max": 10,
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"holder_only": true
 },
 "MultistrikeMutator.multistrikeOnBlockChance": {
 "ability": "Multistrike",
@@ -20852,7 +20909,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Chill"
-]
+],
+"holder_only": true
 },
 "NovaMutator.moreDamageAgainstFrozen": {
 "confidence": "D",
@@ -20861,7 +20919,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "NovaMutator.moreDamageAgainstHighHealth": {
 "confidence": "D",
@@ -20884,7 +20943,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "NovaMutator.moreDamageAgainstShocked": {
 "confidence": "D",
@@ -20893,7 +20953,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Shock"
-]
+],
+"holder_only": true
 },
 "NovaMutator.moreDamageIfDirect": {
 "confidence": "D?",
@@ -22073,6 +22134,7 @@
 ]
 },
 "RadiantLanceMutator.moreScathingLightDamagePer1PercentIgniteElectrifyChance": {
+"ailment_only": "ScathingLight",
 "confidence": "D?",
 "input": {
 "default": 100,
@@ -22082,7 +22144,7 @@
 },
 "kind": "stat",
 "mod": "more",
-"note": "Scathing Light damage",
+"note": "Scathing Light stack only; the chance is entered by hand (the game sums Ignite, Electrify and mutator terms)",
 "per": "input:ignite_electrify_pct",
 "stat": "Damage"
 },
@@ -23101,7 +23163,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "Rive2Mutator.noCrit": {
 "confidence": "D",
@@ -23195,7 +23258,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "Rive3Mutator.percentLifeLeeched": {
 "confidence": "D",
@@ -23266,7 +23330,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "RiveMutator.noCrit": {
 "confidence": "D",
@@ -23523,10 +23588,11 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "more",
-"note": "Maximum 7% per Runeweave stack",
+"note": "Cap 14 armour shred stacks (GlobalDamageConditionals case 0x12); the Runeweave stack count is not modelled (1 stack)",
 "per": "enemy_stacks:ArmourShred",
 "stat": "Damage",
-"tags": "Elemental"
+"tags": "Elemental",
+"src_max": 14
 },
 "RuneboltColdMutator.moreImbuedRunestoneExplosionDamage": {
 "confidence": "D",
@@ -23853,10 +23919,11 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "more",
-"note": "Maximum 7% per Runeweave stack",
+"note": "Cap 14 armour shred stacks (GlobalDamageConditionals case 0x12); the Runeweave stack count is not modelled (1 stack)",
 "per": "enemy_stacks:ArmourShred",
 "stat": "Damage",
-"tags": "Elemental"
+"tags": "Elemental",
+"src_max": 14
 },
 "RuneboltFireMutator.moreImbuedRunestoneExplosionDamage": {
 "confidence": "D",
@@ -24183,10 +24250,11 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "more",
-"note": "Maximum 7% per Runeweave stack",
+"note": "Cap 14 armour shred stacks (GlobalDamageConditionals case 0x12); the Runeweave stack count is not modelled (1 stack)",
 "per": "enemy_stacks:ArmourShred",
 "stat": "Damage",
-"tags": "Elemental"
+"tags": "Elemental",
+"src_max": 14
 },
 "RuneboltLightningMutator.moreImbuedRunestoneExplosionDamage": {
 "confidence": "D",
@@ -24743,9 +24811,12 @@
 "resource": "ward"
 },
 "SacrificeMutator.addedFireDamage": {
-"confidence": "D?",
-"kind": "conversion",
-"note": "Adds Fire|Spell tags; +6 added fire per point counted by rule"
+"confidence": "D",
+"kind": "stat",
+"mod": "added",
+"note": "SacrificeMutator.getTempStats: AddedStat Damage Fire|Spell; the Fire tag comes from the tags rule",
+"stat": "Damage",
+"tags": "Fire|Spell"
 },
 "SacrificeMutator.addedManaCostDivider": {
 "confidence": "D?",
@@ -24921,8 +24992,8 @@
 "label": "Sacrifice buff is active (6 s)"
 },
 "kind": "stat",
-"mod": "increased",
-"note": "Buff on use if minions present",
+"mod": "more",
+"note": "Buff for 6 s on use if the player has a minion: Stats.MoreStat(Damage, DoT) (a more value although the tooltip says increased)",
 "scope": "global",
 "stat": "Damage",
 "tags": "DoT",
@@ -25123,19 +25194,25 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "more",
-"note": "Limit sets maxMoreMeleeDamageFromPoison",
+"note": "Cap maxMoreMeleeDamageFromPoison = 0.12 per point = 12 poison stacks of 0.01 per point",
 "per": "enemy_stacks:Poison",
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"src_max": 12,
+"holder_only": true
 },
 "SerpentStrikeMutator.moreSerpentVenomDamagePerFrostbite": {
-"ailment": "SerpentVenom",
-"confidence": "D?",
+"ailment_only": "SerpentVenom",
+"confidence": "D",
 "kind": "stat",
-"max": 1.0,
-"mod": "added",
+"mod": "more",
+"note": "DamageEffectMoreDamagePerAilmentStack(Frostbite, f, limit f*100) on the venom, only while the enemy is not on high health",
 "per": "enemy_stacks:Frostbite",
-"stat": "IncreasedAilmentEffect"
+"src_max": 100,
+"stat": "Damage",
+"when": [
+"enemy_flag:!high_health"
+]
 },
 "SerpentStrikeMutator.moreSerpentVenomDamagePerMeleeCritChance": {
 "ailment": "SerpentVenom",
@@ -25147,21 +25224,26 @@
 "tags": "Melee"
 },
 "SerpentStrikeMutator.moreSerpentVenomDamagePerPoison": {
-"ailment": "SerpentVenom",
-"confidence": "D?",
+"ailment_only": "SerpentVenom",
+"confidence": "D",
 "kind": "stat",
-"max": 1.0,
-"mod": "added",
+"mod": "more",
+"note": "DamageEffectMoreDamagePerAilmentStack(Poison, f, limit f*100) on the venom, only while the enemy is not on high health",
 "per": "enemy_stacks:Poison",
-"stat": "IncreasedAilmentEffect"
+"src_max": 100,
+"stat": "Damage",
+"when": [
+"enemy_flag:!high_health"
+]
 },
 "SerpentStrikeMutator.moreSerpentVenomDamagePerVitality": {
-"ailment": "SerpentVenom",
-"confidence": "D?",
+"ailment_only": "SerpentVenom",
+"confidence": "D",
 "kind": "stat",
-"mod": "added",
+"mod": "more",
+"note": "SerpentStrikeMutator.mutateAilmentInstance: ActiveAilment.moreDamage x (1 + Vitality * f); the Serpent Venom instance only",
 "per": "attr:vit",
-"stat": "IncreasedAilmentEffect"
+"stat": "Damage"
 },
 "SerpentStrikeMutator.scorpionCompanionAbilityOnLunge": {
 "ability": "ScorpionAbility",
@@ -26152,7 +26234,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "ShatterStrikeMutator.moreDamageToHighHealth": {
 "confidence": "D",
@@ -26237,12 +26320,11 @@
 "mana": "added"
 },
 "ShieldBashMutator.attackSpeedPerBlockChance": {
-"confidence": "D?",
-"kind": "stat",
-"mod": "increased",
-"note": "Value × uncapped block chance",
+"confidence": "D",
+"kind": "speed",
+"note": "ShieldBashMutator.getIncreasedCastSpeed: tree value + SP 29 (BlockChance) × f; Shield Bash has speedScaler 54, so it is added to the use speed, not to the AttackSpeed stat",
 "per": "value:BlockChance",
-"stat": "AttackSpeed"
+"speed": "increased"
 },
 "ShieldBashMutator.chanceToDropPotionOnHit": {
 "confidence": "D",
@@ -27153,9 +27235,11 @@
 },
 "kind": "stat",
 "mod": "more",
-"note": "Limit sets maxMoreHitDamageFromPoisonOrBleed",
+"note": "Cap maxMoreHitDamageFromPoisonOrBleed = 0.3 per point = 15 poison+bleed stacks of 0.02 per point",
 "per": "input:poison_bleed_stacks",
-"stat": "Damage"
+"stat": "Damage",
+"src_max": 15,
+"holder_only": true
 },
 "ShurikensMutator.percentBaseDamageConvertedToLightning": {
 "confidence": "D",
@@ -27516,7 +27600,8 @@
 "kind": "stat",
 "mod": "more",
 "per": "enemy_stacks:Ignite",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "SmeltersWrathMutator.moreDamageToRareAndBoss": {
 "confidence": "D",
@@ -27525,7 +27610,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "SmeltersWrathMutator.moreHitDamageAtMaxCharge": {
 "confidence": "D",
@@ -27732,7 +27818,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Blind"
-]
+],
+"holder_only": true
 },
 "SmiteMutator.moreDamageToIgnited": {
 "confidence": "D",
@@ -27741,7 +27828,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "SmiteMutator.percentCurrentHealthCost": {
 "confidence": "D",
@@ -28143,7 +28231,8 @@
 "kind": "stat",
 "mod": "more",
 "per": "enemy_stacks:Shock",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "SnapFreezeMutator.selfFreeze": {
 "confidence": "D",
@@ -28876,7 +28965,8 @@
 "max": 0.8,
 "mod": "more",
 "per": "enemy_stacks:Poison",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "SprigganHealingTotemMutator.moreDamageToRaresAndBosses": {
 "confidence": "D",
@@ -28885,7 +28975,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "SprigganHealingTotemMutator.onlyTargetsCreator": {
 "confidence": "D",
@@ -29529,7 +29620,8 @@
 "tags": "Spell",
 "when": [
 "enemy:Shock"
-]
+],
+"holder_only": true
 },
 "StaticOrbMutator.noOrbHit": {
 "confidence": "D",
@@ -31342,7 +31434,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "SummonSprigganMutator.moreThornsDamageToImmoblised": {
 "confidence": "D",
@@ -31352,7 +31445,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Immobilized"
-]
+],
+"holder_only": true
 },
 "SummonSprigganMutator.moreThornsDamageToPoisoned": {
 "confidence": "D",
@@ -31362,7 +31456,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Poison"
-]
+],
+"holder_only": true
 },
 "SummonSprigganMutator.moreThornsDamageToStunned": {
 "confidence": "D",
@@ -31372,7 +31467,8 @@
 "stat": "Damage",
 "when": [
 "enemy_flag:stunned"
-]
+],
+"holder_only": true
 },
 "SummonSprigganMutator.rootsIncreasedCooldownRecoverySpeed": {
 "confidence": "D",
@@ -32988,7 +33084,8 @@
 "max": 0.8,
 "mod": "more",
 "per": "enemy_stacks:Poison",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "SwarmbladeSummonHiveMutator.moreDamageToRaresAndBosses": {
 "confidence": "D",
@@ -32997,7 +33094,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "SwarmbladeSummonHiveMutator.poisonBurstChance": {
 "ability": "TotemPoisonBurst",
@@ -33186,7 +33284,8 @@
 "mod": "more",
 "per": "enemy_stacks:Chill",
 "stat": "Damage",
-"tags": "Cold"
+"tags": "Cold",
+"holder_only": true
 },
 "SwipeMutator.moreDamageAgainstSlowed": {
 "confidence": "D",
@@ -33195,7 +33294,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Slow"
-]
+],
+"holder_only": true
 },
 "SwipeMutator.moreLightningDamagePerShockOnTarget": {
 "confidence": "D",
@@ -33203,7 +33303,8 @@
 "mod": "more",
 "per": "enemy_stacks:Shock",
 "stat": "Damage",
-"tags": "Lightning"
+"tags": "Lightning",
+"holder_only": true
 },
 "SwipeMutator.nearestCompanionUsesAbilityOnFirstHit": {
 "confidence": "D",
@@ -34297,7 +34398,8 @@
 "tags": "Melee",
 "when": [
 "enemy:Shock"
-]
+],
+"holder_only": true
 },
 "TempestStrikeLightMutator.moreMeleeDamageWith2H": {
 "confidence": "D",
@@ -34867,7 +34969,8 @@
 "max": 0.8,
 "mod": "more",
 "per": "enemy_stacks:Poison",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "ThornTotemMutator.moreDamageToRaresAndBosses": {
 "confidence": "D",
@@ -34876,7 +34979,8 @@
 "stat": "Damage",
 "when": [
 "enemy:boss_or_rare"
-]
+],
+"holder_only": true
 },
 "ThornTotemMutator.poisonBurstChange": {
 "ability": "TotemPoisonBurst",
@@ -35335,7 +35439,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Bleed"
-]
+],
+"holder_only": true
 },
 "TransplantMutator.moreDamageToCursed": {
 "confidence": "D",
@@ -36253,7 +36358,8 @@
 "tags": "Melee",
 "when": [
 "enemy_flag:frozen"
-]
+],
+"holder_only": true
 },
 "UpheavalMutator.moreRange": {
 "confidence": "D",
@@ -36668,7 +36774,8 @@
 "per": "enemy_stacks:Bleed",
 "src_max": 15,
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"holder_only": true
 },
 "VoidCleaveMutator.moreMeleeDamagePerTimeRot": {
 "confidence": "D",
@@ -36676,7 +36783,8 @@
 "mod": "more",
 "per": "enemy_stacks:TimeRot",
 "stat": "Damage",
-"tags": "Melee"
+"tags": "Melee",
+"holder_only": true
 },
 "VoidCleaveMutator.moreMeleeDamageToHighHealth": {
 "confidence": "D",
@@ -37249,7 +37357,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Chill"
-]
+],
+"holder_only": true
 },
 "VolcanicOrbMutator.noFinalShrapnelOverride": {
 "confidence": "D",
@@ -37389,7 +37498,8 @@
 "stat": "Damage",
 "when": [
 "enemy_any:Fear|Possess"
-]
+],
+"holder_only": true
 },
 "WanderingSpiritsMutator.moreDamageToCursed": {
 "confidence": "D",
@@ -37412,7 +37522,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Damned"
-]
+],
+"holder_only": true
 },
 "WanderingSpiritsMutator.moreDamageToPoisoned": {
 "confidence": "D",
@@ -37421,7 +37532,8 @@
 "stat": "Damage",
 "when": [
 "enemy:Poison"
-]
+],
+"holder_only": true
 },
 "WanderingSpiritsMutator.moreSpawningDuration": {
 "confidence": "D",
@@ -38025,14 +38137,16 @@
 "tags": "Melee|Fire",
 "when": [
 "enemy:Ignite"
-]
+],
+"holder_only": true
 },
 "WarpathMutator.moreMeleeVoidDamagePerTimeRotStack": {
 "confidence": "D",
 "kind": "stat",
 "mod": "more",
 "per": "enemy_stacks:TimeRot",
-"stat": "Damage"
+"stat": "Damage",
+"holder_only": true
 },
 "WarpathMutator.physPenWithMace": {
 "confidence": "D",
@@ -38254,7 +38368,8 @@
 "tags": "Melee",
 "when": [
 "enemy_flag:stunned"
-]
+],
+"holder_only": true
 },
 "WerebearMaulMutator.rageGainedOnStunnedHit": {
 "confidence": "D?",

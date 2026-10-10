@@ -125,6 +125,14 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		if bool(forced.get("single_projectile", false)):
 			proj = {}
 			hits = 1.0
+	# periodic conversions (Storm Claw) need the use rate; tags do not depend on it, so the speed above stays valid
+	var periodic_rules: bool = false
+	for conv: Dictionary in s["conversions"]:
+		if conv["rule"].get("periodic") is Dictionary:
+			conv["uses"] = uses
+			periodic_rules = true
+	if periodic_rules:
+		head_ctx = _context(build, ab, store, s["conversions"], notes, primary_base)
 	var target_hits: float = hits * float(proj.get("factor", 1.0))
 	var inputs: Array[Dictionary] = []
 	var s_comp: Dictionary = s.duplicate()
@@ -327,7 +335,7 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	if granted_main != "":
 		(sections[sections.size() - 1] as Dictionary)["granted_main"] = granted_main
 	sections.append_array(extra_enemy_sections)
-	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]))
+	var sustain_rows: Array = _sustain_rows(head_ctx, sustain_hits, uses, float(speed["mana"]), float(speed["channel"]))
 	sustain_rows.append_array(ShadowCalc.sustain_rows(build, ab, s, uses))
 	if not sustain_rows.is_empty():
 		sections.append({"title": LE.t("Sustain"), "rows": sustain_rows})
@@ -635,6 +643,9 @@ static func _zone_results(build: Node, ab: Dictionary, s: Dictionary, components
 			continue
 		seen[zab_name] = true
 		for zone: Dictionary in AilmentCalc.zones(zab):
+			if zab_name == str(ab.get("name", "")):
+				# AuraOfDecayMutator.OnAbilityUse: the skill's «increased ailment frequency» divides the zone's tick interval
+				zone["interval"] = AilmentCalc.zone_interval(float(zone["interval"]), _param_total(s, "ailment_frequency"))
 			zone["mods"] = (s["store"] as StatStore).mods if zab_name == str(ab.get("name", "")) else []
 			var ctx: Dictionary = _context(build, zab, store, s["conversions"], notes, {})
 			var ail: Dictionary = AilmentCalc.compute(build, ctx, 0.0, ail_notes, false, zone)
@@ -673,6 +684,17 @@ static func _component_store(store: StatStore, s: Dictionary, comp: Dictionary) 
 	child.add_all(extra)
 	return child
 
+
+## Sum of `added` + `increased` of the tree parameter `key` over all its rows (0 if the skill's tree has none).
+static func _param_total(s: Dictionary, key: String) -> float:
+	var total: float = 0.0
+	var params: Variant = s.get("params", {})
+	if params is Dictionary:
+		for label: Variant in params:
+			var p: Dictionary = params[label]
+			if str(p.get("param", "")) == key:
+				total += float(p.get("increased", 0.0)) + float(p.get("added", 0.0))
+	return total
 
 static func _param_rows(s: Dictionary) -> Array:
 	var rows: Array = []
@@ -776,7 +798,15 @@ static func _context(build: Node, ab: Dictionary, store: StatStore, conversions:
 	}
 
 
+## Tags of a stat query on the ability (Stats.GetStatValue / GetTotalAdded / GetChannelCostValue …): the ability's tags plus the
+## LowLife / HighLife / FullLife tag of the current health state (already in ctx["src"]).
+static func _query_tags(ctx: Dictionary) -> int:
+	return int(ctx["tags"]) | (int(ctx.get("src", 0)) & (LE.LOW_LIFE | LE.HIGH_LIFE | LE.FULL_LIFE))
+
+
 static func _health_tags(build: Node) -> int:
+	if build == null:
+		return 0
 	match str(build.player_state.get("health", "full")):
 		"full":
 			return LE.HIGH_LIFE | LE.FULL_LIFE
@@ -807,15 +837,31 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 			var from: int = _type_index(str(cv.get("from", "")))
 			var to: int = _type_index(str(cv.get("to", "")))
 			var f: float = clampf(v, 0.0, 1.0) if str(cv.get("fraction", "value")) == "value" else clampf(float(cv["fraction"]), 0.0, 1.0)
-			full = full and f >= 1.0
+			# a conversion of the use that finds a cooldown ready (Swipe Storm Claw): f becomes the share of converted uses
+			var periodic: Variant = rule.get("periodic")
+			var cooldown: float = float((periodic as Dictionary).get("cooldown", 0.0)) if periodic is Dictionary else 0.0
+			var uses: float = float(c.get("uses", -1.0))
+			var cycle: int = 0
+			if periodic is Dictionary:
+				cycle = _periodic_cycle(cooldown, uses)
+				f = f / float(cycle) if uses >= 0.0 else 0.0
+			else:
+				full = full and f >= 1.0
 			var dedupe: String = "%s:%d:%d" % [field, from, to]
 			if from < 0 or to < 0 or seen.has(dedupe):
 				continue
 			seen[dedupe] = true
 			var moved: float = dmg[from] * f
-			rows.append({"label": "%s → %s" % [LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to])], "text": LE.fmt_pct(f),
-				"breakdown": LE.t("Node \"%s\": %s of the base damage of type \"%s\" is converted to \"%s\" before any modifier (moved %s).\nRule: %s") % [
-					c["node"], LE.fmt_pct(f), LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to]), LE.fmt_num(moved), rule["key"]]})
+			if cycle > 0:
+				if uses >= 0.0:
+					rows.append({"label": "%s → %s" % [LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to])], "text": LE.fmt_pct(f),
+						"breakdown": LE.t("Node \"%s\": the use that finds the cooldown (%s s, counted in real time) ready converts the base damage of type \"%s\" to \"%s\" by 100%%; at %s uses per second one use in %d is converted, so on average %s of the base damage moves before any modifier (moved %s). Uses during the cooldown get only the node's ordinary conversion (D?: uses are evenly spaced).\nRule: %s") % [
+							c["node"], LE.fmt_num(cooldown), LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to]), LE.fmt_num(uses), cycle,
+							LE.fmt_pct(f), LE.fmt_num(moved), rule["key"]]})
+			else:
+				rows.append({"label": "%s → %s" % [LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to])], "text": LE.fmt_pct(f),
+					"breakdown": LE.t("Node \"%s\": %s of the base damage of type \"%s\" is converted to \"%s\" before any modifier (moved %s).\nRule: %s") % [
+						c["node"], LE.fmt_pct(f), LE.t(LE.DT_NAME[from]), LE.t(LE.DT_NAME[to]), LE.fmt_num(moved), rule["key"]]})
 			if moved <= 0.0:
 				continue
 			dmg[to] += moved
@@ -825,6 +871,9 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 		var change_tags: bool = str(rule.get("tags_when", "active")) == "active" or full
 		var add_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_add", []))))
 		var remove_mask: int = LE.tag_mask("|".join(PackedStringArray(rule.get("tags_remove", []))))
+		# a partial conversion adds the new type's tag, the old tag goes only with the full conversion (SwipeMutator.getTags)
+		if str(rule.get("tags_remove_when", "")) == "full_conversion" and not full:
+			remove_mask = 0
 		if change_tags and (add_mask != 0 or remove_mask != 0) and not seen.has("tags:" + field):
 			seen["tags:" + field] = true
 			tags = (tags & ~remove_mask) | add_mask
@@ -846,6 +895,14 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 		rows.append({"label": LE.t("Resulting skill tags"), "text": _tag_names(tags),
 			"breakdown": LE.t("Was: %s\nNow: %s") % [_tag_names(tags_before), _tag_names(tags)]})
 	return {"tags": tags, "before": before, "lines": lines, "rows": rows, "ailment_conversions": ailment_conversions}
+
+
+## Uses per cycle of a periodic conversion: the converted use starts a cooldown, the next converted use is the first one after it ends,
+## so with evenly spaced uses it is floor(cooldown × uses/s) + 1 (SwipeMutator.OnMutatorUpdate / Mutate). 1 while the rate is unknown.
+static func _periodic_cycle(cooldown: float, uses: float) -> int:
+	if uses <= 0.0 or cooldown <= 0.0:
+		return 1
+	return int(floorf(cooldown * uses)) + 1
 
 
 static func _type_index(type_name: String) -> int:
@@ -937,10 +994,13 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 	var crit_lines: Array[String] = []
 	var multi_lines: Array[String] = []
 	for mod: StatMod in ctx["mods"]:
+		if mod.ailment_only != 0:
+			continue  # a more of one ailment instance (AilmentCalc), not part of any damage build
 		if mod.property == LE.DAMAGE or mod.property == LE.PENETRATION:
 			var split: Array = _split_tags(mod.tags)
 			var other: int = split[2]
-			if (mod.tags & ctx["minion"]) != ctx["minion"] or (other & src) != other:
+			# DamageStats.buildDamageStats: only Damage stats test the Minion mask; the Penetration branch tests just the other tags
+			if (mod.property == LE.DAMAGE and (mod.tags & ctx["minion"]) != ctx["minion"]) or (other & src) != other:
 				continue
 			var targets: Array[int] = _targets(split[0], split[1])
 			if mod.property == LE.PENETRATION:
@@ -1043,9 +1103,15 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 
 # --- 8.3 speed and cost -----------------------------------------------------------
 
+## Mana cost of one use: (base + added) x (1 + increased), the number of the "Mana cost" row.
+static func mana_cost(ab: Dictionary, s: Dictionary) -> float:
+	return (float(ab.get("manaCost", 0.0)) + float(s["mana_added"])) * (1.0 + float(s["mana_inc"]))
+
+
 static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) -> Dictionary:
 	var store: StatStore = ctx["store"]
-	var scaler: int = int(ab.get("speedScaler", 54))
+	var override: Dictionary = _use_override(ab, s)
+	var scaler: int = int(override.get("scaler", ab.get("speedScaler", 54)))
 	var use_inc: float = float(s["use_speed_inc"])
 	var use_more: float = float(s["use_speed_more"])
 	var b: PackedStringArray = []
@@ -1055,7 +1121,8 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 		b.append(LE.t("Speed is not scaled by stats: 1 + %s (tree)") % LE.fmt_pct(use_inc))
 	else:
 		# the ability index narrows the mods to this skill; 0 matches all (06e §1.1)
-		var q: StatQuery = store.query(scaler, int(ctx["tags"]), 0, _ability_index(ctx))
+		# Stats.GetStatValue adds the LowLife / HighLife / FullLife tags of the current health state to every query
+		var q: StatQuery = store.query(scaler, int(ctx["tags"]) | _health_tags(build), 0, _ability_index(ctx))
 		speed = q.added * (1.0 + q.increased + use_inc) * q.more
 		b.append(LE.t("%s: (Σ added %s) × (1 + %s + %s tree) × %s = %s") % [
 			LE.t("Attack speed") if scaler == LE.ATTACK_SPEED else LE.t("Cast speed"),
@@ -1078,7 +1145,12 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	if use_more != 1.0:
 		speed *= use_more
 		b.append(LE.t("× more from the tree %s = %s") % [LE.fmt_num(use_more), LE.fmt_num(speed)])
-	var duration: float = float(ab.get("useDuration", 1.0))
+	var duration: float = float(override.get("duration", ab.get("useDuration", 1.0)))
+	var delay: float = float(override.get("delay", ab.get("useDelay", 0.0)))
+	if not override.is_empty():
+		b.append(LE.t("Mutator changes the cast: %s") % LE.t(str(override["label"])))
+		if override.has("duration"):
+			b.append(LE.t("  useDuration %s instead of %s") % [LE.fmt_num(duration), LE.fmt_num(float(ab.get("useDuration", 1.0)))])
 	var mult: float = float(ab.get("speedMultiplier", 1.0))
 	var instant: bool = int(ab.get("instantCastForPlayer", 0)) == 1
 	# speedScale <= 0 becomes 0.1 (06e §1.1)
@@ -1088,17 +1160,36 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 	var uses: float = speed_scale / (1.0 if instant or duration <= 0.0 else duration)
 	b.append(LE.t("Uses/s = %s × speedMultiplier %s × 1.1 / useDuration %s = %s") % [
 		LE.fmt_num(speed), LE.fmt_num(mult), "—" if instant else LE.fmt_num(duration), LE.fmt_num(uses)])
+	if not instant and duration > 0.0:
+		# UsingAbility.InitialiseAbilityUse: castDuration = useDuration / speedScale; the ability's minimumUseDuration is a floor,
+		# and a duration below the cast delay (useDelay / speedScale) becomes delay + 0.01
+		var cast: float = duration / speed_scale
+		var clamped: bool = false
+		if int(ab.get("hasMinimumUseDuration", 0)) == 1 and cast < float(ab.get("minimumUseDuration", 0.0)):
+			cast = float(ab.get("minimumUseDuration", 0.0))
+			clamped = true
+			b.append(LE.t("minimumUseDuration floor: cast time %s s") % LE.fmt_num(cast))
+		if cast < delay / speed_scale:
+			cast = delay / speed_scale + 0.01
+			clamped = true
+			b.append(LE.t("Cast time cannot be below the cast delay: %s s") % LE.fmt_num(cast))
+		if clamped:
+			uses = 1.0 / cast
+			b.append(LE.t("Uses/s = 1 / %s s = %s") % [LE.fmt_num(cast), LE.fmt_num(uses)])
 
 	var rows: Array = [{"label": LE.t("Uses per second"), "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
 	var mana_base: float = float(ab.get("manaCost", 0.0))
-	var mana: float = (mana_base + float(s["mana_added"])) * (1.0 + float(s["mana_inc"]))
+	var mana: float = mana_cost(ab, s)
 	var mana_lines: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) = %s") % [
 		LE.fmt_num(mana_base), LE.fmt_num(float(s["mana_added"])), LE.fmt_pct(float(s["mana_inc"])), LE.fmt_num(mana)]]
 	for line: String in s.get("mana_sources", []):
 		mana_lines.append("  " + line)
 	mana_lines.append(LE.t("Added — tree nodes and properties of unique items; mana stats from affixes and passives are not counted yet."))
 	rows.append({"label": LE.t("Mana cost"), "text": LE.fmt_num(mana), "breakdown": "\n".join(mana_lines)})
-	var cd: Dictionary = cooldown_info(ab, store, int(ctx["tags"]), s, _ability_index(ctx))
+	var channel: Dictionary = _channel_cost(ab, ctx, s)
+	if bool(channel["has"]):
+		rows.append({"label": LE.t("Channel cost, mana/s"), "text": LE.fmt_num(channel["cost"]), "breakdown": channel["text"]})
+	var cd: Dictionary = cooldown_info(ab, store, _query_tags(ctx), s, _ability_index(ctx))
 	if bool(cd["has"]):
 		rows.append({"label": LE.t("Cooldown, s"), "text": LE.fmt_num(cd["cd"]), "breakdown": cd["text"]})
 		if float(cd["charges"]) > 1.0:
@@ -1110,7 +1201,63 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			rows[0]["text"] = LE.fmt_num(cap)
 			rows[0]["breakdown"] += LE.t("\nCapped by cooldown: min(%s, 1 / %s s) = %s") % [LE.fmt_num(uses), LE.fmt_num(cd["cd"]), LE.fmt_num(cap)]
 			uses = cap
-	return {"uses": uses, "rows": rows, "mana": mana, "cooldown": bool(cd["has"])}
+	return {"uses": uses, "rows": rows, "mana": mana, "channel": float(channel["cost"]), "cooldown": bool(cd["has"])}
+
+
+## The mutator override of the cast that applies to the skill now: {label, duration?, delay?, scaler?} or {} (USE_OVERRIDES).
+static func _use_override(ab: Dictionary, s: Dictionary) -> Dictionary:
+	var flags: Array = s.get("flag_keys", [])
+	var components: Array = s.get("components", [])
+	for entry: Dictionary in USE_OVERRIDES.get(str(ab.get("name", "")), []):
+		var out: Dictionary = {"label": str(entry.get("label", entry.get("flag", "")))}
+		if entry.has("flag"):
+			if not flags.has(str(entry["flag"])):
+				continue
+			out.merge(entry)
+		else:
+			var hit: bool = false
+			for comp: Variant in components:
+				hit = hit or (comp is Dictionary and str(comp.get("ability", "")) == str(entry["component"]))
+			var other: Dictionary = GameData.ability_by_name(str(entry["component"]))
+			if not hit or other.is_empty():
+				continue
+			out["duration"] = float(other.get("useDuration", 0.0))
+			out["delay"] = float(other.get("useDelay", 0.0))
+		return out
+	return {}
+
+
+## Mana drained per second while the skill is channelled: {has, cost, text}. BaseMana.getManaCost with channelCost = true, paid
+## every frame by consumeManaFromChannel on top of the one-off cast cost. The mutator's isChanneled decides (the asset flag, or a
+## node that turns the channel on); channelCost is the ability's, and the stats are SP 25 and SP 66 together
+## (Stats.GetChannelCostValue); the cost is divided by the mana efficiency (SP 69) and floored at 0, minimumManaCost is not applied.
+static func _channel_cost(ab: Dictionary, ctx: Dictionary, s: Dictionary) -> Dictionary:
+	var flags: Array = s.get("flag_keys", [])
+	var channelled: bool = bool(ab.get("channelled", 0)) and not flags.has(NOT_CHANNELLED_FLAG)
+	for flag: String in CHANNEL_NODE_FLAGS:
+		channelled = channelled or flags.has(flag)
+	if not channelled:
+		return {"has": false, "cost": 0.0, "text": ""}
+	var store: StatStore = ctx["store"]
+	var tags: int = _query_tags(ctx)
+	var index: int = _ability_index(ctx)
+	var qc: StatQuery = store.query(SP_CHANNEL_COST, tags, 0, index)
+	var qm: StatQuery = store.query(LE.MANA_COST, tags, 0, index)
+	var qe: StatQuery = store.query(LE.MANA_EFFICIENCY, tags, 0, index)
+	var base: float = float(ab.get("channelCost", 0.0))
+	var added: float = qc.added + qm.added
+	var inc: float = qc.increased + qm.increased + float(s["mana_inc"])
+	var more: float = qc.more * qm.more
+	var eff: float = (1.0 + qe.added) * (1.0 + qe.increased) * qe.more
+	var cost: float = maxf((base + added) * (1.0 + inc) * more / eff, 0.0) if eff > 0.0 else 0.0
+	if cost <= 0.0:
+		return {"has": false, "cost": 0.0, "text": ""}
+	var lines: PackedStringArray = [LE.t("(channelCost %s + added %s) × (1 + %s) × %s / mana efficiency %s = %s per second") % [
+		LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(inc), LE.fmt_num(more), LE.fmt_num(eff), LE.fmt_num(cost)]]
+	for mod: StatMod in qc.mods + qm.mods + qe.mods:
+		lines.append("  " + mod.describe())
+	lines.append(LE.t("Drained every frame while channelling, on top of the Mana cost paid once at the cast. Channel cost and mana cost stats (SP 25, SP 66) share one pool."))
+	return {"has": true, "cost": cost, "text": "\n".join(lines)}
 
 
 ## Uses per second of the skill in `slot` from its speed pipeline only (no damage, no components: cheap and never recursive).
@@ -1161,20 +1308,41 @@ static func cooldown_info(ab: Dictionary, store: StatStore, tags: int, s: Dictio
 	var len_inc: float = float(cdm.get("length_increased", 0.0)) + float(base_info.get("increasedCooldownLength", 0.0))
 	var length: float = (base + added) * (1.0 + len_inc)
 	var cdr: StatQuery = store.query(LE.CDR, tags, 0, ability_index)
-	var rec_inc: float = cdr.increased + float(cdm.get("recovery_increased", 0.0)) + float(base_info.get("increasedCooldownRecoverySpeed", 0.0))
+	# the game sums the ADDED SP 70 values (gear, uniques, passives, altar; Ability.GetCooldownWithStats, PlayerChargeManager) and
+	# skips stats tagged Minion/Totem (0x6000); a mod's increased part is a passive-style source and sums the same way
+	var cdr_sum: float = 0.0
+	for mod: StatMod in cdr.mods:
+		if (mod.tags & (LE.MINION | LE.TOTEM)) == 0:
+			cdr_sum += mod.added + mod.increased
+	var rec_inc: float = cdr_sum + float(cdm.get("recovery_increased", 0.0)) + float(base_info.get("increasedCooldownRecoverySpeed", 0.0))
 	var rec_more: float = (1.0 + float(cdm.get("recovery_more", 0.0))) * (1.0 + float(base_info.get("moreCooldownRecoverySpeed", 0.0)))
 	var recovery: float = maxf((1.0 + rec_inc) * rec_more, 0.0001)
 	var cd: float = maxf(length / recovery, 0.0)
+	# a minimum cooldown (Smoke Bomb, Silver Shroud) is a floor under the recovery-derived cooldown (AbilityMutator.GetCooldown)
+	var min_cd: float = 0.0
+	var params: Variant = s.get("params", {})
+	if params is Dictionary:
+		for label: Variant in params:
+			var p: Dictionary = params[label]
+			if str(p.get("param", "")) == "min_cooldown":
+				min_cd = maxf(min_cd, (float(p["set"]) if p.get("set") != null else float(p.get("added", 0.0))))
+	var cd_raw: float = cd
+	var floored: bool = min_cd > cd
+	if floored:
+		cd = min_cd
 	var lines: PackedStringArray = [
 		LE.t("Length: (%s + %s) × (1 + %s) = %s") % [LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(len_inc), LE.fmt_num(length)],
 		LE.t("Recovery: (1 + %s) × %s = %s") % [LE.fmt_pct(rec_inc), LE.fmt_num(rec_more), LE.fmt_num(recovery)],
-		LE.t("Cooldown: %s / %s = %s s") % [LE.fmt_num(length), LE.fmt_num(recovery), LE.fmt_num(cd)]]
+		LE.t("Cooldown: %s / %s = %s s") % [LE.fmt_num(length), LE.fmt_num(recovery), LE.fmt_num(cd_raw)]]
+	if floored:
+		lines.append(LE.t("Minimum cooldown: %s s") % LE.fmt_num(min_cd))
 	for mod: StatMod in cdr.mods:
 		lines.append("  " + mod.describe())
 	return {"has": true, "cd": cd, "charges": charges, "text": "\n".join(lines)}
 
 
-## Main-hand attack rate (average with an off-hand weapon); applies to Melee, and to Bow with a bow equipped.
+## Main-hand attack rate (average with an off-hand weapon). CharacterStats.getPropertyMultiplier tests one tag only: Bow when the
+## main hand is a ranged base type (ItemList.baseTypeIsRangedWeapon: 23 or 24), otherwise Melee.
 static func _weapon_rate(build: Node, tags: int) -> float:
 	var rates: Array[float] = []
 	var is_bow: bool = false
@@ -1186,11 +1354,11 @@ static func _weapon_rate(build: Node, tags: int) -> float:
 		var sub: Dictionary = GameData.item_sub(int(item.get("base", -1)), int(item.get("sub", -1)))
 		if base.get("isWeapon", false) and sub.has("attackRate"):
 			rates.append(float(sub["attackRate"]))
-			if slot == "weapon" and str(base.get("typeName", "")) == "BOW":
+			if slot == "weapon" and int(item.get("base", -1)) in RANGED_WEAPON_BASES:
 				is_bow = true
 	if rates.is_empty():
 		return 0.0
-	if not ((tags & LE.MELEE) != 0 or ((tags & LE.BOW) != 0 and is_bow)):
+	if (tags & (LE.BOW if is_bow else LE.MELEE)) == 0:
 		return 0.0
 	var sum: float = 0.0
 	for r: float in rates:
@@ -1208,7 +1376,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var area_level: int = int(enemy.get("level", 100))
 	var dr: float = Enemy.level_dr(enemy)
 	var armour: float = Enemy.armour(e)
-	var armour_share: float = minf(1.0, ctx["store"].query(118).added)
+	var armour_share: float = minf(1.0, e.query(LE.ARMOUR_VS_DOT).added)  # the victim's own SP 118 (ProtectionClass +0xCC), not the attacker's
 	var rows: Array = []
 	var total: float = 0.0
 	var by_type: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -1217,19 +1385,22 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	for mod: StatMod in ctx["mods"]:
 		if mod.property == LE.CONDITIONAL_DAMAGE or mod.property == LE.DAMAGE_PER_AILMENT_STACK:
 			cond_mods.append(mod)
+	var cstats: Dictionary = _conditional_hit_stats(ctx, enemy, build.player_state)
 
 	for i in range(7):
 		var d: float = ds["final"][i]
 		if d <= 0.0:
 			continue
 		var b: PackedStringArray = [LE.t("Damage before enemy: %s") % LE.fmt_num(d)]
-		var cond: float = _condition_factor(cond_mods, enemy, src, i, b)
+		var cond: float = _condition_factor(cond_mods, enemy, src, i, b, build.player_state)
 		# resistance with penetration (06b §4.2)
 		var res_q: StatQuery = Enemy.resistance(e, i)
 		var res: float = res_q.added
-		var pen: float = ds["pen"][i]
+		var pen: float = ds["pen"][i] + cstats["pen"][i]
 		var res_mult: float = (0.25 if res > 0.75 else 1.0 - res) + pen
 		b.append(LE.t("Resistance %s (cap 75%%, no lower limit), penetration %s → ×%s") % [LE.fmt_pct(res), LE.fmt_pct(pen), LE.fmt_num(res_mult)])
+		for line: String in cstats["pen_lines"][i]:
+			b.append(line)
 		for mod: StatMod in res_q.mods:
 			if mod.added != 0.0:
 				b.append("  " + mod.describe())
@@ -1265,17 +1436,25 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		return _vs_enemy_dot(rows, total, by_type, speed)
 
 	# crit against the target (06b §2.2)
-	var cc: float = ds["cc"]
-	var cm: float = ds["cm"]
+	# conditional crit stats (SP 132 / 133, DamageEffectCriticalStrike.apply) change the hit's crit chance and multiplier before the roll
+	var cc: float = float(ds["cc"]) * float(cstats["cc_more"])
+	var cm_plain: float = float(ds["cm"])
+	var cm: float = (cm_plain + float(cstats["cm_add"])) * float(cstats["cm_more"])
 	var ctbc: float = e.query(LE.CHANCE_TO_BE_CRIT).added
+	# super crit: adds 3.0 to the crit multiplier before the conditional more multiplier (ProtectionClass.ApplyDamage)
+	var super_q: float = _super_crit_chance(build, cc) if hit else 0.0
+	var cm_super: float = (cm_plain + float(cstats["cm_add"]) + 3.0) * float(cstats["cm_more"])
 	# crit avoidance (SP 89 = added · more) cancels a rolled crit; reduced crit bonus taken (SP 114) shrinks the multiplier (06b §2.2)
 	var avoid_q: StatQuery = e.query(LE.CRIT_AVOIDANCE)
 	var avoid: float = clampf(avoid_q.added * avoid_q.more, 0.0, 1.0)
 	var rbdt: float = e.query(LE.REDUCED_CRIT_BONUS_TAKEN).added
 	if rbdt != 0.0 and cm > 1.0:
 		cm = maxf(1.0, (1.0 - rbdt) * (cm - 1.0) + 1.0)
+	if rbdt != 0.0 and cm_super > 1.0:
+		cm_super = maxf(1.0, (1.0 - rbdt) * (cm_super - 1.0) + 1.0)
 	var p: float = minf(1.0, cc + ctbc) * (1.0 - avoid) if cc > 0.0 else 0.0
-	var e_crit: float = 1.0 + p * (cm - 1.0)
+	var cm_avg: float = cm + super_q * (cm_super - cm)
+	var e_crit: float = 1.0 + p * (cm_avg - 1.0)
 	# single-hit numbers as the training dummy shows them (no per-hit variance there)
 	var type_parts: PackedStringArray = []
 	for i in range(7):
@@ -1289,9 +1468,16 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 		rows.append({"label": LE.t("Hit with crit"), "text": LE.fmt_num(total * cm), "breakdown":
 			LE.t("Hit without crit %s × crit multiplier %s = %s.") % [LE.fmt_num(total), LE.fmt_num(cm), LE.fmt_num(total * cm)] +
 			LE.t("\nThe training dummy shows this number for a critical hit.") + variance_note})
-	rows.append({"label": LE.t("Average crit multiplier"), "text": "×" + LE.fmt_num(e_crit), "breakdown":
-		LE.t("Chance %s + target vulnerability %s = %s; 1 + %s × (%s − 1) = %s") % [
-			LE.fmt_pct(cc), LE.fmt_pct(ctbc), LE.fmt_pct(p), LE.fmt_pct(p), LE.fmt_num(cm), LE.fmt_num(e_crit)]})
+	var crit_text: String = LE.t("Chance %s + target vulnerability %s = %s; 1 + %s × (%s − 1) = %s") % [
+		LE.fmt_pct(cc), LE.fmt_pct(ctbc), LE.fmt_pct(p), LE.fmt_pct(p), LE.fmt_num(cm_avg), LE.fmt_num(e_crit)]
+	for line: String in cstats["crit_lines"]:
+		crit_text += "
+" + line
+	if super_q > 0.0:
+		crit_text += "
+" + LE.t("Super crit chance %s: the multiplier becomes %s instead of %s (+3 before the conditional more), average %s.") % [
+			LE.fmt_pct(super_q), LE.fmt_num(cm_super), LE.fmt_num(cm), LE.fmt_num(cm_avg)]
+	rows.append({"label": LE.t("Average crit multiplier"), "text": "×" + LE.fmt_num(e_crit), "breakdown": crit_text})
 	var avg: float = total * e_crit
 	var dps: float = avg * float(speed["uses"])
 	rows.append({"label": LE.t("Average hit vs enemy"), "text": LE.fmt_num(avg), "breakdown":
@@ -1299,6 +1485,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	speed["enemy_dps"] = dps
 	speed["enemy_types"] = by_type
 	speed["enemy_crit"] = e_crit
+	speed["enemy_crit_chance"] = p
 	rows.append({"label": LE.t("Hit DPS vs enemy"), "text": LE.fmt_num(dps), "breakdown":
 		"%s × %s %s/s = %s" % [LE.fmt_num(avg), LE.fmt_num(speed["uses"]), speed.get("unit", LE.t("uses")), LE.fmt_num(dps)]})
 	return rows
@@ -1323,33 +1510,128 @@ static func _vs_enemy_dot(rows: Array, total: float, by_type: Array[float], spee
 	speed["enemy_dps"] = per_second
 	speed["enemy_types"] = by_type
 	speed["enemy_crit"] = 1.0
+	speed["enemy_crit_chance"] = 0.0
 	return rows
+
+
+## Conditional penetration / crit chance / crit multiplier (SP 131 / 132 / 133) against the enemy. The game applies them in
+## DamageEffectPenetration.apply and DamageEffectCriticalStrike.apply scaled by the condition's value v (0 / 1, or the stack count):
+## penetration += v·added (no tag test); crit chance ×(1 + v·more); crit multiplier += v·added; conditional more crit multiplier
+## ×(1 + v·more). The `more` values of one key are folded first (Π(1+m)−1, getMoreMultiplier); the crit effects also need
+## the stat's tags to be a subset of the ability's tags (currentDamageTags & requiredTags).
+static func _conditional_hit_stats(ctx: Dictionary, enemy: Dictionary, ps: Dictionary = {}) -> Dictionary:
+	var out: Dictionary = {"pen": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "pen_lines": [[], [], [], [], [], [], []],
+		"cc_more": 1.0, "cm_add": 0.0, "cm_more": 1.0, "crit_lines": []}
+	var src: int = ctx["src"]
+	var folded: Dictionary = {}
+	for mod: StatMod in ctx["mods"]:
+		if mod.property != LE.CONDITIONAL_PEN and mod.property != LE.CONDITIONAL_CRIT_CHANCE and mod.property != LE.CONDITIONAL_CRIT_MULTI:
+			continue
+		var v: float = Enemy.has_condition(enemy, mod.special, ps)
+		if v <= 0.0:
+			continue
+		if mod.property == LE.CONDITIONAL_PEN:
+			var pen_required: int = mod.tags & ~0xFF  # DamageConditionalEffect.apply: the stat's tags above the type byte must be in the hit's tags
+			if (pen_required & src) != pen_required:
+				continue
+			var split: Array = _split_tags(mod.tags)
+			for i: int in _targets(split[0], split[1]):
+				out["pen"][i] += v * mod.added
+				if mod.added != 0.0:
+					out["pen_lines"][i].append(LE.t("  +%s penetration, condition \"%s\" (%s)") % [LE.fmt_pct(v * mod.added), _cdp_name(mod.special), mod.source])
+			continue
+		if (mod.tags & src) != mod.tags:
+			continue
+		var key: String = "%d/%d/%d" % [mod.property, mod.tags, mod.special]
+		if not folded.has(key):
+			folded[key] = {"prod": 1.0, "added": 0.0, "v": v, "mod": mod, "sources": []}
+		for m: float in mod.more:
+			folded[key]["prod"] *= 1.0 + m
+		folded[key]["added"] += mod.added
+		folded[key]["sources"].append(mod.source)
+	for key: String in folded:
+		var g: Dictionary = folded[key]
+		var gm: StatMod = g["mod"]
+		var scale: float = 1.0 + float(g["v"]) * (float(g["prod"]) - 1.0)
+		var cond_name: String = _cdp_name(gm.special)
+		var srcs: String = ", ".join(g["sources"])
+		if gm.property == LE.CONDITIONAL_CRIT_CHANCE:
+			out["cc_more"] *= scale
+			if scale != 1.0:
+				out["crit_lines"].append(LE.t("Condition \"%s\": crit chance ×%s  (%s)") % [cond_name, LE.fmt_num(scale), srcs])
+		else:
+			out["cm_add"] += float(g["v"]) * float(g["added"])
+			out["cm_more"] *= scale
+			if float(g["added"]) != 0.0:
+				out["crit_lines"].append(LE.t("Condition \"%s\": crit multiplier +%s  (%s)") % [cond_name, LE.fmt_num(float(g["v"]) * float(g["added"])), srcs])
+			if scale != 1.0:
+				out["crit_lines"].append(LE.t("Condition \"%s\": crit multiplier ×%s  (%s)") % [cond_name, LE.fmt_num(scale), srcs])
+	return out
+
+
+## PlayerProperty 590 "You can deal Super Critical Strikes" (CharacterMutator.canSuperCrit: value > 0.1).
+const SUPER_CRIT_PP: int = 590
+
+
+## Chance that a crit is a super crit (ProtectionClass.ApplyDamage, attacker is a player): with canSuperCrit and a crit chance
+## above 100% a Roll(min(crit chance − 1, 0.5)); a super crit adds 3.0 to the crit multiplier. The other source, Roll(
+## deadlyStrikesChancesOnCrit) from PlayerProperty 701, has no equipped item or modelled node in the data.
+static func _super_crit_chance(build: Node, cc: float) -> float:
+	if cc <= 1.0:
+		return 0.0
+	for e: Dictionary in UniqueEffects.entries(build):
+		var effect: Dictionary = e["effect"]
+		if str(effect.get("source", "")) == "PlayerProperty" and int(effect.get("ppIndex", -1)) == SUPER_CRIT_PP and float(e["pp"]) > 0.1:
+			return minf(cc - 1.0, 0.5)
+	return 0.0
 
 
 ## Conditional more damage against the enemy for damage type i (SP 117 by condition, SP 115 per stack of an ailment
 ## on the target without a cap, 06b §6); appends breakdown lines.
-static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray) -> float:
+static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray, ps: Dictionary = {}) -> float:
 	var cond: float = 1.0
+	# The game folds all `more` values of one Stat key (property, tags, specialTag) into Π(1+m)−1 first (Stats.Stat.getMoreMultiplier /
+	# HasNonZeroMoreValue, GlobalDamageConditionals) and scales that by the condition value v (stacks, or the uptime fraction for a
+	# plain condition): 1 + v·(Π(1+m)−1), not Π(1 + m·v). Every key is folded here; different keys stay separate factors.
+	var folded: Dictionary = {}
 	for mod: StatMod in cond_mods:
 		var split: Array = _split_tags(mod.tags)
 		var required: int = mod.tags & ~0xFF
 		if not _targets(split[0], split[1]).has(i) or (required & src) != required:
 			continue
-		var per_stack: bool = mod.property == LE.DAMAGE_PER_AILMENT_STACK
-		var count: float = float(enemy.get("ailments", {}).get(mod.special, 0)) if per_stack else Enemy.has_condition(enemy, mod.special)
+		var ail_stack: bool = mod.property == LE.DAMAGE_PER_AILMENT_STACK
+		var per_stack: bool = ail_stack or PER_STACK_CDP.has(mod.special)
+		var count: float = float(enemy.get("ailments", {}).get(mod.special, 0)) if ail_stack else Enemy.has_condition(enemy, mod.special, ps)
 		# SP 115 item mods are ADDED: the per-stack value is in the added field
 		var values: Array[float] = mod.more.duplicate()
-		if per_stack and values.is_empty() and mod.added != 0.0:
+		if ail_stack and values.is_empty() and mod.added != 0.0:
 			values.append(mod.added)
+		var key: String = "%d/%d/%d" % [mod.property, mod.tags, mod.special]
+		if not folded.has(key):
+			folded[key] = {"prod": 1.0, "count": count, "mod": mod, "sources": [], "per_stack": per_stack}
 		for m: float in values:
-			var f: float = 1.0 + m * count
-			cond *= f
-			if count > 0.0:
-				var what: String = LE.t("per stack of %s ×%s") % [str(GameData.ailment(mod.special).get("name", mod.special)), LE.fmt_num(count)] if per_stack else _cdp_name(mod.special)
-				if not per_stack and count < 1.0:
-					what += LE.t(" (present %s of the time)") % LE.fmt_pct(count)
-				lines.append(LE.t("Condition \"%s\": ×%s  (%s)") % [what, LE.fmt_num(f), mod.source])
+			folded[key]["prod"] *= 1.0 + m
+		folded[key]["sources"].append(mod.source)
+	for key: String in folded:
+		var g: Dictionary = folded[key]
+		var gm: StatMod = g["mod"]
+		var f_key: float = 1.0 + float(g["count"]) * (float(g["prod"]) - 1.0)
+		cond *= f_key
+		if float(g["count"]) > 0.0:
+			var what: String
+			if bool(g["per_stack"]):
+				what = LE.t("per stack of %s ×%s") % [str(GameData.ailment(gm.special).get("name", gm.special)), LE.fmt_num(g["count"])] if gm.property == LE.DAMAGE_PER_AILMENT_STACK else "%s ×%s" % [_cdp_name(gm.special), LE.fmt_num(g["count"])]
+			else:
+				what = _cdp_name(gm.special)
+				if float(g["count"]) < 1.0:
+					what += LE.t(" (present %s of the time)") % LE.fmt_pct(float(g["count"]))
+			lines.append(LE.t("Condition \"%s\": ×%s  (%s)") % [what, LE.fmt_num(f_key), ", ".join(g["sources"])])
 	return cond
+
+
+## ConditionalDamageProperty values that scale per stack / per instance (GlobalDamageConditionals: GetPerAilmentStackEffect,
+## GetPerNegativeAilmentEffect, GetPerCurseEffect); the ones that need the damage source or distance (41-43) are not evaluated.
+const PER_STACK_CDP: Array[int] = [6, 7, 18, 21, 23, 26, 30, 38, 39]
 
 
 static func _cdp_name(cdp: int) -> String:
@@ -1358,8 +1640,11 @@ static func _cdp_name(cdp: int) -> String:
 		6: "per poison stack", 7: "per bleed stack", 8: "chilled", 9: "slowed", 10: "shocked",
 		13: "cursed", 16: "moving", 17: "bosses", 18: "per armor shred stack", 19: "bleeding",
 		20: "frozen", 21: "per ailment", 25: "cursed (Damned)", 26: "per ailment (up to 8)",
-		32: "frozen or chilled", 33: "ignited or shocked", 36: "electrified", 44: "poisoned",
+		32: "frozen or chilled", 33: "ignited or shocked", 36: "electrified", 40: "boss or rare while mana is at least 50%", 44: "poisoned",
 		46: "blinded", 47: "frostbitten",
+		12: "Brand of Deception", 14: "branded", 15: "branded boss or rare", 22: "feared or slowed", 23: "per curse",
+		24: "boss or moving", 27: "slowed or immobilized", 29: "netted", 30: "per slow stack", 31: "marked by the falcon",
+		34: "Spreading Flames", 35: "feared", 38: "per frostbite stack", 39: "per shock stack", 45: "immobilized",
 	}
 	return LE.t(str(NAMES[cdp])) if NAMES.has(cdp) else LE.t("condition %d") % cdp
 
@@ -1372,6 +1657,23 @@ const SP_MANA_GAIN: int = 40
 const SP_HEALTH_LEECH: int = 51
 const SP_MANA_SPENT_AS_WARD: int = 99
 const SP_INCREASED_LEECH_RATE: int = 102
+const SP_CHANNEL_COST: int = 25
+## ItemList.baseTypeIsRangedWeapon: base types 23 (Bow) and 24 (Crossbow).
+const RANGED_WEAPON_BASES: Array[int] = [23, 24]
+## Mutator overrides of getUseDuration / getUseDelay / getSpeedScaler that depend on a state the calculator holds: a flag text of the
+## skill (field_models / unique_effect_models) or a component the skill gets; the first matching entry applies. Values are the
+## literals of the mutator code: DetonatingArrowMutator.getUseDuration (ConvertedToMelee → 0.75), LethalMirageMutator.getUseDuration
+## (lethalMirageIsQuickAttack → 0.75) and getSpeedScaler (→ 2 AttackSpeed), RadiantLanceMutator.getUseDuration / getUseDelay
+## (castsReliquary → the duration and delay of ability 948). Mutators whose switch is not a modelled state are not listed.
+const USE_OVERRIDES: Dictionary = {
+	"DetonatingArrow": [{"flag": "Detonating Arrow becomes melee attack", "duration": 0.75}],
+	"Lethal Mirage": [{"flag": "Lethal Mirage - fast attack without invulnerability", "duration": 0.75, "scaler": LE.ATTACK_SPEED}],
+	"RadiantLance": [{"component": "SummonReliquary", "label": "Places the Reliquary instead of the spear"}],
+}
+## Node flags (field_models texts) of a mutator whose isChanneled is on although the ability asset is not channelled.
+const CHANNEL_NODE_FLAGS: Array[String] = ["Avalanche channeled (channel cost 24)", "Flurry is channelled", "Arrow rain is channelled"]
+## DrainLifeMutator.notChannelled: isChanneled false and getChannelCost 0.
+const NOT_CHANNELLED_FLAG: String = "Drain Life applies, not channeled"
 ## Leech scale: the stat HealthLeech weighs 0.1 (tooltip % = stat x 10, 06c §5.2, scale D?).
 const LEECH_SCALE: float = 0.1
 ## Default leech payout time of one instance, s (LeechTracker.defaultLeechDuration, 06c §5.1).
@@ -1380,7 +1682,7 @@ const LEECH_DURATION: float = 3.0
 
 ## Rows of the "Sustain" section: leech/s, health/mana/ward per hit, ward from mana spent. Empty when nothing applies.
 ## `hit_sources`: [{name, ctx, speed}] with the speed dictionary already filled by `_vs_enemy`.
-static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], uses: float, mana: float) -> Array:
+static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], uses: float, mana: float, channel: float) -> Array:
 	var rows: Array = []
 	var leech_total: float = 0.0
 	var leech_lines: PackedStringArray = []
@@ -1415,16 +1717,22 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 			for mod: StatMod in q.mods:
 				leech_lines.append("      " + mod.describe())
 		if bool(ctx["hit"]):
+			var src_tags: int = int(ctx["src"])
+			var melee: bool = (src_tags & LE.MELEE) != 0
+			var crit_p: float = float(sp.get("enemy_crit_chance", 0.0))
 			for prop: int in gain_total:
-				var qg: StatQuery = store.query(prop, int(ctx["src"]), 0, ability_index)
-				if qg.added == 0.0:
+				# ResourceGainEvents: special 1 on every hit, special 7 only on melee hits, special 2 once per crit hit
+				var g_hit: float = gain_by_event(store, prop, src_tags, 1, ability_index)
+				var g_melee: float = gain_by_event(store, prop, src_tags, 7, ability_index) if melee else 0.0
+				var g_crit: float = gain_by_event(store, prop, src_tags, 2, ability_index)
+				var per_event: float = g_hit + g_melee + g_crit * crit_p
+				if per_event == 0.0:
 					continue
-				gain_total[prop] += qg.added * gain_events
-				gain_lines[prop].append(LE.t("%s%s per hit × %s hits/s = %s/s") % [prefix, LE.fmt_num(qg.added), LE.fmt_num(gain_events), LE.fmt_num(qg.added * gain_events)])
-				for mod: StatMod in qg.mods:
-					gain_lines[prop].append("    " + mod.describe())
+				gain_total[prop] += per_event * gain_events
+				gain_lines[prop].append(LE.t("%s%s per hit × %s hits/s = %s/s") % [prefix, LE.fmt_num(per_event), LE.fmt_num(gain_events), LE.fmt_num(per_event * gain_events)])
+				gain_lines[prop].append(LE.t("    hit %s + melee hit %s + crit %s × crit chance %s") % [LE.fmt_num(g_hit), LE.fmt_num(g_melee), LE.fmt_num(g_crit), LE.fmt_pct(crit_p)])
 	if leech_total > 0.0:
-		var rate_q: StatQuery = head_ctx["store"].query(SP_INCREASED_LEECH_RATE, int(head_ctx["tags"]))
+		var rate_q: StatQuery = head_ctx["store"].query(SP_INCREASED_LEECH_RATE, _query_tags(head_ctx))
 		var duration: float = LEECH_DURATION / (1.0 + rate_q.added)
 		leech_lines.append(LE.t("Each hit is paid out evenly over %s / (1 + payout speed %s) = %s s (SP 102); no cap.") % [
 			LE.fmt_num(LEECH_DURATION), LE.fmt_pct(rate_q.added), LE.fmt_num(duration)])
@@ -1443,17 +1751,27 @@ static func _sustain_rows(head_ctx: Dictionary, hit_sources: Array[Dictionary], 
 			lines.append(LE.t("SP %d stats with the skill's tags; sustain boosts (increased health gained etc.) are not counted (D?).") % prop)
 			rows.append({"label": gain_labels[prop], "text": LE.fmt_num(float(gain_total[prop])), "breakdown": "\n".join(lines),
 				"sustain": gain_keys[prop], "value": float(gain_total[prop])})
-	var ward_q: StatQuery = head_ctx["store"].query(SP_MANA_SPENT_AS_WARD, int(head_ctx["tags"]), 0, _ability_index(head_ctx))
-	if ward_q.added != 0.0 and mana > 0.0:
-		var per_s_ward: float = mana * uses * ward_q.added
-		var b: PackedStringArray = [LE.t("Mana cost %s × uses/s %s × SP 99 share %s = %s/s") % [
-			LE.fmt_num(mana), LE.fmt_num(uses), LE.fmt_pct(ward_q.added), LE.fmt_num(per_s_ward)]]
+	var ward_q: StatQuery = head_ctx["store"].query(SP_MANA_SPENT_AS_WARD, _query_tags(head_ctx), 0, _ability_index(head_ctx))
+	if ward_q.added != 0.0 and (mana > 0.0 or channel > 0.0):
+		var per_s_ward: float = (mana * uses + channel) * ward_q.added
+		var b: PackedStringArray = [LE.t("(Mana cost %s × uses/s %s + channel cost %s/s) × SP 99 share %s = %s/s") % [
+			LE.fmt_num(mana), LE.fmt_num(uses), LE.fmt_num(channel), LE.fmt_pct(ward_q.added), LE.fmt_num(per_s_ward)]]
 		for mod: StatMod in ward_q.mods:
 			b.append("  " + mod.describe())
 		b.append(LE.t("The scale of the SP 99 value (share of mana spent) is D?."))
 		rows.append({"label": LE.t("Ward from mana spent per second"), "text": LE.fmt_num(per_s_ward), "breakdown": "\n".join(b),
 			"sustain": "ward_from_mana", "value": per_s_ward})
 	return rows
+
+
+## Σ added of the HealthGain / WardGain / ManaGain stats whose own specialTag is `special` (ResourceGainEvents: a stat with special 0
+## gives nothing). `store.query` also returns special 0 mods, they are filtered out here.
+static func gain_by_event(store: StatStore, prop: int, tags: int, special: int, ability_index: int) -> float:
+	var total: float = 0.0
+	for mod: StatMod in store.query(prop, tags, special, ability_index).mods:
+		if mod.special == special:
+			total += mod.added
+	return total
 
 
 static func _ability_index(ctx: Dictionary) -> int:

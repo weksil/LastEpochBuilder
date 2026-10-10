@@ -11,6 +11,9 @@ var increased: float = 0.0  # Increased percentage (as 0-1 decimal)
 var more: Array[float] = []  # Array of multiplicative modifiers
 var source: String = ""  # Human-readable source (Russian)
 var on_curse_hit: bool = false  # Ailment chance that applies only when the cursed enemy is hit (curse tree nodes)
+var ailment_only: int = 0  # Damage more of one ailment instance (ActiveAilment.moreDamage, AilmentID): not part of hit or skill-wide damage
+var chance_scaled: int = 0  # With ailment_only: the more value is multiplied by the AilmentChance stat of this AilmentID (0 = fixed value)
+var holder_only: bool = false  # Damage more of a DamageConditionalEffect on the skill's DamageStatsHolder: hits and the holder's own damage, never the ailments it applies (AilmentCalc skips it)
 
 
 ## Create a StatMod with the given parameters.
@@ -50,6 +53,9 @@ func scaled(n: float) -> StatMod:
 	copy.extra = extra
 	copy.source = source
 	copy.on_curse_hit = on_curse_hit
+	copy.ailment_only = ailment_only
+	copy.chance_scaled = chance_scaled
+	copy.holder_only = holder_only
 	copy.added = added * n
 	copy.increased = increased * n
 	copy.more = more.duplicate()

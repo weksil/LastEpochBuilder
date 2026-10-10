@@ -107,6 +107,8 @@ static func default_player_state() -> Dictionary:
 		"low_mana": false,
 		"haste": false,
 		"frenzy": false,
+		"killed_recently": false,
+		"minion_killed_recently": false,
 		# transformed (Reaper Form, Werebear …): stats with the Transform tag also apply without it (BuildMods)
 		"transformed": false,
 		"ward": 0,

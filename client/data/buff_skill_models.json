@@ -169,6 +169,8 @@
 "label": "less damage taken per spent symbol",
 "active_only": true,
 "no_m": true,
+"off_with_component": "DivineFlare",
+"less_by_property": 9,
 "per_input": {
 "key": "sigils",
 "label": "Symbols of Hope",

@@ -17,8 +17,17 @@ const STEPS_PER_SECOND: int = 20
 const MAX_DOT_SECONDS: float = 600.0
 ## Own-event kinds of resource models and enemy-hit kinds (docs/ENGINE.md §9.1 `resource.on`).
 const OWN_EVENTS: Array[String] = ["use", "hit", "crit", "second"]
-const ENEMY_EVENTS: Array[String] = ["block", "dodge", "hit_taken"]
+const ENEMY_EVENTS: Array[String] = ["block", "dodge", "hit_taken", "glancing"]
 const AMOUNT_BASES: Dictionary = {"flat": "flat", "max_health": "max", "missing_health": "missing", "current_health": "current"}
+## HealthGain stats with a hit-event specialTag that are not the skill's own hits (ResourceGainEvents.UpdateResourceGainTotals).
+## Only stats with tags 0 and extraTag 0 are totals; the health goes through BaseHealth.restoreHealth. The ward of these events
+## (ProtectionClass.GainWard, its ward gain multiplier not modelled) is not counted.
+## {special, prop (SP), label, input}: input "" = per blocked enemy hit, else the rate input of the player state.
+const EVENT_GAINS: Array[Dictionary] = [
+	{"special": 6, "prop": 38, "label": "Health gained on block", "input": ""},
+	{"special": 3, "prop": 38, "label": "Health gained on kill", "input": "kills_per_second"},
+	{"special": 5, "prop": 38, "label": "Health gained on stun", "input": "stuns_per_second"},
+]
 
 
 ## {sources: Array[Dictionary], rows: Array, notes: Array[String], skill: String}
@@ -49,13 +58,38 @@ static func collect(build: Node, layers: Dictionary, avoid: Dictionary, interval
 			_add_resource(sources, notes, res["model"], float(res["x"]), str(res["source"]), rates, dps, avoid, interval, mana)
 	for res: Dictionary in passive_resources(build):
 		_add_resource(sources, notes, res["model"], float(res["x"]), str(res["source"]), r.get("rates", {}), 0.0, avoid, interval, mana)
+	sources.append_array(event_gains(BuildMods.global_store(build)["store"], build.player_state, avoid))
 	return {"sources": sources, "notes": notes, "skill": skill_name}
 
 
-static func _add(sources: Array[Dictionary], resource: String, timing: String, base: String, k: float, label: String, text: String) -> void:
+## Recovery sources of the EVENT_GAINS health: per blocked enemy hit (k = amount x avoid["block"]) or per second (k = amount x rate input).
+static func event_gains(store: StatStore, player_state: Dictionary, avoid: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for e: Dictionary in EVENT_GAINS:
+		var amount: float = 0.0
+		for mod: StatMod in store.mods_of(int(e["prop"])):
+			if mod.special == int(e["special"]) and mod.tags == 0 and mod.extra == 0:
+				amount += mod.added
+		if is_zero_approx(amount):
+			continue
+		var label: String = LE.t(str(e["label"]))
+		if str(e["input"]) == "":
+			var p: float = float(avoid.get("block", 0.0))
+			_add(out, "health", "enemy_hit", "flat", amount * p, label, LE.t("%s per event × %s per enemy hit") % [LE.fmt_num(amount), LE.fmt_num(p)])
+		else:
+			var rate: float = float(player_state.get(str(e["input"]), 0.0))
+			_add(out, "health", "rate", "flat", amount * rate, label, LE.t("%s per event × %s events/s") % [LE.fmt_num(amount), LE.fmt_num(rate)])
+	return out
+
+
+static func _add(sources: Array[Dictionary], resource: String, timing: String, base: String, k: float, label: String, text: String,
+		below: float = 0.0) -> void:
 	if is_zero_approx(k):
 		return
-	sources.append({"resource": resource, "timing": timing, "base": base, "k": k, "label": label, "text": text})
+	var src: Dictionary = {"resource": resource, "timing": timing, "base": base, "k": k, "label": label, "text": text}
+	if below > 0.0:
+		src["below"] = below  # gained only when health after the hit is below this share of the maximum
+	sources.append(src)
 
 
 ## Resource models of allocated passives aimed at the character (CharacterMutator.*): BuildMods lists them only as notes.
@@ -123,7 +157,8 @@ static func _add_resource(sources: Array[Dictionary], notes: Array[String], mode
 		var p: float = float(avoid.get(on if on != "hit_taken" else "land", 0.0)) * chance
 		if cap > 0.0 and interval > 0.0:
 			p = minf(p, cap * interval)
-		_add(sources, resource, "enemy_hit", base, k * p, label, LE.t("%s per event × %s per enemy hit") % [LE.fmt_num(k), LE.fmt_num(p)])
+		_add(sources, resource, "enemy_hit", base, k * p, label, LE.t("%s per event × %s per enemy hit") % [LE.fmt_num(k), LE.fmt_num(p)],
+			float(model.get("health_below", 0.0)))
 	else:
 		notes.append(LE.t("Recovery not counted: %s") % label)
 
@@ -154,9 +189,13 @@ static func ward_decay(layers: Dictionary, ward: float, regen: float) -> float:
 	return minf(decay, x / STEP)
 
 
-## Advances the pool by `seconds` of recovery (rate sources) in place.
+## Advances the pool by `seconds` of recovery (rate sources) and of the current health drain (SP 60) in place. Recovery clamps
+## health at the cap of current health and ward at its cap (BaseHealth.restoreHealth, ProtectionClass.GainWard).
 static func recover(layers: Dictionary, sources: Array[Dictionary], pool: Dictionary, seconds: float) -> void:
 	var max_health: float = float(layers["health"])
+	var health_cap: float = float(layers.get("health_limit", max_health))
+	var ward_limit: float = float(layers.get("ward_limit", 0.0))
+	var drain: float = float(layers.get("health_drain", 0.0))
 	var t: float = 0.0
 	while t < seconds - 1e-9:
 		var dt: float = minf(STEP, seconds - t)
@@ -170,8 +209,13 @@ static func recover(layers: Dictionary, sources: Array[Dictionary], pool: Dictio
 				dh += amount
 			else:
 				dw += amount
-		pool["health"] = minf(max_health, float(pool["health"]) + dh * dt)
+		pool["health"] = minf(health_cap, float(pool["health"]) + dh * dt)
+		if drain > 0.0:
+			# ProtectionClass.Update: HealthDamage(drain · currentHealth · dt), exponential decay; the ward does not take part
+			pool["health"] = float(pool["health"]) * exp(-drain * dt)
 		var w: float = float(pool["ward"]) + dw * dt
+		if ward_limit > 0.0:
+			w = minf(w, ward_limit)
 		pool["ward"] = maxf(0.0, w - ward_decay(layers, w, float(layers.get("ward_regen", 0.0))) * dt)
 		slow_damage(pool, dt)
 		t += dt
@@ -202,11 +246,18 @@ static func on_enemy_hit(layers: Dictionary, sources: Array[Dictionary], pool: D
 	for s: Dictionary in sources:
 		if s["timing"] != "enemy_hit":
 			continue
+		var below: float = float(s.get("below", 0.0))
+		# BaseHealth.valueWouldBeLowHealth: health after the hit strictly below 35% of the maximum
+		if below > 0.0 and float(pool["health"]) >= below * max_health:
+			continue
 		var amount: float = float(s["k"]) * _base(str(s["base"]), pool, max_health)
 		if s["resource"] == "health":
-			pool["health"] = minf(max_health, float(pool["health"]) + amount)
+			pool["health"] = minf(float(layers.get("health_limit", max_health)), float(pool["health"]) + amount)
 		else:
 			pool["ward"] = float(pool["ward"]) + amount
+			var cap: float = float(layers.get("ward_limit", 0.0))
+			if cap > 0.0:
+				pool["ward"] = minf(float(pool["ward"]), cap)
 
 
 ## True when the pool after a cycle is no worse than before it: health, ward and mana not lower, no more delayed damage queued.
@@ -282,6 +333,9 @@ static func per_second(layers: Dictionary, sources: Array[Dictionary], interval:
 	pool["health"] = float(layers["health"]) * 0.5
 	var out: Dictionary = {"health": 0.0, "ward": 0.0}
 	for s: Dictionary in sources:
+		var below: float = float(s.get("below", 0.0))
+		if below > 0.0 and float(pool["health"]) >= below * float(layers["health"]):
+			continue  # gained only below the low-health line (half health is not)
 		var amount: float = float(s["k"]) * _base(str(s["base"]), pool, float(layers["health"]))
 		if s["timing"] == "enemy_hit":
 			amount = amount / interval if interval > 0.0 else 0.0

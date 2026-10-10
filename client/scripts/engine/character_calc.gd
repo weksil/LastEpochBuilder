@@ -1,6 +1,9 @@
 ## Character statistics calculation engine.
 class_name CharacterCalc
 
+## Conversion names, indexed by DefenseConversions' dodge / block conversion (same strings as its messages).
+const CONVERSION_TEXT: Array[String] = ["", "armor", "glancing blow chance (2 × dodge chance)", "endurance threshold"]
+
 
 ## Compute character statistics from a StatStore and build configuration.
 ## Returns an array of stat rows: {group, label, value, text, breakdown}
@@ -13,6 +16,14 @@ static func compute(store: StatStore, build) -> Array[Dictionary]:
 
 	var level: int = build.level if build and "level" in build else 100
 
+	# CharacterSheet.UpdateSheet: outside hubs the sheet's percentages use the zone level; the Defense tab's area level stands for it
+	var area_level: int = level
+	var conv: Dictionary = {}
+	if build != null:
+		if "defense" in build:
+			area_level = int(DefenseCalc.settings_of(build)["area_level"])
+		conv = DefenseConversions.collect(build, store)  # conversions and maximum block (used by #42), independent of the attack
+
 	# Group: Attributes
 	rows.append_array(_compute_attributes(store))
 
@@ -20,7 +31,7 @@ static func compute(store: StatStore, build) -> Array[Dictionary]:
 	rows.append_array(_compute_resources(store))
 
 	# Group: Defense
-	rows.append_array(_compute_defence(store, level))
+	rows.append_array(_compute_defence(store, area_level, conv))
 
 	# Group: Other
 	rows.append_array(_compute_other(store))
@@ -115,19 +126,30 @@ static func _compute_resources(store: StatStore) -> Array[Dictionary]:
 
 
 ## Defense: Armour, Dodge, Block, Parry, Endurance, Stun Avoidance, Resistances
-static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
+## level: the zone (area) level the game sheet uses outside hubs; conv: DefenseConversions.collect (the sheet's conversions).
+static func _compute_defence(store: StatStore, level: int, conv: Dictionary = {}) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
+	var dodge_conv: int = int(conv.get("dodge_conversion", 0))
+	var block_conv: int = int(conv.get("block_conversion", 0))
+	var max_block: float = float(conv.get("max_block", 0.0))
 
-	# Armour (10) - armor
+	# Dodge rating before the conversions (the game's +0x54), read by the armour and endurance threshold rows too
+	var dodge_rating_query: StatQuery = store.query_untagged(LE.DODGE_RATING)
+	var dodge_raw: float = dodge_rating_query.value()
+
+	# Armour (10) - armor, with the dodge rating added when it is converted to armor (getArmour)
 	var armour_query: StatQuery = store.query_untagged(LE.ARMOUR)
 	var neg_armour_sum: float = store.sum_added_untagged([LE.NEG_ARMOUR])
-	var armour_value: float = armour_query.value() - neg_armour_sum
+	var armour_value: float = sheet_armour(armour_query.value() - neg_armour_sum, dodge_raw, dodge_conv)
+	var armour_breakdown: String = armour_query.breakdown() + LE.t("\n− (%s) from -armor") % LE.fmt_num(neg_armour_sum)
+	if dodge_conv == 1:
+		armour_breakdown += "\n" + LE.t("+ %s dodge rating converted to armor") % LE.fmt_num(dodge_raw)
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Armor"),
 		"value": armour_value,
 		"text": LE.fmt_num(armour_value),
-		"breakdown": armour_query.breakdown() + LE.t("\n− (%s) from -armor") % LE.fmt_num(neg_armour_sum)
+		"breakdown": armour_breakdown
 	})
 
 	# Armour Mitigation - armor physical damage reduction
@@ -140,36 +162,44 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 		"breakdown": LE.t("Armor: %s\nFormula: 0.55·0.0015x²/(0.0015x² + 180L) + 0.30·1.2x/(0.05L² + 80 + 1.2x), where L = %d") % [LE.fmt_num(armour_value), level + 5]
 	})
 
-	# Dodge Rating (11) - dodge rating
-	var dodge_rating_query: StatQuery = store.query_untagged(LE.DODGE_RATING)
-	var dodge_rating_value: float = dodge_rating_query.value()
+	# Dodge Rating (11) - dodge rating: the sheet shows 0 when it is converted (dodgeRatingForCharacterSheet)
+	var dodge_rating_value: float = sheet_dodge_rating(dodge_raw, dodge_conv)
+	var dodge_rating_text: String = dodge_rating_query.breakdown()
+	if dodge_conv != 0:
+		dodge_rating_text += "\n" + LE.t("Dodge rating converted to %s: the sheet shows 0") % LE.t(CONVERSION_TEXT[dodge_conv])
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Dodge rating"),
 		"value": dodge_rating_value,
 		"text": LE.fmt_num(dodge_rating_value),
-		"breakdown": dodge_rating_query.breakdown()
+		"breakdown": dodge_rating_text
 	})
 
-	# Dodge Chance - dodge chance
+	# Dodge Chance - dodge chance (0 while the rating is converted: CalculateDodgeChance)
 	var dodge_chance: float = _compute_dodge_chance(dodge_rating_value, level)
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Dodge chance"),
 		"value": dodge_chance,
 		"text": LE.fmt_pct(dodge_chance),
-		"breakdown": _explain_dodge_chance(dodge_rating_value, level)
+		"breakdown": _explain_dodge_chance(dodge_rating_value, level) + "\n" + LE.t("Level used: zone (area) level %d from the Defense tab; in a hub the game sheet uses the character level") % level
 	})
 
-	# Block Chance (29) - block chance
+	# Block Chance (29) - block chance (blockChanceForCharacterSheet: 0 when converted, else capped at the maximum block chance)
 	var block_query: StatQuery = store.query_untagged(LE.BLOCK_CHANCE)
-	var block_value: float = block_query.value()
+	var block_raw: float = block_query.value()
+	var block_value: float = sheet_block_chance(block_raw, block_conv, max_block)
+	var block_text: String = block_query.breakdown()
+	if block_conv != 0:
+		block_text += "\n" + LE.t("Block chance converted to %s: the sheet shows 0") % LE.t(["", "glancing blow chance", "parry chance"][block_conv])
+	elif max_block != 0.0:
+		block_text += "\n" + LE.t("min(%s, maximum block chance %s)") % [LE.fmt_pct(block_raw), LE.fmt_pct(max_block)]
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Block chance"),
 		"value": block_value,
 		"text": LE.fmt_pct(block_value),
-		"breakdown": block_query.breakdown()
+		"breakdown": block_text
 	})
 
 	# Block Effectiveness (53) - block effectiveness
@@ -196,12 +226,17 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	# Parry (121) - parry chance
 	var parry_query: StatQuery = store.query_untagged(LE.PARRY)
 	var parry_value: float = min(0.75, parry_query.value())
+	var parry_text: String = "min(0.75, %s)\n%s" % [LE.fmt_pct(parry_query.value()), parry_query.breakdown()]
+	if block_conv == 2:
+		# blockConversion 2: the block chance (capped) is added to the parry chance (GetParryChance, capped at 75%)
+		parry_value = DefenseCalc.parry_from_block(parry_query.value(), block_raw, max_block)
+		parry_text = parry_query.breakdown() + "\n" + LE.t("+ block chance converted to parry: min(%s, maximum block)") % LE.fmt_pct(block_raw)
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Parry chance"),
 		"value": parry_value,
 		"text": LE.fmt_pct(parry_value),
-		"breakdown": "min(0.75, %s)\n%s" % [LE.fmt_pct(parry_query.value()), parry_query.breakdown()]
+		"breakdown": parry_text
 	})
 
 	# Endurance (75) - endurance
@@ -217,13 +252,16 @@ static func _compute_defence(store: StatStore, level: int) -> Array[Dictionary]:
 	})
 
 	# Endurance Threshold (76)
-	var endurance_threshold: float = _compute_endurance_threshold(store)
+	var endurance_threshold: float = sheet_threshold(_compute_endurance_threshold(store), dodge_raw, dodge_conv)
+	var threshold_text: String = _explain_endurance_threshold(store)
+	if dodge_conv == 3:
+		threshold_text += "\n" + LE.t("+ %s dodge rating converted to endurance threshold") % LE.fmt_num(dodge_raw)
 	rows.append({
 		"group": LE.t("Defense"),
 		"label": LE.t("Endurance threshold"),
 		"value": endurance_threshold,
 		"text": LE.fmt_num(endurance_threshold),
-		"breakdown": _explain_endurance_threshold(store)
+		"breakdown": threshold_text
 	})
 
 	# Stun Avoidance (12) - stun avoidance
@@ -280,23 +318,26 @@ static func _compute_other(store: StatStore) -> Array[Dictionary]:
 
 	# Thorns (85) - thorns
 	var thorns_query: StatQuery = store.query_untagged(LE.THORNS)
+	var thorns_value: float = thorns_query.added * (1.0 + thorns_query.increased)
 	rows.append({
 		"group": LE.t("Other"),
 		"label": LE.t("Thorns"),
-		"value": thorns_query.value(),
-		"text": LE.fmt_num(thorns_query.value()),
-		"breakdown": thorns_query.breakdown()
+		"value": thorns_value,
+		"text": LE.fmt_num(thorns_value),
+		"breakdown": thorns_query.breakdown() + "\n" + LE.t("Game: (1 + increased) × added, no more: (1 + %s) × %s = %s") % [
+			LE.fmt_num(thorns_query.increased), LE.fmt_num(thorns_query.added), LE.fmt_num(thorns_value)]
 	})
 
-	# Crit Avoidance (89) - crit avoidance
+	# Crit Avoidance (89) - crit avoidance (critAvoidance = added × more, no increased)
 	var crit_avoid_query: StatQuery = store.query_untagged(LE.CRIT_AVOIDANCE)
-	var crit_avoid_value: float = crit_avoid_query.value()
+	var crit_avoid_value: float = crit_avoid_query.added * crit_avoid_query.more
 	rows.append({
 		"group": LE.t("Other"),
 		"label": LE.t("Crit avoidance"),
 		"value": crit_avoid_value,
 		"text": LE.fmt_pct(crit_avoid_value),
-		"breakdown": crit_avoid_query.breakdown()
+		"breakdown": crit_avoid_query.breakdown() + "\n" + LE.t("Game: added × more, no increased: %s × %s = %s") % [
+			LE.fmt_pct(crit_avoid_query.added), LE.fmt_num(crit_avoid_query.more), LE.fmt_pct(crit_avoid_value)]
 	})
 
 	return rows
@@ -326,6 +367,27 @@ static func block_mitigation(block_effectiveness: float, level: int) -> float:
 	var x: float = block_effectiveness
 	var q: float = 0.0006 * x * x + 1.2 * x
 	return 0.6 * q / (q + 60.0 * L) + 0.25 * 3.0 * x / (0.03 * L * L + 40.0 + 3.0 * x)
+
+
+## Sheet values with the dodge / block conversions applied (PrecalculatedStatsHolder.dodgeRatingForCharacterSheet / getArmour /
+## getEnduranceThreshold / blockChanceForCharacterSheet). dodge_conv: 0 none, 1 armor, 2 glancing blow, 3 endurance threshold.
+static func sheet_dodge_rating(dodge_rating: float, dodge_conv: int) -> float:
+	return dodge_rating if dodge_conv == 0 else 0.0
+
+
+static func sheet_armour(armour: float, dodge_rating: float, dodge_conv: int) -> float:
+	return armour + dodge_rating if dodge_conv == 1 else armour
+
+
+static func sheet_threshold(threshold: float, dodge_rating: float, dodge_conv: int) -> float:
+	return threshold + dodge_rating if dodge_conv == 3 else threshold
+
+
+## block_conv: 0 none, 1 glancing blow, 2 parry; max_block 0 = no cap.
+static func sheet_block_chance(block: float, block_conv: int, max_block: float) -> float:
+	if block_conv != 0:
+		return 0.0
+	return minf(block, max_block) if max_block != 0.0 else block
 
 
 static func _explain_block_mitigation(block_effectiveness: float, level: int) -> String:

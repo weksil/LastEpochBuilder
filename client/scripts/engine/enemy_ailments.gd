@@ -138,7 +138,7 @@ static func auto(build: Node, slot: int) -> Dictionary:
 	var raw: Dictionary = _raw(build)
 	if not raw.has(slot):
 		return {}
-	var sums: Dictionary = {}  # id -> {rate, load, max, sources}
+	var sums: Dictionary = {}  # id -> {rate, load, effect_load, max, sources}
 	var consume_rate: Dictionary = {}  # id -> uses/s of the skills that spend it
 	for other: Variant in raw:
 		if not other is int:
@@ -150,10 +150,11 @@ static func auto(build: Node, slot: int) -> Dictionary:
 				continue
 			var id: int = int(a["id"])
 			if not sums.has(id):
-				sums[id] = {"rate": 0.0, "load": 0.0, "max": int(a["max"]), "sources": {}}
+				sums[id] = {"rate": 0.0, "load": 0.0, "effect_load": 0.0, "max": int(a["max"]), "sources": {}}
 			var rate: float = float(a["rate"])
 			sums[id]["rate"] += rate
 			sums[id]["load"] += rate * float(a["duration"])
+			sums[id]["effect_load"] += rate * float(a["duration"]) * float(a.get("effect", 0.0))
 			var label: String = str(r["name"]) if str(a.get("source", "")) == "" else "%s: %s" % [r["name"], a["source"]]
 			sums[id]["sources"][label] = float(sums[id]["sources"].get(label, 0.0)) + rate
 		if all:
@@ -167,6 +168,8 @@ static func auto(build: Node, slot: int) -> Dictionary:
 		var load: float = float(sums[id]["load"])
 		if rate <= 0.0 or load <= 0.0:
 			continue
+		# load-weighted mean increased ailment effect of the applications (scales the buffs of Individual ailments)
+		var effect: float = float(sums[id]["effect_load"]) / load
 		var max_inst: int = int(sums[id]["max"])
 		var duration: float = load / rate
 		var note: String = ""
@@ -187,7 +190,7 @@ static func auto(build: Node, slot: int) -> Dictionary:
 			stacks = uptime
 		elif max_inst > 1:
 			stacks = minf(load, float(max_inst))
-		out[id] = {"stacks": stacks, "uptime": uptime, "rate": rate, "duration": duration, "max": max_inst,
+		out[id] = {"stacks": stacks, "uptime": uptime, "rate": rate, "duration": duration, "max": max_inst, "effect": effect,
 			"sources": sums[id]["sources"], "note": note}
 	return out
 
@@ -597,13 +600,17 @@ static func player_property(build: Node, index: int) -> Dictionary:
 		var points: int = entry[1]
 		for effect: Dictionary in node.get("effects", []):
 			var stat: Variant = effect.get("stat")
-			if not stat is Dictionary or str(stat.get("kind", "")) != "player_property" or points < int(effect.get("minPoints", 0)):
+			var kind: String = str(stat.get("kind", "")) if stat is Dictionary else ""
+			if (kind != "player_property" and kind != "more_player_property") or points < int(effect.get("minPoints", 0)):
 				continue
 			if int(str(stat.get("playerPropertyIndex", "-1"))) != index:
 				continue
 			var v: float = BuildMods.eval_value(stat.get("value"), points)
 			if v != 0.0:
-				total += v
+				if kind == "more_player_property":
+					total = (1.0 + total) * (1.0 + v) - 1.0  # Stat.ApplyMoreModifier: field = (1 + field)(1 + m) - 1
+				else:
+					total += v
 				lines.append(LE.t("Passive \"%s\" ×%d: %s") % [str(node.get("displayName", "")), points, LE.fmt_num(v)])
 	for slot: String in build.items:
 		if not (BuildMods.SLOTS.has(slot) or IdolGrid.is_idol_key(slot)):
@@ -654,6 +661,7 @@ static func effective(enemy: Dictionary, auto_values: Dictionary) -> Dictionary:
 	var out: Dictionary = enemy.duplicate(true)
 	var ailments: Dictionary = out.get("ailments", {})
 	var uptime: Dictionary = {}
+	var effects: Dictionary = {}
 	for id: Variant in ailments:
 		uptime[int(id)] = 1.0 if float(ailments[id]) > 0.0 else 0.0
 	for id: int in auto_values:
@@ -661,8 +669,10 @@ static func effective(enemy: Dictionary, auto_values: Dictionary) -> Dictionary:
 			continue
 		ailments[id] = float(auto_values[id]["stacks"])
 		uptime[id] = float(auto_values[id]["uptime"])
+		effects[id] = float(auto_values[id].get("effect", 0.0))
 	out["ailments"] = ailments
 	out["uptime"] = uptime
+	out["ailment_effect"] = effects
 	out[APPLIED_KEY] = true
 	return out
 

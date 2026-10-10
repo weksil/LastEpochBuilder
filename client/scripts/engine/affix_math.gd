@@ -36,13 +36,12 @@ static func roll_value(lo: float, hi: float, rounding: String, mod_type: String,
 	var a: int = LE.round_half_even(f32(f32(f32(lo) * f) * s))
 	var b: int = LE.round_half_even(f32(f32(f32(hi) * f) * s))
 
-	# Ensure a <= b
-	if a > b:
-		var temp: int = a
-		a = b
-		b = temp
+	# Descending range (max < min as written; GetValueAfterRounding compares the raw floats, DescendingValueAfterPropertyRounding):
+	# roll 0 gives the first number, roll 255 the second: max(ceil((b - a - 1) * roll / 255 + a), b) / s
+	if hi < lo:
+		return float(max(int(ceil(float(b - a - 1) * float(roll) / 255.0 + float(a))), b)) / s
 
-	# Calculate rolled value: min(floor((b - a + 1) * roll / 255 + a), b) / s
+	# Ascending: min(floor((b - a + 1) * roll / 255 + a), b) / s
 	var v: float = float(min(int(floor(float(b - a + 1) * float(roll) / 255.0 + float(a))), b)) / s
 
 	return v

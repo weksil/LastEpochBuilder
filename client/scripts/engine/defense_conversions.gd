@@ -34,8 +34,10 @@ static func pp_values(build: Node) -> Dictionary:
 		for mod: StatMod in ItemMods.item_mods(slot, build.items[slot]):
 			if mod.property == LE.PLAYER_PROPERTY:
 				_add_pp(out, mod.tags, mod.added, mod.source)
+				for m: float in mod.more:  # affixes of modType MORE (PP 275, 636, 677)
+					_add_pp_more(out, mod.tags, m, mod.source)
 	for entry: Dictionary in BuildMods._passive_entries(build):
-		_add_node_pps(out, entry["node"], int(entry["points"]), str(entry["source"]))
+		_add_node_pps(out, entry["node"], int(entry["points"]), str(entry["source"]), true)
 	for slot in range(build.skills.size()):
 		var skill: Dictionary = build.skills[slot]
 		var ability: Dictionary = GameData.get_ability(str(skill.get("ability", "")))
@@ -50,16 +52,27 @@ static func pp_values(build: Node) -> Dictionary:
 	return out
 
 
-static func _add_node_pps(out: Dictionary, node: Dictionary, points: int, source: String) -> void:
+static func _add_node_pps(out: Dictionary, node: Dictionary, points: int, source: String, passive: bool = false) -> void:
 	if points <= 0:
 		return
 	for effect: Dictionary in node.get("effects", []):
 		var stat: Variant = effect.get("stat")
-		if effect.get("op") != "add_stat" or not stat is Dictionary or str(stat.get("kind", "")) != "player_property":
+		if effect.get("op") != "add_stat" or not stat is Dictionary:
+			continue
+		var kind: String = str(stat.get("kind", ""))
+		if kind != "player_property" and kind != "more_player_property":
 			continue
 		if points < int(effect.get("minPoints", 0)):
 			continue
-		_add_pp(out, int(stat.get("playerPropertyIndex", -1)), BuildMods.eval_value(stat.get("value"), points), source)
+		var index: int = int(stat.get("playerPropertyIndex", -1))
+		var model: Dictionary = GameData.unique_player_model(index)
+		if passive and not model.is_empty() and ["stat", "overcap_taken"].has(str(model.get("kind", "stat"))):
+			continue  # already a stat (UniqueEffects passive entries), as for uniques
+		var value: float = BuildMods.eval_value(stat.get("value"), points)
+		if kind == "more_player_property":
+			_add_pp_more(out, index, value, source)
+		else:
+			_add_pp(out, index, value, source)
 
 
 static func _add_pp(out: Dictionary, pp: int, value: float, source: String) -> void:
@@ -71,8 +84,24 @@ static func _add_pp(out: Dictionary, pp: int, value: float, source: String) -> v
 	out[pp]["lines"].append("%s: %s" % [source, LE.fmt_num(value)])
 
 
+## A `more` PlayerProperty stat (Stats.MorePlayerPropertyStat, an affix of modType MORE): the character mutator folds it as
+## field = (1 + field)(1 + m) − 1 (applyModifiersBeforeExternalStatsCalculation, getMoreMultiplier cases).
+static func _add_pp_more(out: Dictionary, pp: int, m: float, source: String) -> void:
+	if pp < 0 or is_zero_approx(m):
+		return
+	if not out.has(pp):
+		out[pp] = {"value": 0.0, "lines": PackedStringArray()}
+	out[pp]["value"] = (1.0 + float(out[pp]["value"])) * (1.0 + m) - 1.0
+	out[pp]["lines"].append("%s: %s" % [source, LE.fmt_num(m)])
+
+
 static func _pp(pps: Dictionary, index: int) -> float:
 	return float(pps.get(index, {}).get("value", 0.0))
+
+
+## Damage over time taken while you have Haste (PP 275, ApplyConditionalDefenses): max(−0.75, (1 + increased effect of Haste on you)·pp).
+static func haste_dot_more(pp275: float, haste_effect_increased: float) -> float:
+	return maxf((1.0 + haste_effect_increased) * pp275, -0.75)
 
 
 ## attack: DefenseCalc.enemy_attack (is_hit, attacker_kind, near); layers fields used: res, block_dr.
@@ -85,6 +114,7 @@ static func collect(build: Node, store: StatStore, attack: Dictionary = {}) -> D
 		"dodge_conversion": 0, "block_conversion": 0, "max_block": 0.0, "endurance_mode": 0, "endurance_extra": 0.0,
 		"delayed": 0.0, "block_dot": 0.0, "hit_more": 1.0, "dot_more": 1.0, "block_add": 0.0, "armour_more": 0.0,
 		"threshold_add": 0.0, "crit_avoid_add": 0.0, "type_more": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+		"ward_bypass": false, "health_cap": 0.0, "ward_cap": 0.0,
 		"taken_as": [], "lines": PackedStringArray(), "unknown": PackedStringArray(), "pps": pps,
 	}
 	var lines: PackedStringArray = out["lines"]
@@ -114,8 +144,53 @@ static func collect(build: Node, store: StatStore, attack: Dictionary = {}) -> D
 		out["endurance_mode"] = 1
 		lines.append(LE.t("Endurance also reduces the mana spent by mana before health"))
 	_conditional(build, store, attack, pps, out)
+	_ward_and_health_caps(build, attack, pps, out)
 	_taken_as(store, out)
 	return out
+
+
+## Ward bypass of this attack and the caps of current health and ward (ProtectionClass.ApplyDamage, BaseHealth.restoreHealth,
+## ProtectionClass.GainWard): hits skip the ward with PP 685, damage over time with the Acolyte node Impact Ward (3+ points);
+## Corrupted Form (2+ points) caps current health and ward at 50% of maximum health, PP 609 caps ward at v × maximum health.
+static func _ward_and_health_caps(build: Node, attack: Dictionary, pps: Dictionary, out: Dictionary) -> void:
+	var dots_bypass: bool = false
+	var health_cap: float = 0.0
+	var ward_cap_tree: float = 0.0
+	for entry: Dictionary in BuildMods._passive_entries(build):
+		var points: int = int(entry["points"])
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
+			if points < int(effect.get("minPoints", 0)) or not effect.has("value"):
+				continue
+			var v: float = BuildMods.eval_value(effect.get("value"), points)
+			match str(effect.get("target", "")):
+				"CharacterMutator.dotsBypassWard":
+					dots_bypass = dots_bypass or v > 0.0
+				"CharacterMutator.maxHealthCapForCurrentHealth":
+					if v > 0.0:
+						health_cap = v
+				"CharacterMutator.maxHealthCapForWardFromAcolyteTree":
+					if v > 0.0:
+						ward_cap_tree = v
+	var is_hit: bool = bool(attack.get("is_hit", true))
+	var bypass: bool = (_pp(pps, 685) > 0.1) if is_hit else dots_bypass
+	out["ward_bypass"] = bypass
+	out["health_cap"] = health_cap
+	out["ward_cap"] = ward_cap_share(ward_cap_tree, _pp(pps, 609))
+	if bypass:
+		out["lines"].append(LE.t("Hit damage taken bypasses ward (PP 685)") if is_hit else LE.t("Damage over time taken bypasses ward"))
+	if health_cap > 0.0:
+		out["lines"].append(LE.t("Current health cannot exceed %s of maximum health") % LE.fmt_pct(health_cap))
+	if float(out["ward_cap"]) > 0.0:
+		out["lines"].append(LE.t("Ward cannot exceed %s of maximum health") % LE.fmt_pct(float(out["ward_cap"])))
+
+
+## CharacterMutator: the ward cap is the smaller of the non-zero values of the Acolyte tree field (0x670) and PP 609 (0x1EE8).
+static func ward_cap_share(tree: float, pp609: float) -> float:
+	if tree == 0.0:
+		return maxf(pp609, 0.0)
+	if pp609 == 0.0:
+		return tree
+	return minf(tree, pp609)
 
 
 ## CharacterMutator.ApplyConditionalDefenses (research/07n §3): only the conditions UniqueEffects does not already count.
@@ -150,10 +225,16 @@ static func _conditional(build: Node, store: StatStore, attack: Dictionary, pps:
 	var mana: float = store.query_untagged(LE.MANA).value()
 	if mana >= 400.0 and not bool(ps.get("low_mana", false)):
 		more.call(262, _pp(pps, 262), LE.t("At least 400 current mana"), true, true)
+	# Haste on you: damage over time taken ×(1 + max(−0.75, (1 + increased Haste effect on you)·PP 275)) (ApplyConditionalDefenses)
+	if not is_hit and _pp(pps, 275) != 0.0 and (bool(ps.get("haste", false)) or BuildMods.buff_stacks(build, int(BuildMods.PLAYER_AILMENTS["haste"])) > 0.0):
+		var haste_inc: float = store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, int(BuildMods.PLAYER_AILMENTS["haste"])).increased
+		more.call(275, haste_dot_more(_pp(pps, 275), haste_inc), LE.t("Damage over time taken while you have Haste"), false, true)
 	var cold_over: float = Enemy.resistance(store, 2).value() - 0.75
 	if cold_over > 0.0 and _pp(pps, 677) != 0.0:
 		more.call(677, minf(2.0, cold_over) * _pp(pps, 677) * 12.5, LE.t("Damage over time per 8% overcapped cold resistance"), false, true)
 	# attacker ailments (the enemy of the Conditions tab)
+	if stacks.call("Chill") > 0:
+		more.call(250, _pp(pps, 250), LE.t("Chilled attacker"), true, true)
 	if stacks.call("Slow") > 0:
 		more.call(561, _pp(pps, 561), LE.t("Slowed attacker"), true, true)
 	if stacks.call("TimeRot") > 0:
@@ -206,11 +287,11 @@ static func _conditional(build: Node, store: StatStore, attack: Dictionary, pps:
 		out["delayed"] = clampf(1.0 - (1.0 - _pp(pps, 564)) * x, 0.0, 1.0)
 		if float(out["delayed"]) > 0.0:
 			lines.append(LE.t("%s of the hit is taken over 4 s instead (PP 498, 564, 671)") % LE.fmt_pct(float(out["delayed"])))
-	# extra endurance while delayed damage is pending (pp 525): the simulation keeps the delayed damage, the planner applies
-	# it whenever the build delays hits
-	if _pp(pps, 525) != 0.0 and float(out["delayed"]) > 0.0:
+	# extra endurance f8 (pp 525): while the delayed damage still to be taken exceeds 10% of max health. The pool decides it per hit
+	# (DefenseCalc.endurance_of); below the threshold it also needs base endurance above 0 (modes 0 and 1)
+	if _pp(pps, 525) != 0.0:
 		out["endurance_extra"] = _pp(pps, 525)
-		lines.append(LE.t("Extra endurance %s while delayed damage is pending (PP 525)") % LE.fmt_pct(_pp(pps, 525)))
+		lines.append(LE.t("Extra endurance %s while the delayed damage left exceeds a tenth of maximum health (PP 525)") % LE.fmt_pct(_pp(pps, 525)))
 	# per-type multipliers of over-capped resistances (damage array, not a slot)
 	var fire_over: float = Enemy.resistance(store, 1).value() - 0.75
 	if fire_over > 0.0 and _pp(pps, 436) != 0.0:

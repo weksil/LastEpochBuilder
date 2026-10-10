@@ -65,10 +65,17 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 	var out: Array = result["global_mods"]
 
 	for entry: Dictionary in model.get("stats", []):
+		if entry.has("off_with_component") and _has_component(result, str(entry["off_with_component"])):
+			continue
 		var base: float = float(entry["value"]) * k
 		if active and entry.has("active_value"):
 			base = float(entry["active_value"])
 		var mod: StatMod = _entry_mod(build, slot, entry, base, active, m, "%s, %s%s" % [LE.t(str(entry.get("label", "base buff"))), mode, suffix], result)
+		if mod != null and entry.has("less_by_property"):
+			var less: float = ability_property(build, str(model.get("ability_id", "")), ability_index, int(entry["less_by_property"]))
+			if less > 0.0:
+				mod = mod.scaled(less_factor(less))
+				mod.source += LE.t(" × (1 − %s: weaker activation damage reduction)") % LE.fmt_num(less)
 		if mod != null:
 			out.append(mod)
 
@@ -102,6 +109,20 @@ static func apply(build: Node, slot: int, ability: Dictionary, result: Dictionar
 		if mod != null:
 			out.append(mod)
 
+
+
+## Factor of the activation damage reduction for an AbilityProperty value `less` (SigilsOfHopeActiveMutator.Mutate: 1 when it
+## is <= 0, else 1 - less).
+static func less_factor(less: float) -> float:
+	return 1.0 if less <= 0.0 else 1.0 - less
+
+
+## True if the skill's own tree adds `ability` as a component (result["components"] of BuildMods.skill_store).
+static func _has_component(result: Dictionary, ability: String) -> bool:
+	for comp: Variant in result.get("components", []):
+		if comp is Dictionary and str(comp.get("ability", "")) == ability:
+			return true
+	return false
 
 ## StatMod of one model entry for the current mode, null if the entry is off (wrong mode, input off, unknown stat).
 static func _entry_mod(build: Node, slot: int, entry: Dictionary, base: float, active: bool, m: float, source: String, result: Dictionary) -> StatMod:

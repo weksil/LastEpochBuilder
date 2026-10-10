@@ -15,9 +15,11 @@ func _ready() -> void:
 	_sample_build()
 	_idol_altar()
 	_passive_field_models()
+	_dodge_per_int_cap()
 	_buff_skills()
 	_buff_skill_base_models()
 	_sustain()
+	_gain_events()
 	_curse_hits()
 	_high_health_vs_dummy()
 	_detonations_and_maintained_dot()
@@ -27,7 +29,13 @@ func _ready() -> void:
 	_passive_granted_skill()
 	_shadows_echoes_buffs()
 	_review_damage_fixes()
+	_speed_audit()
 	_review_mod_fixes()
+	_skill_conversions()
+	_hit_damage_fixes()
+	_ailment_fixes()
+	_buff_group_fixes()
+	_passive_set_fixes()
 	_lean_and_cache()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -89,6 +97,14 @@ func _passive_granted_skill() -> void:
 	Build.set_skill(2, "sb44eQ")
 	_check("first_skill_slot ignores a temporary slot after the bar", float(UniqueEffects.first_skill_slot(Build)), 0.0)
 	Build.set_skill(2, "")
+	# channelled skills drain channelCost per second on top of the one-off manaCost (BaseMana.getManaCost, channelCost = true)
+	Build.set_skill(2, "dig5")
+	_check("Disintegrate: channel cost 18 mana/s", _section_value(SkillCalc.compute(Build, 2), "Speed and mana", "Channel cost, mana/s"), 18.0)
+	Build.set_skill(2, "dl73")
+	_check("Drain Life: channel cost 23 mana/s", _section_value(SkillCalc.compute(Build, 2), "Speed and mana", "Channel cost, mana/s"), 23.0)
+	Build.set_skill(2, "fi9")
+	_check("Fireball: no channel cost row", _section_value(SkillCalc.compute(Build, 2), "Speed and mana", "Channel cost, mana/s"), -1.0)
+	Build.set_skill(2, "")
 	var lean: Dictionary = GrantedCalc.compute(Build, aura_id, false)
 	_check("Flame Walker: lean virtual DPS equals the detailed one", _row_value(lean, "DPS vs enemy", "Against enemy"), view_dps)
 	_check("Flame Walker: lean view has lazy rows", 1.0 if (bool(lean.get("lean", false)) and bool(lean["sections"][0]["rows"][0].get("lazy", false))) else 0.0, 1.0)
@@ -139,6 +155,13 @@ func _triggers_cooldown() -> void:
 	var cd2: Dictionary = SkillCalc.cooldown_info({}, store, 0, {"cooldown_base": {"baseCooldownLength": 6.0, "charges": 2.0}, "cooldown": {"length_added": 2.0, "recovery_more": 1.0}})
 	_check("cooldown from node: (6+2) / (2 × 2)", float(cd2["cd"]), 2.0)
 	_check("cooldown charges", float(cd2["charges"]), 2.0)
+	# ADDED SP 70 (gear) sums with the increased part; Minion/Totem-tagged stats are skipped; Smoke Bomb's minimum is a floor
+	var cdg := StatStore.new()
+	cdg.add(StatMod.make(LE.CDR, "added", 0.5, 0, "gear"))
+	cdg.add(StatMod.make(LE.CDR, "increased", 0.5, 0, "passive"))
+	cdg.add(StatMod.make(LE.CDR, "added", 1.0, LE.MINION, "minion gear"))
+	_check("cooldown: added + increased recovery, Minion-tagged skipped", float(SkillCalc.cooldown_info({"cooldown": 4.0}, cdg, LE.MINION, {})["cd"]), 2.0)
+	_check("cooldown: minimum cooldown floor", float(SkillCalc.cooldown_info({"cooldown": 4.0}, cdg, 0, {"params": {"Min": {"param": "min_cooldown", "set": 3.0}}})["cd"]), 3.0)
 
 
 func _vectors() -> void:
@@ -152,6 +175,11 @@ func _vectors() -> void:
 	_check("affix inc [0.10,0.20] m 0.5 roll 255", AffixMath.roll_value(0.10, 0.20, "Hundredth", "INCREASED", 255, 0.5), 0.30)
 	_check("affix [61,90] m 0.5 roll 0", AffixMath.roll_value(61, 90, "Integer", "ADDED", 0, 0.5), 92)
 	_check("affix [61,90] m 0.5 roll 255", AffixMath.roll_value(61, 90, "Integer", "ADDED", 255, 0.5), 135)
+	_check("affix descending [20,5] roll 0 = first number", AffixMath.roll_value(20, 5, "Integer", "ADDED", 0, 0.0), 20)
+	_check("affix descending [20,5] roll 128", AffixMath.roll_value(20, 5, "Integer", "ADDED", 128, 0.0), 12)
+	_check("affix descending [20,5] roll 255 = second number", AffixMath.roll_value(20, 5, "Integer", "ADDED", 255, 0.0), 5)
+	_check("affix descending [-0.06,-0.20] roll 255", AffixMath.roll_value(-0.06, -0.20, "Hundredth", "INCREASED", 255, 0.0), -0.20)
+	_check("affix descending [-0.06,-0.20] roll 0", AffixMath.roll_value(-0.06, -0.20, "Hundredth", "INCREASED", 0, 0.0), -0.06)
 	_check("effect_modifier 2H axe", AffixMath.effect_modifier(2.2, 0.75), 0.8286)
 	_check("armour 1000 L50 phys", Enemy.armour_mitigation(1000, 50, false), 0.32390)
 	_check("armour 1000 L50 non-phys", Enemy.armour_mitigation(1000, 50, true), 0.22673)
@@ -433,6 +461,18 @@ func _minion_limits() -> void:
 	_check("Big Slam once per 6 s cooldown", slam, 1.0 / 6.0, 0.001)
 	_flag("Bone Golem melee fills the rest of the time", str(names).contains("golemMelee") or names.size() >= 2)
 	_flag("Rampage after the melee is never used", not str(names).contains("Rampage"))
+	# companion limit: banker's rounding, per-type cap, PlayerProperty 85
+	_check("companion limit rounds half to even: 2.5 -> 2", MinionCount.round_companions(2.5), 2.0)
+	_check("companion limit rounds half to even: 3.5 -> 4", MinionCount.round_companions(3.5), 4.0)
+	_check("companion limit: 5 wolves under a limit of 2 -> 2", MinionCount.companion_cap(5.0, 2.0, false), 2.0)
+	_check("companion limit: one companion of each type -> 1", MinionCount.companion_cap(5.0, 2.0, true), 1.0)
+	_check("companion limit: below the limit stays", MinionCount.companion_cap(1.0, 3.0, false), 1.0)
+	Build.set_class(0)  # Primalist
+	_check("two companions by default", float(MinionCount.max_companions(Build)["value"]), 2.0)
+	Build.passives[14] = 1  # Artor's Loyalty (PlayerProperty 85, flat 1.0)
+	Build.changed.emit()
+	_check("Artor's Loyalty: exactly one companion (PlayerProperty 85)", float(MinionCount.max_companions(Build)["value"]), 1.0)
+	_flag("PlayerProperty 85 has no 'Maximum Companion' note", not str(BuildMods.global_store(Build)["notes"]).contains("Maximum Companion"))
 	Build.set_class(class_id)
 	Build.passives = saved_passives
 	for i: int in range(saved_skills.size()):
@@ -497,8 +537,210 @@ func _unique_special_effects() -> void:
 	Build.set_skill(2, "")
 	# Frozen is an enemy flag (CDP 20), not an ailment
 	_check("CDP 20 frozen flag", Enemy.has_condition({"flags": {"frozen": true}, "ailments": {}}, 20), 1.0)
+	_check("#56 CDP 0 stunned flag", Enemy.has_condition({"flags": {"stunned": true}, "ailments": {}}, 0), 1.0)
+	_check("#56 CDP 0 true for frozen", Enemy.has_condition({"flags": {"frozen": true}, "ailments": {}}, 0), 1.0)
+	_check("#56 CDP 0 neither flag", Enemy.has_condition({"flags": {}, "ailments": {}}, 0), 0.0)
+	_check("#56 CDP 20 frozen not satisfied by stunned only", Enemy.has_condition({"flags": {"stunned": true}, "ailments": {}}, 20), 0.0)
+	_unique_component_models()
 	_unique_skill_level_models()
+	_unique_skill_filters()
 	_all_uniques_smoke()
+
+
+## Component models, player-stat models scaled by an ailment on you, copies of the player's stats, the input slot of
+## character-wide models (#109, #113, #114, #117, #118, #120, #121, #122): hand-computed vectors (not run in the wave).
+func _unique_component_models() -> void:
+	# Hammer Of Lorent is a component effect: an entry with a model, pp 1.0 and no raw class name in its label
+	Build.set_item("weapon", {"unique": 41, "base": 13, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255, 255, 255, 255]})
+	var comp_count: int = 0
+	var comp_pp: float = 0.0
+	var comp_label: String = ""
+	var comp_kind: String = ""
+	for e: Dictionary in UniqueEffects.entries(Build):
+		if str(e["effect"].get("source", "")) == "Component:Hammer_Of_Lorent":
+			comp_count += 1
+			comp_pp = float(e["pp"])
+			comp_label = str(e["label"])
+			comp_kind = str(e["model"].get("kind", ""))
+	_check("#109 Hammer Of Lorent entry count", float(comp_count), 1.0)
+	_check("#109 component pp = 1.0", comp_pp, 1.0)
+	_flag("#109 component model is a stat", comp_kind == "stat")
+	_flag("#109 component label has no raw class name", not comp_label.contains("Component:"))
+	Build.clear_item("weapon")
+	var st := StatStore.new()
+	var ctx: Dictionary = {"build": Build, "store": st, "slot": -1, "item_slot": ""}
+	# constants of the component models (pp 1.0)
+	st.add(StatMod.make(LE.LIGHTNING_RES, "added", 0.8, 0, "t"))
+	_check("#109 Urzil's Pride ManaRegen = 0.5 x lightning res", EffectModels.value(GameData.unique_component_model(10, 0), 1.0, ctx)["x"], 0.4)
+	var st2 := StatStore.new()
+	st2.add(StatMod.make(LE.MANA, "added", 300.0, 0, "t"))
+	var ctx2: Dictionary = {"build": Build, "store": st2, "slot": -1, "item_slot": ""}
+	_check("#109 Strong Mind StunAvoidance = 2 x max mana", EffectModels.value(GameData.unique_component_model(54, 0), 1.0, ctx2)["x"], 600.0)
+	# level source = the character level
+	var saved_level: int = Build.level
+	Build.level = 100
+	_check("#109 level source", EffectModels.source("level", ctx), 100.0)
+	_check("#109 Hammer Of Lorent 41:0 = 1 x level", EffectModels.value(GameData.unique_component_model(41, 0), 1.0, ctx)["x"], 100.0)
+	_check("#109 Frozen Ire 32:0 = 0.2 x level", EffectModels.value(GameData.unique_component_model(32, 0), 1.0, ctx)["x"], 20.0)
+	Build.level = 50
+	_check("#109 Frozen Ire 32:0 at level 50", EffectModels.value(GameData.unique_component_model(32, 0), 1.0, ctx)["x"], 10.0)
+	Build.level = saved_level
+	# Mourningfrost: 1 x Dexterity, only on Cold skills with Melee, Spell, Throwing or Bow
+	var st_dex := StatStore.new()
+	st_dex.add(StatMod.make(LE.DEXTERITY, "added", 150.0, 0, "t"))
+	var ctx_dex: Dictionary = {"build": Build, "store": st_dex, "slot": -1, "item_slot": ""}
+	_check("#109 Mourningfrost = 1 x Dexterity", EffectModels.value(GameData.unique_component_model(19, 0), 1.0, ctx_dex)["x"], 150.0)
+	_flag("#109 Mourningfrost applies to a Cold Spell", UniqueEffects._skill_matches(GameData.unique_component_model(19, 0), {}, LE.COLD | LE.SPELL))
+	_flag("#109 Mourningfrost not to a Cold Fire skill", not UniqueEffects._skill_matches(GameData.unique_component_model(19, 0), {}, LE.COLD | LE.FIRE))
+	# Preparation: above 65% health the Damage model holds, otherwise the leech model
+	var saved_health: String = str(Build.player_state.get("health", "full"))
+	Build.set_player_state("health", "high")
+	_flag("#109 Preparation above 65%: damage holds", EffectModels.blocked(GameData.unique_component_model(12, 0), ctx) == "")
+	_flag("#109 Preparation above 65%: leech blocked", EffectModels.blocked(GameData.unique_component_model(12, 1), ctx) != "")
+	Build.set_player_state("health", "normal")
+	_flag("#109 Preparation at normal health: damage blocked", EffectModels.blocked(GameData.unique_component_model(12, 0), ctx) != "")
+	_flag("#109 Preparation at normal health: leech holds", EffectModels.blocked(GameData.unique_component_model(12, 1), ctx) == "")
+	Build.set_player_state("health", saved_health)
+	# player flags of the Conditions tab
+	Build.set_player_state("killed_recently", false)
+	_flag("#109 Killed recently off: 70:2 and 26:0 blocked",EffectModels.blocked(GameData.unique_component_model(70, 2), ctx) != "" and EffectModels.blocked(GameData.unique_component_model(26, 0), ctx) != "")
+	Build.set_player_state("killed_recently", true)
+	_flag("#109 Killed recently on: models hold", EffectModels.blocked(GameData.unique_component_model(70, 2), ctx) == "" and EffectModels.blocked(GameData.unique_component_model(26, 0), ctx) == "")
+	Build.set_player_state("killed_recently", false)
+	Build.set_player_state("minion_killed_recently", true)
+	_flag("#109 Minions killed recently: 28:0 holds", EffectModels.blocked(GameData.unique_component_model(28, 0), ctx) == "")
+	Build.set_player_state("minion_killed_recently", false)
+	# Soulfire armour: needs 1 ignite stack on you
+	Build.set_player_state("ignite_stacks", 0)
+	_flag("#109 Soulfire armour blocked without ignite", EffectModels.blocked(GameData.unique_component_model(70, 3), ctx) != "")
+	Build.set_player_state("ignite_stacks", 2)
+	_flag("#109 Soulfire armour holds while ignited", EffectModels.blocked(GameData.unique_component_model(70, 3), ctx) == "")
+	_check("#109 Soulfire armour +1.0 increased", EffectModels.value(GameData.unique_component_model(70, 3), 1.0, ctx)["x"], 1.0)
+	Build.set_player_state("ignite_stacks", 0)
+	# Disintegrate: spell crit chance (5% base + Spell-tagged added) x (1 + increased), Melee crit ignored
+	var st3 := StatStore.new()
+	st3.add(StatMod.make(LE.CRIT_CHANCE, "added", 0.10, LE.SPELL, "t"))
+	st3.add(StatMod.make(LE.CRIT_CHANCE, "increased", 0.5, 0, "t"))
+	st3.add(StatMod.make(LE.CRIT_CHANCE, "added", 0.9, LE.MELEE, "t"))
+	var ctx3: Dictionary = {"build": Build, "store": st3, "slot": -1, "item_slot": ""}
+	_check("#114 Disintegrate more = (0.05 + 0.10) x 1.5", EffectModels.value(GameData.unique_component_model(74, 2), 1.0, ctx3)["x"], 0.225)
+	# Salt the Wound: the crit multiplier converted to Bleed / Poison effect is removed from the added crit multiplier
+	Build.set_item("gloves", {"unique": 187, "base": 4, "sub": 9, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255, 255, 255, 255]})
+	var gs: Dictionary = BuildMods.global_store(Build)
+	var eff_sp: int = GameData.sp_id("IncreasedAilmentEffect")
+	var bleed: float = gs["store"].query(eff_sp, 0, GameData.enum_value("AilmentID", "Bleed")).added
+	var poison: float = gs["store"].query(eff_sp, 0, GameData.enum_value("AilmentID", "Poison")).added
+	var cm_left: float = gs["store"].query_untagged(LE.CRIT_MULTI).added
+	_flag("#114 bleed effect > 0", bleed > 0.0)
+	_check("#114 poison effect equals bleed", poison, bleed)
+	_check("#114 all untagged added crit multi converted", cm_left, 0.0)
+	_check("#114 bleed = 0.5 x crit multi total", bleed, 0.5 * (cm_left + bleed + poison))
+	Build.clear_item("gloves")
+	# Frenzy / Haste: the value is scaled by (1 + increased effect of the ailment on you); Haste DoT taken at most -75%
+	var frenzy: int = GameData.enum_value("AilmentID", "Frenzy")
+	var haste: int = GameData.enum_value("AilmentID", "Haste")
+	var st4 := StatStore.new()
+	st4.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 0.5, 0, "t", frenzy))
+	var ctx4: Dictionary = {"build": Build, "store": st4, "slot": -1, "item_slot": ""}
+	_check("#113 Frenzy-scaled more damage taken x 1.5", EffectModels.value(GameData.unique_player_model(602), 0.12, ctx4)["x"], 0.18)
+	_check("#113 Frenzy-scaled flat melee damage x 1.5", EffectModels.value(GameData.unique_player_model(411), 20.0, ctx4)["x"], 30.0)
+	_check("#113 Frenzy-scaled area x 1.5", EffectModels.value(GameData.unique_player_model(669), 0.4, ctx4)["x"], 0.6)
+	_flag("#113 Frenzy-scaled models are applied late", EffectModels.phase(GameData.unique_player_model(602)) == "late")
+	_flag("#113 attribute models stay in the post phase", EffectModels.phase(GameData.unique_player_model(606)) == "post")
+	var st5 := StatStore.new()
+	st5.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 3.0, 0, "t", haste))
+	var ctx5: Dictionary = {"build": Build, "store": st5, "slot": -1, "item_slot": ""}
+	_check("#113 Haste DoT taken clamped at -75%", EffectModels.value(GameData.unique_player_model(275), -0.2, ctx5)["x"], -0.75)
+	var st6 := StatStore.new()
+	st6.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 0.5, 0, "t", haste))
+	var ctx6: Dictionary = {"build": Build, "store": st6, "slot": -1, "item_slot": ""}
+	_check("#113 Haste DoT taken x 1.5", EffectModels.value(GameData.unique_player_model(275), -0.2, ctx6)["x"], -0.3)
+	var st7 := StatStore.new()
+	st7.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 9.0, 0, "t", frenzy))
+	var ctx7: Dictionary = {"build": Build, "store": st7, "slot": -1, "item_slot": ""}
+	_check("#113 Frenzy effect does not scale Haste", EffectModels.value(GameData.unique_player_model(275), -0.2, ctx7)["x"], -0.2)
+	# Copies of the player's stats: Poison-tagged Damage mods, scaled by v (Skeleton Rogues, Falcon)
+	var pst := StatStore.new()
+	pst.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.POISON, "a"))
+	pst.add(StatMod.make(LE.DAMAGE, "increased", 0.3, LE.POISON | LE.SPELL, "b"))
+	pst.add(StatMod.make(LE.DAMAGE, "more", 0.1, LE.POISON, "c"))
+	pst.add(StatMod.make(LE.DAMAGE, "increased", 0.2, 0, "untagged"))
+	pst.add(StatMod.make(LE.DAMAGE, "increased", 0.4, LE.FIRE, "fire"))
+	var child := StatStore.new()
+	child.parent = pst
+	var cctx: Dictionary = {"build": Build, "store": child, "slot": 0, "item_slot": ""}
+	var copies: Array[StatMod] = EffectModels.copied_mods(GameData.unique_ability_model(120, 6), 0.5, cctx, "t")
+	_check("#117 three Poison copies", float(copies.size()), 3.0)
+	var inc_sum: float = 0.0
+	for c: StatMod in copies:
+		inc_sum += c.increased
+	_check("#117 copied increased = 0.5 x (0.5 + 0.3)", inc_sum, 0.4)
+	_check("#117 Falcon copies match the Rogues", float(EffectModels.copied_mods(GameData.unique_ability_model(727, 17), 0.5, cctx, "t").size()), 3.0)
+	# Bane of Winter: added Melee damage becomes added Spell damage (Physical kept), for Cold and Void spells
+	var bst := StatStore.new()
+	bst.add(StatMod.make(LE.DAMAGE, "added", 10.0, LE.MELEE | LE.PHYSICAL, "a"))
+	bst.add(StatMod.make(LE.DAMAGE, "added", 4.0, LE.MELEE, "b"))
+	bst.add(StatMod.make(LE.DAMAGE, "added", 6.0, LE.SPELL, "c"))
+	bst.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.MELEE, "d"))
+	var bctx: Dictionary = {"build": Build, "store": bst, "slot": 0, "item_slot": ""}
+	var bc: Array[StatMod] = EffectModels.copied_mods(GameData.unique_player_model(445), 0.4, bctx, "t")
+	_check("#122 two added copies", float(bc.size()), 2.0)
+	if bc.size() == 2:
+		_check("#122 copy 1 added 10 x 0.4", bc[0].added, 4.0)
+		_check("#122 copy 1 tags Physical|Spell", float(bc[0].tags), float(LE.PHYSICAL | LE.SPELL))
+		_check("#122 copy 2 added 4 x 0.4", bc[1].added, 1.6)
+		_check("#122 copy 2 tags Spell", float(bc[1].tags), float(LE.SPELL))
+	_flag("#122 Bane of Winter applies to a Cold Spell", UniqueEffects._skill_matches(GameData.unique_player_model(445), {}, LE.SPELL | LE.COLD))
+	_flag("#122 Bane of Winter not to a Fire Spell", not UniqueEffects._skill_matches(GameData.unique_player_model(445), {}, LE.SPELL | LE.FIRE))
+	# Runic Invocation: the roll has no Intelligence factor, the amount is 11% / 22% / 33%
+	_check("#121 one rune: 0.01 x 0.11", EffectModels.value(GameData.unique_ability_model(689, 24), 0.01, ctx)["x"], 0.0011, 0.00005)
+	_check("#121 two runes: 0.02 x 0.22", EffectModels.value(GameData.unique_ability_model(689, 25), 0.02, ctx)["x"], 0.0044, 0.00005)
+	_check("#121 three runes: 0.03 x 0.33", EffectModels.value(GameData.unique_ability_model(689, 26), 0.03, ctx)["x"], 0.0099, 0.00005)
+	# Falcon bleed chance: a fraction of the Bleed chance (untagged mods with special 0 or Bleed)
+	var ast := StatStore.new()
+	ast.add(StatMod.make(LE.AILMENT_CHANCE, "added", 0.1, 0, "any"))
+	ast.add(StatMod.make(LE.AILMENT_CHANCE, "added", 0.2, 0, "bleed", GameData.enum_value("AilmentID", "Bleed")))
+	ast.add(StatMod.make(LE.AILMENT_CHANCE, "added", 0.5, LE.MELEE, "tagged"))
+	ast.add(StatMod.make(LE.AILMENT_CHANCE, "added", 0.9, 0, "ignite", GameData.enum_value("AilmentID", "Ignite")))
+	var actx: Dictionary = {"build": Build, "store": ast, "slot": -1, "item_slot": ""}
+	_check("#118 Bleed chance = 0.1 + 0.2", EffectModels.source("ailment_chance:Bleed", actx), 0.3)
+	_check("#118 Falcon bleed fraction 0.5 x 0.3", EffectModels.value(GameData.unique_ability_model(727, 3), 0.5, actx)["x"], 0.15)
+	# Warpath axe throws: total physical damage modifier (1 + Σ inc) × Π(1 + more) − 1, untagged and Physical mods
+	var tst := StatStore.new()
+	tst.add(StatMod.make(LE.DAMAGE, "increased", 0.5, 0, "u"))
+	tst.add(StatMod.make(LE.DAMAGE, "increased", 0.5, LE.PHYSICAL, "p"))
+	tst.add(StatMod.make(LE.DAMAGE, "increased", 1.0, LE.FIRE, "f"))
+	tst.add(StatMod.make(LE.DAMAGE, "more", 0.2, 0, "m"))
+	var tctx: Dictionary = {"build": Build, "store": tst, "slot": -1, "item_slot": ""}
+	_check("#118 total physical modifier 1.4", EffectModels.source("total_modifier:Damage:1", tctx), 1.4)
+	_check("#118 axe throw speed 0.02 x 1.4 x 10", EffectModels.value(GameData.unique_ability_model(97, 3), 0.02, tctx)["x"], 0.28)
+	# Character-wide models read their inputs from the first damaging skill (input_slot); a model's own default otherwise
+	var m236: Dictionary = GameData.unique_player_model(236)
+	var base_ctx: Dictionary = {"build": Build, "store": st, "slot": -1, "item_slot": ""}
+	_check("#120 global input default 10 stacks", EffectModels.value(m236, 0.05, base_ctx)["x"], 0.5)
+	Build.set_skill_input(0, "gf_stacks", 4)
+	var ctx_in: Dictionary = {"build": Build, "store": st, "slot": -1, "item_slot": "", "input_slot": 0}
+	_check("#120 global model reads the first skill's input", EffectModels.value(m236, 0.05, ctx_in)["x"], 0.2)
+	(Build.skills[0].get("inputs", {}) as Dictionary).erase("gf_stacks")
+	var m77: Dictionary = GameData.unique_player_model(77)
+	_flag("#120 Deicide off by default", EffectModels.blocked(m77, base_ctx) != "")
+	Build.set_skill_input(0, "deicide", true)
+	_flag("#120 Deicide read from the first skill", EffectModels.blocked(m77, ctx_in) == "")
+	(Build.skills[0].get("inputs", {}) as Dictionary).erase("deicide")
+	# Close Call (DodgeRating increased 0.4 per block, the input is declared on the first skill of the bar)
+	var saved_ab: String = str(Build.skills[0].get("ability", ""))
+	Build.set_skill(0, "fi9")
+	Build.set_item("offhand", {"unique": 51, "base": 18, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255, 255, 255, 255]})
+	var cg: Dictionary = BuildMods.global_store(Build)
+	_check("#120 Close Call: one block counted (0.4)", _mods_sum(cg["store"], LE.DODGE_RATING, "Blocks in last 4 sec", true), 0.4)
+	var csk: Dictionary = BuildMods.skill_store(Build, 0, cg["store"])
+	_flag("#120 Close Call input declared on the first skill", _has_input(csk, "blocks"))
+	Build.set_skill_input(0, "blocks", 3)
+	cg = BuildMods.global_store(Build)
+	_check("#120 Close Call: 3 blocks x 0.4", _mods_sum(cg["store"], LE.DODGE_RATING, "Blocks in last 4 sec", true), 1.2)
+	(Build.skills[0].get("inputs", {}) as Dictionary).erase("blocks")
+	Build.clear_item("offhand")
+	Build.set_skill(0, saved_ab)
 
 
 ## Skill-level kinds of player-scoped unique models (trigger, param, flag) reach the skill result; fake models are
@@ -532,6 +774,74 @@ func _unique_skill_level_models() -> void:
 	CalcCache.clear()
 	Build.clear_item("amulet")
 	Build.set_skill(0, "")
+
+
+## Unique models limited to skills (skill_all / skill_flag / skill_any), game code in research/11_calc_audit.md #110-#116.
+func _unique_skill_filters() -> void:
+	var rolls: Array = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
+	var void_cleave: String = "v01cv"  # Void + Melee
+	var cinder: String = "cstri"  # Fire + Melee
+	var bow: String = "detar"  # Bow
+	var dive: String = "db992"  # Melee + Void? movement ability (countsAsMovementAbility)
+	Build.set_skill(0, void_cleave)
+	Build.set_skill(1, cinder)
+	Build.set_skill(2, bow)
+	Build.set_skill(3, dive)
+	# Eternal Eclipse (pp 161-164): added Fire|Melee damage only on a Void+Melee use, added Void|Melee only on a Fire+Melee use
+	Build.set_item("weapon", {"unique": 212, "base": 16, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": rolls})
+	var g: Dictionary = BuildMods.global_store(Build)
+	_check("Eternal Eclipse: nothing in the global store", float(_mods_with(g["store"], LE.DAMAGE, "with next")), 0.0)
+	var vc: Dictionary = BuildMods.skill_store(Build, 0, g["store"])
+	var ci: Dictionary = BuildMods.skill_store(Build, 1, g["store"])
+	var bw: Dictionary = BuildMods.skill_store(Build, 2, g["store"])
+	_check("Eternal Eclipse: Void+Melee use gets Fire|Melee", float(_mods_with(vc["store"], LE.DAMAGE, "with next", LE.FIRE | LE.MELEE)), 1.0)
+	_check("Eternal Eclipse: Void+Melee use does not get Void|Melee", float(_mods_with(vc["store"], LE.DAMAGE, "with next", LE.VOID | LE.MELEE)), 0.0)
+	_check("Eternal Eclipse: Fire+Melee use gets Void|Melee", float(_mods_with(ci["store"], LE.DAMAGE, "with next", LE.VOID | LE.MELEE)), 1.0)
+	_check("Eternal Eclipse: Fire+Melee use does not get Fire|Melee", float(_mods_with(ci["store"], LE.DAMAGE, "with next", LE.FIRE | LE.MELEE)), 0.0)
+	_check("Eternal Eclipse: bow use gets nothing", float(_mods_with(bw["store"], LE.DAMAGE, "with next")), 0.0)
+	Build.clear_item("weapon")
+	# Vaion's Chariot (pp 228): MORE damage only for a movement ability
+	Build.set_item("boots", {"unique": 264, "base": 3, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": rolls})
+	g = BuildMods.global_store(Build)
+	_check("Vaion's Chariot: movement ability gets the more damage", float(_mods_with(BuildMods.skill_store(Build, 3, g["store"])["store"], LE.DAMAGE, "next Movement")), 1.0)
+	_check("Vaion's Chariot: other skills do not", float(_mods_with(BuildMods.skill_store(Build, 0, g["store"])["store"], LE.DAMAGE, "next Movement")), 0.0)
+	Build.clear_item("boots")
+	# Gathering Fury (pp 236): attack speed with the Bow tag, 10 stacks of 5%
+	var base_bow: float = BuildMods.skill_store(Build, 2, BuildMods.global_store(Build)["store"])["store"].query(LE.ATTACK_SPEED, LE.BOW).increased
+	Build.set_item("weapon", {"unique": 271, "base": 23, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": rolls})
+	g = BuildMods.global_store(Build)
+	var inc_bow: float = g["store"].query(LE.ATTACK_SPEED, LE.BOW | LE.PHYSICAL).increased
+	var inc_melee: float = g["store"].query(LE.ATTACK_SPEED, LE.MELEE | LE.PHYSICAL).increased
+	_check("Gathering Fury: Bow skills get the attack speed", inc_bow - base_bow - inc_melee, 0.5)
+	Build.clear_item("weapon")
+	# Crystalwind (pp 506): MORE damage on a direct Bow use only
+	Build.set_item("offhand", {"unique": 378, "base": 17, "sub": 0, "implicit_rolls": [255, 255], "unique_rolls": rolls})
+	g = BuildMods.global_store(Build)
+	_check("Crystalwind: bow use", float(_mods_with(BuildMods.skill_store(Build, 2, g["store"])["store"], LE.DAMAGE, "Crystalwind")), 1.0)
+	_check("Crystalwind: non-bow use", float(_mods_with(BuildMods.skill_store(Build, 0, g["store"])["store"], LE.DAMAGE, "Crystalwind")), 0.0)
+	_check("Crystalwind: echoed bow use", float(_mods_with(BuildMods.skill_store(Build, 2, g["store"], "echo")["store"], LE.DAMAGE, "Crystalwind")), 0.0)
+	Build.clear_item("offhand")
+	# Downfall of the Righteous (pp 521): the source is the increased Damage with exactly the Curse tag
+	var st: StatStore = StatStore.new()
+	st.add(StatMod.make(LE.DAMAGE, "increased", 0.5, 0, "any"))
+	st.add(StatMod.make(LE.DAMAGE, "increased", 0.3, LE.CURSE, "curse"))
+	st.add(StatMod.make(LE.DAMAGE, "increased", 0.2, LE.CURSE | LE.SPELL, "curse spell"))
+	_check("increased_exact source", EffectModels.source("increased_exact:Damage:%d" % LE.CURSE, {"build": Build, "store": st}), 0.3)
+	# Deicide (pp 77): the buff is a MORE multiplier of 0.2
+	var deicide: StatMod = EffectModels.make_mod(GameData.unique_player_model(77), 1.0, {"build": Build, "store": st}, "Deicide")
+	_check("Deicide: increased part", deicide.increased, 0.0)
+	_check("Deicide: more part", deicide.more[0], 0.2)
+	for i in range(4):
+		Build.set_skill(i, "")
+
+
+## Mods of the store for the stat whose source contains the text (and, if given, whose tags are exactly the mask).
+func _mods_with(store: StatStore, property: int, text: String, mask: int = -1) -> int:
+	var n: int = 0
+	for mod: StatMod in store.mods_of(property):
+		if mod.source.contains(text) and (mask < 0 or mod.tags == mask):
+			n += 1
+	return n
 
 
 ## Every unique, one at a time, with all player flags on: no script errors, count modelled effects.
@@ -573,6 +883,27 @@ func _all_uniques_smoke() -> void:
 
 
 ## Passive nodes into special lists (statsWhileDualWielding, statsWithWeaponRequirements, §5.2): conditions and sources.
+## Illusory Combatant (mg-1 node 75: +2 per Int, capped by addedDodgePerIntCap): the game clamps the one dodge value
+## (CharacterMutator.UpdateDynamicStat); the cap field is not a second dodge bonus. Reaper (ac-1 node 35) has no cap field.
+func _dodge_per_int_cap() -> void:
+	Build.set_class(1)  # Mage tree mg-1
+	var saved: Dictionary = Build.passives.duplicate()
+	var model: Dictionary = FieldModels.find("CharacterMutator.addedDodgeRatingPerInt")
+	Build.passives = {75: 4}
+	for int_value: int in [30, 80, 50]:
+		var s := StatStore.new()
+		s.add(StatMod.make(LE.INTELLIGENCE, "added", float(int_value), 0, "t"))
+		var ctx: Dictionary = {"build": Build, "store": s, "slot": -1, "item_slot": ""}
+		_check("dodge per Int %d with the cap 100: min(2 * Int, 100)" % int_value, EffectModels.value(model, 2.0, ctx)["x"], minf(2.0 * int_value, 100.0))
+	_check("addedDodgePerIntCap is a passive value, not a stat", 1.0 if FieldModels.find("CharacterMutator.addedDodgePerIntCap").get("kind", "") == "param" else 0.0, 1.0)
+	Build.passives = {}
+	var s_uncapped := StatStore.new()
+	s_uncapped.add(StatMod.make(LE.INTELLIGENCE, "added", 80.0, 0, "t"))
+	var ctx_uncapped: Dictionary = {"build": Build, "store": s_uncapped, "slot": -1, "item_slot": ""}
+	_check("dodge per Int without the cap node: 2 * 80", EffectModels.value(model, 2.0, ctx_uncapped)["x"], 160.0)
+	Build.passives = saved
+
+
 func _passive_field_models() -> void:
 	Build.set_class(1)  # Mage
 	Build.set_level(100)
@@ -672,6 +1003,27 @@ func _print_sections(r: Dictionary) -> void:
 
 
 ## Sustain section (docs/ENGINE.md §8.7): a HealthLeech mod gives a nonzero leech row (research/06c §5.2).
+## #77a: HealthGain / WardGain of the skill's own hits: special 1 on every hit, 7 on melee hits, 2 once per crit; special 0 counts nothing.
+func _gain_events() -> void:
+	var st := StatStore.new()
+	st.add(StatMod.make(38, "added", 5.0, 0, "t", 1))
+	st.add(StatMod.make(38, "added", 3.0, 0, "t", 7))
+	st.add(StatMod.make(38, "added", 4.0, 0, "t", 2))
+	st.add(StatMod.make(38, "added", 2.0, 0, "t", 0))
+	st.add(StatMod.make(38, "added", 6.0, 0, "t", 6))
+	_check("gain: hit", SkillCalc.gain_by_event(st, 38, 0, 1, 0), 5.0)
+	_check("gain: melee hit", SkillCalc.gain_by_event(st, 38, 0, 7, 0), 3.0)
+	_check("gain: crit", SkillCalc.gain_by_event(st, 38, 0, 2, 0), 4.0)
+	_check("gain: block", SkillCalc.gain_by_event(st, 38, 0, 6, 0), 6.0)
+	# the hitEventTag of a node stat becomes the specialTag of SP 38/39/40 only
+	var he: Dictionary = {"kind": "added", "property": "HealthGain", "tags": "None", "hitEventTag": "Hit", "added": {"per_point": 5.0, "flat": 0}}
+	var m: StatMod = BuildMods.stat_from_effect(he, 2, "t")
+	_check("hitEventTag Hit -> special 1", float(m.special), 1.0)
+	_check("hitEventTag stat value 5 x 2 points", m.added, 10.0)
+	he["property"] = "HealthLeech"
+	_check("hitEventTag on HealthLeech stays special 0", float(BuildMods.stat_from_effect(he, 1, "t").special), 0.0)
+
+
 func _sustain() -> void:
 	Build.set_skill(0, "fi9")
 	Build.set_enemy("kind", "dummy")
@@ -911,6 +1263,8 @@ func _idol_altar() -> void:
 	_check("non-refracted idol affix unscaled", idol_total, plain)
 	_weaver_idols()
 	Build.items = saved
+	# IdolsItemContainer_UpdateStatsFromAltarMods: property 29 goes through Stats_AddedStat(0x2c)
+	_check("altar 29: healing effectiveness is an added stat", 1.0 if AltarMods.PER_IDOL[29]["kind"] == "added" else 0.0, 1.0)
 
 
 ## Weaver idols (docs/ENGINE.md §5.4.1): refracted scaling by affix kind and the altar's Weaver idol limit.
@@ -1316,11 +1670,11 @@ func _shadows_echoes_buffs() -> void:
 	EnemyAilments.enabled = false
 	var ub: Dictionary = SkillCalc.compute(Build, 0)
 	# "Only 1 Blade" writes +250% into three combo-part mutators: counted once (it was ×3.5³)
-	_check("Umbral Blades throw DPS with the combo parts counted once", _row_value(ub, "DPS vs enemy: Umbral Blades"), 68149.37, 80.0)
+	_check("Umbral Blades throw DPS with the combo parts counted once", _row_value(ub, "DPS vs enemy: Umbral Blades"), 107204.7, 110.0)  # was 68149.37: Jormun's counts the reforged third piece (3 items: x1.2 dual wield, +10 Dexterity, +0.1 crit multiplier) and Agility PP 93 adds 25% increased damage
 	# Shadow Daggers strike at 4 stacks: one strike per 4 applications of the skill's own hits
 	var daggers: float = _row_value(ub, "Damage events per second", "Shadow Daggers: ")
 	_flag("Shadow Daggers strikes counted", daggers > 0.0)
-	_check("Umbral Blades DPS with the Shadow Daggers strikes", _dps(ub), 614489.05, 700.0)
+	_check("Umbral Blades DPS with the Shadow Daggers strikes", _dps(ub), 872143.76, 900.0)  # was 614489.05: Jormun's 3 items, Agility PP 93
 	EnemyAilments.enabled = true
 	_automatic_enemy_ailments()
 	_zones()
@@ -1330,6 +1684,8 @@ func _shadows_echoes_buffs() -> void:
 	_check("increased damage of shadows (passives, idols, set, Tabi)", float(ShadowCalc.property(Build, 2)["value"]), 3.07, 0.001)
 	Build.set_player_state("shadows", 10)
 	_check("active shadows clamped to the limit", ShadowCalc.count(Build), 6.0)
+	# Net is repeated by every shadow (CreateShadowMutator.startedUsingAbility)
+	_flag("shadows imitate Net", ShadowCalc.imitates(GameData.ability_by_name("Falconer 05 Net")))
 	Build.set_player_state("shadows", 3)
 	# health / ward on shadow creation: 3 shadows × 2.61 uses/s created per second (Skiasynthesis 90, ward affixes 211)
 	_check("Umbral Blades: health on shadow creation per second", _row_value(SkillCalc.compute(Build, 0), LE.t("Health on shadow creation per second")), 704.88, 0.5)
@@ -1374,7 +1730,7 @@ func _shadows_echoes_buffs() -> void:
 	Build.skills[3] = vk_skill
 	# Volatile Reversal: cooldown recovery written into the jump and the return mutator counts once
 	EnemyAilments.enabled = false
-	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 28007.0, 30.0)  # omen idols use omenIdolAffixEffectModifier (was 27852.5); casts of the character (item properties) are built in the global store, not in the skill's (was 28122); item cooldowns that start after a cast give 1 / (icd + 1 / rate) (was 28079)
+	_check("Volatile Reversal DPS", _dps(SkillCalc.compute(Build, 2)), 1694101.45, 1700.0)  # was 43718: Time Rot takes the character damage modifier (CharacterAilmentMutator.GetAilmentDamageModifier: (speed f + 1)(Time Rot chance f + 1)(Slow chance f + 1) - 1 = x75 here, #52), earlier: cooldown recovery sums the ADDED SP 70 of gear/passives with the increased part (was 28007); omen idols use omenIdolAffixEffectModifier (was 27852.5); casts of the character (item properties) are built in the global store, not in the skill's (was 28122); item cooldowns that start after a cast give 1 / (icd + 1 / rate) (was 28079)
 	EnemyAilments.enabled = true
 
 
@@ -1449,9 +1805,9 @@ func _automatic_enemy_ailments() -> void:
 	_check("a buff set to 0 by hand survives the build code", float(bdoc["player"]["buffs"].get(GameData.ailment_id_by_name("DuskShroud"), -1.0)), 0.0)
 	for id: int in auto:
 		Build.set_enemy_ailment(id, 0.0)
-	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 614489.05, 700.0)
+	_check("all set to 0 on the Conditions tab: the plain DPS", _dps(SkillCalc.compute(Build, 0)), 872143.76, 900.0)
 	Build.clear_enemy_ailment(shred)
-	_check("one ailment back to auto: physical shred only", _dps(SkillCalc.compute(Build, 0)), 915166.7, 1000.0)
+	_check("one ailment back to auto: physical shred only", _dps(SkillCalc.compute(Build, 0)), 1280151.3, 1300.0)
 	var doc: Dictionary = BuildCodec.from_dict(JSON.parse_string(JSON.stringify(BuildCodec.to_dict(Build))))
 	_check("an explicit 0 survives the build code", float(doc["enemy"]["ailments"].get(armour, -1.0)), 0.0)
 	Build.clear_enemy_ailments()
@@ -1540,6 +1896,339 @@ func _review_damage_fixes() -> void:
 	player.add(StatMod.make(LE.DAMAGE, "increased", 0.3, LE.MINION, "minion node", 0, 9))
 	var ms: StatStore = MinionCalc.minion_store(player, {}, {}, [])
 	_check("no ability index: Minion-tagged extra mod is transferred without the tag", ms.query(LE.DAMAGE, 0).increased, 0.3)
+
+
+## Speed audit: UsingAbility.InitialiseAbilityUse (minimumUseDuration floor, cast delay floor), mutator overrides of the cast
+## (DetonatingArrow / LethalMirage / RadiantLance), the stat-kind speed nodes of speedScaler 54 skills and the weapon attack rate tag test
+## (CharacterStats.getPropertyMultiplier).
+func _speed_audit() -> void:
+	print("--- speed audit")
+	var gs := GDScript.new()
+	gs.source_code = "extends Node
+var items: Dictionary = {}
+var player_state: Dictionary = {}
+"
+	gs.reload()
+	var fake: Node = gs.new()
+	var s: Dictionary = {"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_added": 0.0, "mana_inc": 0.0, "flag_keys": [], "components": []}
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.CAST_SPEED, "added", 1.0, 0, "test"))
+	# Teleport: castDuration = 0.75 / (1 × 2 × 1.1) = 0.341 s is below minimumUseDuration 0.35 → 1 / 0.35 uses/s
+	var tp: Dictionary = {"name": "Teleport", "speedScaler": LE.CAST_SPEED, "useDuration": 0.75, "useDelay": 0.2, "speedMultiplier": 2.0,
+		"hasMinimumUseDuration": 1, "minimumUseDuration": 0.35}
+	_check("minimumUseDuration floors the cast time", float(SkillCalc._speed(null, tp, {"store": store, "tags": 0, "ab": tp}, s)["uses"]), 1.0 / 0.35)
+	# at speed 0.5 the cast time is 0.75 / 1.1 = 0.68 s, above the floor: the plain formula
+	var slow := StatStore.new()
+	slow.add(StatMod.make(LE.CAST_SPEED, "added", 0.5, 0, "test"))
+	_check("minimumUseDuration below the cast time changes nothing", float(SkillCalc._speed(null, tp, {"store": slow, "tags": 0, "ab": tp}, s)["uses"]), 1.1 / 0.75)
+	# a duration below the cast delay: castDuration = delay / speedScale + 0.01 = 0.2 / 1.1 + 0.01
+	var short_ab: Dictionary = {"speedScaler": LE.CAST_SPEED, "useDuration": 0.1, "useDelay": 0.2, "speedMultiplier": 1.0}
+	_check("cast time below the cast delay becomes delay + 0.01", float(SkillCalc._speed(null, short_ab, {"store": store, "tags": 0, "ab": short_ab}, s)["uses"]),
+		1.0 / (0.2 / 1.1 + 0.01))
+	# Detonating Arrow converted to a melee attack: DetonatingArrowMutator.getUseDuration returns 0.75 (asset 0.9)
+	var da: Dictionary = {"name": "DetonatingArrow", "speedScaler": LE.CAST_SPEED, "useDuration": 0.9, "useDelay": 0.2, "speedMultiplier": 1.0}
+	_check("Detonating Arrow: asset duration", float(SkillCalc._speed(null, da, {"store": store, "tags": 0, "ab": da}, s)["uses"]), 1.1 / 0.9)
+	s["flag_keys"] = ["Detonating Arrow becomes melee attack"]
+	_check("Detonating Arrow as melee: duration 0.75", float(SkillCalc._speed(null, da, {"store": store, "tags": 0, "ab": da}, s)["uses"]), 1.1 / 0.75)
+	# Lethal Mirage quick attack: speedScaler 2 (AttackSpeed) and duration 0.75 instead of speedScaler 54 and 1.5
+	var lm: Dictionary = {"name": "Lethal Mirage", "speedScaler": 54, "useDuration": 1.5, "useDelay": 0.15, "speedMultiplier": 1.0}
+	var atk := StatStore.new()
+	atk.add(StatMod.make(LE.ATTACK_SPEED, "added", 1.0, 0, "test"))
+	atk.add(StatMod.make(LE.ATTACK_SPEED, "increased", 0.5, 0, "test"))
+	s["flag_keys"] = []
+	_check("Lethal Mirage: speedScaler 54 ignores the stat", float(SkillCalc._speed(fake, lm, {"store": atk, "tags": LE.MELEE, "ab": lm}, s)["uses"]), 1.1 / 1.5)
+	s["flag_keys"] = ["Lethal Mirage - fast attack without invulnerability"]
+	_check("Lethal Mirage quick attack: attack speed, duration 0.75", float(SkillCalc._speed(fake, lm, {"store": atk, "tags": LE.MELEE, "ab": lm}, s)["uses"]), 1.5 * 1.1 / 0.75)
+	fake.items = {"weapon": {"base": 9, "sub": 1}}  # Broadsword, attack rate 1.16
+	_check("Lethal Mirage quick attack: × weapon attack rate", float(SkillCalc._speed(fake, lm, {"store": atk, "tags": LE.MELEE, "ab": lm}, s)["uses"]), 1.5 * 1.16 * 1.1 / 0.75)
+	# Radiant Lance placing the Reliquary: the use duration of ability 948 (SummonReliquary 0.6) instead of the spear's 0.9
+	var rl: Dictionary = {"name": "RadiantLance", "speedScaler": LE.CAST_SPEED, "useDuration": 0.9, "useDelay": 0.55, "speedMultiplier": 1.0}
+	s["flag_keys"] = []
+	s["components"] = [{"ability": "SummonReliquary", "count": 1.0, "node": "test"}]
+	_check("Radiant Lance with the Reliquary: duration 0.6", float(SkillCalc._speed(null, rl, {"store": store, "tags": 0, "ab": rl}, s)["uses"]),
+		1.1 / float(GameData.ability_by_name("SummonReliquary")["useDuration"]))
+	# speedScaler 54 skills: ShieldBashMutator.getIncreasedCastSpeed (tree value + block chance × f) and BallistaMutator.mutateUseSpeed
+	# (× (1 + Dexterity × f)) are use speed nodes, the AttackSpeed / CastSpeed stat is never asked
+	var sb: Dictionary = FieldModels.find("ShieldBashMutator.attackSpeedPerBlockChance")
+	_check("Shield Bash node is an increased use speed", 1.0 if str(sb.get("kind")) == "speed" and str(sb.get("speed")) == "increased" else 0.0, 1.0)
+	var bal: Dictionary = FieldModels.find("BallistaMutator.placementSpeedPerDexterity")
+	_check("Ballista node is a more use speed", 1.0 if str(bal.get("kind")) == "speed" and str(bal.get("speed")) == "more" else 0.0, 1.0)
+	# Dive Bomb reducedDelay scales the delay timers of the spawned ability object (DiveBombMutator.Mutate): not a use speed
+	_check("Dive Bomb reducedDelay is not a speed model", 1.0 if str(FieldModels.find("DiveBombMutator.reducedDelay").get("kind")) == "flag" else 0.0, 1.0)
+	_check("Falconry reducedDelayWithDiveBomb is not a speed model", 1.0 if str(FieldModels.find("FalconryMutator.reducedDelayWithDiveBomb").get("kind")) == "flag" else 0.0, 1.0)
+	var sb_ab: Dictionary = {"name": "ShieldBash", "speedScaler": 54, "useDuration": 1.0, "useDelay": 0.2, "speedMultiplier": 1.0}
+	s["components"] = []
+	s["use_speed_inc"] = 0.35 * 0.6  # f 0.35 per 100% block chance × 60% block
+	_check("Shield Bash: S = 1 + block-chance speed", float(SkillCalc._speed(null, sb_ab, {"store": atk, "tags": 0, "ab": sb_ab}, s)["uses"]), 1.21 * 1.1)
+	s["use_speed_inc"] = 0.0
+	# the same through the real nodes: Shield Bash node 34 (Shieldstorm, 0.5 per point) and Ballista node 18 (Agile Engineering, 0.01)
+	var g: StatStore = BuildMods.global_store(Build)["store"]
+	g.add(StatMod.make(LE.BLOCK_CHANCE, "added", 0.4, 0, "test block"))
+	g.add(StatMod.make(LE.DEXTERITY, "added", 100.0, 0, "test dexterity"))
+	Build.set_skill(0, "sb4h")
+	_check("Shield Bash without the node: no use speed", float(BuildMods.skill_store(Build, 0, g)["use_speed_inc"]), 0.0)
+	Build.skills[0]["tree"][34] = 1
+	var block: float = g.query_untagged(LE.BLOCK_CHANCE).value()
+	_check("Shield Bash Shieldstorm: use speed + 0.5 × block chance", float(BuildMods.skill_store(Build, 0, g)["use_speed_inc"]), 0.5 * block)
+	_flag("Shield Bash Shieldstorm: the block chance is not zero", block >= 0.4)
+	Build.set_skill(0, "ba1574")
+	var ba_base: float = SkillCalc.uses_per_second(Build, 0, g)
+	Build.skills[0]["tree"][18] = 1
+	var dex: float = float(EffectModels._attribute(g, LE.DEXTERITY))
+	_check("Ballista Agile Engineering: uses × (1 + 0.01 × Dexterity)", SkillCalc.uses_per_second(Build, 0, g), ba_base * (1.0 + 0.01 * dex))
+	_flag("Ballista Agile Engineering: Dexterity counted (%s)" % dex, dex >= 100.0)
+	Build.set_skill(0, "")
+	# weapon attack rate: the main hand base type decides which tag is tested (Bow with a bow, Melee otherwise)
+	fake.items = {"weapon": {"base": 23, "sub": 0}}  # Shortbow, attack rate 1.05
+	_check("bow in hand: Melee skill gets no weapon rate", SkillCalc._weapon_rate(fake, LE.MELEE), 0.0)
+	_check("bow in hand: Bow skill gets the weapon rate", SkillCalc._weapon_rate(fake, LE.BOW), 1.05)
+	_check("bow in hand: Melee + Bow skill gets the weapon rate", SkillCalc._weapon_rate(fake, LE.MELEE | LE.BOW), 1.05)
+	fake.items = {"weapon": {"base": 9, "sub": 1}}
+	_check("sword in hand: Melee skill gets the weapon rate", SkillCalc._weapon_rate(fake, LE.MELEE), 1.16)
+	_check("sword in hand: Bow skill gets none", SkillCalc._weapon_rate(fake, LE.BOW), 0.0)
+	fake.items = {"weapon": {"base": 9, "sub": 1}, "offhand": {"base": 6, "sub": 0}}  # Broadsword 1.16 + Poignard 1.14
+	_check("two weapons: the average rate", SkillCalc._weapon_rate(fake, LE.MELEE), 1.15)
+	fake.free()
+
+
+## Skill-tree conversions that are not plain base-damage swaps: Swipe Storm Claw converts only the use that finds its 3 s cooldown ready
+## (SwipeMutator.Mutate / OnMutatorUpdate), Dancing Strikes «Bleed to Poison» changes the tags and the ailment, not the hit damage
+## (DancingStrikesMutator.GetConversionType 1), Hammer Throw's Void node converts nothing (HammerThrowMutator.Mutate).
+func _skill_conversions() -> void:
+	print("--- skill conversions")
+	Build.set_enemy("kind", "dummy")
+	Build.set_skill(0, "sw43")
+	var tree: Dictionary = Build.skills[0]["tree"]
+	var plain: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Swipe: no conversion rows without nodes", _count_rows(plain, "Conversions and tags", "Physical → Lightning"), 0.0)
+	tree[9] = 1  # Storm Claw
+	var r: Dictionary = SkillCalc.compute(Build, 0)
+	var uses: float = _section_value(r, "Speed and mana", "Uses per second")
+	var cycle: float = floorf(3.0 * uses) + 1.0
+	_check("Storm Claw: one use in floor(3 s × uses/s) + 1 is converted", _section_value(r, "Conversions and tags", "Physical → Lightning"), 100.0 / cycle, 0.05)
+	_flag("Storm Claw: not every use (uses/s %.2f)" % uses, cycle > 1.0)
+	_flag("Storm Claw: the skill gets the Lightning tag, Physical stays", _tags_text(r).contains("Lightning") and _tags_text(r).contains("Physical"))
+	# a slow rate: every use finds the cooldown over
+	var slow: float = _periodic_share(0.2)
+	_check("Storm Claw: slower than the cooldown → every use", slow, 1.0)
+	_check("Storm Claw: 1 use/s → one in four", _periodic_share(1.0), 0.25)
+	tree.erase(9)
+
+	Build.set_skill(0, "dacn33")
+	var ds_tree: Dictionary = Build.skills[0]["tree"]
+	var ds_plain: Dictionary = SkillCalc.compute(Build, 0)
+	var ds_node: int = _node_by_name("dacn33", "Dancing Strikes Bleed To Poison")
+	ds_tree[ds_node] = 1
+	var ds: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Dancing Strikes Bleed to Poison: hit stays Physical (no base-damage conversion row)", _count_rows(ds, "Conversions and tags", "Physical → Poison"), 0.0)
+	_flag("Dancing Strikes Bleed to Poison: Poison tag added, Physical kept", _tags_text(ds).contains("Poison") and _tags_text(ds).contains("Physical"))
+	_flag("Dancing Strikes Bleed to Poison: Bleed → Poison ailment row", _count_rows(ds, "Conversions and tags", "Ailment: Bleed → Poison") > 0.0)
+	_check("Dancing Strikes: same base hit with and without the node", _section_value(ds, "Damage per use (before enemy)", "Total per hit (no crit)"),
+		_section_value(ds_plain, "Damage per use (before enemy)", "Total per hit (no crit)"), 0.005)
+	ds_tree.erase(ds_node)
+
+	Build.set_skill(0, "ht16aw")
+	var ht_tree: Dictionary = Build.skills[0]["tree"]
+	var ht_plain: Dictionary = SkillCalc.compute(Build, 0)
+	var ht_node: int = _node_by_name("ht16aw", "Hammer Throw Tree Void Damage In Aoe")
+	ht_tree[ht_node] = 1
+	var ht: Dictionary = SkillCalc.compute(Build, 0)
+	_check("Hammer Throw Void zone node: no Physical → Void conversion", _count_rows(ht, "Conversions and tags", "Physical → Void"), 0.0)
+	_check("Hammer Throw Void zone node: the hit is unchanged", _section_value(ht, "Damage per use (before enemy)", "Total per hit (no crit)"),
+		_section_value(ht_plain, "Damage per use (before enemy)", "Total per hit (no crit)"), 0.005)
+	ht_tree.erase(ht_node)
+
+
+## Hit-damage fixes of the audit (research/11_calc_audit.md #2, #3, #10-#16); hand-computed from the game formulas.
+func _hit_damage_fixes() -> void:
+	print("--- hit damage fixes")
+	Build.set_enemy("kind", "dummy")
+	var bleed: int = GameData.enum_value("AilmentID", "Bleed")
+	var ignite: int = GameData.enum_value("AilmentID", "Ignite")
+	# #10: the more values of one per-stack key fold to Π(1+m)−1 first, then × stacks (Stat.getMoreMultiplier, DamageEffectMoreDamagePerAilmentStack)
+	var e10: Dictionary = {"kind": "dummy", "flags": {}, "ailments": {bleed: 10.0, ignite: 1.0}}
+	var per: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.1, 0, "a", 7), StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.2, 0, "b", 7)]
+	_check("#10 per-stack SP 117: 1 + 10 × (1.1 × 1.2 − 1)", SkillCalc._condition_factor(per, e10, 0, 0, PackedStringArray()), 4.2)
+	var per115: Array[StatMod] = [StatMod.make(LE.DAMAGE_PER_AILMENT_STACK, "more", 0.01, 0, "a", bleed), StatMod.make(LE.DAMAGE_PER_AILMENT_STACK, "more", 0.02, 0, "b", bleed)]
+	_check("#10 per-stack SP 115: 1 + 10 × (1.01 × 1.02 − 1)", SkillCalc._condition_factor(per115, e10, 0, 0, PackedStringArray()), 1.302)
+	var plain: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.1, 0, "a", 5), StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.2, 0, "b", 5)]
+	_check("#10 plain condition (ignited): 1.1 × 1.2", SkillCalc._condition_factor(plain, e10, 0, 0, PackedStringArray()), 1.32)
+	# #62: a plain condition under uptime p folds its more values first: 1 + p·(Π(1+m)−1), the same fold as the per-stack keys
+	var e62: Dictionary = {"kind": "dummy", "flags": {}, "ailments": {ignite: 1.0}, "uptime": {ignite: 0.5}}
+	_check("#62 plain condition at 50% uptime: 1 + 0.5 × (1.1 × 1.2 − 1)", SkillCalc._condition_factor(plain, e62, 0, 0, PackedStringArray()), 1.16)
+	# #62: different keys (other special) stay separate factors: Ignited 50% -> 1.05, Bleeding absent -> 1.0
+	var two_keys: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.1, 0, "a", 5), StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.2, 0, "b", 19)]
+	_check("#62 different keys are separate", SkillCalc._condition_factor(two_keys, e62, 0, 0, PackedStringArray()), 1.05)
+	# #16: conditions whose handler is a plain ailment / compound / count in GlobalDamageConditionals
+	var curse_a: int = 17  # MarkedForDeath, isCurse
+	var curse_b: int = 58  # BoneCurse, isCurse
+	var brand: int = GameData.enum_value("AilmentID", "BrandOfDeception")
+	var slow: int = GameData.enum_value("AilmentID", "Slow")
+	var fear: int = GameData.enum_value("AilmentID", "Fear")
+	var frostbite: int = GameData.enum_value("AilmentID", "Frostbite")
+	var shock: int = GameData.enum_value("AilmentID", "Shock")
+	_check("#16 PerCurse: two curse ailments", Enemy.has_condition({"kind": "normal", "ailments": {curse_a: 1.0, curse_b: 1.0}}, 23), 2.0)
+	_check("#16 PerCurse: none", Enemy.has_condition({"kind": "normal", "ailments": {}}, 23), 0.0)
+	_check("#16 Branded: a brand ailment", Enemy.has_condition({"kind": "normal", "ailments": {brand: 1.0}}, 14), 1.0)
+	_check("#16 Branded boss or rare: normal enemy", Enemy.has_condition({"kind": "normal", "ailments": {brand: 1.0}}, 15), 0.0)
+	_check("#16 Branded boss or rare: rare enemy", Enemy.has_condition({"kind": "rare", "ailments": {brand: 1.0}}, 15), 1.0)
+	_check("#16 PerSlow: 3 stacks, no limit", Enemy.has_condition({"kind": "normal", "ailments": {slow: 3.0}}, 30), 3.0)
+	_check("#16 PerFrostbite: capped at 30", Enemy.has_condition({"kind": "normal", "ailments": {frostbite: 40.0}}, 38), 30.0)
+	_check("#16 PerShock: 12 stacks", Enemy.has_condition({"kind": "normal", "ailments": {shock: 12.0}}, 39), 12.0)
+	_check("#16 Feared or slowed: slowed", Enemy.has_condition({"kind": "normal", "ailments": {slow: 1.0}}, 22), 1.0)
+	_check("#16 Feared: fear ailment", Enemy.has_condition({"kind": "normal", "ailments": {fear: 1.0}}, 35), 1.0)
+	_check("#16 Boss (not rare) or moving: rare enemy standing", Enemy.has_condition({"kind": "rare", "flags": {}, "ailments": {}}, 24), 0.0)
+	_check("#16 Boss (not rare) or moving: rare enemy moving", Enemy.has_condition({"kind": "rare", "flags": {"moving": true}, "ailments": {}}, 24), 1.0)
+	_check("#16 Boss (not rare) or moving: boss", Enemy.has_condition({"kind": "boss", "flags": {}, "ailments": {}}, 24), 1.0)
+	# #16: boss or rare AND the caster's mana >= 50% (GlobalDamageConditionals case 0x28: CasterAboveManaThreshold(0.5) AND Boss(includeRares))
+	_check("#16 cond 40: rare, mana ok", Enemy.has_condition({"kind": "rare", "flags": {}, "ailments": {}}, 40, {}), 1.0)
+	_check("#16 cond 40: rare, mana below 50%", Enemy.has_condition({"kind": "rare", "flags": {}, "ailments": {}}, 40, {"low_mana": true}), 0.0)
+	_check("#16 cond 40: normal enemy", Enemy.has_condition({"kind": "normal", "flags": {}, "ailments": {}}, 40, {}), 0.0)
+	var c40: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.15, 0, "u", 40)]
+	_check("#16 cond 40 factor: boss, mana ok", SkillCalc._condition_factor(c40, {"kind": "boss", "flags": {}, "ailments": {}}, 0, 0, PackedStringArray(), {}), 1.15)
+	_check("#16 cond 40 factor: boss, low mana", SkillCalc._condition_factor(c40, {"kind": "boss", "flags": {}, "ailments": {}}, 0, 0, PackedStringArray(), {"low_mana": true}), 1.0)
+	# #11: Penetration is not filtered by the Minion mask (DamageStats.buildDamageStats), Damage is
+	var minion_mods: Array[StatMod] = [StatMod.make(LE.PENETRATION, "added", 0.1, LE.FIRE, "pen"), StatMod.make(LE.DAMAGE, "increased", 0.5, 0, "player inc")]
+	var ds11: Dictionary = SkillCalc._build_damage(_hit_ctx(minion_mods, LE.HIT | LE.SPELL | LE.MINION, LE.MINION))
+	_check("#11 penetration without the Minion tag applies to a minion ability", float(ds11["pen"][1]), 0.1)
+	_check("#11 Damage without the Minion tag does not", float(ds11["final"][0]), 100.0)
+	# #12: conditional crit chance / multiplier (SP 132 / 133) and penetration (SP 131) against a bleeding / chilled enemy
+	var chill: int = GameData.enum_value("AilmentID", "Chill")
+	var cm: Array[StatMod] = [
+		StatMod.make(LE.CONDITIONAL_CRIT_CHANCE, "more", 0.5, 0, "crit chance", 19),
+		StatMod.make(LE.CONDITIONAL_CRIT_MULTI, "added", 0.55, LE.MELEE, "crit multi", 19),
+		StatMod.make(LE.CONDITIONAL_CRIT_MULTI, "added", 0.25, LE.BOW, "bow crit multi", 19),
+		StatMod.make(LE.CONDITIONAL_PEN, "added", 0.1, LE.COLD, "cold pen", 32)]
+	Build.enemy["ailments"] = {}
+	var speed: Dictionary = {"uses": 1.0}
+	SkillCalc._vs_enemy(Build, _hit_ctx(cm, LE.HIT | LE.MELEE), SkillCalc._build_damage(_hit_ctx(cm, LE.HIT | LE.MELEE)), speed, [])
+	_check("#12 no bleed: 1 + 0.05 × (2 − 1)", float(speed["enemy_crit"]), 1.05)
+	Build.enemy["ailments"] = {bleed: 1.0}
+	speed = {"uses": 1.0}
+	SkillCalc._vs_enemy(Build, _hit_ctx(cm, LE.HIT | LE.MELEE), SkillCalc._build_damage(_hit_ctx(cm, LE.HIT | LE.MELEE)), speed, [])
+	_check("#12 bleeding: crit 5% × 1.5, multiplier 2 + 0.55 (Melee only): 1 + 0.075 × 1.55", float(speed["enemy_crit"]), 1.11625)
+	Build.enemy["ailments"] = {chill: 1.0}
+	speed = {"uses": 1.0}
+	var cold_ctx: Dictionary = _hit_ctx(cm, LE.HIT | LE.MELEE)
+	var cold_dmg: Array[float] = [0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0]
+	cold_ctx["dmg"] = cold_dmg
+	cold_ctx["base_before"] = cold_dmg
+	cold_ctx["type_bits"] = LE.COLD
+	SkillCalc._vs_enemy(Build, cold_ctx, SkillCalc._build_damage(cold_ctx), speed, [])
+	_check("#12 chilled: +10% cold penetration (100 × (1 + 0.1) at 0 resistance)", float(speed["enemy_dps"]) / float(speed["enemy_crit"]), 110.0)
+	# #12: a conditional penetration stat needs its tags above the type byte (DamageConditionalEffect.apply, Bow 0x800)
+	var pen_mods: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_PEN, "added", 0.1, LE.COLD | LE.BOW, "bow cold pen", 32)]
+	var pen_enemy: Dictionary = {"kind": "dummy", "flags": {"frozen": true}, "ailments": {}}
+	_check("#12 conditional pen needs its tags: Melee hit", float(SkillCalc._conditional_hit_stats({"src": LE.HIT | LE.MELEE, "mods": pen_mods}, pen_enemy)["pen"][2]), 0.0)
+	_check("#12 conditional pen needs its tags: Bow hit", float(SkillCalc._conditional_hit_stats({"src": LE.HIT | LE.BOW, "mods": pen_mods}, pen_enemy)["pen"][2]), 0.1)
+	# #59: crit chance on condition 40 (boss or rare while caster mana >= 50%); the Mana below 50% toggle must reach _conditional_hit_stats
+	var c40b: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_CRIT_CHANCE, "more", 0.5, 0, "cc40b", 40)]
+	var e40: Dictionary = {"kind": "rare", "flags": {}, "ailments": {}}
+	_check("#59 cond 40 crit chance, mana ok", float(SkillCalc._conditional_hit_stats({"src": LE.HIT, "mods": c40b}, e40, {})["cc_more"]), 1.5)
+	_check("#59 cond 40 crit chance, mana below 50%", float(SkillCalc._conditional_hit_stats({"src": LE.HIT, "mods": c40b}, e40, {"low_mana": true})["cc_more"]), 1.0)
+	Build.enemy["ailments"] = {}
+	# #12: super crit (Truesight Glass pp 590): Roll(min(crit chance − 1, 0.5)) adds 3.0 to the crit multiplier
+	var truesight_ctx: Dictionary = _hit_ctx([], LE.HIT | LE.MELEE, 0, 1.25, 2.0)
+	speed = {"uses": 1.0}
+	SkillCalc._vs_enemy(Build, truesight_ctx, SkillCalc._build_damage(truesight_ctx), speed, [])
+	_check("#12 crit chance 125% without Truesight Glass: 1 + 1 × (2 − 1)", float(speed["enemy_crit"]), 2.0)
+	Build.set_item("amulet", {"unique": 439, "base": 20, "sub": 8, "implicit_rolls": [255, 255], "unique_rolls": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]})
+	speed = {"uses": 1.0}
+	SkillCalc._vs_enemy(Build, truesight_ctx, SkillCalc._build_damage(truesight_ctx), speed, [])
+	_check("#12 Truesight Glass, crit chance 125%: super crit 25%, multiplier 2 + 0.25 × 3", float(speed["enemy_crit"]), 2.75)
+	Build.clear_item("amulet")
+	# #13: Healing Hands' code damage (40 Fire) has ADE 0.05 × 40 = 2.0 (setBaseDamage calcADE, isWeapon false)
+	var hh_comps: Array[Dictionary] = []
+	var hh_notes: Array[String] = []
+	SkillComponents._add_code_damage(hh_comps, Build, 0, {}, "HealingHands", GameData.get_ability("hh7pa3"), hh_notes)
+	_check("#13 Healing Hands code damage: ADE", float(hh_comps[0]["base"]["addedDamageScaling"]) if not hh_comps.is_empty() else -1.0, 2.0)
+	# #2: Stats.GetStatValue adds the health tags to the attack / cast speed query
+	var hs := StatStore.new()
+	hs.add(StatMod.make(LE.CAST_SPEED, "added", 1.0, 0, "base"))
+	hs.add(StatMod.make(LE.CAST_SPEED, "increased", 0.4, 0, "inc"))
+	hs.add(StatMod.make(LE.CAST_SPEED, "increased", 0.3, LE.LOW_LIFE, "low life"))
+	var hab: Dictionary = {"speedScaler": LE.CAST_SPEED, "useDuration": 1.0, "speedMultiplier": 1.0}
+	var hctx: Dictionary = {"store": hs, "tags": 0, "ab": hab}
+	var hspeed: Dictionary = {"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_added": 0.0, "mana_inc": 0.0}
+	_check("#2 full health: no low-life speed", float(SkillCalc._speed(Build, hab, hctx, hspeed)["uses"]), 1.4 * 1.1)
+	Build.player_state["health"] = "low"
+	_check("#2 low health: 1 + 0.4 + 0.3", float(SkillCalc._speed(Build, hab, hctx, hspeed)["uses"]), 1.7 * 1.1)
+	Build.player_state["health"] = "full"
+	# #2: the other ability queries (cooldown, channel cost, leech) take the health tags of ctx["src"] too
+	_check("#2 query tags: ability tags + the health tag", float(SkillCalc._query_tags({"tags": LE.SPELL, "src": LE.HIT | LE.SPELL | LE.LOW_LIFE})), float(LE.SPELL | LE.LOW_LIFE))
+	# #3: individual buff stacks multiply their more values ((1 + m·effect)^stacks), grouped ones are stacks × base without the effect on you
+	var bs := StatStore.new()
+	bs.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 0.5, 0, "effect", 94))
+	bs.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 1.0, 0, "effect", 35))
+	var saved_buffs: Variant = Build.player_state.get("buffs", {})
+	Build.player_state["buffs"] = {94: 4, 35: 5}
+	BuildMods._add_player_ailments(Build, bs)
+	Build.player_state["buffs"] = saved_buffs
+	_check("#3 Totem Armor ×4 with +50% effect: (1 + 0.15 × 1.5)^4", bs.query(LE.DAMAGE, 0).more, pow(1.225, 4.0), 0.001)
+	_check("#3 Totem Armor ×4: armour 0.8 × 1.5 × 4", bs.query(LE.ARMOUR, 0).increased, 4.8)
+	_check("#3 Swiftness ×5 (grouped): 5 × 1%, no effect on you", bs.query(LE.MOVESPEED, 0).increased, 0.05)
+	var bs2 := StatStore.new()
+	Build.player_state["buffs"] = {94: 4}
+	BuildMods._add_player_ailments(Build, bs2)
+	Build.player_state["buffs"] = saved_buffs
+	_check("#3 Totem Armor ×4 without effect: 1.15^4", bs2.query(LE.DAMAGE, 0).more, pow(1.15, 4.0), 0.001)
+	# #14: Sacrifice «added fire damage» is an AddedStat Fire|Spell (ADE 4) next to the Fire tag
+	Build.set_skill(0, "sf31rc")
+	var sac_tree: Dictionary = Build.skills[0]["tree"]
+	var sac_plain: Dictionary = SkillCalc.compute(Build, 0)
+	var sac_node: int = _node_by_name("sf31rc", "Sacrifice Tree Added Fire Damage")
+	sac_tree[sac_node] = 1
+	var sac: Dictionary = SkillCalc.compute(Build, 0)
+	_check("#14 Sacrifice without the node: no Fire damage", _count_rows(sac_plain, "Damage per use (before enemy)", "Fire"), 0.0)
+	_flag("#14 Sacrifice with the node: Fire damage = 4 × 6 × (1 + inc) × more", _section_value(sac, "Damage per use (before enemy)", "Fire") >= 24.0)
+	sac_tree.erase(sac_node)
+	# #15: Shurikens' conversion removes the Physical tag only at 100%
+	Build.set_skill(0, "srk21")
+	var srk_tree: Dictionary = Build.skills[0]["tree"]
+	var srk_node: int = _node_by_name("srk21", "Shurikens Added Lightning Damage")
+	srk_tree[srk_node] = 2
+	var srk_half: String = _tags_text(SkillCalc.compute(Build, 0))
+	_flag("#15 Shurikens 50%: Lightning added, Physical kept", srk_half.contains("Lightning") and srk_half.contains("Physical"))
+	srk_tree[srk_node] = 4
+	_flag("#15 Shurikens 100%: Physical removed", not _tags_text(SkillCalc.compute(Build, 0)).contains("Physical"))
+	srk_tree.erase(srk_node)
+	# #15: Fireball's conversion at 50% adds Lightning and keeps Fire (FireballMutator.getTags: 0.05 < f <= 0.95 -> tags | Lightning)
+	Build.set_skill(0, "fi9")
+	var fb15_tree: Dictionary = Build.skills[0]["tree"]
+	var fb15_node: int = _node_by_name("fi9", "Fireball Added Lightning Damage")
+	fb15_tree[fb15_node] = 1
+	var fb15_tags: String = _tags_text(SkillCalc.compute(Build, 0))
+	_flag("#15 Fireball 50%: Lightning added, Fire kept", fb15_tags.contains("Lightning") and fb15_tags.contains("Fire"))
+	fb15_tree.erase(fb15_node)
+	Build.set_skill(0, "")
+
+
+## Minimal context of SkillCalc._build_damage / _vs_enemy: 100 Physical, ADE 1.
+func _hit_ctx(mods: Array[StatMod], src: int, minion: int = 0, cc: float = 0.05, cm: float = 2.0) -> Dictionary:
+	var dmg: Array[float] = [100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	return {"dmg": dmg, "base_before": dmg, "conversion_lines": [[], [], [], [], [], [], []], "ade": 1.0, "src": src, "mods": mods,
+		"minion": minion, "hit": true, "type_bits": LE.PHYSICAL, "base": {"critChance": cc, "critMultiplier": cm, "critType": 0}}
+
+
+func _periodic_share(uses: float) -> float:
+	return 1.0 / float(SkillCalc._periodic_cycle(3.0, uses))
+
+
+func _tags_text(r: Dictionary) -> String:
+	for s: Dictionary in r["sections"]:
+		if s["title"] == "Conversions and tags":
+			for row: Dictionary in s["rows"]:
+				if row["label"] == "Resulting skill tags":
+					return str(row["text"])
+	return ""
+
+
+## Id of the node with this internal name in a skill tree.
+func _node_by_name(tree_id: String, node_name: String) -> int:
+	for node: Dictionary in GameData.get_skill_tree(tree_id).get("nodes", []):
+		if str(node.get("name", "")) == node_name:
+			return int(node.get("id", -1))
+	return -1
 
 
 ## Review fixes of the modifier collection (docs/ENGINE.md §5): omen idol affix effect, skill-scoped passives of skills that
@@ -1681,6 +2370,368 @@ func _review_mod_fixes() -> void:
 
 ## SkillCalc.compute without details (computed for real, not derived from a cached result) equals the result with
 ## details except the breakdowns; the cached results equal fresh ones.
+## Ailment fixes (research/11_calc_audit.md #45, #46, #49, #50a, #51, #52). Vectors are hand-computed from the game formulas.
+func _ailment_fixes() -> void:
+	print("--- ailment fixes")
+	# #45: share paid to a capped stack that is evicted `life` s after its creation (global ticks every 0.5 s, no early tick)
+	_check("#45 life 0.25 s of 3 s: ln(3.5/3.25)", AilmentCalc.displaced_share(0.25, 3.0), 0.074108, 0.00001)
+	_check("#45 life 0.5 s of 3 s: ln(3.5/3)", AilmentCalc.displaced_share(0.5, 3.0), 0.1541507, 0.00001)
+	_check("#45 life 2 s of 3 s: 4 ln(3.5/3)", AilmentCalc.displaced_share(2.0, 3.0), 0.6166027, 0.00001)
+	_check("#45 life 1.3 s of 4 s: 3 ln(4.5/4.2) + 2 ln(4.2/4)", AilmentCalc.displaced_share(1.3, 4.0), 0.3045591, 0.00001)
+	_check("#45 life 0.75 s of 5 s: 2 ln(5.5/5.25) + ln(5.25/5)", AilmentCalc.displaced_share(0.75, 5.0), 0.1418302, 0.00001)
+	_check("#45 life 0.1 s of 0.5 s (Pestilence): ln(1/0.9)", AilmentCalc.displaced_share(0.1, 0.5), 0.1053605, 0.00001)
+	# #46: a chance above 100% applies a max-1 ailment once per hit; an ailment with more stacks gets the chance as expected stacks
+	var blind46: int = GameData.enum_value("AilmentID", "Blind")
+	var slow46: int = GameData.enum_value("AilmentID", "Slow")
+	var notes46: Array[String] = []
+	var mods46: Array[StatMod] = [StatMod.make(LE.AILMENT_CHANCE, "added", 1.5, 0, "t", blind46), StatMod.make(LE.AILMENT_CHANCE, "added", 1.5, 0, "t", slow46)]
+	var ctx46: Dictionary = {"ab": {}, "base": {}, "tags": 0, "mods": mods46, "store": StatStore.new()}
+	var r46: Dictionary = AilmentCalc.compute(Build, ctx46, 2.0, notes46)
+	var rate46: Dictionary = {}
+	for a46: Dictionary in r46["applied"]:
+		rate46[int(a46["id"])] = float(a46["rate"])
+	_check("#46 Blind (max 1), chance 150%, 2 hits/s: 2 applications/s", float(rate46.get(blind46, -1.0)), 2.0)
+	_check("#46 Slow (max 3), chance 150%, 2 hits/s: 3 stacks/s", float(rate46.get(slow46, -1.0)), 3.0)
+	# #49: PlayerProperty 521 - more Witchfire damage = v × increased Damage with exactly the Curse tag (specialTag and extraTag 0)
+	var curse_store := StatStore.new()
+	curse_store.add(StatMod.make(LE.DAMAGE, "increased", 0.30, LE.CURSE, "exact"))
+	curse_store.add(StatMod.make(LE.DAMAGE, "increased", 0.50, LE.CURSE | LE.SPELL, "more tags"))
+	curse_store.add(StatMod.make(LE.DAMAGE, "increased", 0.20, 0, "generic"))
+	curse_store.add(StatMod.make(LE.DAMAGE, "increased", 0.90, LE.CURSE, "one ability", 0, 924))
+	var ctx49: Dictionary = {"build": Build, "store": curse_store}
+	_check("#49 increased Damage with exactly the Curse tag", EffectModels.source("increased_exact:Damage:16777216", ctx49, {}), 0.30)
+	var mod49: StatMod = EffectModels.make_mod({"kind": "stat", "stat": "Damage", "mod": "more", "ailment_only": "Witchfire",
+		"per": "increased_exact:Damage:16777216"}, 2.0, ctx49, "unique")
+	_check("#49 more Witchfire damage = 2 x 0.30", mod49.more[0], 0.6)
+	_flag("#49 the mod belongs to the Witchfire instance", mod49.ailment_only == GameData.enum_value("AilmentID", "Witchfire"))
+	# #50a / #52: Stats.GetAilmentChance: stats with an extraTag are not counted; the query tags must contain the stat's tags
+	var slow50: int = GameData.enum_value("AilmentID", "Slow")
+	var shock50: int = GameData.enum_value("AilmentID", "Shock")
+	var chance_mods: Array[StatMod] = [
+		StatMod.make(LE.AILMENT_CHANCE, "added", 0.30, LE.VOID, "slow with void", slow50),
+		StatMod.make(LE.AILMENT_CHANCE, "added", 0.10, 0, "any ailment"),
+		StatMod.make(LE.AILMENT_CHANCE, "increased", 0.50, 0, "inc"),
+		StatMod.make(LE.AILMENT_CHANCE, "added", 0.90, 0, "one ability", slow50, 924)]
+	_check("#50 Slow chance with Void skills: (0.3 + 0.1) x 1.5, ability-scoped stat ignored", AilmentCalc.stat_chance(chance_mods, slow50, LE.VOID), 0.6)
+	_check("#50 Shock chance: only the stat of any ailment", AilmentCalc.stat_chance(chance_mods, shock50, 0), 0.15)
+	_check("#50 Slow chance without the Void tag: the Void stat does not count", AilmentCalc.stat_chance(chance_mods, slow50, 0), 0.15)
+	var speed52 := StatStore.new()
+	speed52.add(StatMod.make(LE.ATTACK_SPEED, "increased", 0.30, 0, "all attacks"))
+	speed52.add(StatMod.make(LE.ATTACK_SPEED, "increased", 0.20, LE.MELEE, "melee"))
+	speed52.add(StatMod.make(LE.CAST_SPEED, "increased", 0.40, 0, "cast"))
+	_check("#52 lowest of melee 50% / throwing 30% / cast 40%", AilmentCalc.lowest_speed_increase(speed52, 0), 0.30)
+	var slow52 := StatStore.new()
+	slow52.add(StatMod.make(LE.ATTACK_SPEED, "increased", -0.10, 0, "slowed attacks"))
+	_check("#52 never below 0", AilmentCalc.lowest_speed_increase(slow52, 0), 0.0)
+	# #51: Individual buff ailments: each stack is a Stat × m, m = (1 + boss penalty) × (1 + ailment effect); the more values of the stacks multiply
+	var chill51: int = GameData.enum_value("AilmentID", "Chill")
+	var shred51: int = GameData.ailment_id_by_name("ArmourShred")
+	var e51: Dictionary = {"kind": "dummy", "res": [0, 0, 0, 0, 0, 0, 0], "armour": 0, "flags": {}, "ailments": {chill51: 3.0, shred51: 2.0}}
+	var s51: StatStore = Enemy.store(e51)
+	_check("#51 Chill x3: attack speed (1 - 0.12)^3", s51.query(LE.ATTACK_SPEED).more, 0.681472, 0.00001)
+	_check("#51 Armour Shred x2 without effect: 200 negative armour", s51.query(LE.NEG_ARMOUR).added, 200.0)
+	e51["ailment_effect"] = {chill51: 0.5, shred51: 0.5}
+	s51 = Enemy.store(e51)
+	_check("#51 Chill x3 with +50% ailment effect: (1 - 0.12 x 1.5)^3", s51.query(LE.ATTACK_SPEED).more, 0.551368, 0.00001)
+	_check("#51 Armour Shred x2 with +50% effect: 100 x 2 x 1.5", s51.query(LE.NEG_ARMOUR).added, 300.0)
+	var boss51: Dictionary = {"kind": "boss", "res": [0, 0, 0, 0, 0, 0, 0], "armour": 0, "flags": {}, "ailments": {chill51: 3.0}}
+	_check("#51 Chill x3 on a boss (moreBuffEffectAgainstBosses -50%): (1 - 0.06)^3", Enemy.store(boss51).query(LE.ATTACK_SPEED).more, 0.830584, 0.00001)
+	boss51["ailment_effect"] = {chill51: 0.5}
+	_check("#51 Chill x3 on a boss with +50% effect: (1 - 0.12 x 0.5 x 1.5)^3", Enemy.store(boss51).query(LE.ATTACK_SPEED).more, 0.753571, 0.00001)
+	var eff51: Dictionary = EnemyAilments.effective({"kind": "dummy", "ailments": {}}, {shred51: {"stacks": 2.0, "uptime": 1.0, "effect": 0.25}})
+	_check("#51 effective() keeps the average effect", float(eff51["ailment_effect"][shred51]), 0.25)
+
+
+## Buff group (SerpentStrike venom, buffs on me, stack caps, presence conditions, aura frequency, sacrifice, symbols of hope).
+func _buff_group_fixes() -> void:
+	print("--- buff group fixes")
+	var poison: int = GameData.enum_value("AilmentID", "Poison")
+	var ctx: Dictionary = {"build": Build, "store": StatStore.new(), "slot": -1, "item_slot": ""}
+	var flags_saved: Dictionary = Build.enemy.get("flags", {}).duplicate()
+	var ail_saved: Dictionary = Build.enemy.get("ailments", {}).duplicate()
+	var had_uptime: bool = Build.enemy.has("uptime")
+	var uptime_saved: Dictionary = Build.enemy.get("uptime", {}).duplicate()
+	# #95: Serpent Venom poison bonus, only while the enemy is not on high health (the Inverter of HighHealthConditional)
+	var m95: Dictionary = FieldModels.find("SerpentStrikeMutator.moreSerpentVenomDamagePerPoison")
+	Build.enemy["flags"] = {"high_health": true, "full_health": true}
+	_flag("#95 poison bonus off on a high-health enemy", EffectModels.blocked(m95, ctx) != "")
+	Build.enemy["flags"] = {"high_health": false, "full_health": false}
+	_flag("#95 poison bonus on below 65% health", EffectModels.blocked(m95, ctx) == "")
+	Build.enemy["ailments"] = {poison: 12.0}
+	_check("#95 12 poison stacks x 0.01", EffectModels.value(m95, 0.01, ctx)["x"], 0.12)
+	Build.enemy["ailments"] = {poison: 150.0}
+	_check("#95 stacks capped at 100 (f x 100)", EffectModels.value(m95, 0.01, ctx)["x"], 1.0)
+	var mod95: StatMod = EffectModels.make_mod(m95, 0.01, ctx, "t")
+	_check("#95 mod.more[0]", mod95.more[0], 1.0)
+	_flag("#95 belongs to the SerpentVenom instance", mod95.ailment_only == GameData.enum_value("AilmentID", "SerpentVenom"))
+	_check("#95 not an IncreasedAilmentEffect (added) mod", mod95.added, 0.0)
+	var vs: StatStore = StatStore.new()
+	vs.add(StatMod.make(LE.VITALITY, "added", 100.0, 0, "vit"))
+	_check("#95 Vitality 100 x 0.02 = +200% venom", EffectModels.value(FieldModels.find("SerpentStrikeMutator.moreSerpentVenomDamagePerVitality"), 0.02, {"build": Build, "store": vs, "slot": -1, "item_slot": ""})["x"], 2.0)
+	# #97: buffs on the player, Individual stacks: (1 + m × effect)^stacks, added linear; grouped: stacks × base
+	var ind: Dictionary = {"buffScalingType": 0}
+	var grp: Dictionary = {"buffScalingType": 1}
+	var m10: StatMod = StatMod.make(LE.DAMAGE, "more", 0.10, 0, "t")
+	_check("#97 Individual x5 stacks of +10% more: 1.1^5 - 1", BuildMods._stacked_buff(m10, ind, 1.0, 5.0).more[0], 0.61051, 0.00001)
+	_check("#97 Individual x5 with effect 1.5: 1.15^5 - 1", BuildMods._stacked_buff(m10, ind, 1.5, 5.0).more[0], 1.0113572, 0.00001)
+	var m15: StatMod = StatMod.make(LE.DAMAGE, "more", 0.15, 0, "t")
+	_check("#97 Totem Armor 4 x 15% more: 1.15^4 - 1", BuildMods._stacked_buff(m15, ind, 1.0, 4.0).more[0], 0.74900625, 0.00001)
+	var mneg: StatMod = StatMod.make(LE.DAMAGE_TAKEN, "more", -0.05, 0, "t")
+	_check("#97 Crimson Shroud 3 x -5%: 0.95^3 - 1", BuildMods._stacked_buff(mneg, ind, 1.0, 3.0).more[0], -0.142625, 0.00001)
+	_check("#97 Individual added is linear: 10 x 3 stacks x effect 1.2", BuildMods._stacked_buff(StatMod.make(LE.ARMOUR, "added", 10.0, 0, "t"), ind, 1.2, 3.0).added, 36.0, 0.0001)
+	_check("#97 grouped ailment: stacks x base, effect ignored", BuildMods._stacked_buff(m10, grp, 1.0, 5.0).more[0], 0.5, 0.00001)
+	# #98: holder_only (DamageConditionalEffect of the skill's DamageStatsHolder) is kept by scaled() and set by the field model
+	var hold98: StatMod = StatMod.make(LE.DAMAGE, "more", 0.5, 0, "holder")
+	hold98.holder_only = true
+	_flag("#98 StatMod.scaled keeps holder_only", hold98.scaled(2.0).holder_only)
+	_flag("#98 Dancing Strikes poison more is holder_only", EffectModels.make_mod(FieldModels.find("DancingStrikesMutator.moreMeleeDamagePerPoisonOnTarget"), 0.03, ctx, "t").holder_only)
+	_flag("#98 Nova ignited more is holder_only (NovaMutator.Mutate adds a DamageConditionalEffect to the holder)", EffectModels.make_mod(FieldModels.find("NovaMutator.moreDamageAgainstIgnited"), 0.1, ctx, "t").holder_only)
+	# #99: stack caps in source units (the cap of the node divided by its per-stack value)
+	Build.enemy["ailments"] = {poison: 20.0}
+	_check("#99 Serpent 3 points, 20 stacks: 0.03 x 12", EffectModels.value(FieldModels.find("SerpentStrikeMutator.moreMeleeDamagePerPoisonOnTarget"), 0.03, ctx)["x"], 0.36)
+	Build.enemy["ailments"] = {poison: 5.0}
+	_check("#99 Serpent 3 points, 5 stacks: 0.03 x 5", EffectModels.value(FieldModels.find("SerpentStrikeMutator.moreMeleeDamagePerPoisonOnTarget"), 0.03, ctx)["x"], 0.15)
+	Build.enemy["ailments"] = {poison: 50.0}
+	_check("#99 Dancing 2 points: 0.06 x 20", EffectModels.value(FieldModels.find("DancingStrikesMutator.moreMeleeDamagePerPoisonOnTarget"), 0.06, ctx)["x"], 1.2)
+	var msh: Dictionary = FieldModels.find("ShurikensMutator.moreHitDamagePerPoisonOrBleedOnTarget").duplicate(true)
+	msh["input"]["default"] = 30
+	_check("#99 Shurikens 3 points, 30 stacks: 0.06 x 15", EffectModels.value(msh, 0.06, ctx)["x"], 0.9)
+	var mci: Dictionary = FieldModels.find("CinderStrikeMutator.addedBaseFireDamagePerIgniteRecently").duplicate(true)
+	mci["input"]["default"] = 10
+	_check("#99 Cinder 4 points, 10 targets: 12 x 3", EffectModels.value(mci, 12.0, ctx)["x"], 36.0)
+	var mfl: Dictionary = FieldModels.find("FlayMutator.meleeDamagePerXHealthConsumed").duplicate(true)
+	mfl["input"]["default"] = 90
+	_check("#99 Flay 2 points, 90 health: 2 x 90 / 30", EffectModels.value(mfl, 2.0, ctx)["x"], 6.0)
+	mfl["input"]["default"] = 1000
+	_check("#99 Flay capped at 360 consumed: 2 x 360 / 30", EffectModels.value(mfl, 2.0, ctx)["x"], 24.0)
+	Build.enemy["ailments"] = {GameData.enum_value("AilmentID", "ArmourShred"): 20.0}
+	_check("#99 Glyph: 14 stacks x 2%", EffectModels.value(FieldModels.find("GlyphOfDominionMutator.moreDoTPerArmorShredUpTo14Buff"), 0.02, ctx)["x"], 0.28)
+	_check("#99 Runebolt Fire: 14 x 0.5%", EffectModels.value(FieldModels.find("RuneboltFireMutator.moreElemenetalDamagePerRuneweaveStackPerArmorShredOnTarget"), 0.005, ctx)["x"], 0.07)
+	# #103: AuraOfDecay increased ailment frequency divides the zone interval by 1 + f
+	_check("#103 interval 0.25, f 0.5", AilmentCalc.zone_interval(0.25, 0.5), 0.1666667, 0.000001)
+	_check("#103 interval 0.25, f 1", AilmentCalc.zone_interval(0.25, 1.0), 0.125, 0.000001)
+	_check("#103 f 0 keeps the interval", AilmentCalc.zone_interval(0.25, 0.0), 0.25, 0.000001)
+	_check("#103 f <= -1 counts as -0.99", AilmentCalc.zone_interval(0.25, -1.5), 25.0, 0.0001)
+	_flag("#103 the field model feeds the key ailment_frequency", str(FieldModels.find("AuraOfDecayMutator.increasedAilmentFrequency").get("param", "")) == "ailment_frequency")
+	# #104: Sacrifice DoT buff is a more (Stats.MoreStat), not an increased
+	var mod104: StatMod = EffectModels.make_mod(FieldModels.find("SacrificeMutator.moreDotDamageOnCast"), 0.4, ctx, "t")
+	_check("#104 more value", mod104.more[0], 0.4)
+	_check("#104 not in the increased bucket", mod104.increased, 0.0)
+	_check("#104 DoT tag kept", float(mod104.tags), float(LE.DOT))
+	# #105: a stat model with an ailment condition scales by the presence (uptime); other models keep the 50% on/off rule
+	var ign: int = GameData.enum_value("AilmentID", "Ignite")
+	var shk: int = GameData.enum_value("AilmentID", "Shock")
+	Build.enemy["ailments"] = {ign: 2.0, shk: 1.0}
+	Build.enemy["uptime"] = {ign: 0.4, shk: 0.5}
+	var m1: Dictionary = {"kind": "stat", "stat": "Damage", "mod": "more", "when": ["enemy:Ignite"]}
+	var m2: Dictionary = {"kind": "stat", "stat": "Damage", "mod": "more", "when": ["enemy_any:Ignite|Shock"]}
+	var m3: Dictionary = {"kind": "trigger", "ability": "x", "on": "hit", "when": ["enemy:Ignite"]}
+	_check("#105 presence factor, uptime 40%", EffectModels.presence_factor(m1, ctx), 0.4)
+	_check("#105 more 0.3 vs ignited 40% of the time: 0.12", EffectModels.value(m1, 0.3, ctx)["x"], 0.12)
+	_flag("#105 counted (not blocked) at 40%", EffectModels.blocked(m1, ctx) == "")
+	_check("#105 enemy_any: 1 - 0.6 x 0.5 = 0.7", EffectModels.presence_factor(m2, ctx), 0.7)
+	_check("#105 enemy_any value 0.3 x 0.7", EffectModels.value(m2, 0.3, ctx)["x"], 0.21)
+	_check("#105 non-stat model: factor 1", EffectModels.presence_factor(m3, ctx), 1.0)
+	_flag("#105 non-stat model keeps the 50% rule (40% blocked)", EffectModels.blocked(m3, ctx) != "")
+	Build.enemy["uptime"] = {ign: 0.0}
+	_flag("#105 uptime 0 blocks the stat model", EffectModels.blocked(m1, ctx) != "")
+	Build.enemy["uptime"] = {ign: 1.0}
+	_check("#105 full uptime keeps the value", EffectModels.value(m1, 0.3, ctx)["x"], 0.3)
+	# #108: Symbols of Hope activation: no damage-taken reduction with the Divine Flare node; AbilityProperty 9 weakens it
+	_check("#108 AP9 0 -> factor 1", BuffSkills.less_factor(0.0), 1.0)
+	_check("#108 AP9 -0.2 -> factor 1", BuffSkills.less_factor(-0.2), 1.0)
+	_check("#108 AP9 0.4 -> factor 0.6", BuffSkills.less_factor(0.4), 0.6)
+	_check("#108 AP9 1.5 -> factor -0.5 (game: 1 - f)", BuffSkills.less_factor(1.5), -0.5)
+	_check("#108 scaled activation mod: -0.1 x 0.6", StatMod.make(LE.DAMAGE_TAKEN, "more", -0.1, 0, "t").scaled(BuffSkills.less_factor(0.4)).more[0], -0.06, 0.00001)
+	Build.set_class(2)
+	Build.set_level(100)
+	Build.set_skill(0, "si4lgl")
+	Build.set_skill_input(0, "sigils", 2.0)
+	Build.set_skill_input(0, "sigils_active_use", true)
+	var sigils108: String = "Skill \"Symbols of Hope\" (buff)"
+	var g108: Dictionary = BuildMods.global_store(Build)
+	_check("#108 activation without the node: -0.05 x 2", _mods_more_sum(g108["store"], LE.DAMAGE_TAKEN, sigils108), -0.1)
+	Build.skills[0]["tree"][17] = 1  # Sigils Of Hope AOE On Cast: canCastDivineFlare
+	g108 = BuildMods.global_store(Build)
+	_check("#108 Divine Flare allocated: no damage-taken reduction on activation", _mods_more_sum(g108["store"], LE.DAMAGE_TAKEN, sigils108), 0.0)
+	Build.skills[0]["tree"].erase(17)
+	Build.skills[0].erase("inputs")
+	Build.set_skill(0, "")
+	Build.set_class(1)
+	Build.set_level(100)
+
+	Build.enemy["flags"] = flags_saved
+	Build.enemy["ailments"] = ail_saved
+	if had_uptime:
+		Build.enemy["uptime"] = uptime_saved
+	else:
+		Build.enemy.erase("uptime")
+
+
+## Model fixes of the passives and sets group (#126 #128 #130-#138): hand-computed from the game formulas, not run yet.
+func _passive_set_fixes() -> void:
+	print("--- passive and set fixes")
+	var saved_class: int = Build.class_id
+	var saved_items: Dictionary = Build.items.duplicate(true)
+	var saved_passives: Dictionary = Build.passives.duplicate(true)
+	# #126 Archmage adaptive spell damage: x0 below 300 max mana, x1 from 300, x2 from 1000 (times the points)
+	var m126: Dictionary = FieldModels.find("CharacterMutator.adaptiveSpellDamageFromMaxMana")
+	for case126: Array in [[299, 0.0], [300, 5.0], [999, 5.0], [1000, 10.0]]:
+		var mod126: StatMod = EffectModels.make_mod(m126, 5.0, {"build": Build, "store": _added_store(LE.MANA, float(case126[0]))}, "t")
+		_check("#126 max mana %d: Spell damage added" % int(case126[0]), mod126.added, float(case126[1]))
+	var mod126_one: StatMod = EffectModels.make_mod(m126, 5.0, {"build": Build, "store": _added_store(LE.MANA, 300.0)}, "t")
+	_flag("#126 the mod is Damage tagged Spell", mod126_one.property == LE.DAMAGE and mod126_one.tags == LE.SPELL)
+	# #131 more Void damage doubled below 30% block chance (value of the block row, 2 below 0.3, 1 from 0.3)
+	var m131: Dictionary = FieldModels.find("CharacterMutator.moreVoidDamageDoubledWithUnder30Block")
+	_check("#131 block 25%: more Void damage 0.2", EffectModels.make_mod(m131, 0.1, {"build": Build, "store": _added_store(LE.BLOCK_CHANCE, 0.25)}, "t").more[0], 0.2)
+	_check("#131 block 30%: more Void damage 0.1", EffectModels.make_mod(m131, 0.1, {"build": Build, "store": _added_store(LE.BLOCK_CHANCE, 0.3)}, "t").more[0], 0.1)
+	_check("#131 no block: more Void damage 0.2", EffectModels.make_mod(m131, 0.1, {"build": Build, "store": StatStore.new()}, "t").more[0], 0.2)
+	# #138 more damage per attack mana cost: value x the skill's mana cost, untagged, for Melee (or Throwing) skills
+	var m138: Dictionary = FieldModels.find("CharacterMutator.moreDamagePerMeleeAttackCost")
+	var ctx138: Dictionary = {"build": Build, "store": StatStore.new(), "mana_cost": 20.0}
+	_flag("#138 cost models are applied per skill", EffectModels.phase(m138) == "skill")
+	_check("#138 melee, cost 20 x 0.005: more 0.1", EffectModels.make_mod(m138, 0.005, ctx138, "t").more[0], 0.1)
+	var m138_throw: Dictionary = FieldModels.find("CharacterMutator.moreDamagePerThrowingAttackCost")
+	_check("#138 throwing, cost 20 x 0.005: more 0.1", EffectModels.make_mod(m138_throw, 0.005, ctx138, "t").more[0], 0.1)
+	# #132 Flame Drinker: more damage for Melee skills with a mana cost of at least 10
+	var m132: Dictionary = FieldModels.find("CharacterMutator.moreDamageWithHighCostMeleeAttacks")
+	_flag("#132 cost 9.99 does not apply", EffectModels.blocked(m132, {"build": Build, "store": StatStore.new(), "mana_cost": 9.99, "v": 0.03}) != "")
+	var ctx132: Dictionary = {"build": Build, "store": StatStore.new(), "mana_cost": 10.0, "v": 0.03}
+	_flag("#132 cost 10 applies", EffectModels.blocked(m132, ctx132) == "")
+	var mod132: StatMod = EffectModels.make_mod(m132, 0.03, ctx132, "t")
+	_check("#132 more 0.03", mod132.more[0], 0.03)
+	_flag("#132 untagged Damage", mod132.tags == 0 and mod132.property == LE.DAMAGE)
+	# #133 minion penetration from over-capped resistance: one stat per type, each from its own resistance
+	var m133: Dictionary = FieldModels.find("CharacterMutator.minionPenetrationPer5PercentOvercappedResistanceForNecroticOrEle")
+	var store133 := StatStore.new()
+	store133.add(StatMod.make(LE.FIRE_RES, "added", 1.25, 0, "t"))
+	var mods133: Array[StatMod] = EffectModels.make_mods(m133, 0.05, {"build": Build, "store": store133}, "t")
+	_check("#133 four penetration mods", float(mods133.size()), 4.0)
+	_check("#133 fire overcap 0.5: 0.05 x 0.5 x 20", mods133[1].added, 0.5)
+	_flag("#133 the fire mod is tagged Fire", mods133[1].tags == LE.FIRE)
+	_check("#133 necrotic without overcap: 0", mods133[0].added, 0.0)
+	# #134 Shift: the bleed buff gives IncreasedAilmentDuration (42) and IncreasedAilmentEffect (43), both for Bleed
+	var m134: Dictionary = FieldModels.find("CharacterMutator.bleedEffectAndDurationForNextAttackFromShift")
+	var mods134: Array[StatMod] = EffectModels.make_mods(m134, 0.25, {"build": Build, "store": StatStore.new()}, "t")
+	_check("#134 two mods: duration and effect", float(mods134.size()), 2.0)
+	_flag("#134 properties 42 and 43", mods134[0].property == 42 and mods134[1].property == 43)
+	_check("#134 both 0.25", mods134[0].added + mods134[1].added, 0.5)
+	_flag("#134 special Bleed", mods134[1].special == GameData.enum_value("AilmentID", "Bleed"))
+	# #137 stack counts are capped by the maximum stack fields
+	var cap_ctx: Dictionary = {"build": Build, "store": StatStore.new()}
+	Build.set_class(1)
+	Build.passives = {13: 3}
+	_check("#137 momentum cap = 3 allocated points", EffectModels.source_cap(FieldModels.find("CharacterMutator.arcaneMomentumStatsPerStack"), cap_ctx), 3.0)
+	_check("#137 arcane shield cap 4", EffectModels.source_cap(FieldModels.find("CharacterMutator.arcaneShieldStats"), cap_ctx), 4.0)
+	_check("#137 blade conduit cap 6", EffectModels.source_cap(FieldModels.find("CharacterMutator.incManaRegenPerBladeConduit"), cap_ctx), 6.0)
+	_flag("#137 no cap without a cap field", is_inf(EffectModels.source_cap(FieldModels.find("CharacterMutator.statsPerMastery1Level"), cap_ctx)))
+	# #136 Void Corruption: the source is the points spent in mastery 1 (Sentinel tree, node 56)
+	Build.set_class(2)
+	Build.passives = {56: 8}
+	_check("#136 points in mastery 1: 8", float(Build.points_in_mastery(1)), 8.0)
+	_check("#136 mastery_points:1 source", EffectModels.source("mastery_points:1", {"build": Build, "store": StatStore.new()}), 8.0)
+	# #128 passives and set bonuses: Agility (Rogue node 8, PP 93 0.2 per point) reaches the planner
+	Build.set_class(4)
+	Build.passives = {8: 5}
+	var agility_pp: float = -1.0
+	for e128: Dictionary in UniqueEffects.entries(Build):
+		if str(e128["effect"].get("source", "")) == "PassivePlayerProperty" and int(e128["effect"].get("ppIndex", -1)) == 93:
+			agility_pp = float(e128["pp"])
+	_check("#128 Agility x5: PP 93 value 1.0", agility_pp, 1.0)
+	# #128 PP models of passives: the value is the stat of the game formula (attributes, resistances, weapons)
+	var s146: StatStore = _added_store(LE.INTELLIGENCE, 100.0)
+	var m146: StatMod = _pp_make_mod(146, 1.0, s146)
+	_check("#128 PP 146 Int 100 x 0.5: Spell Lightning added 50", m146.added, 50.0)
+	_flag("#128 PP 146 tags Spell Lightning", m146.tags == (LE.SPELL | LE.LIGHTNING))
+	_check("#128 PP 260 Int 40, 0.03: increased 1.2", _pp_make_mod(260, 0.03, _added_store(LE.INTELLIGENCE, 40.0)).increased, 1.2)
+	_check("#128 PP 305 Int 60, 0.01: added 0.1", _pp_make_mod(305, 0.01, _added_store(LE.INTELLIGENCE, 60.0)).added, 0.1, 0.0001)
+	_check("#128 PP 420 Str 30, 0.01: added 0.1", _pp_make_mod(420, 0.01, _added_store(LE.STRENGTH, 30.0)).added, 0.1, 0.0001)
+	_check("#128 PP 421 Att 20, 0.02: added 0.08", _pp_make_mod(421, 0.02, _added_store(LE.ATTUNEMENT, 20.0)).added, 0.08, 0.0001)
+	_check("#128 PP 427 Dex 50, 0.08: increased 4", _pp_make_mod(427, 0.08, _added_store(LE.DEXTERITY, 50.0)).increased, 4.0)
+	_check("#128 PP 439 Dex 50, 0.01: added 0.1", _pp_make_mod(439, 0.01, _added_store(LE.DEXTERITY, 50.0)).added, 0.1, 0.0001)
+	_check("#128 PP 442 Int 45, 0.01: added 0.03", _pp_make_mod(442, 0.01, _added_store(LE.INTELLIGENCE, 45.0)).added, 0.03, 0.0001)
+	_check("#128 PP 689 Str 30, 0.01: Bleed chance 0.3", _pp_make_mod(689, 0.01, _added_store(LE.STRENGTH, 30.0)).added, 0.3, 0.0001)
+	_check("#128 PP 690 Att 20, 0.01: Ignite chance 0.2", _pp_make_mod(690, 0.01, _added_store(LE.ATTUNEMENT, 20.0)).added, 0.2, 0.0001)
+	_check("#128 PP 487 Str 40, 0.005: fire res shred 0.2", _pp_make_mod(487, 0.005, _added_store(LE.STRENGTH, 40.0)).added, 0.2, 0.0001)
+	_check("#128 PP 195 fire res 0.75, 0.01: Poison chance 0.75", _pp_make_mod(195, 0.01, _added_store(LE.FIRE_RES, 0.75)).added, 0.75, 0.0001)
+	_check("#128 PP 662 poison res 0.75, 1.0: Fire damage added 15", _pp_make_mod(662, 1.0, _added_store(LE.POISON_RES, 0.75)).added, 15.0, 0.0001)
+	var s483 := StatStore.new()
+	s483.add(StatMod.make(LE.FIRE_RES, "added", 0.5, 0, "t"))
+	s483.add(StatMod.make(LE.COLD_RES, "added", 0.5, 0, "t"))
+	s483.add(StatMod.make(LE.LIGHTNING_RES, "added", 0.25, 0, "t"))
+	_check("#128 PP 483 elemental res 1.25, 0.5: endurance threshold 62.5", _pp_make_mod(483, 0.5, s483).added, 62.5, 0.0001)
+	_check("#128 PP 196 health regen 100, 0.04: increased 0.4", _pp_make_mod(196, 0.04, _added_store(GameData.sp_id("HealthRegen"), 100.0)).increased, 0.4, 0.0001)
+	var s488 := StatStore.new()
+	var sp_crit_multi: int = GameData.sp_id("CriticalMultiplier")
+	s488.add(StatMod.make(sp_crit_multi, "added", 0.5, 0, "t"))
+	s488.add(StatMod.make(sp_crit_multi, "added", 0.5, LE.LIGHTNING, "t"))
+	s488.add(StatMod.make(sp_crit_multi, "added", 0.5, LE.FIRE, "t"))
+	_check("#128 PP 488 lightning crit multi 1.0 x 0.5: more 0.5", _pp_make_mod(488, 0.5, s488).more[0], 0.5, 0.0001)
+	_check("#128 PP 489 Increased Healing 1.0, 0.01: Fire penetration 0.01", _pp_make_mod(489, 0.01, _added_store(GameData.sp_id("IncreasedHealing"), 1.0)).added, 0.01, 0.0001)
+	var s385 := StatStore.new()
+	s385.add(StatMod.make(LE.EFFECT_OF_AILMENT_ON_YOU, "increased", 0.5, 0, "t", GameData.enum_value("AilmentID", "Haste")))
+	_check("#128 PP 385 Haste effect +50%, 0.01: more 0.015", _pp_make_mod(385, 0.01, s385).more[0], 0.015, 0.0001)
+	var ctx106: Dictionary = {"build": Build, "store": StatStore.new(), "mana_cost": 30.0}
+	_check("#128 PP 106 cost 30, 0.1: more 0.03 (bow)", EffectModels.make_mod(GameData.unique_player_model(106), 0.1, ctx106, "t").more[0], 0.03, 0.0001)
+	# #128 / #130 weapons: swords and daggers counted from the weapon and offhand base types
+	Build.items = {"weapon": _test_gear(9), "offhand": _test_gear(9)}
+	_check("#128 PP 94 two swords, 0.08: crit increased 0.16", _pp_make_mod(94, 0.08, StatStore.new()).increased, 0.16, 0.0001)
+	_check("#128 PP 98 two swords, 0.05: Bleed chance 0.1", _pp_make_mod(98, 0.05, StatStore.new()).added, 0.1, 0.0001)
+	Build.items = {"weapon": _test_gear(6), "offhand": _test_gear(6)}
+	_check("#128 PP 99 two daggers, 0.05: Poison chance 0.1", _pp_make_mod(99, 0.05, StatStore.new()).added, 0.1, 0.0001)
+	_check("#128 PP 95 two daggers, 0.04: crit increased 0.08", _pp_make_mod(95, 0.04, StatStore.new()).increased, 0.08, 0.0001)
+	Build.items = {"weapon": _test_gear(5)}
+	var m171: Array[StatMod] = EffectModels.make_mods(GameData.unique_player_model(171), 0.06, {"build": Build, "store": StatStore.new()}, "t")
+	_check("#128 PP 171 axe: attack and cast speed mods", float(m171.size()), 2.0)
+	_check("#128 PP 171 axe: increased 0.06", m171[0].increased, 0.06, 0.0001)
+	_flag("#128 PP 171 gear_any holds with an axe", EffectModels.holds("gear_any:9,5,16,12", {"build": Build, "store": StatStore.new()}))
+	Build.items = {"weapon": _test_gear(23), "offhand": _test_gear(17)}
+	_flag("#128 PP 171 gear_any not with other weapons", not EffectModels.holds("gear_any:9,5,16,12", {"build": Build, "store": StatStore.new()}))
+	Build.items = {"weapon": _test_gear(9), "offhand": _test_gear(6)}
+	_flag("#128 PP 632 dual wielding different types holds", EffectModels.holds("gear:dual_wield_diff", {"build": Build, "store": StatStore.new()}))
+	Build.items = {"weapon": _test_gear(9), "offhand": _test_gear(9)}
+	_flag("#128 PP 632 same types do not hold", not EffectModels.holds("gear:dual_wield_diff", {"build": Build, "store": StatStore.new()}))
+	# #130 Corsair's reforged pieces (set 16, two pieces) count like the unique pieces; PP 149 is the 2-piece bonus
+	Build.items = {
+		"helmet": {"base": 0, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 783, "tier": 1, "roll": 255}]},
+		"offhand": {"base": 18, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 784, "tier": 1, "roll": 255}]}}
+	_check("#130 two reforged Corsair's pieces: count 2", float(BuildMods.set_counts(Build)[16]), 2.0)
+	_check("#130 complete sets 1", float(BuildMods.complete_sets(Build)), 1.0)
+	var n149: int = 0
+	var pp149: float = 0.0
+	for e130: Dictionary in UniqueEffects.entries(Build):
+		if str(e130["effect"].get("source", "")) == "PlayerProperty" and int(e130["effect"].get("ppIndex", -1)) == 149:
+			n149 += 1
+			pp149 = float(e130["pp"])
+	_check("#128 Corsair's 2 pieces: PP 149 entry once", float(n149), 1.0)
+	_check("#128 Corsair's PP 149 value 1", pp149, 1.0)
+	Build.items["body"] = {"base": 1, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 783, "tier": 1, "roll": 255}]}
+	_check("#130 the same reforged uniqueId counts once", float(BuildMods.set_counts(Build)[16]), 2.0)
+	Build.items = {"helmet": {"base": 0, "sub": 0, "implicit_rolls": [], "affixes": [{"id": 783, "tier": 1, "roll": 255}]}}
+	_check("#130 one reforged piece: count 1", float(BuildMods.set_counts(Build)[16]), 1.0)
+	# restore the build of the other checks
+	Build.set_class(saved_class)
+	Build.passives = saved_passives
+	Build.items = saved_items
+
+
+## A store with one added value of a stat (test helper).
+func _added_store(sp: int, value: float) -> StatStore:
+	var store := StatStore.new()
+	store.add(StatMod.make(sp, "added", value, 0, "t"))
+	return store
+
+
+## One PlayerProperty model of the unique models, applied to a value and a store (test helper; first mod of variants).
+func _pp_make_mod(index: int, v: float, store: StatStore) -> StatMod:
+	return EffectModels.make_mod(GameData.unique_player_model(index), v, {"build": Build, "store": store}, "t")
+
+
+## A minimal equipped item of one base type (test helper).
+func _test_gear(base: int) -> Dictionary:
+	return {"base": base, "sub": 0, "implicit_rolls": [], "affixes": []}
+
+
 func _lean_and_cache() -> void:
 	print("--- lean results and the calculation cache")
 	for fixture: String in ["letools_Q0V6XDLG.json", "maxroll_char_palading.json", "letools_A83KxJq5.json"]:

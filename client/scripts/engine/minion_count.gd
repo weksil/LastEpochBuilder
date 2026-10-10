@@ -42,10 +42,11 @@ const GROUPS: Dictionary = {
 const LIMIT_LABELS: Array[String] = ["Max skeleton count", "Max skeleton mages", "Max spectres", "Max forged weapons",
 	"Max number of Thorn-totems", "Max crows", "Max wolves", "Max locusts", "Max locust count (multiplier)"]
 ## AbilityProperties that raise a summon limit (ability_property_fields*.json; AbilityStatsMutatorManager fields):
-## ability name -> [{id, index, special, kind: add | double | companions}].
+## ability name -> [{id, index, special, kind: add | double | no_summon | companions}].
 const LIMIT_PROPERTIES: Dictionary = {
 	"SummonSkeleton": [{"id": "summonSkeleton", "index": 120, "special": 4, "kind": "add"},
-		{"id": "summonSkeleton", "index": 120, "special": 21, "kind": "double"}],
+		{"id": "summonSkeleton", "index": 120, "special": 21, "kind": "double"},
+		{"id": "summonSkeleton", "index": 120, "special": 9, "kind": "no_summon"}],
 	"SummonMage": [{"id": "summonMage", "index": 291, "special": 6, "kind": "add"}],
 	"SummonBoneGolem": [{"id": "summonBoneGolem", "index": 157, "special": 9, "kind": "add"}],
 	"SummonWraith": [{"id": "summonWraith", "index": 146, "special": 2, "kind": "add"}],
@@ -58,8 +59,23 @@ const LIMIT_PROPERTIES: Dictionary = {
 	"SummonWolf": [{"id": "summonWolf", "index": 8, "special": 3, "kind": "companions"}],
 	"SummonRaptor": [{"id": "summonRaptor", "index": 321, "special": 0, "kind": "companions"}],
 }
-## CharacterStats.getMaximumCompanions: Round(SP MaximumCompanions with added 2); 1 with «Limited to one companion».
+## CharacterStats.getMaximumCompanions: Round(SP MaximumCompanions with added 2); 1 with PlayerProperty 85 (maxOneCompanion).
 const BASE_COMPANIONS: float = 2.0
+## PlayerProperty flags of the companion limit (both set by `0.1 < value`, CharacterMutator.applyModifiersBeforeExternalStatsCalculation):
+## 85 maxOneCompanion (CharacterStats.getMaximumCompanions returns 1), 553 maxOneCompanionOfEachType (SummonTracker.maxOneOfAnyCompanion:
+## one minion per actor type, the newest kept).
+const PP_ONE_COMPANION: int = 85
+const PP_ONE_OF_EACH_COMPANION: int = 553
+const COMPANION_FLAGS: Array[int] = [85, 553]
+## SummonTracker.unsummonExtraCompanions: every companion adds 60 to a budget of 60 x getMaximumCompanions, so one companion type
+## holds at most getMaximumCompanions minions. Not capped here: Spriggan (extraNonCompanionCapSpriggans: spriggans outside the cap)
+## and Falconry (its own getMaximum).
+const COMPANION_UNCAPPED: Array[String] = ["SummonSpriggan", "Falconer 00 Falconry"]
+## AbilityProperty summonWolf (id 8) specials that change the contribution of a wolf (2 convertWolvesTo2Squirrels,
+## 8 summonWolfCountAsTwoForLimit): not modelled, such a wolf is not capped here.
+const WOLF_CONTRIBUTION_SPECIALS: Array[int] = [2, 8]
+## SummonSkeletonMutator.halfSkeletons (the model's flag text): the skeleton limit is halved unless it is also doubled.
+const HALF_SKELETONS_FLAG: String = "Skeletons halved (damage, health, size increased)"
 
 static var _cache: Dictionary = {}
 static var _busy: bool = false
@@ -160,6 +176,8 @@ static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dic
 			value *= (1.0 + inc) * more
 			parts.append("× %s" % LE.fmt_num((1.0 + inc) * more))
 		parts.append("(%s)" % ", ".join(sources))
+	var doubled: bool = false
+	var no_summon: bool = false
 	for prop: Dictionary in LIMIT_PROPERTIES.get(str(ab.get("name", "")), []):
 		var pp: Dictionary = ShadowCalc.ability_property(build, str(prop["id"]), int(prop["index"]), int(prop["special"]))
 		var v: float = float(pp["value"])
@@ -170,13 +188,42 @@ static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dic
 				value += v
 				parts.append("+ %s (%s)" % [LE.fmt_num(v), ", ".join(pp["lines"])])
 			"double":
-				value *= 2.0
+				doubled = true
 				parts.append(LE.t("× 2 (%s)") % ", ".join(pp["lines"]))
+			"no_summon":
+				no_summon = true
+				parts.append(LE.t("none (%s)") % ", ".join(pp["lines"]))
 			"companions":
 				value = maxf(value, float(companions["value"]))
 				parts.append(LE.t("up to the maximum number of companions %s (%s)") % [LE.fmt_num(float(companions["value"])), ", ".join(pp["lines"])])
+	# SummonSkeletonMutator.getSkeletonLimit: doubled = 2 * (sum + 3); halved (and not doubled) = Round((sum + 3) * 0.5001);
+	# both cancel; noSummonSkeletons = 0
+	var half: bool = ab.get("name") == "SummonSkeleton" and (s.get("flag_keys", []) as Array).has(HALF_SKELETONS_FLAG)
+	if doubled and not half:
+		value *= 2.0
+	elif half and not doubled:
+		value *= 0.5001
+		parts.append(LE.t("× 0.5 (skeletons halved)"))
+	if no_summon:
+		value = 0.0
 	value = maxf(float(roundi(value)), 0.0)
+	# SummonTracker.unsummonExtraCompanions / EnforceLimitOfOneOfEachCompanionType: a companion type holds at most the maximum number of companions
+	if bool(ab.get("companion", false)) and not COMPANION_UNCAPPED.has(str(ab.get("name", ""))) and not _wolf_contribution_changed(build, ab):
+		var capped: float = companion_cap(value, float(companions["value"]), player_flag(build, PP_ONE_OF_EACH_COMPANION))
+		if capped < value:
+			parts.append((LE.t("limited to %s: one companion of each type") if capped == 1.0 and float(companions["value"]) > 1.0 else LE.t("limited to %s by the maximum number of companions")) % LE.fmt_num(capped))
+			value = capped
 	return {"value": value, "flag_keys": s.get("flag_keys", []), "text": "%s = %s" % [" ".join(parts), LE.fmt_num(value)]}
+
+
+## A wolf whose contribution to the companion limit is changed by AbilityProperty summonWolf specials 2 / 8 (not modelled).
+static func _wolf_contribution_changed(build: Node, ab: Dictionary) -> bool:
+	if str(ab.get("name", "")) != "SummonWolf":
+		return false
+	for special: int in WOLF_CONTRIBUTION_SPECIALS:
+		if float(ShadowCalc.ability_property(build, "summonWolf", 8, special)["value"]) != 0.0:
+			return true
+	return false
 
 
 ## Members of a GROUPS summon's rotation under the tree flags: [{actor, one}].
@@ -219,14 +266,42 @@ static func members(build: Node, ability_name: String) -> Array[Dictionary]:
 	return out
 
 
+## Rounding of CharacterStats.getMaximumCompanions: Math.Round, half to even.
+static func round_companions(x: float) -> float:
+	return float(LE.round_half_even(x))
+
+
+## Minions of one companion type the shared budget leaves: `value` limited to the maximum number of companions (60 per companion
+## against a budget of 60 x maximum) and to 1 with PlayerProperty 553 ("one companion of each type").
+static func companion_cap(value: float, maximum: float, one_of_each: bool) -> float:
+	var capped: float = minf(value, maximum)
+	return minf(capped, 1.0) if one_of_each else capped
+
+
+## PlayerProperty flag `index` (value > 0.1): passives and mastery bonus, item / idol affixes, unique effects (EnemyAilments.player_property)
+## and set bonuses (BuildMods.set_counts; Boardman's gives 85 with 1 piece).
+static func player_flag(build: Node, index: int) -> bool:
+	if float(EnemyAilments.player_property(build, index)["value"]) > 0.1:
+		return true
+	var counts: Dictionary = BuildMods.set_counts(build)
+	for set_id: Variant in counts:
+		for bonus: Variant in GameData.set_data(int(set_id)).get("bonuses", []):
+			if bonus is Dictionary and int(bonus.get("property", 0)) == LE.PLAYER_PROPERTY and int(bonus.get("tags", -1)) == index \
+					and int(bonus.get("setRequirement", 99)) <= int(counts[set_id]) and float(bonus.get("value", 0.0)) > 0.1:
+				return true
+	return false
+
+
 ## Maximum number of companions: {value}.
 static func max_companions(build: Node) -> Dictionary:
+	if player_flag(build, PP_ONE_COMPANION):
+		return {"value": 1.0}
 	var store: StatStore = BuildMods.global_store(build)["store"]
 	var sp: int = GameData.sp_id("MaximumCompanions")
 	if sp < 0:
 		return {"value": BASE_COMPANIONS}
 	var q: StatQuery = store.query_untagged(sp)
-	return {"value": float(roundi((BASE_COMPANIONS + q.added) * (1.0 + q.increased) * q.more))}
+	return {"value": round_companions((BASE_COMPANIONS + q.added) * (1.0 + q.increased) * q.more)}
 
 
 ## Explicit numbers of the Conditions tab: {actor or count key: count}.

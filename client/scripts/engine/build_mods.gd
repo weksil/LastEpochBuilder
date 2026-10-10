@@ -50,6 +50,7 @@ static func _store_without_skill_buffs(build: Node) -> Dictionary:
 	_add_player_ailments(build, store)
 	_add_passives(build, store, notes, "post")
 	UniqueEffects.apply_global(build, store, notes, "post")
+	UniqueEffects.apply_global(build, store, notes, "late")  # models scaled by the effect of an ailment on you (EffectModels.phase)
 	# attributes given by the models above (the game re-applies the per-point stats on every change of the value)
 	_add_attributes(build, store, notes, attributes)
 	return {"store": store, "notes": notes, "attributes": attributes}
@@ -224,8 +225,39 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 	BUFF_SKILLS.apply(build, slot, ability, result)
 	_add_ability_scaling(build, ability, global, store, result["conversions"])
 	UniqueEffects.apply_skill(build, ability, result)
+	_add_cost_models(build, ability, result)
 	_declare_buff_input(result)
 	return result
+
+
+## Models that follow the mana cost of the used skill (BaseMana.getManaCost): PP 106, Flame Drinker, moreDamagePer*AttackCost.
+## Computed here, once the skill's own mana modifiers (mana_added / mana_inc) are known.
+static func _add_cost_models(build: Node, ability: Dictionary, result: Dictionary) -> void:
+	var ctx: Dictionary = result["ctx"]
+	var tags: int = int(ability.get("tags", 0))
+	ctx["mana_cost"] = SkillCalc.mana_cost(ability, result)
+	for entry: Dictionary in _passive_entries(build):
+		var points: int = entry["points"]
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
+			var target: String = str(effect.get("target", ""))
+			if points < int(effect.get("minPoints", 0)) or not target.begins_with("CharacterMutator.") or effect.get("op") == "add_stat":
+				continue
+			var model: Dictionary = _passive_model(target)
+			if model.is_empty() or EffectModels.phase(model) != "skill" or not UniqueEffects._skill_matches(model, ability, tags):
+				continue
+			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
+			_apply_model(model, v, entry["source"], entry["title"], result)
+	for e: Dictionary in UniqueEffects.entries(build):
+		var entry_model: Dictionary = e["model"]
+		if entry_model.is_empty() or int(e["ability_index"]) >= 0 or EffectModels.phase(entry_model) != "skill" \
+				or not UniqueEffects._skill_matches(entry_model, ability, tags):
+			continue
+		ctx["item_slot"] = e["slot"]
+		ctx["character"] = true
+		_apply_model(entry_model, float(e["pp"]), e["label"], e["label"], result)
+		ctx.erase("character")
+		ctx["item_slot"] = ""
+	ctx.erase("mana_cost")
 
 
 ## Input "buff active" for a skill that has global-scope mods (global_store reads it from Build.skills[slot].inputs).
@@ -371,6 +403,8 @@ static func _add_skill_passives(build: Node, ability: Dictionary, result: Dictio
 			var rule: Dictionary = _conversion_rule(owned)
 			if not rule.is_empty():
 				result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
+				if _rule_has_stat_model(owned):
+					_apply_field_models(owned, v, source, title, result)
 			elif not _apply_field_models(owned, v, source, title, result):
 				result["notes"].append(LE.t("Passive \"%s\": %s — skill mechanic, not counted yet") % [title, _effect_label(effect)])
 
@@ -410,6 +444,8 @@ static func _passive_model(target: String) -> Dictionary:
 
 
 static func _passive_unmodelled(notes: Array[String], title: String, effect: Dictionary) -> void:
+	if not UniqueEffects.property_effect_model(effect).is_empty():
+		return  # counted by UniqueEffects (passive property entries); a skill that is not on the bar is noted there
 	if ShadowCalc.handles_effect(effect):
 		return  # CreateShadow properties: counted by the shadow components (ShadowCalc)
 	if MinionCalc.handles_effect(effect):
@@ -454,7 +490,7 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 	match kind:
 		"stat_list", "stat", "cooldown":
 			var scope: String = _passive_scope(model, target)
-			var mod: StatMod = null
+			var mods: Array[StatMod] = []
 			var weapon_types: Array[int] = []
 			if kind == "stat_list" and is_stat_effect:
 				var stat: Dictionary = effect.get("stat", {})
@@ -468,12 +504,14 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 							notes.append(LE.t("Passive \"%s\": stats with a specific weapon (%s) — not counted") % [title, _effect_label(effect)])
 							return
 					stat = stat["stat"]
-				mod = stat_from_effect(stat, points, source)
+				var one: StatMod = stat_from_effect(stat, points, source)
+				if one != null:
+					mods.append(one)
 			elif kind == "stat" and not is_stat_effect:
-				mod = EffectModels.make_mod(model, v, ctx, source)
+				mods = EffectModels.make_mods(model, v, ctx, source)
 			elif kind == "cooldown" and not is_stat_effect and str(model.get("cooldown", "")) == "recovery_increased" and scope == "global":
-				mod = StatMod.make(LE.CDR, "increased", v, 0, source)
-			if mod == null or scope == "" or (kind == "cooldown" and not target.begins_with("CharacterMutator.")):
+				mods.append(StatMod.make(LE.CDR, "increased", v, 0, source))
+			if mods.is_empty() or scope == "" or (kind == "cooldown" and not target.begins_with("CharacterMutator.")):
 				# ability-specific cooldown/field or an unsupported stat: left to the skill that owns the mutator
 				_passive_unmodelled(notes, title, effect)
 				return
@@ -489,17 +527,14 @@ static func _apply_passive_model(model: Dictionary, effect: Dictionary, target: 
 				return
 			if kind == "stat_list":
 				if model.has("per"):
-					if str(model["per"]) == "points":
-						_passive_unmodelled(notes, title, effect)
-						return
 					var n: float = EffectModels.source(str(model["per"]), ctx, model)
-					if model.has("src_max"):
-						n = minf(n, float(model["src_max"]))
-					mod = mod.scaled(n)
-					mod.source += " × %s" % LE.fmt_num(n)
+					n = minf(n, EffectModels.source_cap(model, ctx))
+					mods[0] = mods[0].scaled(n)
+					mods[0].source += " × %s" % LE.fmt_num(n)
 				if model.has("note"):
-					mod.source += " — " + LE.t(str(model["note"]))
-			_passive_add(store, mod, scope)
+					mods[0].source += " — " + LE.t(str(model["note"]))
+			for m: StatMod in mods:
+				_passive_add(store, m, scope)
 		"flag", "param", "resource":
 			var text: String = LE.t(str(model.get("text", model.get("label", model.get("param", model.get("resource", ""))))))
 			if kind != "flag" and effect.has("value"):
@@ -527,9 +562,13 @@ static func set_counts(build: Node) -> Dictionary:
 	var entwined: int = 0
 	for slot: String in build.items:
 		var item: Dictionary = build.items[slot]
-		if not item.has("unique"):
-			continue
-		var uid: int = int(item["unique"])
+		var uid: int
+		if item.has("unique"):
+			uid = int(item["unique"])
+		else:
+			uid = _reforged_set_unique_id(item) if SLOTS.has(slot) else -1
+			if uid < 0:
+				continue
 		if uid == LEGENDS_ENTWINED:
 			entwined += 1
 		var u: Dictionary = GameData.unique(uid)
@@ -541,6 +580,15 @@ static func set_counts(build: Node) -> Dictionary:
 	for set_id: int in members:
 		counts[set_id] = members[set_id].size() + entwined
 	return counts
+
+
+## ItemData.isReforgedSet / getSetItemUniqueId: the uniqueId stored in the item's first affix of special type Set (3); -1 if none.
+static func _reforged_set_unique_id(item: Dictionary) -> int:
+	for a: Variant in item.get("affixes", []):
+		var aff: Dictionary = GameData.affix(int((a as Dictionary).get("id", -1)))
+		if str(aff.get("specialAffixType", "")) == "Set":
+			return int(aff.get("uniqueId", -1))
+	return -1
 
 
 ## Number of complete sets (all pieces of the set counted), used by Legends Entwined (PP 566–568).
@@ -564,9 +612,10 @@ static func _add_set_bonuses(build: Node, store: StatStore, notes: Array[String]
 			if int(bonus.get("setRequirement", 99)) > count:
 				continue
 			var prop_id: int = int(bonus.get("property", 0))
+			if prop_id == LE.PLAYER_PROPERTY and MinionCount.COMPANION_FLAGS.has(int(bonus.get("tags", -1))):
+				continue  # companion limit flag (Boardman's 85): counted by MinionCount.max_companions
 			if prop_id == LE.PLAYER_PROPERTY or prop_id == LE.ABILITY_PROPERTY:
-				notes.append(LE.t("%s: special bonus (%s) — not counted") % [source, str(bonus.get("propertyName", prop_id))])
-				continue
+				continue  # special bonus: UniqueEffects._set_entries (model, or its own note)
 			store.add(StatMod.make(prop_id, str(bonus.get("modType", "ADDED")).to_lower(),
 				AffixMath.fixed_value(float(bonus.get("value", 0.0)), str(bonus.get("rounding", "Hundredth")), str(bonus.get("modType", "ADDED"))),
 				int(bonus.get("tags", 0)), source, int(bonus.get("specialTag", 0)), int(bonus.get("extraTag", 0))))
@@ -581,12 +630,12 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 		if buff_stacks(build, id) > 0.0:
 			continue  # the «Buffs on me» stacks of the same ailment are counted below (not twice)
 		var ail: Dictionary = GameData.ailment(id)
-		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
+		var effect: float = _buff_effect(store, ail, id)
 		for buff: Dictionary in ail.get("buffs", []):
 			if BUFF_SPECIAL_PROPERTIES.has(int(buff.get("property", -1))):
 				continue
 			var mod: StatMod = stat_from_record(buff, LE.t("%s on you (effect ×%s)") % [str(ail.get("name", key)), LE.fmt_num(effect)])
-			store.add(mod.scaled(effect))
+			store.add(_stacked_buff(mod, ail, effect, 1.0))
 	# stacks of the "Buffs on me" list: every stack adds the buff's stats (at most maxInstances stacks when it is set)
 	var buffs: Variant = build.player_state.get("buffs", {})
 	for key: Variant in buffs if buffs is Dictionary else {}:
@@ -595,13 +644,34 @@ static func _add_player_ailments(build: Node, store: StatStore) -> void:
 		if stacks <= 0.0:
 			continue
 		var ail: Dictionary = GameData.ailment(id)
-		var effect: float = 1.0 + store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased
+		var effect: float = _buff_effect(store, ail, id)
 		for buff: Dictionary in ail.get("buffs", []):
 			if BUFF_SPECIAL_PROPERTIES.has(int(buff.get("property", -1))):
 				continue
 			var mod: StatMod = stat_from_record(buff, LE.t("%s on you: %s stacks (effect ×%s)") % [
 				str(ail.get("displayName", ail.get("name", id))), LE.fmt_num(stacks), LE.fmt_num(effect)])
-			store.add(mod.scaled(effect * stacks))
+			store.add(_stacked_buff(mod, ail, effect, stacks))
+
+
+## Multiplier of the ailment's buffs on the player. Individual and non-stacking ailments (buffScalingType 0) scale by
+## 1 + max(increased effect on you, −1); grouped ailments (Swiftness, Stalwart …) never read the effect on you
+## (AilmentReceiver.*ActiveBuffs*Ailment.addBuffFromActiveAilment).
+static func _buff_effect(store: StatStore, ail: Dictionary, id: int) -> float:
+	if int(ail.get("buffScalingType", 0)) != 0:
+		return 1.0
+	return 1.0 + maxf(store.query(LE.EFFECT_OF_AILMENT_ON_YOU, 0, id).increased, -1.0)
+
+
+## The buff stat of `stacks` stacks. Individual ailments make one Stat per stack, scaled by `effect` (Stat(Stat, scale) scales
+## the added, increased and every more value): added / increased grow linearly, the more values of the stacks multiply:
+## (1 + m·effect)^stacks. Grouped ailments are one Stat with stacks × the base value.
+static func _stacked_buff(mod: StatMod, ail: Dictionary, effect: float, stacks: float) -> StatMod:
+	if int(ail.get("buffScalingType", 0)) != 0:
+		return mod.scaled(stacks)
+	var out: StatMod = mod.scaled(effect * stacks)
+	for i in range(mod.more.size()):
+		out.more[i] = pow(maxf(1.0 + mod.more[i] * effect, 0.0), stacks) - 1.0
+	return out
 
 
 ## Stacks of a buff on the player (Conditions tab, "Buffs on me"), at most its maxInstances.
@@ -836,7 +906,8 @@ static func _add_skill_effect(effect: Dictionary, points: int, title: String, re
 		var rule: Dictionary = _conversion_rule(target)
 		if not rule.is_empty():
 			result["conversions"].append({"rule": rule, "value": v, "node": title, "points": points})
-			return
+			if not _rule_has_stat_model(target):
+				return
 		if _apply_field_models(target, v, source, title, result):
 			return
 		match field:
@@ -882,7 +953,7 @@ static func _apply_field_models(target: String, v: float, source: String, title:
 ## Identity of a model for the «same effect written into several mutators» check: everything that changes what the model
 ## does (not its scope, note or confidence).
 const SIGNATURE_KEYS: Array[String] = ["stat", "mod", "tags", "param", "resource", "ability", "when", "text", "label", "count", "chance",
-	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "inverse", "at_least", "below",
+	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "max_field", "inverse", "at_least", "below",
 	"base_cooldown", "single_projectile", "v_caps_source", "double_below"]
 
 
@@ -949,14 +1020,21 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		cd_base["baseCooldownLength"] = maxf(float(cd_base.get("baseCooldownLength", 0.0)), float(model["base_cooldown"]))
 	match str(model.get("kind", "stat")):
 		"stat":
-			var mod: StatMod = EffectModels.make_mod(model, v, ctx, source)
-			if mod != null:
-				_add_scoped(mod, str(model.get("scope", "skill")), result)
+			if model.has("copy_player"):  # copies of the player's stats (SummonSkeletonMutator, PP 445)
+				for copy: StatMod in EffectModels.copied_mods(model, v, ctx, source):
+					_add_scoped(copy, str(model.get("scope", "skill")), result)
+			else:
+				for mod: StatMod in EffectModels.make_mods(model, v, ctx, source):
+					_add_scoped(mod, str(model.get("scope", "skill")), result)
 		"minion_stat":
-			var mmod: StatMod = EffectModels.make_mod(model, v, ctx, source)
-			if mmod != null:
-				var mscope: String = str(model.get("scope", "minion"))
-				_add_scoped(mmod, mscope if mscope.begins_with("minion:") else "minion", result)
+			var mscope: String = str(model.get("scope", "minion"))
+			var mtarget: String = mscope if mscope.begins_with("minion:") else "minion"
+			if model.has("copy_player"):
+				for copy: StatMod in EffectModels.copied_mods(model, v, ctx, source):
+					_add_scoped(copy, mtarget, result)
+			else:
+				for mmod: StatMod in EffectModels.make_mods(model, v, ctx, source):
+					_add_scoped(mmod, mtarget, result)
 		"speed":
 			if str(model.get("speed", "")) == "more":
 				result["use_speed_more"] *= 1.0 + x
@@ -1107,6 +1185,15 @@ static func ability_index_of(tag: Variant) -> int:
 
 
 ## Conversion / tag-change rule for any "Mutator.field" part of a target ({} if none or kind "none").
+## A conversion / tags rule whose field also has a plain stat model (Sacrifice «added fire damage»: the Fire tag by the rule,
+## the added Fire|Spell damage by the model) applies both; the other rules' models are flags or are computed by the rule.
+static func _rule_has_stat_model(target: String) -> bool:
+	for part: String in target.split(" & "):
+		if str(FieldModels.find(part.strip_edges()).get("kind", "")) == "stat":
+			return true
+	return false
+
+
 static func _conversion_rule(target: String) -> Dictionary:
 	if not _conversion_rules.has(target):
 		var found: Dictionary = {}
@@ -1188,6 +1275,9 @@ static func stat_from_effect(stat: Dictionary, points: int, source: String) -> S
 			property = GameData.sp_id(str(stat.get("property", "")))
 			if stat.has("specialTag"):
 				special = special_id(stat["specialTag"])  # -1 (unknown name) drops the mod below, it must not become «any ailment»
+			elif stat.has("hitEventTag") and [38, 39, 40].has(property):
+				# Stat(SP, AT, HitEventTag) stores the HitEventTag as the specialTag byte; read by ResourceGainEvents (HealthGain / WardGain / ManaGain)
+				special = GameData.enum_value("HitEventTag", str(stat["hitEventTag"]))
 		"ailment_chance":
 			property = LE.AILMENT_CHANCE
 			special = GameData.enum_value("AilmentID", str(stat.get("ailment", "")))

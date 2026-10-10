@@ -138,7 +138,7 @@ static func _note_condition(cond: String, reason: String) -> void:
 			for a: String in arg.split("|"):
 				_add_ailment(_rec, GameData.enum_value("AilmentID", a), reason)
 		"enemy_flag":
-			_add(_rec, "enemy", arg, reason)
+			_add(_rec, "enemy", arg.trim_prefix("!"), reason)
 		"player":
 			_add(_rec, "player_flags", arg.trim_prefix("!"), reason)
 

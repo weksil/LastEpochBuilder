@@ -142,6 +142,8 @@ const MANA_BEFORE_HEALTH: int = 24
 const MANA_BEFORE_WARD: int = 94
 const MORE_DAMAGE_TAKEN_WHILE_MOVING: int = 113
 const ARMOUR_VS_DOT: int = 118
+## SP 60 CurrentHealthDrain (research/data/sp_enum.json): ProtectionClass.Update takes drain × current health per second
+const CURRENT_HEALTH_DRAIN: int = 60
 
 
 # Damage type data

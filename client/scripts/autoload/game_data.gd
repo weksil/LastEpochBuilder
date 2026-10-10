@@ -34,6 +34,7 @@ var _conversions: Dictionary = {}        # "Mutator.field" -> rule (skill_conver
 var _uniques_by_id: Dictionary = {}      # uniqueID -> unique (all, incl. hidden)
 var _unique_effects: Dictionary = {}     # uniqueID -> effects[] (unique_effects.json)
 var _sets: Dictionary = {}               # setID -> set (sets.json)
+var _player_property_info: Dictionary = {}  # PlayerProperty index -> record (player_property_fields.json), read on first use
 var _unique_models: Dictionary = {}      # {player: {ppIndex: model}, ability: {"abilityIndex:propertyIndex": model}, component: {"uniqueID:effectIndex": model}}
 var _blessings_json: Dictionary = {}    # full blessings data from blessings.json
 var _blessings_by_id: Dictionary = {}   # id -> blessing data
@@ -437,6 +438,16 @@ func unique_effects(id: int) -> Array:
 
 func set_data(set_id: int) -> Dictionary:
 	return _sets.get(set_id, {})
+
+
+## Game record of a PlayerProperty index (propertyName, field ...), {} if unknown.
+func player_property_info(index: int) -> Dictionary:
+	if _player_property_info.is_empty():
+		var json: Variant = _load_json(LE.game_data_dir().path_join("player_property_fields.json"))
+		if json is Dictionary:
+			for rec: Dictionary in json.get("data", []):
+				_player_property_info[int(rec["index"])] = rec
+	return _player_property_info.get(index, {})
 
 
 ## Planner model of a PlayerProperty special effect (unique_effect_models.json), {} if not modelled.

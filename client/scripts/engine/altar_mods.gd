@@ -28,7 +28,7 @@ const PER_IDOL: Dictionary = {
 	26: {"label": "Strength per heretical idol", "who": "heretical", "sp": LE.STRENGTH, "kind": "added"},
 	27: {"label": "Dexterity per heretical idol", "who": "heretical", "sp": LE.DEXTERITY, "kind": "added"},
 	28: {"label": "Vitality per heretical idol", "who": "heretical", "sp": LE.VITALITY, "kind": "added"},
-	29: {"label": "Healing effectiveness per heretical idol", "who": "heretical", "sp": 44, "kind": "increased"},
+	29: {"label": "Healing effectiveness per heretical idol", "who": "heretical", "sp": 44, "kind": "added"},
 	30: {"label": "Elemental resistance per heretical idol", "who": "heretical", "sp": LE.ELEMENTAL_RES, "kind": "added"},
 }
 

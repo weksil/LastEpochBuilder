@@ -21,6 +21,7 @@ static func store(enemy: Dictionary) -> StatStore:
 	var ailments: Dictionary = enemy.get("ailments", {})
 	var enemy_kind: String = enemy.get("kind", "dummy")
 	var is_boss: bool = enemy_kind == "boss" or enemy_kind == "miniboss"
+	var effect_by_id: Dictionary = enemy.get("ailment_effect", {})
 
 	for ailment_id in ailments:
 		var stacks: float = float(ailments[ailment_id])
@@ -49,6 +50,11 @@ static func store(enemy: Dictionary) -> StatStore:
 		var penalty: float = 0.0
 		if is_boss:
 			penalty = ailment_data.get("moreBuffEffectAgainstBosses", 0.0)
+		# increased ailment effect of the applications (SP 43) on Individual ailments with effectOfIncreasedEffectiveness 0: every
+		# stack's Stat is multiplied by (1 + effect) too (addBuffFromActiveAilment: m = (1 + boss) × stacks × (1 + effect) × (1 + effect on you))
+		var effect_mult: float = 1.0
+		if buff_scaling_type == 0 and int(ailment_data.get("effectOfIncreasedEffectiveness", 1)) == 0:
+			effect_mult = maxf(1.0 + float(effect_by_id.get(int(ailment_id), 0.0)), 0.0)
 
 		# Add buffs from ailment
 		var buffs = ailment_data.get("buffs", [])
@@ -63,9 +69,28 @@ static func store(enemy: Dictionary) -> StatStore:
 			for m in buff.get("more", []):
 				mod.more.append(float(m))
 			mod.source = "%s ×%s" % [ailment_name, LE.fmt_num(n_eff)]
-			s.add(mod.scaled(n_eff * (1.0 + penalty)))
+			var stacked: StatMod = mod.scaled(n_eff * (1.0 + penalty) * effect_mult)
+			if buff_scaling_type == 0 and not mod.more.is_empty():
+				# Individual stacking ailments: every stack is a Stat of its own (IndividualActiveBuffsForStackingAilment), so
+				# the more values of the stacks multiply (Chill ×0.88 per stack: 3 stacks ×0.681, not ×0.64)
+				stacked.more = per_stack_more(mod.more, n_eff, (1.0 + penalty) * effect_mult)
+			s.add(stacked)
 
 	return s
+
+
+## The more values of `stacks` separate stacks of an Individual ailment: each whole stack contributes every value × `factor`
+## (Stat copy constructor, multiplier = factor), a fractional rest of the average count contributes a proportional stack.
+static func per_stack_more(values: Array[float], stacks: float, factor: float) -> Array[float]:
+	var out: Array[float] = []
+	var whole: int = int(floor(stacks + 0.000001))
+	var rest: float = stacks - float(whole)
+	for m: float in values:
+		for _i in range(whole):
+			out.append(maxf(m * factor, -1.0))
+		if rest > 0.000001:
+			out.append(maxf(m * factor * rest, -1.0))
+	return out
 
 
 ## Return resistance for damage type i (0..6).
@@ -185,6 +210,10 @@ static func level_dr(enemy: Dictionary) -> float:
 	var level: int = enemy.get("level", 100)
 	var dr: float = GameData.damage_reduction(level)
 
+	# above level 100 the game returns 0 before the boss bonus (ActorScaler.getDamageReductionForLevel)
+	if level > 100:
+		return 0.0
+
 	if kind == "boss" or kind == "miniboss":
 		dr = dr + 0.05 * (1.0 - dr)
 
@@ -193,13 +222,13 @@ static func level_dr(enemy: Dictionary) -> float:
 
 ## Check if enemy has a condition for ConditionalDamageProperty.
 ## Returns multiplier/count for damage scaling; 0 if condition not met.
-static func has_condition(enemy: Dictionary, cdp: int) -> float:
+static func has_condition(enemy: Dictionary, cdp: int, player_state: Dictionary = {}) -> float:
 	var flags: Dictionary = enemy.get("flags", {})
 	var kind: String = enemy.get("kind", "dummy")
 
 	match cdp:
-		0:  # Stunned
-			return 1.0 if flags.get("stunned", false) else 0.0
+		0:  # Stunned: the untyped StunnedConditional is true in the whole Stunned state, frozen included (StunnedConditional.Check, Stunned.freeze)
+			return 1.0 if flags.get("stunned", false) or flags.get("frozen", false) else 0.0
 
 		1:  # LowHealth
 			return 1.0 if flags.get("low_health", false) else 0.0
@@ -276,6 +305,56 @@ static func has_condition(enemy: Dictionary, cdp: int) -> float:
 		47:  # Frostbitten
 			return presence(enemy, "Frostbite")
 
+		# 12-15, 22-24, 27, 29-31, 34, 35, 38, 39, 45: GlobalDamageConditionals.AddDamageConditionalEffectFromStat. HasAilmentConditional
+		# = hasAilment(id); compound conditionals: OR = either, AND = both (independent presences).
+		12:  # Brand of Deception: hasAilment(BrandOfDeception)
+			return presence(enemy, "BrandOfDeception")
+
+		14:  # Branded: the target carries an isBrand ailment (numberOfActiveAilmentsThatAreBrands > 0)
+			return _brand_presence(enemy)
+
+		15:  # Branded AND boss or rare
+			return _brand_presence(enemy) * (1.0 if kind in ["rare", "boss", "miniboss"] else 0.0)
+
+		22:  # Fear OR Slow
+			return 1.0 - (1.0 - presence(enemy, "Fear")) * (1.0 - presence(enemy, "Slow"))
+
+		23:  # PerCurse: one per active curse ailment, no limit (numberOfActiveAilmentsThatAreCurses)
+			return _curse_count(enemy)
+
+		24:  # Boss (not rare) OR moving
+			return 1.0 - (1.0 - (1.0 if kind in ["boss", "miniboss"] else 0.0)) * (1.0 - (1.0 if flags.get("moving", false) else 0.0))
+
+		27:  # Slowed OR Immobilized
+			return 1.0 - (1.0 - presence(enemy, "Slow")) * (1.0 - presence(enemy, "Immobilized"))
+
+		29:  # Netted
+			return presence(enemy, "Netted")
+
+		30:  # PerSlow: stacks of Slow, no limit
+			return stacks_of(enemy, "Slow")
+
+		31:  # Falcon marked
+			return presence(enemy, "FalconMark")
+
+		34:  # Spreading Flames
+			return presence(enemy, "SpreadingFlames")
+
+		35:  # Feared: Feared.isFeared = hasAilment(Fear)
+			return presence(enemy, "Fear")
+
+		38:  # PerStackOfFrostbiteUpTo30
+			return minf(stacks_of(enemy, "Frostbite"), 30.0)
+
+		39:  # PerStackOfShockUpTo30
+			return minf(stacks_of(enemy, "Shock"), 30.0)
+
+		45:  # Immobilized
+			return presence(enemy, "Immobilized")
+
+		40:  # Boss or rare AND the caster's mana >= 50% (Compound AND of CasterAboveManaThreshold(0.5) and Boss(includeRares)); the flag is «Mana below 50%»
+			return (1.0 if kind in ["rare", "boss", "miniboss"] else 0.0) * (0.0 if bool(player_state.get("low_mana", false)) else 1.0)
+
 		_:
 			return 0.0
 
@@ -307,6 +386,24 @@ static func _curse_presence(enemy: Dictionary) -> float:
 		if bool(GameData.ailment(int(id)).get("isCurse", false)):
 			best = maxf(best, presence_id(enemy, int(id)))
 	return best
+
+
+## Share of the time the enemy carries a brand (isBrand ailment): the largest presence.
+static func _brand_presence(enemy: Dictionary) -> float:
+	var best: float = 0.0
+	for id: Variant in enemy.get("ailments", {}):
+		if bool(GameData.ailment(int(id)).get("isBrand", false)):
+			best = maxf(best, presence_id(enemy, int(id)))
+	return best
+
+
+## Average number of active curses (every curse ailment has one instance): the sum of their presences.
+static func _curse_count(enemy: Dictionary) -> float:
+	var n: float = 0.0
+	for id: Variant in enemy.get("ailments", {}):
+		if bool(GameData.ailment(int(id)).get("isCurse", false)):
+			n += presence_id(enemy, int(id))
+	return n
 
 
 ## Average number of different ailments on the enemy: the sum of their presences.

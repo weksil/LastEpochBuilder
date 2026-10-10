@@ -3,13 +3,26 @@ class_name AilmentCalc
 ## Ailment (DoT) damage applied by a skill (research/06d):
 ## chance → stacks per second → damage of one stack (buildDamageStats on the ailment's base damage) → DPS.
 
-## Against enemies the first tick comes 0.1 s after application and ticks run every 0.5 s,
-## so a stack replaced early still delivered (age + k) / (T + k) of its damage, k = 0.5 − 0.1 (06d §4.3).
+## A stack that displaces another at the cap gets no early tick (ApplyAilmentWithDamageStats sets firstTickApplied for it):
+## it is paid on the global ticks of the receiver, every AilmentReceiver.baseTickInterval (0.5 s unless the receiver is a player
+## actor). `displaced_share` averages over the unknown phase of those ticks.
+const ENEMY_TICK_INTERVAL: float = 0.5
+## Ailments that are not paid on the generic ticks (damage at the end / when hit / on a hit of the target …) keep the old
+## estimate (age + k) / (T + k), k = 0.5 − 0.1 (06d §4.3).
 const ENEMY_TICK_K: float = 0.4
+## PlayerProperty indices of the mutator fields that CharacterAilmentMutator.GetAilmentDamageModifier reads
+## (research/data/game/player_property_fields.json).
+const PP_TIME_ROT_PER_SLOW_CHANCE: int = 491  # moreTimeRotDamagePerGlobalSlowChance (0x1A20)
+const PP_TIME_ROT_PER_TIME_ROT_CHANCE: int = 492  # moreTimeRotDamagePerGlobalTimeRotChanceWithVoidSkills (0x1A24)
+const PP_TIME_ROT_PER_SPEED: int = 493  # moreTimeRotDamagePerLowestAttackCastOrThrowSpeed (0x1A28)
+const PP_BRAND_OF_DECEPTION_PER_SHOCK_CHANCE: int = 307  # moreBrandOfDeceptionDamagePerShockChance (0x14E4)
+const PP_WITCHFIRE_PER_IGNITE_CHANCE: int = 376  # moreWitchfireDamagePerIgniteChanceWithFireSkills (0x1768)
+const PP_WITCHFIRE_PER_DAMNED_CHANCE: int = 377  # moreWitchfireDamagePerDamnedChanceWithNecroticSkills (0x176C)
 
 
-## {sections: Array, enemy_dps: float, applied: Array[{id, rate, duration, max}]} — `applied` feeds the automatic enemy
-## ailments (EnemyAilments).
+## {sections: Array, enemy_dps: float, applied: Array[{id, rate, duration, max, self, effect}]} — `applied` feeds the automatic enemy
+## ailments (EnemyAilments). `effect` is the increased ailment effect (SP 43) of the application, 0 unless the ailment's
+## effectOfIncreasedEffectiveness is 0 (it then scales the buffs of Individual ailments, Enemy.store).
 ## `uses` is the number of hits per second that roll the chances. `curse_hit`: the hits are hits on a cursed enemy
 ## (docs/ENGINE.md §9.3): only chances that the skill tree attaches to «when the cursed enemy is hit» apply to them
 ## (the generic «chance to apply on hit» of items and passives does not), and the events are hits, not casts.
@@ -41,14 +54,23 @@ static func compute(build: Node, ctx: Dictionary, uses: float, notes: Array[Stri
 		if ail.is_empty() or c["chance"] <= 0.0:
 			continue
 		var name: String = str(ail.get("name", c["name"]))
-		var rate: float = uses * float(c["chance"])
 		var duration: float = float(ail.get("duration", 0.0)) * (1.0 + float(c["inc_dur"]))
 		var max_inst: int = int(ail.get("maxInstances", 0))
-		var stacks: float = rate * duration if max_inst <= 0 else minf(rate * duration, float(max_inst))
-		var on_self: bool = int(ail.get("positive", 0)) != 0
-		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst, "self": on_self})
 		var chance_text: PackedStringArray = [LE.t("Chance per hit: %s (expected number of stacks = chance, 06d §1.1)") % LE.fmt_pct(c["chance"])]
 		chance_text.append_array(c["lines"])
+		# ApplyAilment: a chance above 100% adds stacks only for an ailment that holds more than one
+		var one_stack_cap: bool = max_inst == 1 and float(c["chance"]) > 1.0
+		if one_stack_cap:
+			c = c.duplicate()
+			c["chance"] = 1.0
+		var rate: float = uses * float(c["chance"])
+		var stacks: float = rate * duration if max_inst <= 0 else minf(rate * duration, float(max_inst))
+		var on_self: bool = int(ail.get("positive", 0)) != 0
+		# increased effect (SP 43) of this application: scales the buffs of Individual ailments (IndividualActiveBuffsForStackingAilment)
+		var effect_applied: float = float(c["inc_eff"]) if int(ail.get("effectOfIncreasedEffectiveness", 1)) == 0 else 0.0
+		applied.append({"id": id, "rate": rate, "duration": duration, "max": max_inst, "self": on_self, "effect": effect_applied})
+		if one_stack_cap:
+			chance_text.append(LE.t("The ailment holds one stack at most: a chance above 100% still applies it once per hit."))
 		if not zone.is_empty():
 			chance_text.append(LE.t("The zone \"%s\" applies it every %s s to the enemies in it (no hit); the target is assumed to stay in the zone (D?).") % [
 				str(zone["name"]), LE.fmt_num(float(zone["interval"]))])
@@ -171,6 +193,14 @@ static func zones(ab: Dictionary) -> Array[Dictionary]:
 	return out
 
 
+## Tick interval of a zone after the skill's «increased ailment frequency» f (AuraOfDecayMutator.OnAbilityUse): interval / (1 + f);
+## f <= -1 counts as -0.99.
+static func zone_interval(interval: float, freq: float) -> float:
+	if freq <= -1.0:
+		freq = -0.99
+	return interval / (freq + 1.0)
+
+
 static func _entry(out: Dictionary, id: int) -> Dictionary:
 	if not out.has(id):
 		out[id] = {"name": str(GameData.ailment(id).get("name", id)), "chance": 0.0, "lines": [], "inc_dur": 0.0, "inc_eff": 0.0,
@@ -199,9 +229,15 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		dmg[i] = float(raw[i])
 		if dmg[i] > 0.0:
 			type_bits |= LE.DT_TAG[i]
+	# the conditional effects of the skill's DamageStatsHolder are not part of the ailment's DamageStats (AilmentReceiver.ApplyAilment
+	# -> DamageStats.buildDamageStats copies only the ailment's own)
+	var amods: Array[StatMod] = []
+	for mod: StatMod in ctx["mods"]:
+		if not mod.holder_only:
+			amods.append(mod)
 	var actx: Dictionary = {
 		"ab": ctx["ab"], "base": bd, "tags": atags, "hit": false, "src": atags, "dmg": dmg, "type_bits": type_bits,
-		"minion": 0, "ade": float(bd.get("addedDamageScaling", 0.0)), "mods": ctx["mods"], "store": ctx["store"],
+		"minion": 0, "ade": float(bd.get("addedDamageScaling", 0.0)), "mods": amods, "store": ctx["store"],
 		"base_before": dmg.duplicate(), "conversion_lines": [[], [], [], [], [], [], []],
 	}
 	var ds: Dictionary = SkillCalc._build_damage(actx)
@@ -212,7 +248,8 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	var eff_pen: float = inc_eff if int(ail.get("effectOfIncreasedEffectiveness", 1)) == 1 else 0.0
 	var pen_type: int = int(ail.get("additionalPenetrationDamageType", 0))
 	var dur_more: float = float(c["inc_dur"]) if _duration_increases_damage(ail) else 0.0
-	var more_total: float = (1.0 + eff_more) * (1.0 + dur_more) * float(c["more"])
+	var inst: Dictionary = _instance_more(build, ctx, ail, health)
+	var more_total: float = (1.0 + eff_more) * (1.0 + dur_more) * float(c["more"]) * float(inst["factor"])
 	var stack_damage: float = 0.0
 	for i in range(7):
 		stack_damage += float(ds["final"][i]) * more_total
@@ -221,11 +258,18 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	var dps: float = rate * stack_damage
 	var cap_text: String = LE.t("No stack limit: DPS = applications/s × stack damage (stacks do not interfere with each other).")
 	if max_inst > 0 and rate * duration > float(max_inst):
-		var life: float = maxf(float(max_inst) / rate, 0.1)
-		var share: float = (life + ENEMY_TICK_K) / (duration + ENEMY_TICK_K)
-		dps = rate * stack_damage * share
-		cap_text = LE.t("Limit of %d stacks: a new stack displaces the stack with the least time left, its damage is lost. A stack lives %s s and manages to deal (%s + 0.4) / (%s + 0.4) = %s of its damage (06d §4.4).") % [
-			max_inst, LE.fmt_num(life), LE.fmt_num(life), LE.fmt_num(duration), LE.fmt_pct(share)]
+		var life: float = float(max_inst) / rate
+		if _pays_on_generic_ticks(ail):
+			var share: float = displaced_share(life, duration)
+			dps = rate * stack_damage * share
+			cap_text = LE.t("Limit of %d stacks: a new stack displaces the stack with the least time left, its damage is lost. The new stack has no early tick, it is paid on the global ticks every %s s (phase unknown, averaged): a stack that lives %s s of its %s s manages to deal %s of its damage.") % [
+				max_inst, LE.fmt_num(ENEMY_TICK_INTERVAL), LE.fmt_num(life), LE.fmt_num(duration), LE.fmt_pct(share)]
+		else:
+			life = maxf(life, 0.1)
+			var share_old: float = (life + ENEMY_TICK_K) / (duration + ENEMY_TICK_K)
+			dps = rate * stack_damage * share_old
+			cap_text = LE.t("Limit of %d stacks: a new stack displaces the stack with the least time left, its damage is lost. A stack lives %s s and manages to deal (%s + 0.4) / (%s + 0.4) = %s of its damage (06d §4.4).") % [
+				max_inst, LE.fmt_num(life), LE.fmt_num(life), LE.fmt_num(duration), LE.fmt_pct(share_old)]
 
 	var rows: Array = []
 	rows.append({"label": LE.t("Application chance"), "text": LE.fmt_pct(c["chance"]), "breakdown": "\n".join(chance_text)})
@@ -248,6 +292,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		stack_text.append(LE.t("Duration +%s stretches the stack and increases its total damage: ×%s (stack DPS is unchanged)") % [LE.fmt_pct(dur_more), LE.fmt_num(1.0 + dur_more)])
 	if float(c["more"]) != 1.0:
 		stack_text.append(LE.t("Damage modifier from the skill: ×%s") % LE.fmt_num(c["more"]))
+	stack_text.append_array(inst["lines"])
 	if eff_pen != 0.0:
 		stack_text.append(LE.t("Effect +%s of this ailment gives penetration (%s), not damage (06d §2.1)") % [LE.fmt_pct(eff_pen), LE.t(LE.DT_NAME[pen_type])])
 	stack_text.append_array(c["eff_lines"])
@@ -262,7 +307,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	var e: StatStore = Enemy.store(enemy)
 	var dr: float = Enemy.level_dr(enemy)
 	var armour: float = Enemy.armour(e)
-	var armour_share: float = minf(1.0, ctx["store"].query(118).added)
+	var armour_share: float = minf(1.0, e.query(LE.ARMOUR_VS_DOT).added)  # the victim's own SP 118 (ProtectionClass +0xCC), not the attacker's
 	var cond_mods: Array[StatMod] = []
 	for mod: StatMod in ctx["mods"]:
 		if mod.property == LE.CONDITIONAL_DAMAGE or mod.property == LE.DAMAGE_PER_AILMENT_STACK:
@@ -274,7 +319,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		if part <= 0.0:
 			continue
 		var lines: PackedStringArray = []
-		var cond: float = SkillCalc._condition_factor(cond_mods, enemy, atags, i, lines)
+		var cond: float = SkillCalc._condition_factor(cond_mods, enemy, atags, i, lines, build.player_state)
 		var res: float = Enemy.resistance(e, i).added
 		var pen: float = float(ds["pen"][i]) + (eff_pen if i == pen_type else 0.0)
 		var res_mult: float = (0.25 if res > 0.75 else 1.0 - res) + pen
@@ -293,6 +338,127 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 	eb.append(LE.t("Crit, dodge, block and variance do not apply to ailment damage; armor only with \"Armour Mitigation Applies to DoT\"."))
 	rows.append({"label": LE.t("DPS vs enemy"), "text": LE.fmt_num(enemy_dps), "breakdown": "\n".join(eb)})
 	return {"rows": rows, "dps": dps, "enemy_dps": enemy_dps}
+
+
+## Share of its damage that a capped stack has been paid when it is removed `life` seconds after its creation. The stack has no
+## early tick; the receiver's global ticks come every I = ENEMY_TICK_INTERVAL and each pays I / (I + remaining) of the unpaid
+## damage (OnUpdateTick), so n ticks starting at u have paid n·I / (T − u + I). The first tick u after the creation is uniform in
+## (0, I]; n = floor((life − u) / I) + 1 for u ≤ life, else 0. Averaged over u this is (q+1)·ln((T+I)/(T+I−r)) + q·ln((T+I−r)/T)
+## with life = q·I + r. `life` must be below `duration` (a stack that expires is paid in full).
+static func displaced_share(life: float, duration: float) -> float:
+	var interval: float = ENEMY_TICK_INTERVAL
+	var q: float = floorf(life / interval)
+	var r: float = life - q * interval
+	var top: float = duration + interval
+	return (q + 1.0) * log(top / (top - r)) + q * log((top - r) / duration)
+
+
+## The damaging ailment is paid by the generic ticks of OnUpdateTick (not at its end, when hit, when the holder hits or on a
+## hit of the target).
+static func _pays_on_generic_ticks(ail: Dictionary) -> bool:
+	for flag: String in ["dealsAllDamageAtEnd", "dealsDamageWhenHit", "dealsDamageWhenAffectedHitsOthers", "dealsDamageOnAnguish", "movementAilment", "stopsWhenHit"]:
+		if ail.get(flag, false):
+			return false
+	return true
+
+
+## «More damage» that the game folds into ONE ailment instance (ActiveAilment.moreDamage, set when it is applied): the mods with
+## `ailment_only` of this ailment and the modifier of the character mutator for Time Rot, Brand of Deception and Witchfire
+## (CharacterAilmentMutator.GetAilmentDamageModifier). {factor, lines}
+static func _instance_more(build: Node, ctx: Dictionary, ail: Dictionary, health: int) -> Dictionary:
+	var id: int = int(ail.get("id", 0))
+	var ability_tags: int = int(ctx["tags"]) | health
+	var factor: float = 1.0
+	var lines: PackedStringArray = []
+	var chance_mods: Array[StatMod] = []
+	var chance_loaded: bool = false
+	for mod: StatMod in ctx["mods"]:
+		if mod.ailment_only != id or mod.property != LE.DAMAGE or mod.more.is_empty():
+			continue
+		var scale: float = 1.0
+		var scale_text: String = ""
+		if mod.chance_scaled != 0:
+			if not chance_loaded:
+				# the caster's stats (Actor.stats = the character-wide store), not the skill's own mod list
+				chance_mods = BuildMods.global_store(build)["store"].mods_of(LE.AILMENT_CHANCE)
+				chance_loaded = true
+			scale = stat_chance(chance_mods, mod.chance_scaled, ability_tags)
+			scale_text = LE.t(" × %s chance %s") % [str(GameData.ailment(mod.chance_scaled).get("name", mod.chance_scaled)), LE.fmt_pct(scale)]
+		for m: float in mod.more:
+			var x: float = maxf(m * scale, -1.0)
+			factor *= 1.0 + x
+			lines.append(LE.t("Damage modifier of this ailment only: ×%s%s (%s)") % [LE.fmt_num(1.0 + x), scale_text, mod.source])
+	var chars: Dictionary = _character_more(build, id, health)
+	if float(chars["x"]) != 0.0:
+		factor *= 1.0 + float(chars["x"])
+		lines.append_array(chars["lines"])
+	return {"factor": factor, "lines": lines}
+
+
+## CharacterAilmentMutator.GetAilmentDamageModifier for the ailments of the character mutator (AilmentID 9, 107, 122): the
+## chances are AilmentChance stats of the character for the stated tags (Stats.GetAilmentChance of CharacterMutator.stats), the
+## factors are the PlayerProperty fields of passives, items and uniques. {x, lines}. The Witchfire term of PlayerProperty 521 is
+## the `ailment_only` mod of its unique effect model.
+static func _character_more(build: Node, id: int, health: int) -> Dictionary:
+	var x: float = 0.0
+	var lines: PackedStringArray = []
+	if id == GameData.enum_value("AilmentID", "TimeRot"):
+		var f_slow: float = float(EnemyAilments.player_property(build, PP_TIME_ROT_PER_SLOW_CHANCE)["value"])
+		var f_rot: float = float(EnemyAilments.player_property(build, PP_TIME_ROT_PER_TIME_ROT_CHANCE)["value"])
+		var f_speed: float = float(EnemyAilments.player_property(build, PP_TIME_ROT_PER_SPEED)["value"])
+		if f_slow != 0.0 or f_rot != 0.0 or f_speed != 0.0:
+			var store: StatStore = BuildMods.global_store(build)["store"]
+			var chance_mods: Array[StatMod] = store.mods_of(LE.AILMENT_CHANCE)
+			var slow: float = stat_chance(chance_mods, GameData.enum_value("AilmentID", "Slow"), LE.VOID | health)
+			var rot: float = stat_chance(chance_mods, id, LE.VOID | health)
+			var speed: float = lowest_speed_increase(store, health)
+			x = (speed * f_speed + 1.0) * (rot * f_rot + 1.0) * (slow * f_slow + 1.0) - 1.0
+			lines.append(LE.t("Damage modifier of the character (passives): (%s × %s + 1)(%s × %s + 1)(%s × %s + 1) − 1 = %s: lowest attack / cast / throwing speed, Time Rot chance with Void skills, Slow chance with Void skills") % [
+				LE.fmt_pct(speed), LE.fmt_num(f_speed), LE.fmt_pct(rot), LE.fmt_num(f_rot), LE.fmt_pct(slow), LE.fmt_num(f_slow), LE.fmt_pct(x)])
+	elif id == GameData.enum_value("AilmentID", "BrandOfDeception"):
+		var f_shock: float = float(EnemyAilments.player_property(build, PP_BRAND_OF_DECEPTION_PER_SHOCK_CHANCE)["value"])
+		if f_shock != 0.0:
+			var shock_mods: Array[StatMod] = BuildMods.global_store(build)["store"].mods_of(LE.AILMENT_CHANCE)
+			var shock: float = stat_chance(shock_mods, GameData.enum_value("AilmentID", "Shock"), health)
+			x = shock * f_shock
+			lines.append(LE.t("Damage modifier of the character (passives): Shock chance %s × %s = %s") % [LE.fmt_pct(shock), LE.fmt_num(f_shock), LE.fmt_pct(x)])
+	elif id == GameData.enum_value("AilmentID", "Witchfire"):
+		var f_ignite: float = float(EnemyAilments.player_property(build, PP_WITCHFIRE_PER_IGNITE_CHANCE)["value"])
+		var f_damned: float = float(EnemyAilments.player_property(build, PP_WITCHFIRE_PER_DAMNED_CHANCE)["value"])
+		if f_ignite != 0.0 or f_damned != 0.0:
+			var fire_mods: Array[StatMod] = BuildMods.global_store(build)["store"].mods_of(LE.AILMENT_CHANCE)
+			var ignite: float = stat_chance(fire_mods, GameData.enum_value("AilmentID", "Ignite"), LE.FIRE | health) if f_ignite != 0.0 else 0.0
+			var damned: float = stat_chance(fire_mods, GameData.enum_value("AilmentID", "Damned"), LE.NECROTIC | health) if f_damned != 0.0 else 0.0
+			x = ignite * f_ignite + damned * f_damned
+			lines.append(LE.t("Damage modifier of the character (passives): Ignite chance with Fire skills %s × %s + Damned chance with Necrotic skills %s × %s = %s") % [
+				LE.fmt_pct(ignite), LE.fmt_num(f_ignite), LE.fmt_pct(damned), LE.fmt_num(f_damned), LE.fmt_pct(x)])
+	return {"x": x, "lines": lines}
+
+
+## Stats.GetAilmentChance: Σ added · (1 + Σ increased) · Π(1 + more) of the AilmentChance stats of the ailment whose tags are
+## contained in `tags` (the «cursed enemy is hit» chances are not stats of this kind). Stats with an extraTag (AutomaticNodeStats of
+## one ability) are not counted: the game queries with extraTag 0 (Stats.GetStatValue matches extraTag == query, or 0).
+static func stat_chance(mods: Array, id: int, tags: int) -> float:
+	var added: float = 0.0
+	var inc: float = 0.0
+	var more: float = 1.0
+	for mod: StatMod in mods:
+		if mod.property != LE.AILMENT_CHANCE or mod.on_curse_hit or mod.extra != 0 or (mod.special != 0 and mod.special != id) or not LE.tags_match(mod.tags, tags):
+			continue
+		added += mod.added
+		inc += mod.increased
+		for m: float in mod.more:
+			more *= 1.0 + m
+	return added * (1.0 + inc) * more
+
+
+## CharacterMutator.GetLowestAttackCastOrThrowSpeed: the lowest of the increased melee attack speed, throwing attack speed and
+## cast speed (Stats.GetTotalIncreased: stats whose tags are contained in the queried ones), not below 0.
+static func lowest_speed_increase(store: StatStore, health: int) -> float:
+	var melee: float = store.query(LE.ATTACK_SPEED, LE.MELEE | health, 0, 0, false).increased
+	var throwing: float = store.query(LE.ATTACK_SPEED, LE.THROWING | health, 0, 0, false).increased
+	var cast: float = store.query(LE.CAST_SPEED, health, 0, 0, false).increased
+	return maxf(minf(minf(melee, throwing), cast), 0.0)
 
 
 ## Longer duration raises total stack damage unless damage is dealt at the end / on hit (06d §1.3).
