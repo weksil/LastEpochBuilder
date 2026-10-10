@@ -1,0 +1,130 @@
+{
+ "_meta": {
+  "generator": "tools/extract/distill_prefab_sub_hits.py",
+  "inputs": [
+   "research/data/game/prefab_sub_ability_hits.json.gz",
+   "research/data/game/abilities.json",
+   "research/data/game/prefab_trap_spawn_relations.json.gz",
+   "research/data/game/minion_base_stats.json",
+   "dump/assets/ar2/ExportedProject/Assets/AssetBundles/PermaLoad/<ability name>.asset (Ability.sharedHitDetector)",
+   "dump/assets/ar2/ExportedProject/Assets/AssetBundles/PermaLoad/<prefab root>.prefab (HitDetector cannotHaveSharedhitDetector / bypassSharedHitDetection)"
+  ],
+  "rejected": [
+   [
+    "Bone Golem Rampage",
+    "Bone Golem Rampage Impacts",
+    "castOnStartAsWell=1"
+   ],
+   [
+    "MultiShot",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "RogueFalcon Diving Attack",
+    "RogueFalcon Melee",
+    "object can end early (DestroyOnParentReachingAbilityMovementDestination)"
+   ],
+   [
+    "Shurikens",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "Skeleton Rogue Shurikens",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "SpiritThorns",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "TailSlamExplosion",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "ThornTotemAttack",
+    "object spawns extra copies (ExtraProjectiles)"
+   ],
+   [
+    "ThornVolley",
+    "object spawns extra copies (ExtraProjectiles)"
+   ]
+  ],
+  "rules": [
+   "CreateAbilityObjectOnDeath: 1 cast per object death (CreateAbilityObjectOnDeath.createAbilityObject is subscribed to SelfDestroyer.deathEvent, SelfDestroyer.die invokes it) when additionalCasts, randomExtraCasts, chanceToCast, minimumAge, delay, mana, charge and kill/nearby conditions are all 0/false.",
+   "CastAfterDuration (single abilityRef, castChance 1, castOnStartAsWell 0, no interval modifiers): limitCasts -> remainingCasts * castsPerInterval; else floor(DestroyAfterDuration.duration / interval) * castsPerInterval; both only when the count is 0.05 s away from a frame boundary and the object has no Destroy* component other than DestroyAfterDuration, DestroyIfCasterDisabled, DestroyOnCasterDeath.",
+   "A sub-ability counts only if its damage[0] is DamageEnemyOnHit with isHit 1, or a zone / beam object with a settled tick count (rule below); summons are not counted.",
+   "An object with an ExtraProjectiles component (its onCreation constructs numberOfExtraProjectiles extra copies of itself) is not listed, neither as a parent nor as a sub-ability: its hit count per use is not settled here.",
+   "CastAtRandomPointAfterDuration (OnUpdateTick): castsAtStart (+ additionalCastsAtStart) casts on the first tick, then one cast per `duration` of age (initialDelay, addedDurationMultiplier, limitCasts, castAllAtStart all 0); the strike position is random and not modelled (every strike counts, research user decision 2).",
+   "Zone / beam objects: damage[0] class RepeatedlyDamageEnemiesWithinRadius (OnUpdateTick: index += dt, one damage per frame when index > damageInterval, damageAtStart preloads index; delay, damageIncreasePerInterval, alsoDamageParent, modifyRadiusOverTime all 0) or DamageEnemiesWithBeam (hit list refreshed every damageInterval; damageAtStart and dontRefreshHitLists 0): ticks = floor(DestroyAfterDuration.duration / damageInterval) (+1 with damageAtStart), the target is assumed to stay inside for the whole lifetime (research user decision 4); the beam only for a lifetime that is a whole multiple of the interval.",
+   "ExtraProjectiles (default mode, extraProjectilesPerUnitDistance 0, no delay, runOnCreation): 1 + numberOfExtraProjectiles objects; when the ability (or an ancestor) has sharedHitDetector set and the prefab HitDetector has neither cannotHaveSharedhitDetector nor bypassSharedHitDetection, the copies share one hit list and hit one target once (count 1). A hit-based sub-ability below an ancestor with sharedHitDetector is not listed.",
+   "hits of a chain = product of the link counts; the key is the minion ability name (abilities.json name)."
+  ],
+  "what": "Hits per use of a minion ability that its prefab delivers through spawned sub-abilities. Landing of random-point strikes, the position of copies and the time a target stays in a zone are environment and not modelled."
+ },
+ "parents": {
+  "Abomination Double Strike": [
+   {
+    "hits": 1,
+    "sub": "Abomination Double Strike Hit 1",
+    "via": "CastAfterDuration"
+   },
+   {
+    "hits": 1,
+    "sub": "Abomination Double Strike Hit 2",
+    "via": "CastAfterDuration"
+   }
+  ],
+  "Bone Golem 03 Leap Slam": [
+   {
+    "hits": 1,
+    "sub": "Bone Golem 03.1 Impact AoE",
+    "via": "CreateAbilityObjectOnDeath"
+   }
+  ],
+  "ForgedWeapon 02 slice": [
+   {
+    "hits": 3,
+    "sub": "ForgedWeapon 02.1 second slice",
+    "via": "CastAfterDuration"
+   }
+  ],
+  "IceBolt": [
+   {
+    "env": true,
+    "hits": 8,
+    "sub": "IceVortex",
+    "via": "CreateAbilityObjectOnDeath"
+   }
+  ],
+  "LightningStorm": [
+   {
+    "env": true,
+    "hits": 6,
+    "sub": "StormLightning",
+    "via": "CastAtRandomPointAfterDuration"
+   }
+  ],
+  "ScorpionMeleeComboStart": [
+   {
+    "hits": 1,
+    "sub": "ScorpionMeleeComboEnd",
+    "via": "CreateAbilityObjectOnDeath>CreateAbilityObjectOnDeath"
+   }
+  ],
+  "SummonedRevenant 02 WeaponThrow": [
+   {
+    "env": true,
+    "hits": 4,
+    "sub": "SummonedRevenant 02.1 WeaponInAir",
+    "via": "CreateAbilityObjectOnDeath"
+   }
+  ],
+  "TailSlam": [
+   {
+    "hits": 1,
+    "sub": "TailSlamExplosion",
+    "via": "CreateAbilityObjectOnDeath"
+   }
+  ]
+ }
+}

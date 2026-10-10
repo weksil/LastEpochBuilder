@@ -130,9 +130,6 @@ msgstr "Модификатор урона только этого айлмент
 msgid "Limit of %d stacks: a new stack displaces the stack with the least time left, its damage is lost. The new stack has no early tick, it is paid on the global ticks every %s s (phase unknown, averaged): a stack that lives %s s of its %s s manages to deal %s of its damage."
 msgstr "Лимит %d стаков: новый стак вытесняет стак с наименьшим остатком, его урон теряется. У нового стака нет раннего тика, он оплачивается на общих тиках каждые %s с (фаза неизвестна, усреднено): стак, живущий %s с из %s с, успевает нанести %s своего урона."
 
-msgid "Scathing Light stack only; the chance is entered by hand (the game sums Ignite, Electrify and mutator terms)"
-msgstr "Только стак Scathing Light; шанс вводится вручную (игра складывает шансы Ignite, Electrify и слагаемые мутатора)"
-
 msgid "The ailment holds one stack at most: a chance above 100% still applies it once per hit."
 msgstr "Айлмент держит не больше одного стака: шанс выше 100% всё равно накладывает его один раз за попадание."
 
@@ -2373,9 +2370,6 @@ msgstr "Шанс каждые 0.25 с"
 msgid "Chance every second"
 msgstr "Шанс каждую секунду"
 
-msgid "Chance every second at high health"
-msgstr "Шанс каждую секунду при высоком здоровье"
-
 msgid "Chance every second to create fire spirit near burning enemy"
 msgstr "Шанс каждую секунду создать огненного духа рядом с подожжённым врагом"
 
@@ -2462,9 +2456,6 @@ msgstr "Шанс Haste на 2 с при крите"
 
 msgid "Chance of Heartseeker return"
 msgstr "Шанс возврата Heartseeker"
-
-msgid "Chance of Ignite + Shock, %"
-msgstr "Шанс поджога + электризации, %"
 
 msgid "Chance of Lagoon Gladiator stack"
 msgstr "Шанс стака Гладиатора Лагона"
@@ -2687,9 +2678,6 @@ msgstr "Шанс в секунду для врагов вокруг"
 
 msgid "Chance per second for enemies in 4 m radius"
 msgstr "Шанс в секунду для врагов в радиусе 4 м"
-
-msgid "Chance per second for nearby enemies"
-msgstr "Шанс в секунду для врагов рядом с тотемом"
 
 msgid "Chance per second in orb radius"
 msgstr "Шанс в секунду в радиусе орба"
@@ -8639,9 +8627,6 @@ msgstr "При ударе по редкому/боссу или по 3 целя�
 msgid "On hit while in form"
 msgstr "При получении удара в форме"
 
-msgid "On kill by minion or minion death"
-msgstr "При убийстве миньоном или смерти миньона"
-
 msgid "On landing after jump"
 msgstr "При приземлении после прыжка"
 
@@ -8692,9 +8677,6 @@ msgstr "При призыве без перезарядки"
 
 msgid "On teleport, with cooldown"
 msgstr "При телепорте, с перезарядкой"
-
-msgid "On totem summon"
-msgstr "При призыве тотема"
 
 msgid "On use swaps places with nearest Shadow"
 msgstr "При применении меняется местами с ближайшей Тенью"
@@ -14934,6 +14916,9 @@ msgstr "Эхо: %s"
 msgid "Echo chance %s (%s): the use is repeated 1 s later."
 msgstr "Шанс эха %s (%s): применение повторяется через 1 с."
 
+msgid "Guaranteed echo after a jump of more than 4 m (Volatile Reversal node): 100%, a jump before every use is assumed (D?)"
+msgstr "Гарантированное эхо после прыжка дальше 4 м (узел Volatile Reversal): 100%, прыжок перед каждым применением (D?)"
+
 msgid "Rive: × (1 + %s)"
 msgstr "Rive: × (1 + %s)"
 
@@ -15234,6 +15219,15 @@ msgstr ", не чаще %s/с из-за перезарядки или заряд
 
 msgid "×%s minions, %s uses/s each (priority %d, %s of the time%s)"
 msgstr "×%s миньонов, %s применений/с каждый (приоритет %d, %s времени%s)"
+
+msgid ", ×%s per use of «%s»"
+msgstr ", ×%s за применение «%s»"
+
+msgid " (D?: every strike hits the target / the target stays inside for the whole lifetime of the object)"
+msgstr " (D?: каждый удар попадает в цель / цель остаётся внутри объекта всё его время жизни)"
+
+msgid "; limited to %s by the shared companion budget (D?: the combination with the most DPS is kept)"
+msgstr "; ограничено до %s общим лимитом спутников (D?: показана комбинация с наибольшим DPS)"
 
 msgid "Triggered skill: %s"
 msgstr "Навык от триггера: %s"
@@ -15571,10 +15565,6 @@ msgstr "; перезарядка %s с начинается после каст�
 msgid "%s — counted when: the character is moving (Conditions) or a Melee skill is in use"
 msgstr "%s — считается, когда: персонаж движется (Условия) или используется умение с тегом Melee"
 
-
-msgid "Void zone of the hammer is not counted (time on target unknown); the hit stays Physical"
-msgstr "Зона Бездны вокруг молота не считается (время на цели неизвестно); удар остаётся физическим"
-
 msgid "Node \"%s\": the use that finds the cooldown (%s s, counted in real time) ready converts the base damage of type \"%s\" to \"%s\" by 100%%; at %s uses per second one use in %d is converted, so on average %s of the base damage moves before any modifier (moved %s). Uses during the cooldown get only the node's ordinary conversion (D?: uses are evenly spaced).\nRule: %s"
 msgstr "Узел «%s»: применение, заставшее готовую перезарядку (%s с, идёт в реальном времени), на 100%% превращает базовый урон типа «%s» в «%s»; при %s применений в секунду превращается одно применение из %d, то есть в среднем %s базового урона переходит до любых модификаторов (перенесено %s). Применения во время перезарядки получают только обычное превращение узла (D?: применения идут через равные промежутки).\nПравило: %s"
 
@@ -15805,3 +15795,214 @@ msgstr "Эффективность маны = (1 + Σ добавлено) × (1 
 
 msgid "The next Glyph of Dominion / Runic Invocation after an ally passes the wall costs less mana (more -f on that skill, not counted)"
 msgstr "Следующий Glyph of Dominion / Runic Invocation после прохода союзника через стену стоит меньше маны (more -f на том умении, не считается)"
+
+
+msgid "Hammer Throw channelled mode: the Disintegrating Aura zone is not counted (the zone is added to the thrown hammers only, whether the channel's hammers get it is not in the game data)."
+msgstr "Режим с удержанием у Hammer Throw: зона Disintegrating Aura не учитывается (она добавляется только брошенным молотам; получают ли её молоты канала, в данных игры не указано)."
+
+msgid "Disintegrating Aura"
+msgstr "Разрушающая аура"
+
+msgid "%s zone on every hammer: %d ticks of %s s over a lifetime of %s s, %s base damage per tick. The enemy is assumed to stay in the zone for the whole lifetime (D?); %s. The zone rolls no ailments of its own."
+msgstr "Зона (%s) на каждом молоте: %d тиков по %s с за время жизни %s с, %s базового урона за тик. Враг считается в зоне всё время жизни (D?); %s. Зона сама не накладывает аномалии."
+
+msgid "the hammer does not return: the lifetime is set by the mutator (%s s)"
+msgstr "молот не возвращается: время жизни задаёт мутатор (%s с)"
+
+msgid "the hammer returns: the serialized cap %s s is used (D?: an earlier end of the return is not in the data)"
+msgstr "молот возвращается: берётся сериализованный предел %s с (D?: более раннее окончание возврата в данных не указано)"
+
+msgid "channelled: the object lives while the channel is held (player behaviour), counted as one tick"
+msgstr "с удержанием: объект живёт, пока удерживается канал (поведение игрока), учитывается один тик"
+
+msgid "%d ticks of %s s over the lifetime %s s (D?: the enemy stays in the zone)"
+msgstr "%d тиков по %s с за время жизни %s с (D?: враг остаётся в зоне)"
+
+msgid " × Scathing Light chance sum %s"
+msgstr " × сумма шансов Scathing Light %s"
+
+msgid "Scathing Light chance sum S = %s: Ignite %s + Electrify %s"
+msgstr "Сумма шансов Scathing Light S = %s: Ignite %s + Electrify %s"
+
+msgid "  + resistance %s × per point %s × 100 + Electrify field %s"
+msgstr "  + сопротивление %s × на очко %s × 100 + поле Electrify %s"
+
+msgid "  + Shock %s (converted to Electrify) + Shock field %s"
+msgstr "  + Shock %s (превращённый в Electrify) + поле Shock %s"
+
+msgid "a roll every second, chance %s (the character is alive)"
+msgstr "бросок каждую секунду, шанс %s (персонаж жив)"
+
+msgid "use of a totem skill, chance %s"
+msgstr "использование навыка тотема, шанс %s"
+
+msgid "Divine Essence: a roll every second while alive (counted in Buffs on you)"
+msgstr "Божественная сущность: бросок каждую секунду, пока персонаж жив (учитывается в «Баффы на вас»)"
+
+msgid "Haste on every use of a totem skill (counted in Buffs on you)"
+msgstr "Ускорение при каждом использовании навыка тотема (учитывается в «Баффы на вас»)"
+
+msgid "Haste (2 s) on a minion kill or death: the event rate depends on the fight and is not counted (set the Haste stacks by hand on the Conditions tab)"
+msgstr "Ускорение (2 с) при убийстве или гибели миньона: частота события зависит от боя и не учитывается (стаки Ускорения задаются вручную на вкладке «Условия»)"
+
+msgid "Disintegrating Aura: Void damage zone on every hammer (component below)"
+msgstr "Разрушающая аура: зона урона Пустотой на каждом молоте (компонент ниже)"
+
+msgid "Scathing Light stack only: f × 100 × (Ignite + Electrify chance, resistance and node terms) of the character (AilmentCalc._scathing_light_sum)"
+msgstr "Только стак Scathing Light: f × 100 × (шанс Ignite + Electrify, сопротивление и слагаемые узлов персонажа) (AilmentCalc._scathing_light_sum)"
+
+msgid "Chance per 1 s application of the totem's Blizzard (RepeatedlyApplyAilmentsInRadius added by BlizzardMutator.Mutate); enemies assumed in the zone (D?)"
+msgstr "Шанс за каждое применение Blizzard тотема раз в 1 с (RepeatedlyApplyAilmentsInRadius, добавленный BlizzardMutator.Mutate); враги считаются в зоне (D?)"
+
+msgid "Distance %s × %s mana per distance = %s (added to the base cost)"
+msgstr "Расстояние %s × %s маны за единицу расстояния = %s (добавляется к базовой стоимости)"
+
+msgid "Distance to the target point (mana cost per distance)"
+msgstr "Расстояние до точки цели (стоимость маны за расстояние)"
+
+msgid "Current mana (0 = maximum)"
+msgstr "Текущая мана (0 = максимум)"
+
+msgid "current mana (Conditions; 0 = maximum)"
+msgstr "текущая мана (Условия; 0 = максимум)"
+
+msgid "spent directly, not divided by mana efficiency"
+msgstr "тратится напрямую, не делится на эффективность маны"
+
+msgid "Current mana (Conditions tab; 0 = maximum)"
+msgstr "Текущая мана (вкладка «Условия»; 0 = максимум)"
+
+msgid "Remaining cooldown recovered per falcon hit (event rate not counted)"
+msgstr "Оставшаяся перезарядка восстанавливается за попадание сокола (частота событий не учитывается)"
+
+msgid "Remaining cooldown of Dive Bomb and Falcon Strikes recovered per use (other skills)"
+msgstr "Оставшаяся перезарядка Пикирующей бомбы и ударов сокола восстанавливается за использование (другие умения)"
+
+msgid "Remaining cooldown recovered when another ally is healed (event not counted)"
+msgstr "Оставшаяся перезарядка восстанавливается при лечении другого союзника (событие не учитывается)"
+
+msgid "Remaining cooldown recovered per first throwing or bow hit (event not counted)"
+msgstr "Оставшаяся перезарядка восстанавливается за первое попадание броском или луком (событие не учитывается)"
+
+msgid "Remaining cooldown of movement skills restored per first hit on a rare or boss (event not counted)"
+msgstr "Оставшаяся перезарядка умений передвижения восстанавливается за первое попадание по редкому врагу или боссу (событие не учитывается)"
+
+msgid "Remaining cooldown of falcon skills recovered per explosion (event not counted)"
+msgstr "Оставшаяся перезарядка умений сокола восстанавливается за взрыв (событие не учитывается)"
+
+msgid "Remaining cooldown recovered per freeze (event not counted)"
+msgstr "Оставшаяся перезарядка восстанавливается за заморозку (событие не учитывается)"
+
+msgid "Remaining Falcon Strike cooldown recovered per player hit (event not counted)"
+msgstr "Оставшаяся перезарядка ударов сокола восстанавливается за попадание игрока (событие не учитывается)"
+
+msgid "Remaining Reap cooldown restored per hit (event not counted)"
+msgstr "Оставшаяся перезарядка Жатвы восстанавливается за попадание (событие не учитывается)"
+
+msgid "Remaining Reaper Form cooldown restored per hit (event not counted)"
+msgstr "Оставшаяся перезарядка Формы жнеца восстанавливается за попадание (событие не учитывается)"
+
+msgid "Total bonus capped by maxTotalDamageToDamned of the node (0.21 per point)"
+msgstr "Общий бонус ограничен maxTotalDamageToDamned узла (0.21 за очко)"
+
+msgid "Distance to the target (damage per distance, max 10)"
+msgstr "Расстояние до цели (урон за единицу расстояния, макс. 10)"
+
+msgid "distance to the target (per unit, max 10)"
+msgstr "расстояние до цели (за единицу, макс. 10)"
+
+msgid "Petrified"
+msgstr "Окаменение"
+
+msgid "petrified"
+msgstr "окаменевший"
+
+msgid "bleed damage per poison stack"
+msgstr "урон кровотечения за стак яда"
+
+msgid "poison damage per bleed stack"
+msgstr "урон яда за стак кровотечения"
+
+msgid "Zone level (0 = enemy level)"
+msgstr "Уровень зоны (0 = уровень врага)"
+
+msgid "Zone level used by the armor mitigation formula (the game reads ZoneInfoManager.ZoneLevel, not the monster level). 0 = same as the enemy level."
+msgstr "Уровень зоны для формулы снижения урона бронёй (игра читает ZoneInfoManager.ZoneLevel, а не уровень монстра). 0 = как уровень врага."
+
+msgid " (one use per %s s: %s of the uses, %s uses/s)"
+msgstr " (одно применение на %s с: %s от применений, %s применений/с)"
+
+msgid "%s; %d events within %s s are needed, %s events/s are too few: 0/s"
+msgstr "%s; нужно %d событий за %s с, при %s событиях/с их мало: 0/с"
+
+msgid " (every %d-th event)"
+msgstr " (каждое %d-е событие)"
+
+msgid "No crit in the last 4 s %s of the time: chance %s; a crit in the last 4 s otherwise: chance %s (crits at %s hits/s, D?)"
+msgstr "Без крита за последние 4 с %s времени: шанс %s; иначе (крит за последние 4 с): шанс %s (криты при %s ударах/с, D?)"
+
+msgid " (only while no crit in the last 4 s)"
+msgstr " (только без крита за последние 4 с)"
+
+msgid " (only while a crit was dealt in the last 4 s)"
+msgstr " (только если крит был за последние 4 с)"
+
+msgid "Each melee hit on a bleeding enemy adds a 4 s stack of +8% increased physical damage (51 distinct stacks at most). Automatic value: own melee hits/s x bleed uptime x 4 s"
+msgstr "Каждый удар ближнего боя по кровоточащему врагу даёт стак +8% увеличенного физического урона на 4 с (не более 51 разных стаков). Автоматическое значение: свои удары ближнего боя в секунду x доля времени кровотечения x 4 с"
+
+msgid "Undisputed stacks (own melee hits on a bleeding enemy within 4 s)"
+msgstr "Стаки Undisputed (свои удары ближнего боя по кровоточащему врагу за 4 с)"
+
+msgid "Every kill adds a 10 s charge; the 5th live charge casts Soul Eruption and clears them (5 kills within 10 s, evenly spaced kills assumed; kills per second is the event input)"
+msgstr "Каждое убийство добавляет заряд на 10 с; 5-й живой заряд вызывает Soul Eruption и сбрасывает все (5 убийств за 10 с, убийства считаются равномерными; убийств в секунду задаёт поле событий)"
+
+msgid "Each melee use that hits gives a 16 s stack: +2 added fire damage and +20% ignite chance (melee). Automatic value: own melee uses/s x 16 s"
+msgstr "Каждое применение ближнего боя, которое попадает, даёт стак на 16 с: +2 к огненному урону и +20% к шансу воспламенения (ближний бой). Автоматическое значение: свои применения ближнего боя в секунду x 16 с"
+
+msgid "Searing Blades stacks (one per melee use that hits, 16 s each)"
+msgstr "Стаки Searing Blades (одно на каждое попадающее применение ближнего боя, по 16 с)"
+
+msgid "Only while no crit was dealt in the last 4 s (CharacterMutator: timeLastCrit + 4 s); except supported (channelled) abilities (not modelled, D?)"
+msgstr "Только пока за последние 4 с не было крита (CharacterMutator: timeLastCrit + 4 с); кроме поддерживаемых (каналируемых) умений (не моделируется, D?)"
+
+msgid "Only while a crit was dealt in the last 4 s (the buff refreshed by each crit)"
+msgstr "Только пока за последние 4 с был крит (бафф обновляется каждым критом)"
+
+msgid "Only a use whose skill has both the Void and Melee tags (161/162; Fire and Melee for 163/164) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
+msgstr "Только применение умения с тегами Void и Melee (161/162; Fire и Melee для 163/164) и только когда готов 2-секундный таймер настоящего применения: умножается на min(1, 1 / (2 x применений/с)), максимальный случай, общий таймер с другими такими умениями не учитывается (D?)"
+
+msgid "Only a use whose skill has both the Fire and Melee tags (163/164; Void and Melee for 161/162) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
+msgstr "Только применение умения с тегами Fire и Melee (163/164; Void и Melee для 161/162) и только когда готов 2-секундный таймер настоящего применения: умножается на min(1, 1 / (2 x применений/с)), максимальный случай, общий таймер с другими такими умениями не учитывается (D?)"
+
+msgid "Maximum case: the bow lightning attack that arms this window (UseType Direct, InstantDirect or SummonerCastDirect) is used right before; the default is on only while a bar skill with Bow and Lightning tags exists (D?)"
+msgstr "Максимальный случай: перед этим используется молниевая атака из лука, которая включает это окно (UseType Direct, InstantDirect или SummonerCastDirect); по умолчанию включено, только если на панели есть умение с тегами Bow и Lightning (D?)"
+
+msgid "Maximum case: the thrown lightning attack that arms this window (UseType Direct, InstantDirect or SummonerCastDirect) is used right before; the default is on only while a bar skill with Throwing and Lightning tags exists (D?)"
+msgstr "Максимальный случай: перед этим используется метательная молниевая атака, которая включает это окно (UseType Direct, InstantDirect или SummonerCastDirect); по умолчанию включено, только если на панели есть умение с тегами Throwing и Lightning (D?)"
+
+msgid "Distance of the attacker to you (within 4 m effects)"
+msgstr "Расстояние от атакующего до вас (эффекты «в пределах 4 м»)"
+
+msgid "Damage taken from enemies within 4 m (PP 257 / 258)"
+msgstr "Урон от врагов в пределах 4 м (PP 257 / 258)"
+
+msgid "Damage taken with at least 400 current mana (PP 262)"
+msgstr "Урон при текущей мане не менее 400 (PP 262)"
+
+msgid "Chance to gain 30 ward when hit"
+msgstr "Шанс получить 30 барьера при ударе по вам"
+
+msgid "%s ward × %s chance × %s of hits not dodged"
+msgstr "%s барьера × %s шанс × %s ударов без уклонения"
+
+msgid "× %s ward gain multiplier (GainWard)"
+msgstr "× %s множитель прироста барьера (GainWard)"
+
+msgid "No ward gain (PP 471): every ward source is not counted"
+msgstr "Прирост барьера невозможен (PP 471): источники барьера не учтены"
+
+msgid "Ward gained on kill"
+msgstr "Барьер за убийство"
+
+msgid "Ward gained on stun"
+msgstr "Барьер за оглушение"

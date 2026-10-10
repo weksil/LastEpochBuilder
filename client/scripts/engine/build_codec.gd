@@ -244,6 +244,8 @@ static func _player(saved: Variant) -> Dictionary:
 	player["minions"] = minions
 	for key: String in EnemyAilments.EVENT_INPUTS:
 		player[key] = maxf(float(player.get(key, 0.0)), 0.0)  # per second, fractional
+	for key: String in ["target_distance", "attacker_distance"]:
+		player[key] = maxf(float(player.get(key, 1.0)), 0.0)  # metres, fractional (JSON turns 1.0 into 1)
 	return player
 
 

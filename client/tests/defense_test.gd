@@ -15,6 +15,11 @@ func _ready() -> void:
 		get_tree().quit(1))
 	_pool_vectors()
 	_review_fixes()
+	_current_mana_pp262()
+	_attacker_distance_pp257()
+	_ward_gain_multiplier()
+	_ward_on_hit()
+	_event_ward()
 	_scaling()
 	_presets()
 	_build()
@@ -319,6 +324,101 @@ func _review_fixes() -> void:
 	_near(DefenseRecovery.hits_to_die(layers, [] as Array[Dictionary], 100.0, 1.0), 7.1792, "hits to die with a health drain", 0.0005)
 	layers["health_drain"] = 0.0
 	_near(DefenseRecovery.hits_to_die(layers, [] as Array[Dictionary], 100.0, 1.0), 10.0, "hits to die without the drain", 0.0005)
+
+
+## PP 262 (CharacterMutator.ApplyConditionalDefenses): damage taken x(1 + 0.1) at least 400 current mana; the current mana is the
+## Conditions value (0 = not set = the maximum 500 here), never above the maximum.
+func _current_mana_pp262() -> void:
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.MANA, "added", 500.0, 0, "max mana"))
+	var pps: Dictionary = {262: {"value": 0.1}}
+	for current: float in [300.0, 0.0, 450.0, 400.0, 399.0]:
+		Build.set_player_state("current_mana", current)
+		var out: Dictionary = {"lines": PackedStringArray(), "hit_more": 1.0, "dot_more": 1.0, "block_add": 0.0, "crit_avoid_add": 0.0,
+			"armour_more": 0.0, "threshold_add": 0.0, "block_dot": 0.0, "delayed": 0.0}
+		DefenseConversions._conditional(Build, store, {"is_hit": true}, pps, out)
+		var expected: float = 1.0 if (current == 300.0 or current == 399.0) else 1.1  # 400 counts (>=), 399 does not
+		_near(float(out["hit_more"]), expected, "PP 262 hit at current mana %s" % current, 0.0001)
+		_near(float(out["dot_more"]), expected, "PP 262 dot at current mana %s" % current, 0.0001)
+	Build.set_player_state("current_mana", 0)
+
+
+## PP 257 / 258 (CharacterMutator.ApplyConditionalDefenses): the attacker within 4.0 (strict, Maths.distanceLessThan) gives
+## damage taken x(1 + pp257) and block chance + pp258; the distance is the Conditions input attacker_distance (default 1).
+func _attacker_distance_pp257() -> void:
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.MANA, "added", 500.0, 0, "max mana"))
+	var pps: Dictionary = {257: {"value": -0.2}, 258: {"value": 0.1}}
+	for d: float in [1.0, 3.9, 4.0, 10.0]:
+		Build.set_player_state("attacker_distance", d)
+		var out: Dictionary = {"lines": PackedStringArray(), "hit_more": 1.0, "dot_more": 1.0, "block_add": 0.0, "crit_avoid_add": 0.0,
+			"armour_more": 0.0, "threshold_add": 0.0, "block_dot": 0.0, "delayed": 0.0}
+		DefenseConversions._conditional(Build, store, {"is_hit": true}, pps, out)
+		var near: bool = d < 4.0
+		_near(float(out["hit_more"]), 0.8 if near else 1.0, "PP 257 hit at distance %s" % d, 0.0001)
+		_near(float(out["dot_more"]), 0.8 if near else 1.0, "PP 257 dot at distance %s" % d, 0.0001)
+		_near(float(out["block_add"]), 0.1 if near else 0.0, "PP 258 block at distance %s" % d, 0.0001)
+	Build.set_player_state("attacker_distance", 1.0)
+
+
+## ProtectionClass.GainWard: the moreWardGenerated list (t), wardGainModifier from SP 119 (inc / more), the PP 471 zero and the
+## factor applied to every ward source (scale_ward), ward regeneration included.
+func _ward_gain_multiplier() -> void:
+	_near(DefenseRecovery.ward_more_t([]), 0.0, "t empty")
+	_near(DefenseRecovery.ward_more_t([0.5]), 0.5, "t one")
+	_near(DefenseRecovery.ward_more_t([0.5, 0.5]), 0.75, "t quirk 0.5*1.5")
+	_near(DefenseRecovery.ward_more_t([-0.3, 0.5, 0.0, 0.2]), 0.6, "t skips v<=0, 0.5*1.2")
+	var store := StatStore.new()
+	store.add(StatMod.make(LE.WARD_DECAY_THRESHOLD, "added", 100.0))
+	_near(DefenseRecovery.ward_gain_modifier(store), 0.0, "mod none")
+	store.add(StatMod.make(LE.WARD_DECAY_THRESHOLD, "increased", 0.5))
+	store.add(StatMod.make(LE.WARD_DECAY_THRESHOLD, "more", 0.2))
+	_near(DefenseRecovery.ward_gain_modifier(store), 0.8, "mod 1.5*1.2-1")
+	_near(DefenseRecovery.ward_gain_factor({}), 1.0, "factor default")
+	_near(DefenseRecovery.ward_gain_factor({"ward_gain_t": 0.75}), 1.75, "factor t")
+	_near(DefenseRecovery.ward_gain_factor({"ward_gain_mod": 0.5}), 0.5, "factor mod")
+	_near(DefenseRecovery.ward_gain_factor({"ward_gain_t": 0.5, "ward_gain_mod": 0.5}), 0.75, "factor t*mod = 1.5*0.5")
+	_near(DefenseRecovery.ward_gain_factor({"ward_gain_mod": -2.0}), -1.0, "mod clamped at -1")
+	_near(DefenseRecovery.ward_gain_factor({"no_ward_gain": true, "ward_gain_t": 0.5}), 0.0, "PP 471")
+	var src: Array[Dictionary] = [{"resource": "ward", "timing": "rate", "base": "flat", "k": 10.0, "label": "w", "text": ""},
+		{"resource": "health", "timing": "rate", "base": "flat", "k": 5.0, "label": "h", "text": ""}]
+	var scaled: Array[Dictionary] = DefenseRecovery.scale_ward(src, 0.5)
+	_near(float(scaled[0]["k"]), 5.0, "ward k x0.5")
+	_near(float(scaled[1]["k"]), 5.0, "health k unchanged")
+	_check(DefenseRecovery.scale_ward(src, 0.0).size() == 1, "factor 0 drops ward sources")
+	# one second of recovery below the threshold: 5 ward/s x 1 s = 5 (no decay: ward <= threshold)
+	var layers: Dictionary = {"health": 1000.0, "health_limit": 1000.0, "ward_limit": 0.0, "health_drain": 0.0, "ward_threshold": 1000.0,
+		"ward_retention": 0.0, "ward_regen": 10.0}
+	var pool: Dictionary = {"health": 1000.0, "ward": 0.0, "slow": []}
+	var one: Array[Dictionary] = []
+	one.append(scaled[0])
+	DefenseRecovery.recover(layers, one, pool, 1.0)
+	_near(float(pool["ward"]), 5.0, "ward recovered with factor 0.5", 0.01)
+
+
+## SP 97 (ProtectionClass.ApplyDamage): 30 ward x chance x hits not dodged; DoT never rolls (no reach).
+func _ward_on_hit() -> void:
+	var a: Array[Dictionary] = DefenseRecovery.ward_on_hit({"ward_on_hit_chance": 0.3}, {"reach": 0.8})
+	_near(float(a[0]["k"]), 7.2, "30 x 0.3 x 0.8", 0.0001)
+	var b: Array[Dictionary] = DefenseRecovery.ward_on_hit({"ward_on_hit_chance": 1.5}, {"reach": 1.0})
+	_near(float(b[0]["k"]), 30.0, "chance clamped at 1", 0.0001)
+	_check(DefenseRecovery.ward_on_hit({"ward_on_hit_chance": 0.3}, {"reach": 0.0}).is_empty(), "DoT: no ward on hit")
+	var ev: Dictionary = DefenseCalc.enemy_hit_chances(0.2, 0.25, 0.5, 0.4)
+	_near(float(ev["reach"]), 0.8, "reach = 1 - dodge")
+
+
+## WardGain specialTag 3 (kill) and 5 (stun), tags 0: ward per second from the Conditions inputs (GainWard).
+func _event_ward() -> void:
+	var store := StatStore.new()
+	store.add(StatMod.make(39, "added", 20.0, 0, "w", 3))
+	store.add(StatMod.make(39, "added", 8.0, 0, "w", 5))
+	var ps: Dictionary = {"kills_per_second": 2.0, "stuns_per_second": 0.5}
+	var ev: Array[Dictionary] = DefenseRecovery.event_gains(store, ps, {"block": 0.0})
+	var ward_k: float = 0.0
+	for s: Dictionary in ev:
+		if s["resource"] == "ward":
+			ward_k += float(s["k"])
+	_near(ward_k, 20.0 * 2.0 + 8.0 * 0.5, "ward on kill and stun per second", 0.0001)  # 44.0
 
 
 func _scaling() -> void:

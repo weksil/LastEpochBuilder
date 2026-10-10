@@ -9,6 +9,8 @@ const KIND_VALUES: PackedStringArray = ["dummy", "normal", "magic", "rare", "min
 const MAX_LISTED: int = 8
 ## Enemy flags that are on by default (Build._init_defaults); only a deviation counts as "set".
 const ENEMY_FLAG_DEFAULTS: Dictionary = {"high_health": true, "full_health": true}
+## Player numbers whose default is not 0 (Build.default_player_state); the default is not shown as an active override.
+const PLAYER_VALUE_DEFAULTS: Dictionary = {"target_distance": 1.0, "attacker_distance": 1.0}
 
 @export var ailment_row_scene: PackedScene
 @export var minion_row_scene: PackedScene
@@ -48,6 +50,7 @@ var _ailments_shown: int = 0
 @onready var _health_select: OptionButton = %HealthSelect
 @onready var _kind_select: OptionButton = %KindSelect
 @onready var _level_spin: SpinBox = %LevelSpin
+@onready var _area_level_spin: SpinBox = %AreaLevelSpin
 @onready var _armour_spin: SpinBox = %ArmourSpin
 @onready var _corruption_spin: SpinBox = %CorruptionSpin
 
@@ -56,6 +59,7 @@ func _ready() -> void:
 	_health_select.item_selected.connect(_on_health_selected)
 	_kind_select.item_selected.connect(_on_kind_selected)
 	_level_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("level", int(value)))
+	_area_level_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("area_level", int(value)))
 	_armour_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("armour", int(value)))
 	_corruption_spin.value_changed.connect(func(value: float) -> void: Build.set_enemy("corruption", int(value)))
 	_show_all.toggled.connect(func(_on: bool) -> void: _refresh())
@@ -161,6 +165,7 @@ func _sync_values() -> void:
 	if kind_index >= 0 and _kind_select.selected != kind_index:
 		_kind_select.select(kind_index)
 	_set_spin(_level_spin, float(int(Build.enemy.get("level", 100))))
+	_set_spin(_area_level_spin, float(int(Build.enemy.get("area_level", 0))))
 	_set_spin(_armour_spin, float(int(Build.enemy.get("armour", 0))))
 	_set_spin(_corruption_spin, float(int(Build.enemy.get("corruption", 0))))
 	var res: Array = Build.enemy.get("res", [0, 0, 0, 0, 0, 0, 0]) as Array
@@ -205,19 +210,20 @@ func _apply_player() -> void:
 	for spin: SpinBox in _player_value_spins:
 		var key: String = str(spin.get_meta("player_value"))
 		var value: float = float(Build.player_state.get(key, 0))
+		var idle: float = float(PLAYER_VALUE_DEFAULTS.get(key, 0.0))
 		_set_spin(spin, value)
 		var source: Dictionary = _source("player_values", key)
 		var has_source: bool = bool(source["has"])
 		var row: PanelContainer = spin.get_parent().get_parent() as PanelContainer
 		var keep: bool = spin.get_line_edit().has_focus()
-		row.visible = show_all or has_source or value != 0 or keep
+		row.visible = show_all or has_source or not is_equal_approx(value, idle) or keep
 		if row.visible:
 			shown += 1
 		else:
 			hidden_count += 1
-		row.theme_type_variation = &"RowIdle" if value == 0 else (&"RowActive" if has_source else &"RowNoSource")
+		row.theme_type_variation = &"RowIdle" if is_equal_approx(value, idle) else (&"RowActive" if has_source else &"RowNoSource")
 		row.tooltip_text = _source_tooltip(str(source["reason"]), has_source)
-		if value != 0:
+		if not is_equal_approx(value, idle):
 			var label: Label = spin.get_parent().get_child(0) as Label
 			active.append("%s %s" % [tr(label.text), LE.fmt_num(value)])
 			if not has_source:

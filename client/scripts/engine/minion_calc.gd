@@ -14,17 +14,20 @@ const INCREASE_ALL_DAMAGE_MUTATORS: Array[String] = ["BasicMeleeMutator", "Gener
 ## Mutators that scale the use speed of the ability they are aimed at (AbilityMutator.mutateUseSpeed, applied by
 ## UsingAbility.getSpeedMultiplier after the speed stat and its maximumUseSpeed cap): class -> field.
 const USE_SPEED_MUTATORS: Dictionary = {"ComplexGenericMutator": "increasedCastSpeed"}
-## UsingAbility.baseUseSpeedMultiplier of a minion (field default; prefab overrides are not extracted) and the speedScaler
-## value that means "no speed stat".
+## UsingAbility.baseUseSpeedMultiplier of a minion: 1.0 (prefab_use_speed.json.gz: serialised 1.0 on the 24 minion actors with a
+## UsingAbility component; the UsingAbilityAI / UsingMultipleAbilitiesAI added at runtime keep the constructor value 0x3f800000,
+## UsingAbilityAI.c:140; 1.1 is UsingAbilityPlayer's) and the speedScaler value that means "no speed stat".
 const MINION_BASE_USE_SPEED: float = 1.0
 const SPEED_NO_STAT: int = 54
 ## Mutators aimed at their ability by the id their Awake sets (AbilityMutator.SetInitialAbility(AbilityID)), without an abilityRef:
 ## class -> AbilityID value (DeathKnightHarvestMutator.Awake: SetInitialAbility_1(0x127) = DeathKnightHarvest).
 const MUTATOR_TARGET_IDS: Dictionary = {"DeathKnightHarvestMutator": 295}
 const TYPE_NAMES: Array[String] = ["Physical", "Fire", "Cold", "Lightning", "Necrotic", "Void", "Poison"]
+const SUB_HITS_PATH: String = "res://data/minion_sub_hits.json"
 
 static var _minions: Array[Dictionary] = []
 static var _abilities: Dictionary = {}  # ability name -> record (abilities.json)
+static var _sub_hits_table: Dictionary = {}  # minion ability name -> [{sub, hits, via}] (minion_sub_hits.json)
 static var _loaded: bool = false
 
 
@@ -45,12 +48,29 @@ static func _load() -> void:
 				var rec_name: String = str(rec.get("name", ""))
 				if not _abilities.has(rec_name):
 					_abilities[rec_name] = rec
+	if FileAccess.file_exists(SUB_HITS_PATH):
+		var sub_json: Variant = JSON.parse_string(FileAccess.get_file_as_string(SUB_HITS_PATH))
+		if sub_json is Dictionary:
+			_sub_hits_table = (sub_json as Dictionary).get("parents", {})
 
 
 static func _read_json(path: String) -> Variant:
 	if not FileAccess.file_exists(path):
 		return null
 	return JSON.parse_string(FileAccess.get_file_as_string(path))
+
+
+## Sub-abilities that the prefab of a minion ability spawns, with their hits per use (minion_sub_hits.json: CreateAbilityObjectOnDeath
+## 1 cast per object death, CastAfterDuration limitCasts * castsPerInterval or floor(lifetime / interval), CastAtRandomPointAfterDuration
+## strikes, zone / beam ticks, ExtraProjectiles copies with a shared hit list = 1; research/11 #85).
+## [{sub: ability name, hits, via, env}]; env: the count assumes the target takes every strike / stays in the zone (D?).
+static func sub_hits(ability_name: String) -> Array[Dictionary]:
+	_load()
+	var out: Array[Dictionary] = []
+	for e: Variant in _sub_hits_table.get(ability_name, []):
+		if e is Dictionary:
+			out.append(e)
+	return out
 
 
 ## AbilityProperties of a summon that are stats of its minions (ability_property_fields_c.json, AbilityStatsMutatorManager
@@ -337,7 +357,8 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 		var count: float = float(item[1])
 		# the minion AI (UsingMultipleAbilitiesAI.chooseAbility) takes the first ability of its list that is not on cooldown
 		# and has a charge: abilities with a cooldown / charges are used whenever ready, the first one without takes all
-		# the remaining time, the ones after it are never used (the target is assumed within range of every ability, D?)
+		# the remaining time, the ones after it are never used. The AbilityRangeList gates (pursuit range, health thresholds) are not
+		# applied: the calculator has no target distance (research/11 #93)
 		var free: float = 1.0
 		var order: int = 0
 		for ab_name: Variant in names:
@@ -374,17 +395,33 @@ static func components(player_store: StatStore, summon_ab: Dictionary, minion_mo
 				rate = minf(cap, rate)
 			var share: float = rate / per_second if per_second > 0.0 else 0.0
 			free -= share
+			# the hits of one use: the ability's own damage[0] and the sub-abilities its prefab spawns (sub_hits)
+			var hits: Array[Dictionary] = []
 			var entry: Dictionary = _mutated_hit(minion, ability, _first_damage(ability))
-			if entry.is_empty() or rate <= 0.0:
+			if not entry.is_empty():
+				hits.append({"ab": ability, "base": entry, "per_use": 1.0, "sub": false, "env": false,
+					"name": "%s: %s" % [minion.get("actorName", "?"), ability.get("abilityName", ab_name)]})
+			for sub: Dictionary in sub_hits(str(ability.get("name", ""))):
+				var sub_ab: Dictionary = _abilities.get(str(sub["sub"]), {})
+				var sub_entry: Dictionary = _mutated_hit(minion, sub_ab, _first_damage(sub_ab))
+				if not sub_entry.is_empty():
+					hits.append({"ab": sub_ab, "base": sub_entry, "per_use": float(sub["hits"]), "sub": true,
+						"env": bool(sub.get("env", false)),
+						"name": "%s: %s" % [minion.get("actorName", "?"), sub_ab.get("name", "")]})
+			if hits.is_empty() or rate <= 0.0:
 				continue
 			var limit_text: String = "" if is_inf(cap) else LE.t(", limited to %s/s by its cooldown or charges") % LE.fmt_num(cap)
-			result.append({
-				"name": "%s: %s" % [minion.get("actorName", "?"), ability.get("abilityName", ab_name)],
-				"kind": "minion", "ab": ability, "base": entry, "per_use": 0.0,
-				"rate": rate * count, "store": store,
-				"note": LE.t("×%s minions, %s uses/s each (priority %d, %s of the time%s)") % [LE.fmt_num(count), LE.fmt_num(rate),
-					order, LE.fmt_pct(share), limit_text],
-			})
+			for hit: Dictionary in hits:
+				var note: String = LE.t("×%s minions, %s uses/s each (priority %d, %s of the time%s)") % [LE.fmt_num(count),
+					LE.fmt_num(rate), order, LE.fmt_pct(share), limit_text]
+				if hit["sub"]:
+					note += LE.t(", ×%s per use of «%s»") % [LE.fmt_num(float(hit["per_use"])), ability.get("abilityName", ab_name)]
+					if hit["env"]:
+						note += LE.t(" (D?: every strike hits the target / the target stays inside for the whole lifetime of the object)")
+				result.append({
+					"name": hit["name"], "kind": "minion", "ab": hit["ab"], "base": hit["base"], "per_use": 0.0,
+					"rate": rate * count * float(hit["per_use"]), "store": store, "note": note,
+				})
 	return result
 
 

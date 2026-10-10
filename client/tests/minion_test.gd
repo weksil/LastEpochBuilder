@@ -13,6 +13,7 @@ func _ready() -> void:
 	_death_knight()
 	_mutators()
 	_prefab_armour()
+	_sub_hits()
 	print("MINION TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -117,3 +118,48 @@ func _prefab_armour() -> void:
 	st.add(StatMod.make(LE.NEG_ARMOUR, "added", 20.0, 0, "t"))
 	rr = MinionCalcScript.defence_rows(st, minion)
 	_check("minion armour minus shred: 150 - 20", float(rr[1]["value"]), 130.0)
+
+
+## Sub-abilities spawned by the prefabs of minion abilities (minion_sub_hits.json, research/11 #85).
+func _sub_hits() -> void:
+	var fw: Dictionary = MinionCalcScript.minion_by_actor("Forged Weapon")  # loads the data
+	var slice: Array[Dictionary] = MinionCalcScript.sub_hits("ForgedWeapon 02 slice")
+	_check("Forged Weapon slice: one sub-ability", slice.size(), 1)
+	_check("Forged Weapon slice: second slice x3 (interval 0.2 s, lifetime 0.7 s)", float(slice[0]["hits"]), 3.0)
+	var ds: Array[Dictionary] = MinionCalcScript.sub_hits("Abomination Double Strike")
+	_check("Double Strike: two sub-abilities", ds.size(), 2)
+	_check("Double Strike: one cast of each hit", float(ds[0]["hits"]) + float(ds[1]["hits"]), 2.0)
+	_check("Leap Slam: impact x1", float(MinionCalcScript.sub_hits("Bone Golem 03 Leap Slam")[0]["hits"]), 1.0)
+	_check("Rampage is not listed (lifetime tied to movement)", MinionCalcScript.sub_hits("Bone Golem Rampage").size(), 0)
+	# Storm Totem: 1 strike at start + floor(2.0 / 0.35) = 5 casts of CastAtRandomPointAfterDuration (every strike counts, D?)
+	_check("Lightning Storm: StormLightning x6 (1 at start + floor(2.0 / 0.35))", float(MinionCalcScript.sub_hits("LightningStorm")[0]["hits"]), 6.0)
+	_check("Storm Totem hits are flagged as environment dependent", float(bool(MinionCalcScript.sub_hits("LightningStorm")[0].get("env", false))), 1.0)
+	# Ice Bolt: IceVortex damage ticks = floor(4.0 / 0.5) = 8 (D?: the target stays inside the whole lifetime)
+	_check("Ice Bolt: IceVortex x8 ticks (4.0 s / 0.5 s)", float(MinionCalcScript.sub_hits("IceBolt")[0]["hits"]), 8.0)
+	# Revenant weapon throw: WeaponInAir beam refreshes every 0.15 s over 0.6 s = 4 hits (D?)
+	_check("Revenant weapon throw: WeaponInAir beam x4 (0.6 s / 0.15 s)", float(MinionCalcScript.sub_hits("SummonedRevenant 02 WeaponThrow")[0]["hits"]), 4.0)
+	# Tail Slam: the ExtraProjectiles copy of the explosion shares the hit list of the original -> one hit per target
+	_check("Tail Slam: the explosion copy shares the hit list -> x1", float(MinionCalcScript.sub_hits("TailSlam")[0]["hits"]), 1.0)
+	# Forged Weapon, empty player store: innate AttackSpeed more 0.25 -> speed 1.25; the slice has cooldown 7.6923 s / 1 charge + 0.13 per s
+	# -> cap 0.13 uses/s (< 1.25 / 1.3 = 0.9615). Sub rate per minion = 0.13 * 3 casts = 0.39 per s.
+	var summon: Dictionary = {"name": "SummonWeapon", "tags": 0}
+	var comps: Array[Dictionary] = MinionCalcScript.components(StatStore.new(), summon, [], Build)
+	var count: float = MinionCount.of_minion(Build, fw, "SummonWeapon")
+	var found: float = -1.0
+	var found_damage: float = -1.0
+	for comp: Dictionary in comps:
+		if str(comp["name"]) == "Forged Weapon: ForgedWeapon 02.1 second slice":
+			found = float(comp["rate"])
+			found_damage = float(comp["base"]["damage"][0])
+	_check("Forged Weapon second slice rate = 0.13 uses/s * 3 casts * minions", found, 0.39 * count, 0.0005 * maxf(count, 1.0))
+	_check("Forged Weapon second slice damage is the sub record's 2.0 Physical", found_damage, 2.0)
+	# Storm Totem strikes: the sub record's 11.0 Lightning (damage index 3), rate from the totem's use speed (not asserted)
+	var totem: Array[Dictionary] = MinionCalcScript.components(StatStore.new(), {"name": "SummonStormTotem", "tags": 0}, [], Build)
+	var strike_damage: float = -1.0
+	var strike_rate: float = -1.0
+	for comp: Dictionary in totem:
+		if str(comp["name"]) == "Storm Totem: StormLightning":
+			strike_damage = float(comp["base"]["damage"][3])
+			strike_rate = float(comp["rate"])
+	_check("Storm Totem strike damage is the sub record's 11.0 Lightning", strike_damage, 11.0)
+	_check("Storm Totem strike rate is positive", float(strike_rate > 0.0), 1.0)

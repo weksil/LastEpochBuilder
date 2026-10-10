@@ -256,7 +256,8 @@ AbilityProperty. `component["uniqueID:effectIndex"]` for Component:* effects (in
 - Extra keys: `variants` (a list of overrides of the model, one mod each: `make_mods`), `steps` + `steps_base` (factor of the last step
   whose `at_least` the source reaches), `src_max_field` (the cap of a per-point source = the points allocated to the CharacterMutator
   field, e.g. maxArcaneMomentumStacks), `src_max` (a fixed cap), `max_field` (the cap of the whole value = the points allocated to the CharacterMutator
-  field of that name; no cap while the field is 0, e.g. addedDodgeRatingPerInt capped by addedDodgePerIntCap), `skill_any` (skill filter; `skill` scope applies to that skill's store).
+  field of that name; no cap while the field is 0, e.g. addedDodgeRatingPerInt capped by addedDodgePerIntCap), `max_node_field` (the cap of the whole value = the value of another field written by the same skill node, e.g. the Drain Life Damned stack cap; `build_mods._add_skill_node` passes the node's values as `ctx.node_fields`), `raw` (mana kind: the amount is spent directly, BaseMana.reduceMana, not added to the cost), `skill_any` (skill filter; `skill` scope applies to that skill's store).
+- Source `current_mana`: the Conditions value `player_state.current_mana` (BaseMana.currentMana), 0 = not set = the maximum mana, never above the maximum (`EffectModels.current_mana`, also PP 262).
 - Order in `global_store`: sets → `apply_global("pre")` (sources that do not read the store) → the "transformed" copies
   (player flag `transformed`: every mod with the Transform tag is added once more without that tag, research/06a §6.2;
   the Conditions checkbox is shown when a bar skill has `isTransform` or a mod carries the tag) → attributes → the player's Haste/Frenzy
@@ -302,7 +303,7 @@ set by the node (clamped to 0..1). If the tags are not given in the markup, the 
 Optional `tags_remove_when: full_conversion` (a partial conversion only adds the new type's tag, Swipe `getTags`; Fireball, Explosion and Flame Reave partial conversions also only add the new tag) and `periodic: {cooldown}`
 (Swipe Storm Claw: only the use that finds the cooldown ready converts 100%; with evenly spaced uses one use in `floor(cooldown × uses/s) + 1`
 is converted, the rule's `fraction` is divided by that, `SkillCalc._periodic_cycle`). A rule that only changes tags and the ailment
-(Dancing Strikes «Bleed to Poison») has `convert: []`; Hammer Throw's Void node has no rule (its Void zone is not counted).
+(Dancing Strikes «Bleed to Poison») has `convert: []`; Hammer Throw's Void node has no rule (its Void zone is a component of every hammer, `SkillComponents._add_hammer_zone`, §9.3 zone ticks).
 Plus skill mods: `attributeScaling[]` — each Stat × the attribute value (int), `levelScaling` × character level.
 
 ## 6. Enemy — `engine/enemy.gd` (`class_name Enemy`)
@@ -341,8 +342,11 @@ Plus skill mods: `attributeScaling[]` — each Stat × the attribute value (int)
   Also (GlobalDamageConditionals): 12 Brand of Deception; 14 Branded (any isBrand ailment); 15 Branded AND boss/rare; 22 Fear|Slow; 23 PerCurse (the number of
   active curses, no limit); 24 boss (not rare)|Moving; 27 Slow|Immobilized; 29 Netted; 30 PerSlow (no limit); 31 Falcon Mark; 34 Spreading Flames; 35 Feared
   (hasAilment(Fear)); 38 PerFrostbite≤30; 39 PerShock≤30; 45 Immobilized; 40 boss/rare AND not «Mana below 50%» (CasterAboveManaThreshold 0.5 AND Boss(includeRares), the flag is the player's `low_mana`). Compound conditions combine presences as OR = 1−(1−a)(1−b), AND = a·b.
-  Not evaluated (0): 11 (enemy health vs your ward), 28 living humans, 37 petrified,
-  41/42 (damage of one ailment per stack of another), 43 PerDistance.
+  37 ToPetrifiedEnemies (StunnedConditional with StunType.Petrify: the `petrified` flag, Stunned.petrified); 41 Bleed damage per Poison stack
+  and 42 Poison damage per Bleed stack (IsAilmentConditional on the damage source, GetPerAilmentStackEffect up to 200; applied in
+  SkillCalc._condition_factor from ailment_id); 43 PerDistance = min(player_state.target_distance, 10) × folded more per unit (input
+  default 1, Manhattan distance, DamageEffectMoreDamagePerDistance.apply; D?: the distance is the player's input).
+  Not evaluated (0): 11 (enemy health vs your ward), 28 living humans.
   Returns 1/0 for booleans and a counter for "Per…"; for unknown ones — 0 and the caller writes a note.
   Ailments are looked up by `ailmentIDName` (`Ignite, Bleed, Poison, Chill, Shock, Slow, ArmourShred, Damned, Electrify, Blind, Frostbite`).
 
@@ -355,6 +359,7 @@ Plus skill mods: `attributeScaling[]` — each Stat × the attribute value (int)
 - "Defense" (the game's character sheet, CharacterSheet.UpdateSheet / PrecalculatedStatsHolder): Armor (`query_untagged(10).value() − Σadded 77`,
   + the dodge rating when the dodge is converted to armor), physical damage reduction from armor
   `armour_mitigation(armor, level, false)`, where level = the Defense tab's area level (default 100): the game sheet uses the zone level outside hubs;
+  enemy armour mitigation uses Enemy.zone_level (`area_level` of the enemy, 0 = the enemy level), PrecalculatedStatsHolder.mitigationFromArmour reads ZoneInfoManager.ZoneLevel;
   Dodge rating (11): 0 when converted; dodge chance
   `0.6·0.001x²/(0.001x² + 32L) + 0.25x/(0.05L² + 80 + x)` (L = level+5, x ≤ 0 → 0, 0 when converted); Block chance (29): 0 when converted, else min(value, maximum block chance PP 614); block effectiveness (53, the rating is shown as a number) and damage reduction on block
   `0.6·(0.0006x² + 1.2x)/(0.0006x² + 1.2x + 60L) + 0.25·3x/(0.03L² + 40 + 3x)` (`CharacterCalc.block_mitigation`, research/06c §2.3);
@@ -414,7 +419,7 @@ Breakdown for each type: base, added (list of mods), Σinc (list), Πmore (list)
   The cast time `useDuration / speedScale` is floored by `minimumUseDuration` when `hasMinimumUseDuration` (Teleport, Transplant: 0.35 s → at most 2.857 uses/s) and, if below
   `useDelay / speedScale`, becomes that delay + 0.01 (`UsingAbility.InitialiseAbilityUse`). Mutator overrides of the cast (`SkillCalc.USE_OVERRIDES`) replace `useDuration` / `speedScaler`
   when their switch is a state the calculator holds: Detonating Arrow as melee 0.75, Lethal Mirage quick attack 0.75 and AttackSpeed, Radiant Lance with the Reliquary the durations of SummonReliquary.
-- Mana (`SkillCalc.mana_parts`, BaseMana.getManaCost): `cost = max(0, max(minimumManaCost, (manaCost + mana_added + Σadded SP 66)·(1 + mana_inc + Σincreased SP 66)·Π(1 + more SP 66) / eff))`, `eff = (1 + Σadded SP 69)·(1 + Σincreased SP 69)·Π(1 + more SP 69)`. The SP 66 query passes the skill tags (plus the health-state tags) and the ability index as extra (zero counts as a match); the SP 69 query passes extra 0 only. The skill's `addedManaCostDivider` nodes (mutator slot 0xBE8) and the SP 69 attribute / level scaling are added SP 69 mods, never increased. Attribute and level scaling of SP 66 / 69 follow `BuildMods._mana_scaling_mod`. `minimumManaCost` is the ability's own value, raised by Dreamslash's `min_mana_cost` field when that is above 0; other mutator overrides of the minimum, more, and the attribute scaling list are not modelled.
+- Mana (`SkillCalc.mana_parts`, BaseMana.getManaCost): `cost = max(0, max(minimumManaCost, (manaCost + distance·manaCostPerDistance + mana_added + Σadded SP 66)·(1 + mana_inc + Σincreased SP 66)·Π(1 + more SP 66) / eff))`, `eff = (1 + Σadded SP 69)·(1 + Σincreased SP 69)·Π(1 + more SP 69)`. The SP 66 query passes the skill tags (plus the health-state tags) and the ability index as extra (zero counts as a match); the SP 69 query passes extra 0 only. The skill's `addedManaCostDivider` nodes (mutator slot 0xBE8) and the SP 69 attribute / level scaling are added SP 69 mods, never increased. The prefab field BaseMana.addedManaCostDivider (+0x98) is 0.0 on every player prefab (prefab_mana_divider.json.gz), so it contributes nothing. Attribute and level scaling of SP 66 / 69 follow `BuildMods._mana_scaling_mod`. `minimumManaCost` is the ability's own value, raised by Dreamslash's `min_mana_cost` field when that is above 0; other mutator overrides of the minimum, more, and the attribute scaling list are not modelled. Lunge's `manaCostPerDistance` × the skill input `mana_distance` (default 1; the distance to the target is not game data) is added to the manaCost inside the SP 66 added value (UsingAbility.c 2356-2400), not to `ctx.mana_cost`. Mana spent directly by a skill (`raw` models: Storm Bolt's consumption, BaseMana.reduceMana) is added to the row's total and is not divided by the efficiency.
 - Cooldown: `ab.cooldown` (if present) / (1 + Σ(added + increased) of the SP 70 mods without the Minion/Totem tags), not below the `min_cooldown` param (Smoke Bomb) — shown.
   The speed and CDR queries pass the ability index (`abilityIDEnum`; extra 0 matches all); a cooldown ≤ 0 caps nothing.
 
@@ -461,7 +466,11 @@ the dummy does not show the variance; "Average hit vs enemy" is averaged over th
   `_instance_more`: the more damage of ONE ailment instance (game: `ActiveAilment.moreDamage`, folded in when it is applied) — mods with
   `StatMod.ailment_only` = this AilmentID (not part of the hit or of other ailments; `_build_damage` skips them; `chance_scaled` =
   AilmentID: the value is multiplied by the caster's AilmentChance of that ailment from the character store, `stat_chance`; stats with
-  an extraTag do not count; Brand of Subjugation: FlameRushMutator.GetAilmentDamageModifier, the character's Chill chance) and the
+  an extraTag do not count; Brand of Subjugation: FlameRushMutator.GetAilmentDamageModifier, the character's Chill chance;
+  `chance_sum` = Scathing Light: f × 100 × S, S = `AilmentCalc.scathing_light_chance` (Ignite + Electrify chance of the character,
+  for Lightning and Fire skills the uncapped Lightning / Fire resistance × per point × 100 and the Electrify field, with Shock
+  converted to Electrify the Shock chance and field; `instance_term` models hold those node values, RadiantLanceMutator.
+  GetAilmentDamageModifier, the physical flag and the Void / Fire rules come from the skill's conversion rules) and the
   CharacterAilmentMutator modifier (`_character_more`, GetAilmentDamageModifier): Time Rot
   `(lowest attack / cast / throwing speed increase·PP493 + 1)(Time Rot chance with Void skills·PP492 + 1)(Slow chance with Void skills·PP491 + 1) − 1`;
   Brand of Deception `Shock chance·PP307`; Witchfire `(Curse-tag increased Damage·PP521 + 1)(Ignite chance with Fire skills·PP376 + Damned chance with Necrotic skills·PP377 + 1) − 1`.
@@ -513,7 +522,7 @@ One schema for the special effects of uniques (§5.4.3), the skill tree mutator 
 - `stat` (default): StatMod `{stat (SP name), mod: added|increased|more, tags, ailment}`;
   `x = v·(source − offset)·factor` with `per`, otherwise `v·factor`; then `min`/`max`.
 - `speed`: `{speed: increased|more}` → the skill's use speed.
-- `mana`: `{mana: added|increased}` → the skill's mana cost.
+- `mana`: `{mana: added|increased}` → the skill's mana cost; with `raw: true` the amount is spent directly from the pool (not divided by efficiency).
 - `cooldown`: `{cooldown: recovery_increased|recovery_more|length_added|length_increased|charges}`.
 - `param`: `{param, mod: added|increased|more|set}` — a skill parameter for the "Skill parameters" section
   (`projectiles, chains, pierce, area, duration, radius, count, hits, …`; `hits` — hits on the target per use,
@@ -554,6 +563,13 @@ that cancels another one), `note`, `on_curse_hit` (an ailment chance only when a
 - `make_mod(model, v, ctx, label) -> StatMod` (null if the SP is unknown).
 - `source(per, ctx) -> float`, `source_name(per, ctx) -> String`, `holds(cond, ctx) -> bool`, `phase(model) -> String`.
 - `inputs(model) -> Array[Dictionary]` — the inputs declared by the model.
+- Own-rate keys (skill phase, applied per skill by `BuildMods._add_cost_models` after `UniqueEffects.apply_skill`; the skill's rates come
+  from `SkillCalc.skill_rates` → `{uses, hits (hits/s on the target), tags}`): `input.auto {rate: hits|uses, window (s), tag (ability tags
+  needed), presence (ailment whose uptime scales the rate)}` — the stacks of the input = rate × presence × window, at most `input.max`
+  (`EffectModels.auto_input`; the input shows this value as its default, the player overrides it); `input.auto_bar` — on when a bar
+  skill (the first 5) has all the tags (`EffectModels.input_default`); `use_interval` (seconds) — one enhanced use per interval, the
+  value is scaled by min(1, 1 / (use_interval × uses/s)) (maximum case, D?); `crit_state: not_recent | recent` — CriticalChance only while
+  no crit was dealt in the last 4 s, or while one was (SkillCalc.recent_crit_share: the share of the time after a crit, D?).
 
 ### 9.3 Damage components — `engine/skill_components.gd` (`class_name SkillComponents`)
 `collect(build, slot, ab, s) -> Array[Dictionary]`: `{name, kind: primary|sub|trigger|minion|curse_hit|dot, ab, base (damage record),
@@ -582,6 +598,8 @@ per_use (times per use), rate (events/s, if not from uses), chance, icd, mods: A
   code component with `isHit` false, `duration` and `maxInstances = 1` (Spirit Plague, Abyssal Echoes `abyssal_decay_dot`);
   stacking DoTs (`maxInstances` ≠ 1: Aura of Decay, Anomaly `time_rot`) are still counted as `sub` per use.
 - `trigger`: `trigger` models (nodes, uniques, passives): frequency = event frequency × chance, no more often than 1/icd.
+  `every: n` with `window` (s): every n-th event fires and the n events must fit into the window (Soul Bastion: 5 kills within 10 s); the
+  events per second of such an event come from the input `events_<on>`, whose default is `events_default` (1/s for kills, D?).
 - `skill`: a trigger of a skill that is on the bar (specialized): computed through that slot as a triggered use
   (`SkillCalc._triggered_skill`: `skill_store(…, "triggered")` + the parent's `triggered_mods`, uses/s = the trigger rate, its own
   triggers — a chain, at most `TRIGGER_DEPTH` = 3 levels, a slot already on the chain is not counted again). Only its hits count:
@@ -628,11 +646,15 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   `additionalMaxWraiths`, `extraAddedMaxForgedWeapons`, `addedMaximumThornTotem`, `addedMaximumBallistae`,
   `stormTotemAdditionalTotem`, `extraNonCompanionCapSpriggans`, `maxLocusts`; `doubledMaxSkeletons` ×2, `halfSkeletons` Round(× 0.5001) unless doubled too (cancel), `noSummonSkeletons` 0; wolves / raptors
   "up to your maximum number of companions" = Round half to even((2 + SP MaximumCompanions) …), research 07d §1.4) (CharacterStats.getMaximumCompanions);
-  1 with PlayerProperty 85 (passives, Boardman's set, uniques). Every companion type is capped at that number (60 per companion against a
-  budget of 60 × maximum, SummonTracker.unsummonExtraCompanions), and at 1 with PlayerProperty 553 (one minion per actor type,
-  SummonTracker.EnforceLimitOfOneOfEachCompanionType). Not capped: Spriggan (extraNonCompanionCapSpriggans), Falconry, and wolves with
-  AbilityProperty summonWolf 2 / 8 (squirrel conversion, count as two). Not read: how several companion TYPES share the budget (a later
-  summon gets only (budget − current) / 60 in SummonStormCrowMutator), Bone Golem's extra golems per skeleton and its tree flag (D?).
+  1 with PlayerProperty 85 (passives, Boardman's set, uniques). Every companion type is capped at that number, and at 1 with PlayerProperty 553 (one minion per actor type,
+  SummonTracker.EnforceLimitOfOneOfEachCompanionType). All companion types share one budget of maximum × 60
+  (SummonTracker.unsummonExtraCompanions: while the total is above the budget the oldest summoned are unsummoned): a companion
+  costs 60, a wolf with AbilityProperty summonWolf 8 (summonWolfCountAsTwoForLimit) costs 120; one type holds floor(budget / cost).
+  When the types together exceed the budget the combination with the largest minion DPS that fits is shown (`MinionCount._share_budget`,
+  D?: the real choice follows the cast order); counts set by hand on the Conditions tab are kept first. AbilityProperty summonWolf 2
+  (convertWolvesTo2Squirrels) halves the contribution of a squirrel and doubles the wolf count, so a wolf slot keeps 60; the squirrel
+  actor itself is not modelled. Not capped: Spriggan (extraNonCompanionCapSpriggans), Falconry. Not read: Bone Golem's extra golems per
+  skeleton and its tree flag (D?).
   Summon Skeleton and Summon Skeletal Mage (`GROUPS`) have no minion records of their own: their count is split evenly
   between the members of the rotation the tree flags allow (`MinionCount.rotation` / `members`: warriors and archers,
   rogues with «Adds rogues», at most one warrior with «Max one warrior»; mages, cryomancers, pyromancers, death knights),
@@ -645,8 +667,16 @@ Data: `minion_base_stats.json` (`summonedBy`, `health`, `innateStats`, `protecti
   chargesGainedPerSecond plus `addedCharges` / `addedChargeRegen` of the minion's mutators aimed at the ability (abilityRef, or the
   AbilityID their Awake sets: Death Knight's DeathKnightHarvestMutator → DeathKnightHarvest, `MinionCalc.MUTATOR_TARGET_IDS`), × the minion's cooldown
   recovery) is used whenever ready, the first one without takes the rest of the time and the abilities after it are never
-  used; abilities without damage take their time too. Ranges and health thresholds of the prefab's AbilityRangeList are
-  not extracted: the target is assumed within range of every ability (D?).
+  used; abilities without damage of their own take their time too; the hits of sub-abilities their prefab spawns are added from
+  `client/data/minion_sub_hits.json` (`MinionCalc.sub_hits`; CreateAbilityObjectOnDeath 1 per object death, CastAfterDuration
+  limitCasts * castsPerInterval, floor(DestroyAfterDuration / interval), CastAtRandomPointAfterDuration castsAtStart + floor(lifetime / duration),
+  zone / beam ticks, ExtraProjectiles with the shared hit list; generator `tools/extract/distill_prefab_sub_hits.py`):
+  Abomination Double Strike 2 hits, Bone Golem Leap Slam 1, Forged Weapon slice 3, Scorpion combo 1, Storm Totem 6 strikes
+  (1 at start + floor(2.0 / 0.35)), Ice Bolt vortex 8 ticks (floor(4.0 / 0.5)), Revenant weapon
+  throw beam 4 hits (0.6 / 0.15), Tail Slam explosion 1 (its ExtraProjectiles copy shares the hit list through
+  Ability.sharedHitDetector). Entries marked env assume every random strike lands on the target and the target stays inside
+  the zone / beam for its whole lifetime (D?). The AbilityRangeList gates (minRange / persuitRange, health thresholds) are not
+  applied: the calculator has no target distance.
 - Summon AbilityProperties that are minion stats (`MinionCalc.MINION_PROPERTIES`: Summon Skeleton crit chance,
   increased damage, physical / poison penetration, armour, attack / cast speed, cooldown recovery; Summon Skeletal Mage
   crit chance and increased damage) are added to every minion of the summon (`property_mods`); `handles_effect` keeps
@@ -827,7 +857,8 @@ store of `use:echo`, plus increased damage PlayerProperty 57 (items, idols, uniq
 Warpath echoes only with its node «Warpath can echo» and by its own rule (`WarpathHitMutator.OnMutatorUpdate`): once per
 second, when you moved at least 4 units over the last 2 s, it rolls (1 + `WarpathMutator.echoChanceModifier`) × the echo
 chance and casts Warpath with the echo use type where you were. A channelled skill's echo components therefore get a fixed
-`rate = per_use × chance / 1 s` instead of uses/s × chance; the length of an echoed channel is taken as one use (D?).
+`rate = per_use × chance / 1 s` instead of uses/s × chance; the length of an echoed channel is taken as one use (D?). The Volatile Reversal node «Reclaimed Action» (`guaranteedEchoAfterLongJump`, a jump of more than 4 m) sets `CharacterMutator.guaranteedEcho`: the next non-channelled echo then has chance 100% (a jump before every use is assumed, D?; one flag per jump and the jump rate are not modelled).
+the next non-channelled echo then has chance 100% (a jump before every use is assumed, D?; one flag per jump and the jump rate are not modelled).
 Mechanic checks read `skill_store().flag_keys` (the untranslated flag model texts); `flags` holds the shown texts.
 
 **Buffs on the player** — `Build.player_state.buffs: {AilmentID: stacks}` ("Buffs on me" on Conditions:
@@ -864,7 +895,18 @@ duration), maxInstances) for every damage component, `SkillCalc` tags them with 
   grants as components or triggers, damage included (`SkillCalc._zone_results`, sections «Zone "…"»). The target is
   assumed to stay in the zone (D?). Chances of the zone: its own ailments plus, for the skill's own zone, the AilmentChance
   stats of the skill store (tree nodes; «on hit» chances of items and passives do not apply). Aura of Decay is such a zone
-  (poison every 0.25 s); its old code component (`abilities_code_damage.json`, one poison per use) is skipped;
+  (poison every 0.25 s); its old code component (`abilities_code_damage.json`, one poison per use) is skipped.
+  AilmentChance field models with `zone` are chances of a RepeatedlyApplyAilmentsInRadius that the mutator adds at run time:
+  they roll every `zone` s (its interval) with chance = value × factor, never on hits (`StatMod.zone_interval`, grouped by interval);
+  Storm Totem frostbite is such a chance of its Blizzard (scope `component:Blizzard`, every 1 s, enemies assumed in the zone, D?);
+- **zone ticks** (`client/data/zone_ticks.json`, `ZoneTicks`, generator `tools/extract/distill_prefab_zone_ticks.py`): a
+  RepeatedlyDamageEnemiesWithinRadius object hits once per `damageInterval` while it lives: ticks = floor(lifetime / interval)
+  (+1 with damageAtStart; `RepeatedlyDamageEnemiesWithinRadius.OnUpdateTick`, `DestroyAfterDuration.OnUpdateTick`). Black Hole is the
+  primary hit: 0.3 s over 2.75 s × (1 + duration increase), 10 ticks per cast; the Hammer Throw Void zone is one component per
+  thrown hammer (0.2 s, 8 Void × (1 + Aura damage), added damage 0.05 × base, tags Throwing | DoT, no ailments of its own): 12 ticks
+  over the 2.5 s cap of a returning hammer (D?: an earlier end of the return is not in the data), 3 ticks without a return (0.75 s),
+  30 ticks with the Iron Spiral (6.0 s). The enemy is assumed to stay inside for the whole lifetime (D?). A channelled object counts
+  one tick (it lives while the channel is held);
 - **threshold strikes** (`THRESHOLDS`): Shadow Daggers strike at 4 stacks («Upon reaching 4 stacks», ShadowDaggersFinisher:
   68 physical, added damage ×3.4, always crits): a `trigger` component of the skill with rate = applications/s / 4
   (× load / 4 when the stacks expire first, D?), plus property 0 of AbilityID 508 (more damage against rares and bosses).
@@ -877,7 +919,12 @@ bar skills: their minions and zones always, everything of a skill with a cooldow
 - threshold ailments: (N − 1) / 2 × min(1, load / N) stacks, uptime × (N − 1) / N;
 - consumption (`CONSUMERS`: flags of nodes whose hits spend Bleed / Ignite / Poison — Dive Bomb, Abyssal Echoes, Puncture,
   Enchant Weapon, Flame Rush, Rive, Soul Feast) by the skill itself or a cooldown skill: wiped every P = 1 / Σ uses s,
-  `consumed_load` = rate × P / 2 (rate × (T − T² / 2P) when the duration T < P).
+  `consumed_load` = rate × P / 2 (rate × (T − T² / 2P) when the duration T < P). Puncture's «Large hit absorbs bleeds» wipes only
+  in the Every Third Bigger branch (PunctureMutator.Mutate, usesSinceLarge > 2): uses/s / 3, never without that node (consume_events).
+  Rive wipes only on its third strike:
+  events/s = uses/s × (Rive3 entries / (1 + combo list length)), 1/3 by default, 1/2 with Rive skipping its second strike,
+  1/5 with Cadence, 0 with Double Slash or when 1 / uses/s exceeds the combo timer (3 s + AP rive1:4); RiveMutator.GetCurrentComboList,
+  ComboAbilityList.incrementCombo / Update, Rive3Mutator.OnHit.
 - **Ailment effect**: `auto` keeps per ailment the load-weighted increased effect (SP 43) of its applications (`effect`). `effective`
   puts it into `enemy.ailment_effect`; `Enemy.store` multiplies every stack of an Individual ailment with `effectOfIncreasedEffectiveness` 0
   (Armour Shred, Chill, Slow, …) by (1 + effect) (addBuffFromActiveAilment: m = (1 + boss penalty) × stacks × (1 + effect) × (1 + effect on
@@ -906,6 +953,10 @@ to automatic) work the same way through `EnemyAilments.buffs(build, slot)`. Gain
 - timed PlayerProperties (`_timed_sources`, a fixed timer: uptime = its share of the time, not 1 − e^(−load)): 80
   Apocalypse for 3 s every 3 s while the Health select is full or high; 217 Damage Immunity for `value` s after a hit, once
   per 15 s cooldown + 1 / landed enemy hits per second;
+- Divine Essence (passive field `divineEssenceEverySecondChance`, `EnemyAilments._passive_field`): one random roll per second
+  while alive (`CharacterMutator.OnUpdateTick`; the health gate is healthAbovePercentage(0)), 10 s, at most 3 stacks;
+  Ancestral Speed (`chanceToGainHasteWhenYouSummonATotemFromPassives`): a roll per use of a Totem skill (`OnAbilityUse`), Haste 3 s;
+  the minion kill / death haste (`chanceToGainHasteFor2SecondsOnMinionKillOrDeath`) is a flag only: its rate depends on the fight;
 - Dusk Shroud per consumed shadow (CreateShadow property 6; shadows consumed per second as in `ShadowCalc.sustain_rows`);
 - unique AbilityProperty chances (`ABILITY_PROPERTY_BUFFS`, item_procs.json): Lament of the Lost Refuge — Corrupted
   Heraldry per Volcanic Orb cast (property 7) and per hit of the skill (8, its shrapnel);
@@ -985,8 +1036,7 @@ skill tree nodes (`PlayerPropertyStat`; `more` ones, `MorePlayerPropertyStat` an
   block → parry without a shield (PP 531): parry + min(maxBlock, block), without the f1 add / glancing blow `min(maxBlock, block) + f1·mult` (PP 392); maximum block chance
   (PP 614); converted dodge adds to the armor before its more: `(armour + dodgeRating)·(1 + f2)`; endurance mode
   "everything" (PP 310) or "…and mana" (PP 309). Converted dodge or block no longer dodges or blocks.
-- `ApplyConditionalDefenses` (the conditions not modelled as unique stats): within 4 m (PP 257/258; melee attacks count as
-  near — D?), ≥ 400 current mana (262), DoT per 8% over-capped cold resistance (677), Haste on you: DoT taken (275, × (1 + increased
+- `ApplyConditionalDefenses` (the conditions not modelled as unique stats): within 4 m (PP 257/258: strict 3D distance < 4.0, the Conditions input attacker_distance, default 1), ≥ 400 current mana (262), DoT per 8% over-capped cold resistance (677), Haste on you: DoT taken (275, × (1 + increased
   Haste effect), at most −75%), attacker Chilled (250) / Slowed / Time Rotted /
   Shocked (252, crit avoidance 321, armor per Shock stack 323) / Ignited (251, threshold per Ignite 322 and per Shock 549) /
   Ignited·Damned·Bleeding (346) / Chilled·Bleeding (711) / Cursed (347, per curse 356, armor per curse 354) / Withering (373),
@@ -1025,9 +1075,13 @@ Own events: `use` × uses/s, `hit` × hits/s, `crit` × hits/s × crit, `second`
 `hit_taken` (not dodged or parried), `glancing` (not dodged, not parried, glancing roll: PP 96 health). A model with `health_below`
 (PP 33 ward) counts only when health after the hit is below that share of the maximum (`BaseHealth.valueWouldBeLowHealth`, strict).
 Health gained on block / kill / stun (HealthGain specialTag 6 / 3 / 5, tags 0 only, `event_gains`): per blocked enemy hit, or the
-Conditions inputs `kills_per_second` / `stuns_per_second` (0 = not counted); their ward goes through `ProtectionClass.GainWard`,
-whose ward gain multiplier is not modelled, so it is not counted. Freeze events are not counted (one target). Not modelled: SP 97
-(ward on hit chance, 30 ward per hit that is not dodged): the 30 is the base of `GainWard`, which applies a further multiplier.
+Conditions inputs `kills_per_second` / `stuns_per_second` (0 = not counted). Ward gained on kill / stun (WardGain specialTag 3 / 5) uses
+the same inputs. Every ward source goes through `ProtectionClass.GainWard` (`scale_ward`): the factor is 0 while PP 471 (no ward gain) is
+on, else (1 + t) × max(wardGainModifier, −1) when that modifier is not 0; t comes from the moreWardGenerated list (no extracted writer
+data: 0), wardGainModifier = (1 + increased SP 119) × Π(1 + more SP 119) − 1 (BaseStats.ApplyExternalStats, tags 0). Ward gained on
+block is not counted (GainWardOnBlock not proven). Freeze events are not counted (one target). SP 97 (chance to gain 30 ward per hit that
+is not dodged, `ward_on_hit`): 30 × chance × (1 − dodge), DoT never; the same factor applies. Not modelled: the in-combat writer of
+sourcesOfNoWardGain (PP 472).
 Interval between enemy hits: the "Seconds between hits" parameter, else the attack's `every`, else 1 s.
 `hits_to_die` simulates average hits every `interval` seconds with recovery in 0.05 s steps (ward decay 06c §3.2, health
 capped at its maximum, delayed damage ticks; the minimum ward decay depends on the ward regeneration SP 92 only); ∞ when a

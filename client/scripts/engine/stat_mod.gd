@@ -13,7 +13,13 @@ var source: String = ""  # Human-readable source (Russian)
 var on_curse_hit: bool = false  # Ailment chance that applies only when the cursed enemy is hit (curse tree nodes)
 var ailment_only: int = 0  # Damage more of one ailment instance (ActiveAilment.moreDamage, AilmentID): not part of hit or skill-wide damage
 var chance_scaled: int = 0  # With ailment_only: the more value is multiplied by the AilmentChance stat of this AilmentID (0 = fixed value)
+var chance_sum: String = ""  # With ailment_only: the more value is multiplied by the Scathing Light chance sum (AilmentCalc._scathing_light_sum)
+var instance_term: String = ""  # A term of that chance sum (scathing_per_res, scathing_electrify, scathing_shock): the chance is counted only there
+var instance_raw: float = 0.0  # With instance_term: the node value before the model's factor (per resistance point, as in the game field)
 var holder_only: bool = false  # Damage more of a DamageConditionalEffect on the skill's DamageStatsHolder: hits and the holder's own damage, never the ailments it applies (AilmentCalc skips it)
+var zone_interval: float = 0.0  # > 0: the added value is the chance of ONE tick of a RepeatedlyApplyAilmentsInRadius the mutator adds at run time, ticking every this many seconds; never a hit chance
+var zone_freq: String = ""  # tree parameter key whose total shortens the tick interval: interval / (1 + total)
+var crit_state: int = 0  # CriticalChance only while no crit was dealt in the last 4 s (1, PP 419) or while one was (2, PP 89); mixed by SkillCalc._build_damage
 
 
 ## Stats.QuotientStat / Stats.StatOfType(QUOTIENT): more = 1/(1+x) - 1, and 0 when x is exactly -1
@@ -62,7 +68,13 @@ func scaled(n: float) -> StatMod:
 	copy.on_curse_hit = on_curse_hit
 	copy.ailment_only = ailment_only
 	copy.chance_scaled = chance_scaled
+	copy.chance_sum = chance_sum
+	copy.instance_term = instance_term
+	copy.instance_raw = instance_raw * n
 	copy.holder_only = holder_only
+	copy.zone_interval = zone_interval
+	copy.zone_freq = zone_freq
+	copy.crit_state = crit_state
 	copy.added = added * n
 	copy.increased = increased * n
 	copy.more = more.duplicate()

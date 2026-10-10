@@ -28,6 +28,10 @@ const NEVER: Array[String] = ["Anomaly"]
 const CHANNEL_FLAG: String = "Warpath can echo repeat"
 ## Seconds between the echo rolls of a channelled skill (WarpathHitMutator.echoPosCheckInterval).
 const CHANNEL_INTERVAL: float = 1.0
+## Volatile Reversal nodes with this flag (field_models.json VolatileReversal[Return]Mutator.guaranteedEchoAfterLongJump) set
+## CharacterMutator.guaranteedEcho after a jump of more than 4 m (VolatileReversalBaseMutator.OnMutatorUpdate).
+const GUARANTEED_FLAG: String = "Guaranteed echo after long jump (>4 m)"
+const JUMP_ABILITY: String = "VolatileReversal"
 
 
 ## Sum of a CharacterMutator field over the taken passives and the mastery bonus: {value, lines}.
@@ -71,6 +75,18 @@ static func eligible(ab: Dictionary, s: Dictionary) -> bool:
 	return true
 
 
+## True when a Volatile Reversal on the bar has the node that guarantees the next echo after a long jump.
+static func guaranteed_echo(build: Node) -> bool:
+	var global: StatStore = BuildMods.global_store(build)["store"]
+	for slot: int in range(build.skills.size()):
+		var jab: Dictionary = GameData.get_ability(str(build.skills[slot].get("ability", "")))
+		if str(jab.get("name", "")) != JUMP_ABILITY:
+			continue
+		if (BuildMods.skill_store(build, slot, global)["flag_keys"] as Array).has(GUARANTEED_FLAG):
+			return true
+	return false
+
+
 ## Echo chance of a skill: {value, lines}.
 static func chance(build: Node, ab: Dictionary, s: Dictionary) -> Dictionary:
 	var base: Dictionary = passive_field(build, CHANCE_FIELD)
@@ -96,6 +112,10 @@ static func chance(build: Node, ab: Dictionary, s: Dictionary) -> Dictionary:
 			var factor: float = (1.0 + float(p.get("increased", 0.0))) * float(p.get("more", 1.0))
 			v = (v + added) * factor
 			lines.append("%s: +%s, ×%s" % [label, LE.fmt_num(added), LE.fmt_num(factor)])
+	# TryToEchoAbility: guaranteedEcho makes the next cast echo whenever the chance is above 0 (no override chance)
+	if v > 0.0 and not bool(ab.get("channelled", 0)) and guaranteed_echo(build):
+		lines.append(LE.t("Guaranteed echo after a jump of more than 4 m (Volatile Reversal node): 100%, a jump before every use is assumed (D?)"))
+		return {"value": 1.0, "lines": lines}
 	return {"value": clampf(v, 0.0, 1.0), "lines": lines}
 
 

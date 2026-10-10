@@ -20,7 +20,7 @@ const PLAYER_VALUE_NAMES: Dictionary = {
 	"shadows": "Active shadows",
 }
 const STORE_SOURCES: Array[String] = ["attr", "total_attr", "added", "value", "increased", "added_exact", "increased_exact", "res", "ele_res",
-	"total_res", "max_health", "max_mana", "endurance_threshold", "converted_attr", "ailment_chance", "total_modifier", "stat_value", "total_added"]
+	"total_res", "max_health", "max_mana", "current_mana", "endurance_threshold", "converted_attr", "ailment_chance", "total_modifier", "stat_value", "total_added"]
 
 
 ## "" if the model applies now, otherwise the unmet condition (translated).
@@ -49,7 +49,7 @@ static func blocked(model: Dictionary, ctx: Dictionary) -> String:
 			var slot: int = _input_slot(ctx)
 			var build: Node = ctx["build"]
 			var skill_inputs: Dictionary = build.skills[slot].get("inputs", {}) if slot >= 0 and slot < build.skills.size() else {}
-			if not bool(skill_inputs.get(cond.get_slice(":", 1), model["input"].get("default", false))):
+			if not bool(skill_inputs.get(cond.get_slice(":", 1), input_default(model["input"], ctx))):
 				return condition_name(cond, ctx)
 			continue
 		if not holds(cond, ctx):
@@ -97,10 +97,23 @@ static func value(model: Dictionary, v: float, ctx: Dictionary) -> Dictionary:
 		var field_cap: float = field_total(str(model["max_field"]), ctx)
 		if field_cap > 0.0:
 			x = minf(x, field_cap)
+	if model.has("max_node_field"):
+		# the whole value is capped by another field of the same skill node (DamageEffectMoreDamagePerAilmentStack: hasLimit = 1,
+		# moreDamageLimit = that field; DrainLifeMutator.maxTotalDamageToDamned = 0.21 per point); without the node's fields no cap
+		var node_fields: Dictionary = ctx.get("node_fields", {})
+		if node_fields.has(str(model["max_node_field"])):
+			x = minf(x, float(node_fields[str(model["max_node_field"])]))
 	var present: float = presence_factor(model, ctx)
 	if present != 1.0:
 		x *= present
 		text += LE.t(" (present %s of the time)") % LE.fmt_pct(present)
+	if model.has("use_interval"):
+		# one enhanced use per this many seconds (the timer is ready when the next use comes): maximum case, the share of the uses
+		var u: float = float(ctx.get("skill_rates", {}).get("uses", 0.0))
+		if u > 0.0:
+			var share: float = minf(1.0, 1.0 / (float(model["use_interval"]) * u))
+			x *= share
+			text += LE.t(" (one use per %s s: %s of the uses, %s uses/s)") % [LE.fmt_num(float(model["use_interval"])), LE.fmt_pct(share), LE.fmt_num(u)]
 	return {"x": x, "text": text}
 
 
@@ -124,6 +137,10 @@ static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String
 	var mod: StatMod = StatMod.make(property, str(model.get("mod", "added")), x, LE.tag_mask(str(model.get("tags", ""))), source_text, special)
 	mod.on_curse_hit = bool(model.get("on_curse_hit", false))
 	mod.holder_only = bool(model.get("holder_only", false))
+	mod.crit_state = {"not_recent": 1, "recent": 2}.get(str(model.get("crit_state", "")), 0)  # the crit window of PP 419 / PP 89
+	if model.has("zone") and property == LE.AILMENT_CHANCE:
+		mod.zone_interval = float(model["zone"])
+		mod.zone_freq = str(model.get("zone_freq", ""))
 	# a Damage more that the game folds into ONE ailment instance (ActiveAilment.moreDamage), not into the skill's damage
 	if model.has("ailment_only"):
 		mod.ailment_only = GameData.enum_value("AilmentID", str(model["ailment_only"]))
@@ -133,6 +150,12 @@ static func make_mod(model: Dictionary, v: float, ctx: Dictionary, label: String
 			mod.chance_scaled = GameData.enum_value("AilmentID", str(model["chance_scaled"]))
 			if mod.chance_scaled <= 0:
 				return null
+	if model.has("chance_sum"):
+		mod.chance_sum = str(model["chance_sum"])
+	# a term of the Scathing Light chance sum: the game reads the node value (per resistance point) itself, not the chance mod
+	if model.has("instance_term"):
+		mod.instance_term = str(model["instance_term"])
+		mod.instance_raw = v
 	return mod
 
 
@@ -177,6 +200,12 @@ static func field_total(field: String, ctx: Dictionary) -> float:
 			if str(effect.get("target", "")) == target and points >= int(effect.get("minPoints", 0)) and effect.has("value"):
 				total += BuildMods.eval_value(effect["value"], points)
 	return total
+
+
+## Current mana of the player (BaseMana.currentMana): the Conditions value, 0 = not set = max mana; never above the maximum.
+static func current_mana(build: Node, max_mana: float) -> float:
+	var cur: float = float(build.player_state.get("current_mana", 0))
+	return max_mana if cur <= 0.0 else minf(cur, max_mana)
 
 
 ## Copies of the player's stats (model key `copy_player`, SummonSkeletonMutator / FalconryMutator / PP 445): every stat of `stat`
@@ -297,6 +326,8 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 			return float(LE.round_half_even(store.query_untagged(LE.HEALTH).value()))
 		"max_mana":
 			return float(LE.round_half_even(store.query_untagged(LE.MANA).value()))
+		"current_mana":
+			return current_mana(build, float(LE.round_half_even(store.query_untagged(LE.MANA).value())))
 		"endurance_threshold":
 			return CharacterCalc._compute_endurance_threshold(store)
 		"enemy_stacks":
@@ -316,6 +347,8 @@ static func source(per: String, ctx: Dictionary, model: Dictionary = {}) -> floa
 				var inp: Dictionary = model["input"]
 				if inp.has("default") and inp.get("key") == arg:
 					default = float(inp.get("default", 0.0))
+			if model.has("input") and model["input"].get("key") == arg:
+				default = float(input_default(model["input"], ctx))  # automatic value of an «auto» / «auto_bar» input
 			var slot: int = _input_slot(ctx)
 			if slot >= 0 and slot < build.skills.size():
 				return float(build.skills[slot].get("inputs", {}).get(arg, default))
@@ -370,6 +403,8 @@ static func source_name(per: String, _ctx: Dictionary, model: Dictionary = {}) -
 			return LE.t("max health")
 		"max_mana":
 			return LE.t("max mana")
+		"current_mana":
+			return LE.t("current mana (Conditions; 0 = maximum)")
 		"endurance_threshold":
 			return LE.t("endurance threshold")
 		"enemy_stacks":
@@ -539,6 +574,8 @@ static func condition_name(cond: String, _ctx: Dictionary) -> String:
 static func phase(model: Dictionary) -> String:
 	if model.has("effect_of"):
 		return "late"  # reads SP 120, which other post-phase models (pp 606 per Strength) add
+	if needs_rates(model):
+		return "skill"  # follows the uses / hits of the skill being computed (BuildMods._add_cost_models, skill_rates)
 	var parts: Array[Dictionary] = [model]
 	for variant: Variant in model.get("variants", []):
 		parts.append(variant as Dictionary)
@@ -568,6 +605,50 @@ static func inputs(model: Dictionary) -> Array[Dictionary]:
 	if model.has("input") and not MinionCount.is_count_key(str(model["input"].get("key", ""))):
 		return [model["input"]]
 	return []
+
+
+## True when the model follows the skill's own uses or hits (input «auto», model key «use_interval»): such a model is a skill-phase model.
+static func needs_rates(model: Dictionary) -> bool:
+	return model.has("use_interval") or (model.has("input") and (model["input"] as Dictionary).has("auto"))
+
+
+## Automatic value of a stack input from the skill's own rates (skill_rates): rate (hits or uses per second) × presence × window
+## seconds, at most the input's max. Stacks of a «hits» rate live `window` seconds after each hit.
+static func auto_input(inp: Dictionary, rates: Dictionary, presence: float) -> float:
+	var spec: Dictionary = inp["auto"]
+	var tag: String = str(spec.get("tag", ""))
+	if tag != "" and (int(rates.get("tags", 0)) & LE.tag_mask(tag)) == 0:
+		return 0.0
+	var n: float = float(rates.get(str(spec.get("rate", "hits")), 0.0)) * presence * float(spec.get("window", 1.0))
+	return minf(n, float(inp["max"])) if inp.has("max") else n
+
+
+## Default of a model input: the automatic value («auto», «auto_bar»: a bar skill has the tags) or the declared default.
+static func input_default(inp: Dictionary, ctx: Dictionary) -> Variant:
+	if inp.has("auto_bar") and ctx.has("build"):
+		var need: int = LE.tag_mask(str(inp["auto_bar"]))
+		var bar: Array = ctx["build"].skills
+		for i in range(mini(bar.size(), UniqueEffects.BAR_SIZE)):
+			var ab: Dictionary = GameData.get_ability(str((bar[i] as Dictionary).get("ability", "")))
+			if not ab.is_empty() and (int(ab.get("tags", 0)) & need) == need:
+				return true
+		return false
+	if inp.has("auto") and ctx.has("skill_rates"):
+		var presence: float = 1.0
+		var ail: String = str((inp["auto"] as Dictionary).get("presence", ""))
+		if ail != "":
+			ConfigRelevance.note_model({"when": ["enemy:" + ail]}, ctx)  # keeps the ailment control on the Conditions tab
+			presence = _ailment_presence("enemy:" + ail, ctx)
+		return auto_input(inp, ctx["skill_rates"], presence)
+	return inp.get("default", 0.0)
+
+
+## The input as declared in the skill's inputs: an automatic input shows its automatic value as the default (the player overrides it).
+static func declared_input(inp: Dictionary, ctx: Dictionary) -> Dictionary:
+	var out: Dictionary = inp.duplicate()
+	if inp.has("auto") or inp.has("auto_bar"):
+		out["default"] = input_default(inp, ctx)
+	return out
 
 
 # --- private helpers ---

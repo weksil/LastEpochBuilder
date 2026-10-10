@@ -311,6 +311,75 @@ max_value = 20.0
 update_on_text_changed = true
 metadata/player_value = "shadows"
 
+[node name="CurrentManaRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+metadata/player_value = "current_mana"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CurrentManaRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CurrentManaLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CurrentManaRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Current mana (0 = maximum)"
+
+[node name="CurrentManaSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/CurrentManaRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+max_value = 100000.0
+update_on_text_changed = true
+metadata/player_value = "current_mana"
+
+[node name="TargetDistanceRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+metadata/player_value = "target_distance"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/TargetDistanceRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetDistanceLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/TargetDistanceRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Distance to the target (damage per distance, max 10)"
+
+[node name="TargetDistanceSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/TargetDistanceRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+min_value = 0.0
+max_value = 100.0
+step = 0.5
+value = 1.0
+update_on_text_changed = true
+metadata/player_value = "target_distance"
+
+[node name="AttackerDistanceRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
+layout_mode = 2
+theme_type_variation = &"RowIdle"
+metadata/player_value = "attacker_distance"
+
+[node name="HBox" type="HBoxContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/AttackerDistanceRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AttackerDistanceLabel" type="Label" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/AttackerDistanceRow/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Distance of the attacker to you (within 4 m effects)"
+
+[node name="AttackerDistanceSpin" type="SpinBox" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues/AttackerDistanceRow/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(110, 0)
+min_value = 0.0
+max_value = 100.0
+step = 0.5
+value = 1.0
+update_on_text_changed = true
+metadata/player_value = "attacker_distance"
+
 [node name="KillsRow" type="PanelContainer" parent="Root/Columns/Left/PlayerCard/VBox/PlayerValues"]
 layout_mode = 2
 theme_type_variation = &"RowIdle"
@@ -460,6 +529,22 @@ layout_mode = 2
 min_value = 1.0
 max_value = 110.0
 value = 100.0
+update_on_text_changed = true
+
+[node name="AreaLevelLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+tooltip_text = "Zone level used by the armor mitigation formula (the game reads ZoneInfoManager.ZoneLevel, not the monster level). 0 = same as the enemy level."
+text = "Zone level (0 = enemy level)"
+autowrap_mode = 3
+
+[node name="AreaLevelSpin" type="SpinBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 110.0
+value = 0.0
 update_on_text_changed = true
 
 [node name="CorruptionLabel" type="Label" parent="Root/Columns/Left/EnemyCard/VBox/EnemyGrid"]
@@ -658,6 +743,15 @@ focus_mode = 0
 text = "Frozen"
 autowrap_mode = 3
 metadata/flag = "frozen"
+
+[node name="PetrifiedCheck" type="CheckBox" parent="Root/Columns/Left/EnemyCard/VBox/EnemyFlags"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 0)
+focus_mode = 0
+text = "Petrified"
+autowrap_mode = 3
+metadata/flag = "petrified"
 
 [node name="Right" type="VBoxContainer" parent="Root/Columns"]
 layout_mode = 2

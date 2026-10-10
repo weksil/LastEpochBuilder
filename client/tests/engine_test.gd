@@ -40,6 +40,8 @@ func _ready() -> void:
 	_buff_group_fixes()
 	_passive_set_fixes()
 	_lean_and_cache()
+	_runtime_zones()
+	_zone_ticks_and_ailment_fixes()
 	print("ENGINE TEST: %s" % ("OK" if _failed == 0 else "%d FAILED" % _failed))
 	get_tree().quit(1 if _failed > 0 else 0)
 
@@ -141,6 +143,14 @@ func _check(label: String, got: float, want: float, eps: float = 0.0005) -> void
 		print("ok   %s = %s" % [label, got])
 
 
+## Element-wise check of a count list (MinionCount.pick_counts).
+func _check_counts(label: String, got: Array[float], want: Array) -> void:
+	var same: float = 1.0 if got.size() == want.size() else 0.0
+	for i: int in range(mini(got.size(), want.size())):
+		same = minf(same, 1.0 if absf(got[i] - float(want[i])) < 0.0005 else 0.0)
+	_check("%s (%s)" % [label, str(got)], same, 1.0)
+
+
 ## Trigger frequency and cooldown (docs/ENGINE.md §9.6).
 func _triggers_cooldown() -> void:
 	var trig: Dictionary = {"ability": "x", "on": "hit", "chance": 0.5, "count": 1.0, "icd": 1.0}
@@ -167,8 +177,43 @@ func _triggers_cooldown() -> void:
 	_check("cooldown: minimum cooldown floor", float(SkillCalc.cooldown_info({"cooldown": 4.0}, cdg, 0, {"params": {"Min": {"param": "min_cooldown", "set": 3.0}}})["cd"]), 3.0)
 
 
+## Own-rate models (EffectModels.auto_input / use_interval, SkillCalc.skill_rates), Soul Bastion's every-5th kill, the recent-crit share (PP 419 / 89).
+func _own_rates_vectors() -> void:
+	var und: Dictionary = {"auto": {"rate": "hits", "window": 4.0, "tag": "Melee"}, "max": 51}
+	var melee_rates: Dictionary = {"hits": 2.0, "uses": 2.0, "tags": LE.MELEE}
+	_check("auto stacks: 2 melee hits/s x 4 s", EffectModels.auto_input(und, melee_rates, 1.0), 8.0)
+	_check("auto stacks: bleed uptime 0.5", EffectModels.auto_input(und, melee_rates, 0.5), 4.0)
+	_check("auto stacks: capped at 51", EffectModels.auto_input(und, {"hits": 20.0, "uses": 2.0, "tags": LE.MELEE}, 1.0), 51.0)
+	_check("auto stacks: no melee tag gives 0", EffectModels.auto_input(und, {"hits": 2.0, "uses": 2.0, "tags": LE.LIGHTNING}, 1.0), 0.0)
+	var searing: Dictionary = {"auto": {"rate": "uses", "window": 16.0, "tag": "Melee"}}
+	_check("auto Searing Blades: 2 uses/s x 16 s", EffectModels.auto_input(searing, {"hits": 5.0, "uses": 2.0, "tags": LE.MELEE}, 1.0), 32.0)
+	_flag("auto model is a skill-phase model", EffectModels.phase({"kind": "stat", "stat": "Damage", "input": {"key": "k", "auto": {"rate": "hits", "window": 4.0}}}) == "skill")
+	_flag("use_interval model is a skill-phase model", EffectModels.phase({"use_interval": 2.0}) == "skill")
+	_check("use_interval: 200 × 1/(2 × 3 uses/s)", float(EffectModels.value({"factor": 1.0, "use_interval": 2.0}, 200.0, {"skill_rates": {"uses": 3.0}})["x"]), 200.0 / 6.0)
+	_check("use_interval: 0.4 uses/s is always enhanced", float(EffectModels.value({"factor": 1.0, "use_interval": 2.0}, 200.0, {"skill_rates": {"uses": 0.4}})["x"]), 200.0)
+	_check("use_interval: 0.5 uses/s is always enhanced", float(EffectModels.value({"factor": 1.0, "use_interval": 2.0}, 200.0, {"skill_rates": {"uses": 0.5}})["x"]), 200.0)
+	_check("use_interval: 1 use/s is every other use", float(EffectModels.value({"factor": 1.0, "use_interval": 2.0}, 200.0, {"skill_rates": {"uses": 1.0}})["x"]), 100.0)
+	_check("use_interval: no rates, no share", float(EffectModels.value({"factor": 1.0, "use_interval": 2.0}, 200.0, {})["x"]), 200.0)
+	# Soul Bastion: every 5th kill, the 5 kills within 10 s (4 gaps of 1/k s must fit in the window)
+	var soul: Dictionary = {"ability": "x", "on": "kill", "every": 5.0, "window": 10.0, "count": 1.0}
+	_check("Soul Bastion: 1 kill/s gives 0.2 casts/s", float(SkillCalc.trigger_rate(soul, 1.5, 1.0, 0.0, 1.0)["rate"]), 0.2)
+	_check("Soul Bastion: 0.5 kills/s gives 0.1 casts/s", float(SkillCalc.trigger_rate(soul, 1.5, 1.0, 0.0, 0.5)["rate"]), 0.1)
+	_check("Soul Bastion: 0.3 kills/s is too slow: 0", float(SkillCalc.trigger_rate(soul, 1.5, 1.0, 0.0, 0.3)["rate"]), 0.0)
+	_check("Soul Bastion: 3 kills/s gives 0.6 casts/s", float(SkillCalc.trigger_rate(soul, 1.5, 1.0, 0.0, 3.0)["rate"]), 0.6)
+	# recent-crit share: bisection of r = 1 - exp(-4 × hits × ((1 - r) × a + r × b)), a / b clamped to 0..1
+	_check("recent crit share: equal chances", SkillCalc.recent_crit_share(0.5, 0.5, 0.5), 1.0 - exp(-1.0))
+	_check("recent crit share: no hits", SkillCalc.recent_crit_share(0.0, 0.5, 0.5), 0.0)
+	_check("recent crit share: no crit while not recent", SkillCalc.recent_crit_share(0.5, 0.0, 0.5), 0.0)
+	_check("recent crit share: 0.25 hits/s, a 105% clamped to 100%", SkillCalc.recent_crit_share(0.25, 1.05, 0.05), 0.4407970)
+	_check("recent crit share: 2 hits/s, 50% / 25%", SkillCalc.recent_crit_share(2.0, 0.5, 0.25), 0.8911424)
+	_check("recent crit share: 1 hit/s, 105% / 2.5%", SkillCalc.recent_crit_share(1.0, 1.05, 0.025), 0.7090638)
+	var r_mix: float = SkillCalc.recent_crit_share(2.0, 0.5, 0.25)
+	_check("recent crit mixture: 50% / 25% chance", (1.0 - r_mix) * 0.5 + r_mix * 0.25, 0.2772144)
+
+
 func _vectors() -> void:
 	_triggers_cooldown()
+	_own_rates_vectors()
 	_check("round_half_even(2.5)", LE.round_half_even(2.5), 2)
 	_check("round_half_even(3.5)", LE.round_half_even(3.5), 4)
 	_check("round_half_even(1028.5)", LE.round_half_even(1028.5), 1028)
@@ -488,6 +533,25 @@ func _minion_limits() -> void:
 	_check("companion limit: 5 wolves under a limit of 2 -> 2", MinionCount.companion_cap(5.0, 2.0, false), 2.0)
 	_check("companion limit: one companion of each type -> 1", MinionCount.companion_cap(5.0, 2.0, true), 1.0)
 	_check("companion limit: below the limit stays", MinionCount.companion_cap(1.0, 3.0, false), 1.0)
+	# wolf worth 120 of the shared budget (summonWolfCountAsTwoForLimit): floor(maximum x 60 / 120)
+	_check("companion limit: wolf worth 120 under maximum 2 -> 1", MinionCount.companion_cap(5.0, 2.0, false, 120.0), 1.0)
+	_check("companion limit: wolf worth 120 under maximum 3 -> 1", MinionCount.companion_cap(5.0, 3.0, false, 120.0), 1.0)
+	_check("companion limit: wolf worth 120 under maximum 4 -> 2", MinionCount.companion_cap(5.0, 4.0, false, 120.0), 2.0)
+	# shared budget between companion types: the counts with the largest DPS that fit (hand-computed)
+	var pick: Array[Dictionary] = [{"max": 2.0, "cost": 60.0, "dps": 10.0}, {"max": 2.0, "cost": 60.0, "dps": 25.0}]
+	_check_counts("shared budget: 0 + 2 (50 beats 1 + 1 = 35)", MinionCount.pick_counts(pick, 120.0), [0.0, 2.0])
+	pick = [{"max": 2.0, "cost": 60.0, "dps": 30.0}, {"max": 2.0, "cost": 60.0, "dps": 25.0}]
+	_check_counts("shared budget: 2 + 0 (60 beats 55 and 50)", MinionCount.pick_counts(pick, 120.0), [2.0, 0.0])
+	pick = [{"max": 1.0, "cost": 120.0, "dps": 60.0}, {"max": 2.0, "cost": 60.0, "dps": 25.0}]
+	_check_counts("shared budget: wolf 1 + 0 (60 beats 50)", MinionCount.pick_counts(pick, 120.0), [1.0, 0.0])
+	pick = [{"max": 1.0, "cost": 120.0, "dps": 40.0}, {"max": 2.0, "cost": 60.0, "dps": 25.0}]
+	_check_counts("shared budget: 0 + 2 (50 beats 40)", MinionCount.pick_counts(pick, 120.0), [0.0, 2.0])
+	pick = [{"max": 1.0, "cost": 120.0, "dps": 60.0}, {"max": 2.0, "cost": 60.0, "dps": 25.0}]
+	_check_counts("shared budget 180: 1 + 1 (85 beats 60 and 50)", MinionCount.pick_counts(pick, 180.0), [1.0, 1.0])
+	pick = [{"max": 1.0, "cost": 60.0, "dps": 10.0}, {"max": 1.0, "cost": 60.0, "dps": 10.0}]
+	_check_counts("shared budget tie: the earlier item (bar order) keeps it", MinionCount.pick_counts(pick, 60.0), [1.0, 0.0])
+	pick = [{"max": 3.0, "cost": 60.0, "dps": 5.0}]
+	_check_counts("shared budget: one type capped by the budget", MinionCount.pick_counts(pick, 120.0), [2.0])
 	Build.set_class(0)  # Primalist
 	_check("two companions by default", float(MinionCount.max_companions(Build)["value"]), 2.0)
 	Build.passives[14] = 1  # Artor's Loyalty (PlayerProperty 85, flat 1.0)
@@ -1801,6 +1865,13 @@ func _shadows_echoes_buffs() -> void:
 	var throw_ab: Dictionary = GameData.get_ability(str(Build.skills[4]["ability"]))
 	var s: Dictionary = BuildMods.skill_store(Build, 4, BuildMods.global_store(Build)["store"])
 	_check("Void Knight echo chance: mastery 10% + passives", float(EchoCalc.chance(Build, throw_ab, s)["value"]), 0.22)
+	# Reclaimed Action (Volatile Reversal node 21): the guaranteed echo after a long jump makes the echo chance 100% (chance 22% > 0)
+	var vr_skill: Dictionary = Build.skills[2]
+	var vr_tree: Dictionary = (vr_skill.get("tree", {}) as Dictionary).duplicate()
+	vr_tree[21] = 1
+	Build.skills[2] = {"ability": vr_skill["ability"], "tree": vr_tree, "level": vr_skill.get("level", 20)}
+	_check("Reclaimed Action: guaranteed echo = 100% (base 22% > 0)", float(EchoCalc.chance(Build, throw_ab, BuildMods.skill_store(Build, 4, BuildMods.global_store(Build)["store"]))["value"]), 1.0)
+	Build.skills[2] = vr_skill
 	_flag("Shield Throw: echo component", _count_prefixed_sections(SkillCalc.compute(Build, 4), "Echo: ") > 0.0)
 	_flag("Anomaly does not echo", not EchoCalc.eligible(GameData.ability_by_name("Anomaly"), {}))
 	# Warpath (channelled) echoes only with its node, rolled once per second: rate = chance, not uses/s × chance
@@ -1835,6 +1906,20 @@ func _automatic_enemy_ailments() -> void:
 	_flag("Smoke Bomb (cooldown, other slot) blinds through its zone", str(blind.get("sources", {}).keys()).contains("Smoke Bomb"))
 	_check("stacks wiped every 1 s, applied 4/s for 4 s: 4 × 1 / 2", EnemyAilments.consumed_load(4.0, 4.0, 1.0), 2.0)
 	_check("stacks wiped every 4 s, applied 1/s for 2 s: 2 − 4 / 8", EnemyAilments.consumed_load(1.0, 2.0, 4.0), 1.5)
+	# Rive wipes on its third strike only: strikes [Rive1, Rive2, Rive3] (1/3), skipped second strike [Rive1, Rive3] (1/2), Cadence (1/5)
+	_check("Rive third share default [R1,R2,R3]", EnemyAilments.rive_third_share(false, false, false), 1.0 / 3.0, 0.0001)
+	_check("Rive third share skip second [R1,R3]", EnemyAilments.rive_third_share(false, false, true), 0.5, 0.0001)
+	_check("Rive third share Cadence [R1,R2,R1,R2,R3]", EnemyAilments.rive_third_share(false, true, false), 0.2, 0.0001)
+	_check("Rive third share Cadence + skip second [R1,R1,R3]", EnemyAilments.rive_third_share(false, true, true), 1.0 / 3.0, 0.0001)
+	_check("Rive third share Double Slash", EnemyAilments.rive_third_share(true, false, false), 0.0, 0.0001)
+	_check("Rive third share Cadence + Double Slash", EnemyAilments.rive_third_share(true, true, false), 0.0, 0.0001)
+	# 1.5 uses/s x 1/3 = 0.5 wipes/s (period 2 s): applied 1/s for 4 s -> 1 x 2 / 2 (per-use period 1 / 1.5 gave 0.3333)
+	_check("Rive wipes every 2 s, applied 1/s for 4 s", EnemyAilments.consumed_load(1.0, 4.0, 2.0), 1.0)
+	# gate: the gap between uses (1 / uses) must not exceed the combo timer (3 s by default)
+	var rive_plain: Dictionary = {"uses": 2.0, "flag_keys": []}
+	_check("Rive wipes 2 uses/s x 1/3 = 2/3 per s", EnemyAilments.consume_events(Build, EnemyAilments.RIVE_THIRD_FLAG, rive_plain), 2.0 / 3.0, 0.0001)
+	rive_plain["uses"] = 0.3
+	_check("Rive combo falls back to Rive1 (gap 3.33 s > 3 s): no wipe", EnemyAilments.consume_events(Build, EnemyAilments.RIVE_THIRD_FLAG, rive_plain), 0.0, 0.0001)
 	var with_auto: float = _dps(SkillCalc.compute(Build, 0))
 	_flag("automatic shreds raise the DPS", with_auto > 614489.05 * 1.5)
 	# buffs on you from the skill's hits: Dusk Shroud 60% per use of a melee / throwing attack that hits (Veil of Night,
@@ -2073,6 +2158,83 @@ func _mana_cost_audit() -> void:
 	var um: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/unique_effect_models.json"))
 	_flag("#100 Decoy unique ManaEfficiency is added", um is Dictionary and str((um as Dictionary)["ability"]["445:0"].get("mod", "")) == "added")
 
+	# #31 Lunge: manaCostPerDistance x the distance input (default 1) is added to the manaCost, then scaled and divided by efficiency
+	var lunge: Dictionary = {"manaCost": 8.0, "minimumManaCost": 0.0, "manaCostPerDistance": 1.0}
+	var bare := StatStore.new()
+	var zero: Dictionary = {"mana_added": 0.0, "mana_inc": 0.0}
+	_check("#31 Lunge distance 1 adds 1 mana", float(SkillCalc.mana_parts(lunge, bare, 0, 5, zero, 1.0)["cost"]), 9.0)
+	_check("#31 Lunge distance 0 is the base cost", float(SkillCalc.mana_parts(lunge, bare, 0, 5, zero, 0.0)["cost"]), 8.0)
+	_check("#31 Lunge distance 2.5 adds 2.5 mana", float(SkillCalc.mana_parts(lunge, bare, 0, 5, zero, 2.5)["cost"]), 10.5)
+	_check("#31 Lunge distance is increased by mana cost", float(SkillCalc.mana_parts(lunge, bare, 0, 5, {"mana_added": 0.0, "mana_inc": 0.2}, 2.5)["cost"]), 12.6)
+	var lunge_eff := StatStore.new()
+	lunge_eff.add(StatMod.make(LE.MANA_EFFICIENCY, "added", 0.2, 0, "gear"))
+	_check("#31 Lunge distance is divided by efficiency", float(SkillCalc.mana_parts(lunge, lunge_eff, 0, 5, zero, 2.5)["cost"]), 10.5 / 1.2)
+	_check("#31 distance_cost reported", float(SkillCalc.mana_parts(lunge, bare, 0, 5, zero, 2.5)["distance_cost"]), 2.5)
+	_check("#31 no manaCostPerDistance: distance ignored", float(SkillCalc.mana_parts({"manaCost": 8.0, "minimumManaCost": 0.0}, bare, 0, 5, zero, 5.0)["cost"]), 8.0)
+	_check("#31 negative distance counts as 0", float(SkillCalc.mana_parts(lunge, bare, 0, 5, zero, -3.0)["cost"]), 8.0)
+	# #106 current mana (Conditions value, 0 = maximum, never above the maximum): Mana Strike per mana, Storm Bolt more damage and consumption
+	var mana400 := StatStore.new()
+	mana400.add(StatMod.make(LE.MANA, "added", 400.0, 0, "max mana"))
+	var mctx: Dictionary = {"build": Build, "store": mana400, "slot": 0}
+	var strike: Dictionary = FieldModels.find("ManaStrikeMutator.addedLightningPerMana")
+	Build.set_player_state("current_mana", 0)
+	_check("#106 Mana Strike: current 0 is the maximum 400", float(EffectModels.value(strike, 0.15, mctx)["x"]), 60.0)
+	Build.set_player_state("current_mana", 250)
+	_check("#106 Mana Strike: 250 current mana", float(EffectModels.value(strike, 0.15, mctx)["x"]), 37.5)
+	_check("#106 Mana Strike: crit chance per current mana", float(EffectModels.value(FieldModels.find("ManaStrikeMutator.critChancePerMana"), 0.001, mctx)["x"]), 0.25)
+	Build.set_player_state("current_mana", 9999)
+	_check("#106 current mana above the maximum is cut to 400", float(EffectModels.value(strike, 0.15, mctx)["x"]), 60.0)
+	var mana2000 := StatStore.new()
+	mana2000.add(StatMod.make(LE.MANA, "added", 2000.0, 0, "max mana"))
+	var bctx: Dictionary = {"build": Build, "store": mana2000, "slot": 0}
+	var sb_more: Dictionary = FieldModels.find("StormBoltMutator.moreDamagePer10CurrentMana")
+	Build.set_player_state("current_mana", 100)
+	_check("#106 Storm Bolt: 100 current mana = +30% more", float(EffectModels.value(sb_more, 0.03, bctx)["x"]), 0.3)
+	Build.set_player_state("current_mana", 1000)
+	_check("#106 Storm Bolt: 1000 current mana = +300% (cap)", float(EffectModels.value(sb_more, 0.03, bctx)["x"]), 3.0)
+	Build.set_player_state("current_mana", 1500)
+	_check("#106 Storm Bolt: above the cap stays +300%", float(EffectModels.value(sb_more, 0.03, bctx)["x"]), 3.0)
+	var sb_cons: Dictionary = FieldModels.find("StormBoltMutator.manaConsumptionPercentage")
+	Build.set_player_state("current_mana", 100)
+	_check("#106 Storm Bolt consumption: 1% of 100 mana", float(EffectModels.value(sb_cons, 0.01, bctx)["x"]), 1.0)
+	Build.set_player_state("current_mana", 2000)
+	_check("#106 Storm Bolt consumption capped at 10", float(EffectModels.value(sb_cons, 0.01, bctx)["x"]), 10.0)
+	Build.set_player_state("current_mana", 0)
+	# #28 / #94 remaining-cooldown recovery on events the calculator cannot count: a parameter row, not a permanent cooldown speed
+	FieldModels.find("")
+	var permanent_recovery: int = 0
+	for key: Variant in FieldModels._models:
+		var fm: Dictionary = FieldModels._models[key]
+		if str(fm.get("kind", "")) == "cooldown" and str(fm.get("cooldown", "")) == "recovery_increased" and str(fm.get("note", "")).contains("emaining"):
+			permanent_recovery += 1
+	_check("#28 no remaining-cooldown recovery as a permanent cooldown model", float(permanent_recovery), 0.0)
+	_flag("#28 Healing Hands ally heal recovery is a parameter row", str(FieldModels.find("CharacterMutator.healingHandsCooldownRecoveryOnOtherAllyHealed").get("param", "")) == "cooldown_event_recovery")
+	# #99 Drain Life: the Damned stack bonus is capped by the node's maxTotalDamageToDamned (0.21 per point), 0.03 per stack
+	var damned: int = GameData.enum_value("AilmentID", "Damned")
+	var dl_more: Dictionary = FieldModels.find("DrainLifeMutator.moreDamagePerDamnedStack")
+	var cap1: Dictionary = {"build": Build, "store": StatStore.new(), "slot": 0, "node_fields": {"DrainLifeMutator.maxTotalDamageToDamned": 0.21}}
+	var cap2: Dictionary = {"build": Build, "store": StatStore.new(), "slot": 0, "node_fields": {"DrainLifeMutator.maxTotalDamageToDamned": 0.42}}
+	var cap3: Dictionary = {"build": Build, "store": StatStore.new(), "slot": 0, "node_fields": {"DrainLifeMutator.maxTotalDamageToDamned": 0.63}}
+	var none_ctx: Dictionary = {"build": Build, "store": StatStore.new(), "slot": 0}
+	Build.set_enemy_ailment(damned, 7)
+	_check("#99 1 point: 7 stacks = 0.21", float(EffectModels.value(dl_more, 0.03, cap1)["x"]), 0.21)
+	Build.set_enemy_ailment(damned, 10)
+	_check("#99 1 point: 10 stacks capped at 0.21", float(EffectModels.value(dl_more, 0.03, cap1)["x"]), 0.21)
+	Build.set_enemy_ailment(damned, 5)
+	_check("#99 1 point: 5 stacks = 0.15", float(EffectModels.value(dl_more, 0.03, cap1)["x"]), 0.15)
+	Build.set_enemy_ailment(damned, 20)
+	_check("#99 2 points: 20 stacks capped at 0.42", float(EffectModels.value(dl_more, 0.03, cap2)["x"]), 0.42)
+	Build.set_enemy_ailment(damned, 10)
+	_check("#99 2 points: 10 stacks = 0.30", float(EffectModels.value(dl_more, 0.03, cap2)["x"]), 0.30)
+	Build.set_enemy_ailment(damned, 30)
+	_check("#99 3 points: 30 stacks capped at 0.63", float(EffectModels.value(dl_more, 0.03, cap3)["x"]), 0.63)
+	Build.set_enemy_ailment(damned, 21)
+	_check("#99 3 points: 21 stacks = 0.63", float(EffectModels.value(dl_more, 0.03, cap3)["x"]), 0.63)
+	Build.set_enemy_ailment(damned, 20)
+	_check("#99 3 points: 20 stacks = 0.60", float(EffectModels.value(dl_more, 0.03, cap3)["x"]), 0.60)
+	_check("#99 without the node's fields: no cap (20 stacks = 0.60)", float(EffectModels.value(dl_more, 0.03, none_ctx)["x"]), 0.60)
+	Build.set_enemy_ailment(damned, 0)
+
 func _speed_audit() -> void:
 	print("--- speed audit")
 	var gs := GDScript.new()
@@ -2259,6 +2421,40 @@ func _hit_damage_fixes() -> void:
 	var c40: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.15, 0, "u", 40)]
 	_check("#16 cond 40 factor: boss, mana ok", SkillCalc._condition_factor(c40, {"kind": "boss", "flags": {}, "ailments": {}}, 0, 0, PackedStringArray(), {}), 1.15)
 	_check("#16 cond 40 factor: boss, low mana", SkillCalc._condition_factor(c40, {"kind": "boss", "flags": {}, "ailments": {}}, 0, 0, PackedStringArray(), {"low_mana": true}), 1.0)
+	# #16 cond 43 (PerDistance): min(distance, 10) x folded more, every damage type; the distance is a player input (default 1)
+	var e43: Dictionary = {"kind": "normal", "flags": {}, "ailments": {}}
+	var c43: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.01, 0, "c43", 43)]
+	_check("#16 cond 43: default distance 1", Enemy.has_condition(e43, 43, {}), 1.0)
+	_check("#16 cond 43: distance 4", Enemy.has_condition(e43, 43, {"target_distance": 4.0}), 4.0)
+	_check("#16 cond 43: capped at 10", Enemy.has_condition(e43, 43, {"target_distance": 25.0}), 10.0)
+	_check("#16 cond 43 factor: 1 + 4 x 0.01", SkillCalc._condition_factor(c43, e43, 0, 0, PackedStringArray(), {"target_distance": 4.0}), 1.04)
+	_check("#16 cond 43 factor: cap 1 + 10 x 0.01", SkillCalc._condition_factor(c43, e43, 0, 0, PackedStringArray(), {"target_distance": 25.0}), 1.10)
+	var c43b: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.01, 0, "a", 43), StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.005, 0, "b", 43)]
+	_check("#16 cond 43 folded: 1 + 10 x (1.01 x 1.005 - 1)", SkillCalc._condition_factor(c43b, e43, 0, 0, PackedStringArray(), {"target_distance": 10.0}), 1.1505)
+	# #16 cond 37 (ToPetrifiedEnemies): StunnedConditional with StunType.Petrify (Stunned.petrified, +0xE6)
+	_check("#16 cond 37: petrified flag", Enemy.has_condition({"kind": "normal", "flags": {"petrified": true}, "ailments": {}}, 37), 1.0)
+	_check("#16 cond 37: not petrified", Enemy.has_condition({"kind": "normal", "flags": {}, "ailments": {}}, 37), 0.0)
+	_check("#16 cond 0: petrified is stunned", Enemy.has_condition({"kind": "normal", "flags": {"petrified": true}, "ailments": {}}, 0), 1.0)
+	# #16 cond 41 / 42: bleed damage per poison stack, poison damage per bleed stack (IsAilmentConditional + GetPerAilmentStackEffect, up to 200)
+	var poison41: int = GameData.enum_value("AilmentID", "Poison")
+	var bleed41: int = GameData.enum_value("AilmentID", "Bleed")
+	var c41: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.01, 0, "c41", 41)]
+	var c42: Array[StatMod] = [StatMod.make(LE.CONDITIONAL_DAMAGE, "more", 0.01, 0, "c42", 42)]
+	var e41: Dictionary = {"kind": "normal", "flags": {}, "ailments": {poison41: 10.0}}
+	_check("#16 cond 41: bleed damage, 10 poison stacks", SkillCalc._condition_factor(c41, e41, 0, 0, PackedStringArray(), {}, 2), 1.10)
+	_check("#16 cond 41: hit damage is not affected", SkillCalc._condition_factor(c41, e41, 0, 0, PackedStringArray(), {}, 0), 1.0)
+	_check("#16 cond 41: poison damage is not affected", SkillCalc._condition_factor(c41, e41, 0, 0, PackedStringArray(), {}, 7), 1.0)
+	_check("#16 cond 41: capped at 200 stacks", SkillCalc._condition_factor(c41, {"kind": "normal", "flags": {}, "ailments": {poison41: 250.0}}, 0, 0, PackedStringArray(), {}, 2), 3.0)
+	_check("#16 cond 42: poison damage, 5 bleed stacks", SkillCalc._condition_factor(c42, {"kind": "normal", "flags": {}, "ailments": {bleed41: 5.0}}, 0, 0, PackedStringArray(), {}, 7), 1.05)
+	# #57 Puncture: a large hit absorbs bleeds only with Every Third Bigger, once per third use
+	_check("#57 Puncture: absorb + third bigger, 3 uses/s -> 1 wipe/s", EnemyAilments.consume_events(Build, EnemyAilments.PUNCTURE_ABSORB_FLAG, {"uses": 3.0, "flag_keys": [EnemyAilments.PUNCTURE_ABSORB_FLAG, EnemyAilments.PUNCTURE_THIRD_FLAG]}), 1.0)
+	_check("#57 Puncture: absorb without Every Third Bigger -> no wipe", EnemyAilments.consume_events(Build, EnemyAilments.PUNCTURE_ABSORB_FLAG, {"uses": 3.0, "flag_keys": [EnemyAilments.PUNCTURE_ABSORB_FLAG]}), 0.0)
+	_check("#57 other consumer unchanged: once per use", EnemyAilments.consume_events(Build, "Hits absorb poison stacks from target", {"uses": 2.5, "flag_keys": []}), 2.5)
+	# #65 zone level: the armour formula reads the zone level (ZoneInfoManager.ZoneLevel), 0 = the enemy level
+	_check("#65 zone level defaults to the enemy level", float(Enemy.zone_level({"level": 75})), 75.0)
+	_check("#65 explicit zone level wins", float(Enemy.zone_level({"level": 75, "area_level": 100})), 100.0)
+	_check("#65 armour 3000 at zone 100 (monster 75)", Enemy.armour_mitigation(3000, Enemy.zone_level({"level": 75, "area_level": 100}), false), 0.48441, 0.0001)
+	_check("#65 armour 3000 at zone 75 (existing vector)", Enemy.armour_mitigation(3000, Enemy.zone_level({"level": 75}), false), 0.53613, 0.0001)
 	# #11: Penetration is not filtered by the Minion mask (DamageStats.buildDamageStats), Damage is
 	var minion_mods: Array[StatMod] = [StatMod.make(LE.PENETRATION, "added", 0.1, LE.FIRE, "pen"), StatMod.make(LE.DAMAGE, "increased", 0.5, 0, "player inc")]
 	var ds11: Dictionary = SkillCalc._build_damage(_hit_ctx(minion_mods, LE.HIT | LE.SPELL | LE.MINION, LE.MINION))
@@ -2935,3 +3131,152 @@ func _stripped(result: Dictionary) -> String:
 			row.erase("lazy")
 	return var_to_str(copy)
 
+
+## Zones that the mutators add at run time (RepeatedlyApplyAilmentsInRadius, docs/ENGINE.md §9.3): the chance of one tick,
+## never a hit chance; interval = applicationInterval / (1 + frequency). Black Hole Chill: 0.5 per second = 0.25 per tick × 2 ticks.
+func _runtime_zones() -> void:
+	var zm: StatMod = EffectModels.make_mod({"kind": "stat", "stat": "AilmentChance", "mod": "added", "ailment": "Chill",
+		"factor": 0.5, "zone": 0.5}, 1.0, {"store": StatStore.new()}, "t")
+	_check("zone model: chance of one tick = value × factor", zm.added, 0.5)
+	_check("zone model: tick interval", zm.zone_interval, 0.5)
+	_check("zone model: Chill special", float(zm.special), float(GameData.enum_value("AilmentID", "Chill")))
+	var hit_ctx: Dictionary = {"base": {}, "ab": {}, "mods": [zm], "tags": 0}
+	_check("zone chance is no hit chance", float(AilmentCalc._chances(hit_ctx, 0).has(3)), 0.0)
+	var zone: Dictionary = {"name": "Black Hole", "interval": 0.5, "ailments": [], "mods": [zm], "runtime": true}
+	var empty_ctx: Dictionary = {"base": {}, "ab": {}, "mods": [], "tags": 0}
+	var with_mod: Dictionary = AilmentCalc._chances(empty_ctx, 0, false, zone)
+	_check("runtime zone: chance per tick 0.5", float(with_mod[3]["chance"]), 0.5)
+	_check("runtime zone: applications per second = (1 / 0.5) × 0.5", (1.0 / 0.5) * float(with_mod[3]["chance"]), 1.0)
+	var prefab: Dictionary = zone.duplicate()
+	prefab.erase("runtime")
+	_check("prefab zone ignores the run-time chance", float(AilmentCalc._chances(empty_ctx, 0, false, prefab).has(3)), 0.0)
+	var no_mods: Dictionary = zone.duplicate()
+	no_mods["mods"] = []
+	_check("runtime zone without mods: no chance", float(AilmentCalc._chances(empty_ctx, 0, false, no_mods).has(3)), 0.0)
+	_check("zone interval 0.5 with +100% frequency: 0.25 s", AilmentCalc.zone_interval(0.5, 1.0), 0.25)
+	var dup: StatMod = zm.scaled(2.0)
+	_check("scaled() keeps the zone interval", dup.zone_interval, 0.5)
+
+
+## Zone objects with several ticks per lifetime (ZoneTicks), Hammer Throw's Void zone, Black Hole ticks, Scathing Light, Divine
+## Essence and the Storm Totem frostbite chance (research/11 zones-ailments fixes). Hand-computed from the game code: tick k needs
+## an age above k × interval; hammer lifetimes 2.5 s (returning), 0.75 s and 6.0 s with the spiral (no return).
+func _zone_ticks_and_ailment_fixes() -> void:
+	print("--- zone ticks and zone ailment fixes")
+	_check("ticks: 2.0 s at 0.2 s = 10", float(ZoneTicks.ticks(2.0, 0.2, 0.0, false)), 10.0)
+	_check("ticks: 2.75 s at 0.3 s with damageAtStart = 10", float(ZoneTicks.ticks(2.75, 0.3, 0.0, true)), 10.0)
+	_check("ticks: returning hammer 2.5 s at 0.2 s = 12", float(ZoneTicks.ticks(2.5, 0.2, 0.0, false)), 12.0)
+	_check("ticks: exact multiple 6.0 s at 0.2 s = 30", float(ZoneTicks.ticks(6.0, 0.2, 0.0, false)), 30.0)
+	_check("ticks: Black Hole +0.8 duration (4.95 s) = 17", float(ZoneTicks.ticks(2.75 * 1.8, 0.3, 0.0, true)), 17.0)
+	_check("ticks: Black Hole +1.1 duration (5.775 s) = 20", float(ZoneTicks.ticks(2.75 * 2.1, 0.3, 0.0, true)), 20.0)
+
+	var hz: Dictionary = SkillComponents.hammer_zone_numbers(0.0, false, false, false)
+	_check("hammer zone, returning: lifetime 2.5 s", float(hz["lifetime"]), 2.5)
+	_check("hammer zone, returning: 12 ticks", float(hz["ticks"]), 12.0)
+	_check("hammer zone, Void: 8 base damage", float((hz["damage"] as Array)[5]), 8.0)
+	_check("hammer zone, Void: added damage 0.05 × 8 = 0.4", float(hz["ade"]), 0.4)
+	hz = SkillComponents.hammer_zone_numbers(1.0, true, false, false)
+	_check("hammer zone, no return, inc 1.0: lifetime 0.75 s", float(hz["lifetime"]), 0.75)
+	_check("hammer zone, no return, inc 1.0: 3 ticks", float(hz["ticks"]), 3.0)
+	_check("hammer zone, no return, inc 1.0: 16 Void", float((hz["damage"] as Array)[5]), 16.0)
+	_check("hammer zone, no return, inc 1.0: added damage 0.8", float(hz["ade"]), 0.8)
+	hz = SkillComponents.hammer_zone_numbers(0.5, true, true, false)
+	_check("hammer zone, no return + spiral: lifetime 6.0 s", float(hz["lifetime"]), 6.0)
+	_check("hammer zone, no return + spiral: 30 ticks", float(hz["ticks"]), 30.0)
+	_check("hammer zone, no return + spiral, inc 0.5: 12 Void", float((hz["damage"] as Array)[5]), 12.0)
+	hz = SkillComponents.hammer_zone_numbers(0.0, false, false, true)
+	_check("hammer zone, lightning: 8 Lightning", float((hz["damage"] as Array)[3]), 8.0)
+	_check("hammer zone, lightning: no Void", float((hz["damage"] as Array)[5]), 0.0)
+
+	# Scathing Light chance sum S (multiplier f × 100 × S, Holy Prism f = 0.01 per point)
+	_check("Scathing Light: Ignite 0.30 + Electrify 0.20 = 0.5", AilmentCalc.scathing_light_chance(0.3, 0.2, 0, 0.0, 0.0, 0.0, false, 0.0, 0.0), 0.5)
+	_check("Scathing Light: Holy Prism 1 point on S = 0.5 gives factor 1.5", 1.0 + 0.5 * 0.01 * 100.0, 1.5)
+	_check("Scathing Light: + Conduit of Light (res 0.75, 0.01 per point) = 1.25", AilmentCalc.scathing_light_chance(0.3, 0.2, 0, 0.75, 0.01, 0.0, false, 0.0, 0.0), 1.25)
+	_check("Scathing Light: + Awestruck (Electrify field 1.0) = 2.25", AilmentCalc.scathing_light_chance(0.3, 0.2, 0, 0.75, 0.01, 1.0, false, 0.0, 0.0), 2.25)
+	_check("Scathing Light: fire conversion uses fire res 0.5 = 1.0", AilmentCalc.scathing_light_chance(0.3, 0.2, 1, 0.5, 0.01, 0.0, false, 0.0, 0.0), 1.0)
+	_check("Scathing Light: physical conversion has no res or node terms = 0.5", AilmentCalc.scathing_light_chance(0.3, 0.2, 2, 0.75, 0.01, 1.0, false, 0.0, 0.0), 0.5)
+	_check("Scathing Light: Shock → Electrify, Shock 0.4 + Lay Bare 0.35 = 1.25", AilmentCalc.scathing_light_chance(0.3, 0.2, 0, 0.0, 0.0, 0.0, true, 0.4, 0.35), 1.25)
+
+	# Hammer Throw: the Void zone is one component per use, with the ticks of its lifetime and no ailments of its own
+	Build.set_skill(0, "ht16aw")
+	var ht_tree: Dictionary = GameData.get_skill_tree("ht16aw")
+	_allocate_path(ht_tree, 7, 1)  # Disintegrating Aura
+	_allocate_path(ht_tree, 8, 4)  # Rapid Disintegration ×4: +100% Aura damage
+	var ht_s: Dictionary = BuildMods.skill_store(Build, 0, BuildMods.global_store(Build)["store"])
+	var ht_comps: Array[Dictionary] = SkillComponents.collect(Build, 0, GameData.get_ability("ht16aw"), ht_s)
+	var zone_comp: Dictionary = {}
+	for comp: Dictionary in ht_comps:
+		if str(comp["name"]) == LE.t("Disintegrating Aura"):
+			zone_comp = comp
+	_flag("Hammer Throw: the Void zone is a component", not zone_comp.is_empty())
+	if not zone_comp.is_empty():
+		_check("Hammer Throw zone: 12 ticks per use (returning hammer)", float(zone_comp["per_use"]), 12.0)
+		_check("Hammer Throw zone: not a hit", float(zone_comp["base"]["isHit"]), 0.0)
+		_check("Hammer Throw zone: Void base 16 (+100% Aura damage)", float((zone_comp["base"]["damage"] as Array)[5]), 16.0)
+		_flag("Hammer Throw zone: rolls no ailments of its own", bool(zone_comp.get("no_ailments", false)))
+
+	# Black Hole: the zone is the primary hit, 10 ticks per cast (0.3 s over 2.75 s, damageAtStart)
+	Build.set_skill(0, "bh2")
+	var bh_s: Dictionary = BuildMods.skill_store(Build, 0, BuildMods.global_store(Build)["store"])
+	var bh_comps: Array[Dictionary] = SkillComponents.collect(Build, 0, GameData.get_ability("bh2"), bh_s)
+	_check("Black Hole: primary zone = 10 ticks per cast", float(bh_comps[0]["per_use"]), 10.0)
+	_check("Black Hole: 48 Cold per tick unchanged", float((bh_comps[0]["base"]["damage"] as Array)[2]), 48.0)
+
+	# Divine Essence: one roll a second while alive (5 points × 0.1 per second)
+	var de_target: String = "CharacterMutator.divineEssenceEverySecondChance"
+	var saved_level: int = Build.level
+	Build.level = 100  # the passive point cap must cover the unlocking points of the base tree
+	_flag("Divine Essence: a passive class holds the node", _set_passive_points(de_target, 5) >= 0)
+	_check("Divine Essence: 5 points = 0.5 per second", EnemyAilments._passive_field(Build, de_target), 0.5, 0.0001)
+	var de_gain: Dictionary = {}
+	for g: Dictionary in EnemyAilments._timed_sources(Build):
+		if int(g["id"]) == GameData.ailment_id_by_name("DivineEssence"):
+			de_gain = g
+	_check("Divine Essence: gain rate 0.5 per second", float(de_gain.get("rate", 0.0)), 0.5, 0.0001)
+	_check("Divine Essence: 10 s duration, load 5 capped at 3 stacks", minf(float(de_gain.get("rate", 0.0)) * float(de_gain.get("duration", 0.0)), float(de_gain.get("max", 0))), 3.0)
+
+	# Ancestral Speed: 2 points = 0.14 chance per use of a totem skill (1.5 uses/s), haste 3 s; no gain for other skills
+	var ha_target: String = "CharacterMutator.chanceToGainHasteWhenYouSummonATotemFromPassives"
+	_flag("Ancestral Speed: a passive class holds the node", _set_passive_points(ha_target, 2) >= 0)
+	var totem_gain: Dictionary = {}
+	for g: Dictionary in EnemyAilments._self_sources(Build, {"name": "TotemTest", "tags": LE.TOTEM}, 1.5, 1.5):
+		if int(g["id"]) == GameData.ailment_id_by_name("Haste"):
+			totem_gain = g
+	_check("totem haste: rate 1.5 × 0.14 per second", float(totem_gain.get("rate", 0.0)), 0.21, 0.0001)
+	_check("totem haste: 3 s duration", float(totem_gain.get("duration", 0.0)), 3.0)
+	var other_gains: Array[Dictionary] = EnemyAilments._self_sources(Build, {"name": "NotTotem", "tags": 0}, 1.5, 1.5)
+	var other_haste: int = 0
+	for g: Dictionary in other_gains:
+		if int(g["id"]) == GameData.ailment_id_by_name("Haste"):
+			other_haste += 1
+	_check("totem haste: a skill without the Totem tag gets none", float(other_haste), 0.0)
+
+	# Storm Totem frostbite: the chance of the totem's Blizzard application (one per 1 s, component scope)
+	var st_model: Dictionary = FieldModels.find("StormTotemMutator.chanceToApplyFrostbitePerSecond")
+	_check("Storm Totem frostbite: zone interval 1.0 s", float(st_model.get("zone", 0.0)), 1.0)
+	_flag("Storm Totem frostbite: scope is the Blizzard component", str(st_model.get("scope", "")) == "component:Blizzard")
+	Build.level = saved_level
+	Build.set_class(1)  # Mage: the class of the sample build
+	Build.set_skill(0, "ht16aw")
+
+
+## Sets the class whose passive tree holds a node with this CharacterMutator target, unlocks its masteries and spends `points`
+## on that node. Returns the class id, -1 if no class holds the node.
+func _set_passive_points(target: String, points: int) -> int:
+	for class_id: int in range(0, 6):
+		var tree: Dictionary = GameData.get_passive_tree(class_id)
+		if tree.is_empty():
+			continue
+		var effects: Dictionary = GameData.passive_effects(str(tree["treeID"]))
+		for node_id: Variant in effects:
+			for effect: Dictionary in effects[node_id].get("effects", []):
+				if str(effect.get("target", "")) != target:
+					continue
+				Build.set_class(class_id)
+				for node: Dictionary in tree["nodes"]:
+					if int(node["mastery"]) == 0:
+						while Build.add_point(int(node["id"])):
+							pass
+				_allocate_passive_path(tree, int(node_id), points)
+				return class_id
+	return -1

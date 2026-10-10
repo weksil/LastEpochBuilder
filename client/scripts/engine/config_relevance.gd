@@ -54,6 +54,12 @@ static func compute(build: Node) -> Dictionary:
 	for group: String in inputs:
 		for key: String in inputs[group]:
 			_add(out, group, key, str(inputs[group][key]))
+	# PP 257 / 258 need the attacker's distance, PP 262 the current mana (DefenseConversions._conditional)
+	var pps: Dictionary = DefenseConversions.pp_values(build)
+	if pps.has(257) or pps.has(258):
+		_add(out, "player_values", "attacker_distance", LE.t("Damage taken from enemies within 4 m (PP 257 / 258)"))
+	if pps.has(262):
+		_add(out, "player_values", "current_mana", LE.t("Damage taken with at least 400 current mana (PP 262)"))
 	return out
 
 
@@ -150,6 +156,8 @@ static func _note_source(per: String, reason: String) -> void:
 			_add_ailment(_rec, GameData.enum_value("AilmentID", arg), reason)
 		"player":
 			_add(_rec, "player_values", arg, reason)
+		"current_mana":
+			_add(_rec, "player_values", "current_mana", reason)
 		"buff":
 			_add(_rec, "player_buffs", GameData.enum_value("AilmentID", arg), reason)
 		"input":
@@ -212,9 +220,12 @@ static func _scan_skill_ailments(out: Dictionary, ability: Dictionary, result: D
 
 ## Keys (enemy flags, ailments) that make Enemy.has_condition(cdp) non-zero on their own.
 static func _probe_condition(out: Dictionary, cdp: int, reason: String) -> void:
+	if cdp == 43:
+		_add(out, "player_values", "target_distance", reason)
+		return
 	var hits: Array[Array] = []
 	var base: Dictionary = {"kind": "normal", "flags": {}, "ailments": {}}
-	for flag: String in ["moving", "stunned", "low_health", "high_health", "full_health", "frozen"]:
+	for flag: String in ["moving", "stunned", "low_health", "high_health", "full_health", "frozen", "petrified"]:
 		var probe: Dictionary = base.duplicate(true)
 		probe["flags"][flag] = true
 		if Enemy.has_condition(probe, cdp) > 0.0:

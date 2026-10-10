@@ -361,7 +361,6 @@ static func enemy_attack(build: Node) -> Dictionary:
 	var interval: float = 0.0
 	var every: float = 0.0
 	var attacker_kind: String = str(build.enemy.get("kind", "dummy"))
-	var near: bool = false
 	if p.is_empty():
 		damage = _floats(settings["custom_damage"], 7)
 		crit_chance = float(settings["custom_crit_chance"])
@@ -376,7 +375,6 @@ static func enemy_attack(build: Node) -> Dictionary:
 		interval = float(p["tick"])
 		every = float(p["every"])
 		attacker_kind = str(p.get("rarity", "normal")) if str(p["set"]) == AVERAGE_KEY else "boss"
-		near = bool(p.get("melee", false))
 		var scaling: Dictionary = level_scaling(area_level, int(p["level0"]))
 		var corruption: int = int(build.enemy.get("corruption", 0))
 		var corr: Dictionary = Enemy.corruption_more(build.enemy)
@@ -406,7 +404,7 @@ static func enemy_attack(build: Node) -> Dictionary:
 		total += v
 	return {"damage": damage, "total": total, "is_hit": is_hit, "crit_chance": crit_chance, "crit_multi": crit_multi,
 		"pen": pen, "lines": lines, "label": label, "tick": interval, "every": every,
-		"attacker_kind": attacker_kind, "near": near}
+		"attacker_kind": attacker_kind}
 
 
 ## Build.defense merged over the defaults (older builds have no defense settings).
@@ -522,6 +520,13 @@ static func player_layers(build: Node, store: StatStore, area_level: int, attack
 		layers["ward"] = minf(float(layers["ward"]), float(layers["ward_limit"]))
 	# SP 60 CurrentHealthDrain: ProtectionClass.Update takes drain × current health per second straight from health (BaseStats: tags 0 only)
 	layers["health_drain"] = maxf(store.query_untagged(LE.CURRENT_HEALTH_DRAIN).value(), 0.0)
+	# ProtectionClass.GainWard (06c s3.3): PP 471 = sourcesOfNoWardGain, wardGainModifier from SP 119 inc/more; the moreWardGeneratedValues list has no extracted writer data (BuffParent.moreWardGenerated serialized, FlameWardMutator via AbilityProperty 336:11 has no holder) = empty
+	layers["no_ward_gain"] = float((conv["pps"] as Dictionary).get(471, {}).get("value", 0.0)) > 0.1
+	layers["ward_gain_mod"] = DefenseRecovery.ward_gain_modifier(store)
+	layers["ward_gain_t"] = DefenseRecovery.ward_more_t([])
+	layers["ward_gain_factor"] = DefenseRecovery.ward_gain_factor(layers)
+	# SP 97 (ProtectionClass.ApplyDamage): chance to gain 30 ward per hit that is not dodged (DefenseRecovery.ward_on_hit)
+	layers["ward_on_hit_chance"] = store.sum_added_untagged([LE.CHANCE_TO_GAIN_30_WARD_WHEN_HIT])
 	return layers
 
 
@@ -577,10 +582,10 @@ static func block_factor(block: float, block_dr: float, taken_ratio: float) -> f
 
 
 ## Chances of the events of one enemy hit per attack: dodged hits never reach ProtectionClass.ApplyDamage (HitDetector.TryToHitEnemy);
-## the rolls then go parry -> glancing -> block.
+## the rolls then go parry -> glancing -> block. `reach` = hits that reach ProtectionClass.ApplyDamage (not dodged; parried hits included).
 static func enemy_hit_chances(dodge: float, parry: float, glance: float, block: float) -> Dictionary:
 	var f_avoid: float = (1.0 - dodge) * (1.0 - parry)
-	return {"dodge": dodge, "block": f_avoid * block, "land": f_avoid, "glancing": f_avoid * glance}
+	return {"dodge": dodge, "block": f_avoid * block, "land": f_avoid, "glancing": f_avoid * glance, "reach": 1.0 - dodge}
 
 
 ## Share of one damage type that reaches the pool, without avoidance, block, glancing and crit (06c §1 step 7):
@@ -805,7 +810,7 @@ static func hits_to_die(layers: Dictionary, d: float) -> float:
 
 ## Ward the regeneration holds against decay (06c §3.2): regen = (q·x² + l·x)/(1 + 0.5·max(retention, −0.9)), x = W − T.
 static func ward_equilibrium(layers: Dictionary) -> float:
-	var regen: float = float(layers["ward_regen"])
+	var regen: float = float(layers["ward_regen"]) * float(layers.get("ward_gain_factor", 1.0))
 	if regen <= 0.0:
 		return 0.0
 	var k: float = regen * (1.0 + 0.5 * maxf(float(layers["ward_retention"]), -0.9))
@@ -922,7 +927,7 @@ static func _compute(build: Node) -> Dictionary:
 	var avoid_rows: Array = []
 	var expected: float = d_unit
 	var exp_lines: PackedStringArray = [LE.t("After per-type layers: %s") % LE.fmt_num(d_unit)]
-	var avoid: Dictionary = {"dodge": 0.0, "block": 0.0, "land": 1.0, "glancing": 0.0}
+	var avoid: Dictionary = {"dodge": 0.0, "block": 0.0, "land": 1.0, "glancing": 0.0, "reach": 0.0}
 	if is_hit:
 		var dodge: float = clampf(float(layers["dodge"]), 0.0, 1.0)
 		var parry: float = float(layers["parry"])

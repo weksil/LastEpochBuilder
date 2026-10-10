@@ -71,9 +71,12 @@ const COMPANION_FLAGS: Array[int] = [85, 553]
 ## holds at most getMaximumCompanions minions. Not capped here: Spriggan (extraNonCompanionCapSpriggans: spriggans outside the cap)
 ## and Falconry (its own getMaximum).
 const COMPANION_UNCAPPED: Array[String] = ["SummonSpriggan", "Falconer 00 Falconry"]
-## AbilityProperty summonWolf (id 8) specials that change the contribution of a wolf (2 convertWolvesTo2Squirrels,
-## 8 summonWolfCountAsTwoForLimit): not modelled, such a wolf is not capped here.
-const WOLF_CONTRIBUTION_SPECIALS: Array[int] = [2, 8]
+## Contribution of one companion to the shared budget (Summoned.defaultContributionToCompanionLimit; SummonTracker.getCompanions_1).
+const COMPANION_CONTRIBUTION: float = 60.0
+## AbilityProperty summonWolf special 8 summonWolfCountAsTwoForLimit (mgr+0x1c5): SummonWolfMutator.contributionToCompanionLimitPerMinion x2.
+## Special 2 convertWolvesTo2Squirrels (mgr+0x1c3) halves it, but SummonWolfMutator.getMaximum doubles the count, so a wolf slot keeps
+## its share (the squirrel actor itself is not modelled).
+const WOLF_COUNT_AS_TWO_SPECIAL: int = 8
 ## SummonSkeletonMutator.halfSkeletons (the model's flag text): the skeleton limit is halved unless it is also doubled.
 const HALF_SKELETONS_FLAG: String = "Skeletons halved (damage, health, size increased)"
 
@@ -117,10 +120,13 @@ static func types(build: Node) -> Array[Dictionary]:
 			if not _busy:
 				lim = limit_of(build, slot, ab, float(e[1]))
 			var t: Dictionary = {"actor": actor, "ability": ab_name, "skill": GameData.display_name(ab),
-				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": lim["value"], "limit_text": lim["text"]}
+				"totem": (int(ab.get("tags", 0)) & LE.TOTEM) != 0, "limit": lim["value"], "limit_text": lim["text"],
+				"slot": slot, "base": float(e[1])}
 			if GROUPS.has(ab_name) and actor == str(GROUPS[ab_name]["actor"]):
 				t["rotation"] = rotation(ab_name, lim["flag_keys"])
 			out.append(t)
+	if not _busy:
+		_share_budget(build, out)
 	if not key.is_empty():
 		if _cache.size() >= 16:
 			_cache.clear()
@@ -208,22 +214,19 @@ static func limit_of(build: Node, slot: int, ab: Dictionary, base: float) -> Dic
 		value = 0.0
 	value = maxf(float(roundi(value)), 0.0)
 	# SummonTracker.unsummonExtraCompanions / EnforceLimitOfOneOfEachCompanionType: a companion type holds at most the maximum number of companions
-	if bool(ab.get("companion", false)) and not COMPANION_UNCAPPED.has(str(ab.get("name", ""))) and not _wolf_contribution_changed(build, ab):
-		var capped: float = companion_cap(value, float(companions["value"]), player_flag(build, PP_ONE_OF_EACH_COMPANION))
+	if bool(ab.get("companion", false)) and not COMPANION_UNCAPPED.has(str(ab.get("name", ""))):
+		var capped: float = companion_cap(value, float(companions["value"]), player_flag(build, PP_ONE_OF_EACH_COMPANION), contribution(build, ab))
 		if capped < value:
 			parts.append((LE.t("limited to %s: one companion of each type") if capped == 1.0 and float(companions["value"]) > 1.0 else LE.t("limited to %s by the maximum number of companions")) % LE.fmt_num(capped))
 			value = capped
 	return {"value": value, "flag_keys": s.get("flag_keys", []), "text": "%s = %s" % [" ".join(parts), LE.fmt_num(value)]}
 
 
-## A wolf whose contribution to the companion limit is changed by AbilityProperty summonWolf specials 2 / 8 (not modelled).
-static func _wolf_contribution_changed(build: Node, ab: Dictionary) -> bool:
-	if str(ab.get("name", "")) != "SummonWolf":
-		return false
-	for special: int in WOLF_CONTRIBUTION_SPECIALS:
-		if float(ShadowCalc.ability_property(build, "summonWolf", 8, special)["value"]) != 0.0:
-			return true
-	return false
+## Budget share of one minion of a companion ability: 60, a wolf with summonWolfCountAsTwoForLimit 120.
+static func contribution(build: Node, ab: Dictionary) -> float:
+	if str(ab.get("name", "")) == "SummonWolf" and float(ShadowCalc.ability_property(build, "summonWolf", 8, WOLF_COUNT_AS_TWO_SPECIAL)["value"]) != 0.0:
+		return COMPANION_CONTRIBUTION * 2.0
+	return COMPANION_CONTRIBUTION
 
 
 ## Members of a GROUPS summon's rotation under the tree flags: [{actor, one}].
@@ -273,9 +276,83 @@ static func round_companions(x: float) -> float:
 
 ## Minions of one companion type the shared budget leaves: `value` limited to the maximum number of companions (60 per companion
 ## against a budget of 60 x maximum) and to 1 with PlayerProperty 553 ("one companion of each type").
-static func companion_cap(value: float, maximum: float, one_of_each: bool) -> float:
-	var capped: float = minf(value, maximum)
+static func companion_cap(value: float, maximum: float, one_of_each: bool, per_minion: float = COMPANION_CONTRIBUTION) -> float:
+	var capped: float = minf(value, floorf(maximum * COMPANION_CONTRIBUTION / per_minion))
 	return minf(capped, 1.0) if one_of_each else capped
+
+
+## SummonTracker.unsummonExtraCompanions: every companion type draws on ONE budget of maximumCompanions x 60 and the oldest summoned are
+## evicted first, so which minions stay depends on the order the player casts the skills. The calculator shows the maximum: the counts
+## with the largest minion DPS that fit (D?). Counts set by hand on the Conditions tab are kept and use the budget first.
+static func _share_budget(build: Node, out: Array[Dictionary]) -> void:
+	# busy while the budget is computed: the global store reads minion counts (types()), which would re-enter this function
+	var was_busy: bool = _busy
+	var was_recording: bool = ConfigRelevance._recording
+	ConfigRelevance._recording = false  # the budget is no condition source of the build
+	_busy = true
+	_share_budget_run(build, out)
+	_busy = was_busy
+	ConfigRelevance._recording = was_recording
+
+
+static func _share_budget_run(build: Node, out: Array[Dictionary]) -> void:
+	var budget: float = float(max_companions(build)["value"]) * COMPANION_CONTRIBUTION
+	var given: Dictionary = explicit(build)
+	var items: Array[Dictionary] = []
+	var need: float = 0.0
+	for i: int in range(out.size()):
+		var ab: Dictionary = GameData.ability_by_name(str(out[i]["ability"]))
+		if not bool(ab.get("companion", false)) or COMPANION_UNCAPPED.has(str(ab.get("name", ""))):
+			continue
+		var cost: float = contribution(build, ab)
+		if given.has(str(out[i]["actor"])):
+			budget -= maxf(float(given[str(out[i]["actor"])]), 0.0) * cost
+			continue
+		items.append({"index": i, "max": float(out[i]["limit"]), "cost": cost, "dps": 0.0})
+		need += float(out[i]["limit"]) * cost
+	budget = maxf(budget, 0.0)
+	if items.size() < 1 or need <= budget:
+		return
+	# minion DPS of one minion of each type: the summon skill's DPS vs enemy with the base counts (types() is not re-entered while busy)
+	for it: Dictionary in items:
+		var t: Dictionary = out[int(it["index"])]
+		var r: Dictionary = SkillCalc.compute(build, int(t["slot"]), false)
+		for section: Dictionary in r.get("sections", []):
+			for row: Dictionary in section.get("rows", []):
+				if str(row.get("label", "")) == LE.t("DPS vs enemy") and str(section.get("title", "")) == LE.t("Against enemy"):
+					it["dps"] = float(row.get("value", 0.0)) / maxf(float(t["base"]), 1.0)
+	var counts: Array[float] = pick_counts(items, budget)
+	for k: int in range(items.size()):
+		var t2: Dictionary = out[int(items[k]["index"])]
+		if counts[k] < float(t2["limit"]):
+			t2["limit"] = counts[k]
+			t2["limit_text"] = str(t2["limit_text"]) + LE.t("; limited to %s by the shared companion budget (D?: the combination with the most DPS is kept)") % LE.fmt_num(counts[k])
+
+
+## Integer counts k_i in [0, max_i] with sum(k_i x cost_i) <= budget and the largest sum(k_i x dps_i). items: [{max, cost, dps}]. Ties go
+## to the earlier item (bar order) and its larger count.
+static func pick_counts(items: Array[Dictionary], budget: float) -> Array[float]:
+	var state: Dictionary = {"best": [], "dps": -1.0}
+	var cur: Array[float] = []
+	cur.resize(items.size())
+	_pick_rec(items, 0, budget, 0.0, cur, state)
+	var out: Array[float] = []
+	for v: Variant in state["best"]:
+		out.append(float(v))
+	return out
+
+
+static func _pick_rec(items: Array[Dictionary], i: int, left: float, dps: float, cur: Array[float], state: Dictionary) -> void:
+	if i == items.size():
+		if dps > float(state["dps"]) + 1e-9:
+			state["dps"] = dps
+			state["best"] = cur.duplicate()
+		return
+	var cost: float = float(items[i]["cost"])
+	var top: int = mini(int(items[i]["max"]), maxi(int(floorf(maxf(left, 0.0) / cost + 1e-9)), 0))
+	for k: int in range(top, -1, -1):
+		cur[i] = float(k)
+		_pick_rec(items, i + 1, left - float(k) * cost, dps + float(k) * float(items[i]["dps"]), cur, state)
 
 
 ## PlayerProperty flag `index` (value > 0.1): passives and mastery bonus, item / idol affixes, unique effects (EnemyAilments.player_property)

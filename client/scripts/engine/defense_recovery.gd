@@ -19,15 +19,19 @@ const MAX_DOT_SECONDS: float = 600.0
 const OWN_EVENTS: Array[String] = ["use", "hit", "crit", "second"]
 const ENEMY_EVENTS: Array[String] = ["block", "dodge", "hit_taken", "glancing"]
 const AMOUNT_BASES: Dictionary = {"flat": "flat", "max_health": "max", "missing_health": "missing", "current_health": "current"}
-## HealthGain stats with a hit-event specialTag that are not the skill's own hits (ResourceGainEvents.UpdateResourceGainTotals).
-## Only stats with tags 0 and extraTag 0 are totals; the health goes through BaseHealth.restoreHealth. The ward of these events
-## (ProtectionClass.GainWard, its ward gain multiplier not modelled) is not counted.
-## {special, prop (SP), label, input}: input "" = per blocked enemy hit, else the rate input of the player state.
+## HealthGain / WardGain stats with a hit-event specialTag that are not the skill's own hits (ResourceGainEvents.UpdateResourceGainTotals).
+## Only stats with tags 0 and extraTag 0 are totals; the health goes through BaseHealth.restoreHealth, the ward through
+## ProtectionClass.GainWard (scaled by scale_ward). Ward on block (WardGain special 6) is not counted: GainWardOnBlock is not proven.
+## {special, prop (SP), resource, label, input}: input "" = per blocked enemy hit, else the rate input of the player state.
 const EVENT_GAINS: Array[Dictionary] = [
-	{"special": 6, "prop": 38, "label": "Health gained on block", "input": ""},
-	{"special": 3, "prop": 38, "label": "Health gained on kill", "input": "kills_per_second"},
-	{"special": 5, "prop": 38, "label": "Health gained on stun", "input": "stuns_per_second"},
+	{"special": 6, "prop": 38, "resource": "health", "label": "Health gained on block", "input": ""},
+	{"special": 3, "prop": 38, "resource": "health", "label": "Health gained on kill", "input": "kills_per_second"},
+	{"special": 5, "prop": 38, "resource": "health", "label": "Health gained on stun", "input": "stuns_per_second"},
+	{"special": 3, "prop": 39, "resource": "ward", "label": "Ward gained on kill", "input": "kills_per_second"},
+	{"special": 5, "prop": 39, "resource": "ward", "label": "Ward gained on stun", "input": "stuns_per_second"},
 ]
+## ProtectionClass.ApplyDamage: the ward gained per hit that is not dodged (30 is the GainWard argument, ISIL constant 30.0).
+const WARD_ON_HIT_AMOUNT: float = 30.0
 
 
 ## {sources: Array[Dictionary], rows: Array, notes: Array[String], skill: String}
@@ -59,6 +63,11 @@ static func collect(build: Node, layers: Dictionary, avoid: Dictionary, interval
 	for res: Dictionary in passive_resources(build):
 		_add_resource(sources, notes, res["model"], float(res["x"]), str(res["source"]), r.get("rates", {}), 0.0, avoid, interval, mana)
 	sources.append_array(event_gains(BuildMods.global_store(build)["store"], build.player_state, avoid))
+	sources.append_array(ward_on_hit(layers, avoid))
+	if bool(layers.get("no_ward_gain", false)):
+		notes.append(LE.t("No ward gain (PP 471): every ward source is not counted"))
+	# every ward gain goes through ProtectionClass.GainWard: one factor for all ward sources
+	sources = scale_ward(sources, float(layers.get("ward_gain_factor", 1.0)))
 	return {"sources": sources, "notes": notes, "skill": skill_name}
 
 
@@ -73,12 +82,13 @@ static func event_gains(store: StatStore, player_state: Dictionary, avoid: Dicti
 		if is_zero_approx(amount):
 			continue
 		var label: String = LE.t(str(e["label"]))
+		var resource: String = str(e["resource"])
 		if str(e["input"]) == "":
 			var p: float = float(avoid.get("block", 0.0))
-			_add(out, "health", "enemy_hit", "flat", amount * p, label, LE.t("%s per event × %s per enemy hit") % [LE.fmt_num(amount), LE.fmt_num(p)])
+			_add(out, resource, "enemy_hit", "flat", amount * p, label, LE.t("%s per event × %s per enemy hit") % [LE.fmt_num(amount), LE.fmt_num(p)])
 		else:
 			var rate: float = float(player_state.get(str(e["input"]), 0.0))
-			_add(out, "health", "rate", "flat", amount * rate, label, LE.t("%s per event × %s events/s") % [LE.fmt_num(amount), LE.fmt_num(rate)])
+			_add(out, resource, "rate", "flat", amount * rate, label, LE.t("%s per event × %s events/s") % [LE.fmt_num(amount), LE.fmt_num(rate)])
 	return out
 
 
@@ -90,6 +100,64 @@ static func _add(sources: Array[Dictionary], resource: String, timing: String, b
 	if below > 0.0:
 		src["below"] = below  # gained only when health after the hit is below this share of the maximum
 	sources.append(src)
+
+
+## ProtectionClass.GainWard, the moreWardGeneratedValues list (+0x1E0): only values > 0; the first gives t = v, every next one
+## multiplies t by (1 + v). The list has no extracted writer data (empty list = t 0).
+static func ward_more_t(values: Array) -> float:
+	var t: float = 0.0
+	for v: float in values:
+		if v > 0.0:
+			t = v if t == 0.0 else t * (1.0 + v)
+	return t
+
+
+## PrecalculatedStatsHolder.wardGainModifier (+0x44, BaseStats.ApplyExternalStats): (1 + increased SP 119) × Π(1 + more SP 119) − 1
+## over the stats with tags 0 and extraTag 0.
+static func ward_gain_modifier(store: StatStore) -> float:
+	var q: StatQuery = store.query_untagged(LE.WARD_DECAY_THRESHOLD)
+	return (1.0 + q.increased) * q.more - 1.0
+
+
+## Factor of one ward gain (ProtectionClass.GainWard): 0 while sourcesOfNoWardGain >= 1 (PP 471), else (1 + t), times
+## max(wardGainModifier, −1) when that modifier is not 0 (it scales the increase only).
+static func ward_gain_factor(layers: Dictionary) -> float:
+	if bool(layers.get("no_ward_gain", false)):
+		return 0.0
+	var f: float = 1.0 + float(layers.get("ward_gain_t", 0.0))
+	var mod: float = float(layers.get("ward_gain_mod", 0.0))
+	if mod != 0.0:
+		f *= maxf(mod, -1.0)
+	return f
+
+
+## Scales every ward source by the GainWard factor; a factor of 0 drops them (returns a new list).
+static func scale_ward(sources: Array[Dictionary], factor: float) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for s: Dictionary in sources:
+		var item: Dictionary = s
+		if s["resource"] == "ward":
+			if is_zero_approx(factor):
+				continue
+			item = s.duplicate()
+			item["k"] = float(s["k"]) * factor
+			if not is_equal_approx(factor, 1.0):
+				item["text"] = "%s\n%s" % [str(s["text"]), LE.t("× %s ward gain multiplier (GainWard)") % LE.fmt_num(factor)]
+		out.append(item)
+	return out
+
+
+## SP 97 (ProtectionClass.ApplyDamage): every hit that is not dodged rolls the chance (RngElement.Roll: chance ≥ 1 always
+## succeeds) and gains 30 ward through GainWard, before or after the damage. DoT does not roll (isHit only).
+static func ward_on_hit(layers: Dictionary, avoid: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var chance: float = clampf(float(layers.get("ward_on_hit_chance", 0.0)), 0.0, 1.0)
+	var reach: float = float(avoid.get("reach", 0.0))
+	if chance <= 0.0 or reach <= 0.0:
+		return out
+	_add(out, "ward", "enemy_hit", "flat", WARD_ON_HIT_AMOUNT * chance * reach, LE.t("Chance to gain 30 ward when hit"),
+		LE.t("%s ward × %s chance × %s of hits not dodged") % [LE.fmt_num(WARD_ON_HIT_AMOUNT), LE.fmt_pct(chance), LE.fmt_pct(reach)])
+	return out
 
 
 ## Resource models of allocated passives aimed at the character (CharacterMutator.*): BuildMods lists them only as notes.
@@ -254,7 +322,7 @@ static func on_enemy_hit(layers: Dictionary, sources: Array[Dictionary], pool: D
 		if s["resource"] == "health":
 			pool["health"] = minf(float(layers.get("health_limit", max_health)), float(pool["health"]) + amount)
 		else:
-			pool["ward"] = float(pool["ward"]) + amount
+			pool["ward"] = maxf(0.0, float(pool["ward"]) + amount)  # a negative factor (wardGainModifier < 0) only lowers it
 			var cap: float = float(layers.get("ward_limit", 0.0))
 			if cap > 0.0:
 				pool["ward"] = minf(float(pool["ward"]), cap)

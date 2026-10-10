@@ -84,6 +84,8 @@ static func default_enemy() -> Dictionary:
 		"res": [0, 0, 0, 0, 0, 0, 0],
 		"armour": 0,
 		"corruption": 0,
+		# zone level for armour mitigation, 0 = the enemy level
+		"area_level": 0,
 		"ailments": {},
 		"flags": {
 			"moving": false,
@@ -91,7 +93,8 @@ static func default_enemy() -> Dictionary:
 			"low_health": false,
 			"high_health": true,
 			"full_health": true,
-			"frozen": false
+			"frozen": false,
+			"petrified": false
 		}
 	}
 
@@ -116,6 +119,12 @@ static func default_player_state() -> Dictionary:
 		"ignite_stacks": 0,
 		"damned_stacks": 0,
 		"shadows": 0,
+		# distance to the target for ConditionalDamageProperty PerDistance (Manhattan, capped at 10 by the game); default 1
+		"target_distance": 1.0,
+		# distance of the attacker to you for PP 257 / 258 (CharacterMutator.ApplyConditionalDefenses: Maths.distanceLessThan(..., 4.0), strict); default 1 = within 4 m
+		"attacker_distance": 1.0,
+		# current mana for the models that read BaseMana.currentMana (0 = not set: the maximum)
+		"current_mana": 0,
 		# events per second the calculation cannot derive (EnemyAilments.EVENT_INPUTS)
 		"kills_per_second": 0.0,
 		"stuns_per_second": 0.0,
@@ -707,7 +716,7 @@ func reset_player_conditions() -> void:
 		elif value is Dictionary:
 			continue  # buffs have their own reset (clear_player_buffs)
 		elif value is float:
-			player_state[key] = 0.0
+			player_state[key] = 1.0 if (key == "target_distance" or key == "attacker_distance") else 0.0
 		elif key != "health":
 			player_state[key] = 0
 	changed.emit()

@@ -360,18 +360,17 @@
   "419": {
    "stat": "CriticalChance",
    "mod": "added",
-   "when": [
-    "player:!crit_recently"
-   ],
-   "note": "except supported (channelled) abilities"
+   "crit_state": "not_recent",
+   "note": "Only while no crit was dealt in the last 4 s (CharacterMutator: timeLastCrit + 4 s); except supported (channelled) abilities (not modelled, D?)",
+   "confidence": "D?"
   },
   "89": {
    "stat": "CriticalChance",
    "mod": "more",
    "factor": -1,
-   "when": [
-    "player:crit_recently"
-   ]
+   "crit_state": "recent",
+   "note": "Only while a crit was dealt in the last 4 s (the buff refreshed by each crit)",
+   "confidence": "D?"
   },
   "119": {
    "stat": "CriticalMultiplier",
@@ -1003,9 +1002,24 @@
    "confidence": "D"
   },
   "148": {
-   "kind": "flag",
-   "text": "Incandescent Blades stack (fire damage: +2, ignite chance 20%) on melee hit",
-   "confidence": "D"
+   "kind": "stat",
+   "stat": "Damage",
+   "mod": "added",
+   "tags": "Fire|Melee",
+   "factor": 2.0,
+   "per": "input:searing_blades",
+   "input": {
+    "key": "searing_blades",
+    "label": "Searing Blades stacks (one per melee use that hits, 16 s each)",
+    "default": 0,
+    "auto": {"rate": "uses", "window": 16.0, "tag": "Melee"}
+   },
+   "variants": [
+    {},
+    {"stat": "AilmentChance", "ailment": "Ignite", "mod": "added", "tags": "Melee", "factor": 0.2}
+   ],
+   "note": "Each melee use that hits gives a 16 s stack: +2 added fire damage and +20% ignite chance (melee). Automatic value: own melee uses/s x 16 s",
+   "confidence": "D?"
   },
   "150": {
    "kind": "flag",
@@ -1080,7 +1094,8 @@
    },
    "confidence": "D",
    "skill_all": "Void|Melee",
-   "note": "Only a use whose skill has both the Void and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+   "use_interval": 2.0,
+   "note": "Only a use whose skill has both the Void and Melee tags (161/162; Fire and Melee for 163/164) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
   },
   "162": {
    "kind": "stat",
@@ -1097,7 +1112,8 @@
    },
    "confidence": "D",
    "skill_all": "Void|Melee",
-   "note": "Only a use whose skill has both the Void and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+   "use_interval": 2.0,
+   "note": "Only a use whose skill has both the Void and Melee tags (161/162; Fire and Melee for 163/164) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
   },
   "163": {
    "kind": "stat",
@@ -1114,7 +1130,8 @@
    },
    "confidence": "D",
    "skill_all": "Fire|Melee",
-   "note": "Only a use whose skill has both the Fire and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+   "use_interval": 2.0,
+   "note": "Only a use whose skill has both the Fire and Melee tags (163/164; Void and Melee for 161/162) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
   },
   "164": {
    "kind": "stat",
@@ -1131,7 +1148,8 @@
    },
    "confidence": "D",
    "skill_all": "Fire|Melee",
-   "note": "Only a use whose skill has both the Fire and Melee tags; the 2 s cooldown starts with that use (at most one use per 2 s, assumed ready)"
+   "use_interval": 2.0,
+   "note": "Only a use whose skill has both the Fire and Melee tags (163/164; Void and Melee for 161/162) and only while the 2 s timer of the real use is ready: scaled by min(1, 1 / (2 x uses/s)), maximum case, shared timer with other such skills ignored (D?)"
   },
   "166": {
    "kind": "trigger",
@@ -1321,9 +1339,11 @@
    "input": {
     "key": "bow_lightning_used",
     "label": "Recently used lightning bow attack (2 sec)",
-    "default": true
+    "default": true,
+    "auto_bar": "Bow|Lightning"
    },
-   "confidence": "D"
+   "note": "Maximum case: the bow lightning attack that arms this window (UseType Direct, InstantDirect or SummonerCastDirect) is used right before; the default is on only while a bar skill with Bow and Lightning tags exists (D?)",
+   "confidence": "D?"
   },
   "230": {
    "kind": "stat",
@@ -1336,9 +1356,11 @@
    "input": {
     "key": "throw_lightning_used",
     "label": "Recently used thrown lightning attack (2 sec)",
-    "default": true
+    "default": true,
+    "auto_bar": "Throwing|Lightning"
    },
-   "confidence": "D"
+   "note": "Maximum case: the thrown lightning attack that arms this window (UseType Direct, InstantDirect or SummonerCastDirect) is used right before; the default is on only while a bar skill with Throwing and Lightning tags exists (D?)",
+   "confidence": "D?"
   },
   "231": {
    "kind": "flag",
@@ -5913,17 +5935,15 @@
    "factor": 0.08,
    "per": "input:stacks",
    "src_max": 51,
-   "when": [
-    "enemy:Bleed"
-   ],
    "input": {
     "key": "stacks",
-    "label": "Recent melee hits vs bleeding enemy",
-    "default": 10,
-    "max": 51
+    "label": "Undisputed stacks (own melee hits on a bleeding enemy within 4 s)",
+    "default": 0,
+    "max": 51,
+    "auto": {"rate": "hits", "window": 4.0, "tag": "Melee", "presence": "Bleed"}
    },
-   "note": "Each stack 4 sec, up to 51 stacks",
-   "confidence": "D"
+   "note": "Each melee hit on a bleeding enemy adds a 4 s stack of +8% increased physical damage (51 distinct stacks at most). Automatic value: own melee hits/s x bleed uptime x 4 s",
+   "confidence": "D?"
   },
   "32:0": {
     "kind": "stat",
@@ -6018,9 +6038,11 @@
    "kind": "trigger",
    "ability": "SoulEruption",
    "on": "kill",
-   "chance": 0.2,
-   "note": "every 5th kill per 10 sec",
-   "confidence": "D"
+   "every": 5,
+   "window": 10.0,
+   "events_default": 1.0,
+   "note": "Every kill adds a 10 s charge; the 5th live charge casts Soul Eruption and clears them (5 kills within 10 s, evenly spaced kills assumed; kills per second is the event input)",
+   "confidence": "D?"
   },
   "53:0": {
    "kind": "flag",

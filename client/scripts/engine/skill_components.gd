@@ -18,6 +18,18 @@ const TYPE_ORDER: Array[String] = ["Physical", "Fire", "Cold", "Lightning", "Nec
 ## hits of minions and allies per second.
 const CURSE_OWN_KEY: String = "curse_own_hits"
 const CURSE_OTHER_KEY: String = "curse_other_hits"
+## Hammer Throw's Void zone (Disintegrating Aura): the field-model flag text, the ability and its AbilityProperty indices
+## (ability_property_fields_c.json: abilityID 106 hammerThrow, special 5 hammerThrowCannotReturn, 7 hammerThrowLightningConversion,
+## 8 hammerThrowChanneledMode).
+const HAMMER_ABILITY: String = "HammerThrow"
+const HAMMER_ID: String = "hammerThrow"
+const HAMMER_INDEX: int = 106
+const HAMMER_PROP_NO_RETURN: int = 5
+const HAMMER_PROP_LIGHTNING: int = 7
+const HAMMER_PROP_CHANNELED: int = 8
+const HAMMER_ZONE_FLAG: String = "Disintegrating Aura: Void damage zone on every hammer (component below)"
+const HAMMER_NO_RETURN_FLAG: String = "Hammers do not return"
+const ZONE_CLASS: String = "RepeatedlyDamageEnemiesWithinRadius"
 
 
 static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_notes: Array[String] = []) -> Array[Dictionary]:
@@ -25,7 +37,9 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 	var ab_name: String = str(ab.get("name", ""))
 	var primary: Dictionary = ab.get("primaryDamage", {}) if ab.get("primaryDamage") is Dictionary else {}
 	if not primary.is_empty():
-		result.append(_component(str(ab.get("abilityName", ab_name)), "primary", ab, primary, 1.0, 0.0, ""))
+		# a zone that damages every interval (Black Hole): its ticks over the lifetime, not one hit (ZoneTicks)
+		var zone: Dictionary = _zone_hits(ab_name, primary, s, build)
+		result.append(_component(str(ab.get("abilityName", ab_name)), "primary", ab, primary, float(zone["hits"]), 0.0, str(zone["note"])))
 
 	for sub: Dictionary in GameData.sub_abilities(ab_name):
 		if not _is_spawned(str(sub.get("spawn_reason", ""))) or _not_per_use(sub, ab_name):
@@ -33,8 +47,13 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		var entry: Dictionary = _first_damage(sub)
 		if entry.is_empty():
 			continue
-		_add_sub(result, str(sub.get("name", "")), sub, entry, 1.0, str(sub.get("spawn_reason", "")).trim_prefix("prefab:"))
+		var sub_zone: Dictionary = _zone_hits(str(sub.get("name", "")), entry, s, build)
+		var sub_note: String = str(sub.get("spawn_reason", "")).trim_prefix("prefab:")
+		if str(sub_zone["note"]) != "":
+			sub_note = "%s; %s" % [sub_note, sub_zone["note"]]
+		_add_sub(result, str(sub.get("name", "")), sub, entry, float(sub_zone["hits"]), sub_note)
 
+	_add_hammer_zone(result, build, slot, s, ab, out_notes)
 	if primary.is_empty():
 		_add_code_damage(result, build, slot, s, ab_name, ab, out_notes)
 
@@ -71,7 +90,13 @@ static func collect(build: Node, slot: int, ab: Dictionary, s: Dictionary, out_n
 		if rate <= 0.0:
 			continue
 		var label: String = str(trig.get("label", ""))
-		var trig_comp: Dictionary = _component(label if label != "" else str(sub.get("name", "")), "trigger", sub, entry, 1.0, rate, str(trig.get("note", label)))
+		# each trigger casts the zone once: its ticks over the lifetime are the hits of the event (ZoneTicks)
+		var trig_zone: Dictionary = _zone_hits(str(sub.get("name", "")), entry, s, build)
+		var trig_note: String = str(trig.get("note", label))
+		if str(trig_zone["note"]) != "":
+			trig_note = "%s; %s" % [trig_note, trig_zone["note"]] if trig_note != "" else str(trig_zone["note"])
+		var trig_comp: Dictionary = _component(label if label != "" else str(sub.get("name", "")), "trigger", sub, entry, 1.0,
+			rate * float(trig_zone["hits"]), trig_note)
 		trig_comp["character"] = bool(trig.get("character", false))
 		result.append(trig_comp)
 
@@ -107,6 +132,78 @@ static func _add_sub(result: Array[Dictionary], comp_name: String, sub: Dictiona
 				existing["note"] = note if str(existing["note"]) == "" else "%s; %s" % [existing["note"], note]
 			return
 	result.append(_component(comp_name, "sub", sub, entry, per_use, 0.0, note))
+
+
+## Hits per use (or per trigger) of a damaging record: its ticks over the lifetime when it is a zone (ZoneTicks), else 1. {hits, note}
+static func _zone_hits(rec_name: String, entry: Dictionary, s: Dictionary, build: Node) -> Dictionary:
+	if str(entry.get("class", "")) != ZONE_CLASS:
+		return {"hits": 1.0, "note": ""}
+	var zone: Dictionary = ZoneTicks.per_use(rec_name, s, build)
+	if zone.is_empty():
+		return {"hits": 1.0, "note": ""}
+	return {"hits": float(zone["ticks"]), "note": str(zone["text"])}
+
+
+## Void zone of every thrown Hammer Throw (HammerThrowMutator.Mutate: a RepeatedlyDamageEnemiesWithinRadius on the hammer object,
+## flag «Disintegrating Aura»). It damages the enemy every 0.2 s while the hammer lives (ZoneTicks; the enemy is assumed inside), the
+## damage is (1 + increased Aura damage) × 8 of Void (Lightning with the lightning conversion), added damage 0.05 × base, tags
+## Throwing | DoT (0x1400), and the zone rolls no ailments of its own.
+static func _add_hammer_zone(result: Array[Dictionary], build: Node, slot: int, s: Dictionary, ab: Dictionary,
+		out_notes: Array[String]) -> void:
+	if str(ab.get("name", "")) != HAMMER_ABILITY or not (s.get("flag_keys", []) as Array).has(HAMMER_ZONE_FLAG):
+		return
+	if float(ShadowCalc.ability_property(build, HAMMER_ID, HAMMER_INDEX, HAMMER_PROP_CHANNELED)["value"]) > 0.0:
+		_skip_note(out_notes, LE.t("Hammer Throw channelled mode: the Disintegrating Aura zone is not counted (the zone is added to the thrown hammers only, whether the channel's hammers get it is not in the game data)."))
+		return
+	var inc: float = SkillCalc._param_total(s, "aura_damage")
+	var no_return: bool = (s.get("flag_keys", []) as Array).has(HAMMER_NO_RETURN_FLAG) or (
+		float(ShadowCalc.ability_property(build, HAMMER_ID, HAMMER_INDEX, HAMMER_PROP_NO_RETURN)["value"]) > 0.0)
+	var spiral: bool = _has_node(build, slot, int(ZoneTicks.entry("hammer_throw")["spiral_node_id"]))
+	var lightning: bool = float(ShadowCalc.ability_property(build, HAMMER_ID, HAMMER_INDEX, HAMMER_PROP_LIGHTNING)["value"]) > 0.0
+	var n: Dictionary = hammer_zone_numbers(inc, no_return, spiral, lightning)
+	var zab: Dictionary = ab.duplicate()
+	zab["tags"] = LE.THROWING | LE.DOT
+	var base: Dictionary = {"damage": n["damage"], "critChance": 0.0, "critMultiplier": 1.0, "critType": 1,
+		"addedDamageScaling": n["ade"], "isHit": 0, "go": "hammerThrow"}
+	var type_name: String = LE.t("Lightning") if lightning else LE.t("Void")
+	var life_text: String = ""
+	if no_return:
+		life_text = LE.t("the hammer does not return: the lifetime is set by the mutator (%s s)") % LE.fmt_num(float(n["lifetime"]))
+	else:
+		life_text = LE.t("the hammer returns: the serialized cap %s s is used (D?: an earlier end of the return is not in the data)") % LE.fmt_num(float(n["lifetime"]))
+	var note: String = LE.t("%s zone on every hammer: %d ticks of %s s over a lifetime of %s s, %s base damage per tick. The enemy is assumed to stay in the zone for the whole lifetime (D?); %s. The zone rolls no ailments of its own.") % [
+		type_name, int(n["ticks"]), LE.fmt_num(float(ZoneTicks.entry("hammer_throw")["interval"])), LE.fmt_num(float(n["lifetime"])),
+		LE.fmt_num(float((n["damage"] as Array)[int(n["type"])])), life_text]
+	var comp: Dictionary = _component(LE.t("Disintegrating Aura"), "sub", zab, base, float(n["ticks"]), 0.0, note)
+	comp["conversions"] = []
+	comp["no_ailments"] = true
+	result.append(comp)
+
+
+## Numbers of the Void zone of one hammer: lifetime (the serialized cap, or the mutator's lifetime when the hammer does not return),
+## ticks over it, base damage by type (index 5 Void, 3 Lightning) and the added damage scaling (0.05 × base).
+static func hammer_zone_numbers(inc: float, no_return: bool, spiral: bool, lightning: bool) -> Dictionary:
+	var h: Dictionary = ZoneTicks.entry("hammer_throw")
+	var lifetime: float = float(h["lifetime"])
+	if no_return:
+		lifetime = float(h["no_return_spiral_lifetime"]) if spiral else float(h["no_return_lifetime"])
+	var dtype: int = int(h["damage_type_lightning"]) if lightning else int(h["damage_type_void"])
+	var base: float = float(h["base_damage"]) * (1.0 + inc)
+	var damage: Array[float] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	damage[dtype] = base
+	return {"lifetime": lifetime, "ticks": ZoneTicks.ticks(lifetime, float(h["interval"]), 0.0, false), "damage": damage,
+		"ade": float(h["ade_per_base"]) * base, "type": dtype}
+
+
+## True if the skill's tree has the node with points.
+static func _has_node(build: Node, slot: int, node_id: int) -> bool:
+	if slot < 0 or slot >= build.skills.size():
+		return false
+	var tree: Dictionary = build.skills[slot].get("tree", {})
+	for key: Variant in tree:
+		if int(key) == node_id and int(tree[key]) > 0:
+			return true
+	return false
 
 
 static func _is_spawned(reason: String) -> bool:

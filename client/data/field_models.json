@@ -464,11 +464,13 @@
 },
 "AerialAssaultMutator.missingCDpercentDiveBombAndStrikesRecoveredOnUsePerMax10Mana": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
 "factor": 0.1,
-"kind": "cooldown",
+"kind": "param",
 "note": "Cooldown reduction of Dive Bomb and Falcon Strikes per every 10 mana",
-"per": "max_mana"
+"per": "max_mana",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown of Dive Bomb and Falcon Strikes recovered per use (other skills)",
+"mod": "added"
 },
 "AerialAssaultMutator.moreDamagePerAerialProwessStackConsumed": {
 "confidence": "D",
@@ -525,9 +527,11 @@
 },
 "AerialAssaultMutator.percentRemainingCDRecoveredOnFalconHit": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown per falcon hit, up to 10 times per 3 s"
+"kind": "param",
+"note": "Part of remaining cooldown per falcon hit, up to 10 times per 3 s",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown recovered per falcon hit (event rate not counted)",
+"mod": "added"
 },
 "AerialAssaultMutator.umbralBladeBurstCount": {
 "ability": "Umbral Blades 1",
@@ -2016,7 +2020,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second while enemies in hole",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "BlackHoleMutator.chanceToChill": {
 "ailment": "Chill",
@@ -2024,7 +2030,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second while enemies in hole",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "BlackHoleMutator.chanceToIgnitePerUncappedFireRes": {
 "ailment": "Ignite",
@@ -2033,7 +2041,9 @@
 "mod": "added",
 "note": "Chance per second × fire resistance uncapped",
 "per": "res:1",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "BlackHoleMutator.chanceToRecastOnEnd": {
 "ability": "BlackHole",
@@ -3723,22 +3733,14 @@
 "param": "self_bleed_buff_chance"
 },
 "CharacterMutator.chanceToGainHasteFor2SecondsOnMinionKillOrDeath": {
-"ailment": "Haste",
-"confidence": "D?",
-"kind": "stat",
-"mod": "added",
-"note": "On kill by minion or minion death",
-"scope": "global",
-"stat": "AilmentChance"
+"confidence": "D",
+"kind": "flag",
+"text": "Haste (2 s) on a minion kill or death: the event rate depends on the fight and is not counted (set the Haste stacks by hand on the Conditions tab)"
 },
 "CharacterMutator.chanceToGainHasteWhenYouSummonATotemFromPassives": {
-"ailment": "Haste",
-"confidence": "D?",
-"kind": "stat",
-"mod": "added",
-"note": "On totem summon",
-"scope": "global",
-"stat": "AilmentChance"
+"confidence": "D",
+"kind": "flag",
+"text": "Haste on every use of a totem skill (counted in Buffs on you)"
 },
 "CharacterMutator.chanceToGainManaOnFirstMeleeHit": {
 "confidence": "D",
@@ -3920,13 +3922,9 @@
 "on": "use"
 },
 "CharacterMutator.divineEssenceEverySecondChance": {
-"ailment": "DivineEssence",
-"confidence": "D?",
-"kind": "stat",
-"mod": "added",
-"note": "Chance every second at high health",
-"scope": "global",
-"stat": "AilmentChance"
+"confidence": "D",
+"kind": "flag",
+"text": "Divine Essence: a roll every second while alive (counted in Buffs on you)"
 },
 "CharacterMutator.dotsBypassWard": {
 "confidence": "D",
@@ -4101,9 +4099,11 @@
 },
 "CharacterMutator.healingHandsCooldownRecoveryOnOtherAllyHealed": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown on healing another ally"
+"kind": "param",
+"note": "Part of remaining cooldown on healing another ally",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown recovered when another ally is healed (event not counted)",
+"mod": "added"
 },
 "CharacterMutator.healingHandsHealToFullOnOtherPlayerHealed": {
 "confidence": "D",
@@ -5399,7 +5399,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance of ignite per second (per point)",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.25
 },
 "ChthonicFissureMutator.igniteStackSpreadOnTormentToEnemiesCount": {
 "confidence": "D",
@@ -7290,7 +7291,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second in orb radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.25,
+"zone": 0.25
 },
 "DevouringOrbMutator.increasedArea": {
 "confidence": "D",
@@ -7401,7 +7404,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second in orb radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.25,
+"zone": 0.25
 },
 "DevouringOrbMutator.voidEruptionOnDeath": {
 "ability": "VoidEruption",
@@ -7856,9 +7861,11 @@
 },
 "DiveBombMutator.remainingCooldownRecoveryOnThrowOrBowThatHits": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown per first throwing or bow hit"
+"kind": "param",
+"note": "Part of remaining cooldown per first throwing or bow hit",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown recovered per first throwing or bow hit (event not counted)",
+"mod": "added"
 },
 "DiveBombMutator.shadowFalconConversion": {
 "confidence": "D?",
@@ -7886,9 +7893,11 @@
 },
 "DiveBombMutator.traversalRemainingCooldownRestoreOnRareOrBossFirstHit": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown of move skills per first hit to rare/boss"
+"kind": "param",
+"note": "Part of remaining cooldown of move skills per first hit to rare/boss",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown of movement skills restored per first hit on a rare or boss (event not counted)",
+"mod": "added"
 },
 "DivineBoltMutator.benefitsFromHealingHandsTree": {
 "confidence": "D",
@@ -8020,7 +8029,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Stacks per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.1833
 },
 "DrainLifeMutator.chanceToFearPerSecond": {
 "ailment": "Fear",
@@ -8028,7 +8038,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.1833
 },
 "DrainLifeMutator.chanceToSlowPerSecond": {
 "ailment": "Slow",
@@ -8036,7 +8047,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.1833
 },
 "DrainLifeMutator.chanceToSummonSoulWispOnKill": {
 "ability": "SummonNecroticWisp",
@@ -8107,13 +8119,14 @@
 "text": "Limit of damage bonus from Damned stacks"
 },
 "DrainLifeMutator.moreDamagePerDamnedStack": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "stat",
 "mod": "more",
-"note": "Limit set by maxTotalDamageToDamned",
+"note": "Total bonus capped by maxTotalDamageToDamned of the node (0.21 per point)",
 "per": "enemy_stacks:Damned",
 "stat": "Damage",
-"holder_only": true
+"holder_only": true,
+"max_node_field": "DrainLifeMutator.maxTotalDamageToDamned"
 },
 "DrainLifeMutator.moreDamageToLowHealth": {
 "confidence": "D",
@@ -8296,7 +8309,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Stacks of Damned per second on enemies in area",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "DreadShadeMutator.frenzyDuration": {
 "confidence": "D",
@@ -10048,9 +10062,11 @@
 },
 "ExplosiveTrapMutator.falconSkillsRemainingCooldownRecoveryFromDetonation": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown of falcon skills on explosion"
+"kind": "param",
+"note": "Part of remaining cooldown of falcon skills on explosion",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown of falcon skills recovered per explosion (event not counted)",
+"mod": "added"
 },
 "ExplosiveTrapMutator.firesArrows": {
 "confidence": "D?",
@@ -10199,9 +10215,11 @@
 },
 "ExplosiveTrapMutator.remainingCooldownRecoveryOnFreeze": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown on freeze"
+"kind": "param",
+"note": "Part of remaining cooldown on freeze",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown recovered per freeze (event not counted)",
+"mod": "added"
 },
 "ExplosiveTrapMutator.throwMaxTrapsInWideArea": {
 "confidence": "D?",
@@ -10783,10 +10801,12 @@
 },
 "FalconryMutator.reducedFalconStrikeCooldownPercentageOnHit": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
+"kind": "param",
 "note": "Fraction of remaining cooldown per player hit",
-"scope": "component:Falconer 01 Falcon Strikes"
+"scope": "component:Falconer 01 Falcon Strikes",
+"param": "cooldown_event_recovery",
+"label": "Remaining Falcon Strike cooldown recovered per player hit (event not counted)",
+"mod": "added"
 },
 "FalconryMutator.screechFears": {
 "ailment": "Fear",
@@ -10842,7 +10862,8 @@
 "mod": "added",
 "note": "Chance of slow per second",
 "scope": "component:Falconer 02.2 Featherstorm",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "FalconryMutator.slowStacksWithScreech": {
 "confidence": "D?",
@@ -10893,9 +10914,11 @@
 },
 "FalconryMutator.traversalRemainingCooldownRestoreOnRareOrBossFirstHit": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Part of remaining cooldown of move skills per first hit to rare/boss"
+"kind": "param",
+"note": "Part of remaining cooldown of move skills per first hit to rare/boss",
+"param": "cooldown_event_recovery",
+"label": "Remaining cooldown of movement skills restored per first hit on a rare or boss (event not counted)",
+"mod": "added"
 },
 "FinalExplosionMutator.addedDodgeWhileDecoyExists": {
 "confidence": "D",
@@ -12644,9 +12667,11 @@
 },
 "FlayMutator.reapRemainingCDRestore": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Fraction of remaining Reap cooldown per hit"
+"kind": "param",
+"note": "Fraction of remaining Reap cooldown per hit",
+"param": "cooldown_event_recovery",
+"label": "Remaining Reap cooldown restored per hit (event not counted)",
+"mod": "added"
 },
 "FlayMutator.reaperFormCdMaxTriggers": {
 "confidence": "D",
@@ -12657,9 +12682,11 @@
 },
 "FlayMutator.reaperFormRemainingCDRestore": {
 "confidence": "D?",
-"cooldown": "recovery_increased",
-"kind": "cooldown",
-"note": "Fraction of remaining Reaper Form cooldown per hit"
+"kind": "param",
+"note": "Fraction of remaining Reaper Form cooldown per hit",
+"param": "cooldown_event_recovery",
+"label": "Remaining Reaper Form cooldown restored per hit (event not counted)",
+"mod": "added"
 },
 "FlayMutator.spectralStrikeChanceOnFail": {
 "confidence": "D?",
@@ -13022,7 +13049,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies around",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "FocusMutator.endLightingDamagePerMana": {
 "ability": "FocusEnd",
@@ -13059,7 +13087,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies around",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "FocusMutator.increasedAilmentDuration": {
 "ailment": "Shock",
@@ -13153,7 +13182,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies around",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "FocusMutator.statsWhileChannelling": {
 "confidence": "D",
@@ -15184,7 +15214,8 @@
 "mod": "added",
 "note": "Chance every second",
 "per": "input:heo_runes",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "GlyphOfDominionMutator.glyphsExplodeAtSameTime": {
 "confidence": "D",
@@ -15262,7 +15293,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Ignite stacks every 0.5 s",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 0.5
 },
 "GlyphOfDominionMutator.increasedAreaPerRahConsumed": {
 "confidence": "D",
@@ -15409,7 +15441,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.armorShredChancePerSecond": {
 "ailment": "ArmourShred",
@@ -15417,7 +15451,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.bowDamageLeechedAsHealth": {
 "confidence": "D",
@@ -15436,7 +15472,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.duskShroudAppliesToAllies": {
 "confidence": "D",
@@ -15449,7 +15487,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.fireConversion": {
 "confidence": "D",
@@ -15461,7 +15501,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.hasInitialHit": {
 "confidence": "D",
@@ -15610,7 +15652,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HailOfArrowsMutator.poisonConversion": {
 "confidence": "D",
@@ -15622,7 +15666,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.2,
+"zone": 0.2
 },
 "HammerThrowMutator.addedManaCost": {
 "confidence": "D",
@@ -15632,7 +15678,7 @@
 "HammerThrowMutator.aoeVoidDamage": {
 "confidence": "D",
 "kind": "flag",
-"text": "Void zone of the hammer is not counted (time on target unknown); the hit stays Physical"
+"text": "Disintegrating Aura: Void damage zone on every hammer (component below)"
 },
 "HammerThrowMutator.baseExtraProjectiles": {
 "confidence": "D",
@@ -15683,7 +15729,7 @@
 "param": "health_on_hit_chance"
 },
 "HammerThrowMutator.increasedAoEVoidDamage": {
-"confidence": "D?",
+"confidence": "D",
 "kind": "param",
 "label": "Disintegrating Aura damage",
 "mod": "increased",
@@ -17514,7 +17560,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "InfernalShadeMutator.chanceToReattachOnTargetDeath": {
 "confidence": "D",
@@ -17529,7 +17577,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "InfernalShadeMutator.chanceToShredFireProtEachSecond": {
 "ailment": "FireResShred",
@@ -17537,7 +17587,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "InfernalShadeMutator.chanceToSlowEachSecond": {
 "ailment": "Slow",
@@ -17545,7 +17597,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.5,
+"zone": 0.5
 },
 "InfernalShadeMutator.delayedAttachable": {
 "confidence": "D",
@@ -19278,8 +19332,8 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "added",
-"note": "From current mana (assumed equal to max)",
-"per": "max_mana",
+"note": "Current mana (Conditions tab; 0 = maximum)",
+"per": "current_mana",
 "stat": "Damage",
 "tags": "Lightning|Melee"
 },
@@ -19308,8 +19362,8 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "added",
-"note": "From current mana (assumed equal to max)",
-"per": "max_mana",
+"note": "Current mana (Conditions tab; 0 = maximum)",
+"per": "current_mana",
 "stat": "CriticalChance"
 },
 "ManaStrikeMutator.increasedAttackSpeed": {
@@ -21335,7 +21389,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "100% per tick on enemies in radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 0.25
 },
 "ProfaneVeilMutator.applyPenance": {
 "ailment": "Penance",
@@ -21343,7 +21398,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "100% per tick on enemies in radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 0.25
 },
 "ProfaneVeilMutator.canBuffWanderingSpiritAndGrantWardPerNecroticResistance": {
 "confidence": "D",
@@ -21443,7 +21499,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second on enemies in veil",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.25,
+"zone": 0.25
 },
 "ProfaneVeilMutator.increasedAreaWithStaff": {
 "confidence": "D",
@@ -21635,7 +21693,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second on enemies in veil",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.25,
+"zone": 0.25
 },
 "ProfaneVeilMutator.statsAfterProfaneForm": {
 "confidence": "D",
@@ -22005,6 +22065,7 @@
 "RadiantLanceMutator.electrifyChance": {
 "ailment": "Electrify",
 "confidence": "D?",
+"instance_term": "scathing_electrify",
 "kind": "stat",
 "mod": "added",
 "note": "For Scathing Light damage",
@@ -22014,6 +22075,7 @@
 "ailment": "Electrify",
 "confidence": "D?",
 "factor": 100,
+"instance_term": "scathing_per_res",
 "kind": "stat",
 "mod": "added",
 "note": "Per 1% uncapped Lightning Res",
@@ -22130,17 +22192,11 @@
 },
 "RadiantLanceMutator.moreScathingLightDamagePer1PercentIgniteElectrifyChance": {
 "ailment_only": "ScathingLight",
+"chance_sum": "scathing_light",
 "confidence": "D?",
-"input": {
-"default": 100,
-"key": "ignite_electrify_pct",
-"label": "Chance of Ignite + Shock, %",
-"max": 400
-},
 "kind": "stat",
 "mod": "more",
-"note": "Scathing Light stack only; the chance is entered by hand (the game sums Ignite, Electrify and mutator terms)",
-"per": "input:ignite_electrify_pct",
+"note": "Scathing Light stack only: f × 100 × (Ignite + Electrify chance, resistance and node terms) of the character (AilmentCalc._scathing_light_sum)",
 "stat": "Damage"
 },
 "RadiantLanceMutator.noShieldRequirement": {
@@ -22166,6 +22222,7 @@
 "RadiantLanceMutator.shockChance": {
 "ailment": "Shock",
 "confidence": "D",
+"instance_term": "scathing_shock",
 "kind": "stat",
 "mod": "added",
 "stat": "AilmentChance"
@@ -22524,7 +22581,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies in 4 m radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "RebukeMutator.chanceToGainVoidEssenceOnHit": {
 "confidence": "D?",
@@ -22571,7 +22629,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies in 4 m radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "RebukeMutator.increasedAilmentDuration": {
 "ailment": "Ignite",
@@ -22628,7 +22687,8 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second for enemies in 4 m radius",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "RebukeMutator.statsAfterChannelling": {
 "confidence": "D",
@@ -27866,7 +27926,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Stacks per each cloud use (once per second)",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0,
+"zone_freq": "application_rate"
 },
 "SmokeBombMutator.autoExpireOnLeaveArea": {
 "confidence": "D",
@@ -28053,7 +28115,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Stacks per each cloud use (once per second)",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"zone": 1.0,
+"zone_freq": "application_rate"
 },
 "SmokeBombMutator.smokeBladesAddedMeleeLeech": {
 "confidence": "D?",
@@ -29766,8 +29830,9 @@
 "mana": "added",
 "max": 10,
 "note": "Current mana share, maximum 10",
-"per": "max_mana",
-"scope": "component:PrimalLightning"
+"per": "current_mana",
+"scope": "component:PrimalLightning",
+"raw": true
 },
 "StormBoltMutator.meleeDamagePerStrengthWith2HWeapon": {
 "confidence": "D",
@@ -29788,7 +29853,7 @@
 "max": 3,
 "mod": "more",
 "note": "Per every 10 current mana, maximum +300%",
-"per": "max_mana",
+"per": "current_mana",
 "scope": "component:PrimalLightning",
 "stat": "Damage"
 },
@@ -29835,8 +29900,10 @@
 "confidence": "D?",
 "kind": "stat",
 "mod": "added",
-"note": "Chance per second for nearby enemies",
-"stat": "AilmentChance"
+"note": "Chance per 1 s application of the totem's Blizzard (RepeatedlyApplyAilmentsInRadius added by BlizzardMutator.Mutate); enemies assumed in the zone (D?)",
+"scope": "component:Blizzard",
+"stat": "AilmentChance",
+"zone": 1.0
 },
 "StormTotemMutator.consumesOtherTotems": {
 "confidence": "D",
@@ -37389,7 +37456,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.333,
+"zone": 0.333
 },
 "WanderingSpiritsMutator.fearEnemies": {
 "confidence": "D",
@@ -37540,7 +37609,9 @@
 "kind": "stat",
 "mod": "added",
 "note": "Chance per second",
-"stat": "AilmentChance"
+"stat": "AilmentChance",
+"factor": 0.333,
+"zone": 0.333
 },
 "WanderingSpiritsMutator.poisonConversion": {
 "confidence": "D",

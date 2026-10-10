@@ -104,7 +104,7 @@ static func haste_dot_more(pp275: float, haste_effect_increased: float) -> float
 	return maxf((1.0 + haste_effect_increased) * pp275, -0.75)
 
 
-## attack: DefenseCalc.enemy_attack (is_hit, attacker_kind, near); layers fields used: res, block_dr.
+## attack: DefenseCalc.enemy_attack (is_hit, attacker_kind); layers fields used: res, block_dr.
 ## {dodge_conversion, block_conversion, max_block, endurance_mode, endurance_extra, delayed, block_dot,
 ##  hit_more, dot_more (f0 for hits / DoT), block_add (f1), armour_more (f2), threshold_add (f3 + f4), crit_avoid_add (f5),
 ##  type_more: Array[float] (7), taken_as: [{source, target, share, text}], lines: PackedStringArray, unknown: PackedStringArray}
@@ -200,7 +200,6 @@ static func _conditional(build: Node, store: StatStore, attack: Dictionary, pps:
 	var ailments: Dictionary = enemy.get("ailments", {})
 	var kind: String = str(attack.get("attacker_kind", enemy.get("kind", "dummy")))
 	var rare_boss: bool = kind == "rare" or kind == "boss" or kind == "miniboss"
-	var near: bool = bool(attack.get("near", false))
 	var is_hit: bool = bool(attack.get("is_hit", true))
 	var ps: Dictionary = build.player_state
 
@@ -216,13 +215,15 @@ static func _conditional(build: Node, store: StatStore, attack: Dictionary, pps:
 	var stacks: Callable = func(name: String) -> int:
 		return int(ailments.get(GameData.ailment_id_by_name(name), 0))
 
-	# 4 m: hits of melee attacks count as near (D? — the distance of ranged and spell attacks is not known)
+	# Maths.distanceLessThan(player, attacker, 4.0) is a strict 3D distance test; the distance is the Conditions value `attacker_distance` (default 1)
+	var near: bool = float(ps.get("attacker_distance", 1.0)) < 4.0
 	if near:
 		more.call(257, _pp(pps, 257), LE.t("Enemy within 4 m"), true, true)
 		if _pp(pps, 258) != 0.0:
 			out["block_add"] = float(out["block_add"]) + _pp(pps, 258)
 			lines.append(LE.t("Enemy within 4 m: block chance +%s (PP 258)") % LE.fmt_pct(_pp(pps, 258)))
-	var mana: float = store.query_untagged(LE.MANA).value()
+	# BaseMana.currentMana (CharacterMutator.ApplyConditionalDefenses): the Conditions value, 0 = the maximum
+	var mana: float = EffectModels.current_mana(build, store.query_untagged(LE.MANA).value())
 	if mana >= 400.0 and not bool(ps.get("low_mana", false)):
 		more.call(262, _pp(pps, 262), LE.t("At least 400 current mana"), true, true)
 	# Haste on you: damage over time taken ×(1 + max(−0.75, (1 + increased Haste effect on you)·PP 275)) (ApplyConditionalDefenses)

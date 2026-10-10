@@ -148,6 +148,13 @@ static func armour(stat_store: StatStore) -> float:
 	return armour_q.value() - neg_armour_q.added
 
 
+## Zone level used by the armour formula (PrecalculatedStatsHolder.mitigationFromArmour reads ZoneInfoManager.ZoneLevel, not the
+## monster level); 0 / missing = the enemy level (the Conditions tab labels Level as also the zone level).
+static func zone_level(enemy: Dictionary) -> int:
+	var z: int = int(enemy.get("area_level", 0))
+	return z if z > 0 else int(enemy.get("level", 100))
+
+
 ## Calculate armour mitigation factor.
 ## Returns damage reduction ratio (0..1 range typical, negative possible).
 static func armour_mitigation(x: float, area_level: int, non_phys: bool) -> float:
@@ -220,6 +227,10 @@ static func level_dr(enemy: Dictionary) -> float:
 	return dr
 
 
+## GlobalDamageConditionals case 0x2b passes 0x41200000 (10.0) as the DamageEffectMoreDamagePerDistance max distance (+0x20).
+const PER_DISTANCE_MAX: float = 10.0
+
+
 ## Check if enemy has a condition for ConditionalDamageProperty.
 ## Returns multiplier/count for damage scaling; 0 if condition not met.
 static func has_condition(enemy: Dictionary, cdp: int, player_state: Dictionary = {}) -> float:
@@ -227,8 +238,8 @@ static func has_condition(enemy: Dictionary, cdp: int, player_state: Dictionary 
 	var kind: String = enemy.get("kind", "dummy")
 
 	match cdp:
-		0:  # Stunned: the untyped StunnedConditional is true in the whole Stunned state, frozen included (StunnedConditional.Check, Stunned.freeze)
-			return 1.0 if flags.get("stunned", false) or flags.get("frozen", false) else 0.0
+		0:  # Stunned: the untyped StunnedConditional is true in the whole Stunned state, frozen and petrified included (StunnedConditional.Check, Stunned.freeze, Stunned.petrify)
+			return 1.0 if flags.get("stunned", false) or flags.get("frozen", false) or flags.get("petrified", false) else 0.0
 
 		1:  # LowHealth
 			return 1.0 if flags.get("low_health", false) else 0.0
@@ -277,6 +288,9 @@ static func has_condition(enemy: Dictionary, cdp: int, player_state: Dictionary 
 
 		20:  # Frozen (a state, not an AilmentID: enemy flag)
 			return 1.0 if flags.get("frozen", false) else 0.0
+
+		37:  # ToPetrifiedEnemies: StunnedConditional(StunType.Petrify): Stunned state AND Stunned.petrified (+0xE6, set in Stunned.petrify)
+			return 1.0 if flags.get("petrified", false) else 0.0
 
 		21:  # PerNegAilment (count of different ailments)
 			return _ailment_count(enemy)
@@ -355,6 +369,10 @@ static func has_condition(enemy: Dictionary, cdp: int, player_state: Dictionary 
 		40:  # Boss or rare AND the caster's mana >= 50% (Compound AND of CasterAboveManaThreshold(0.5) and Boss(includeRares)); the flag is «Mana below 50%»
 			return (1.0 if kind in ["rare", "boss", "miniboss"] else 0.0) * (0.0 if bool(player_state.get("low_mana", false)) else 1.0)
 
+		43:  # PerDistance: DamageEffectMoreDamagePerDistance.apply: f = min(Manhattan distance caster-target, 10) x more, every damage type x (1 + f); the distance is the player's input (positioning is not game data, D?)
+			return clampf(float(player_state.get("target_distance", 1.0)), 0.0, PER_DISTANCE_MAX)
+
+		# ids 41/42 (IsAilmentConditional + per-stack of the other ailment) are evaluated in SkillCalc._condition_factor (they need the damage source)
 		_:
 			return 0.0
 

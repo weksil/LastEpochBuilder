@@ -133,6 +133,9 @@ static func _chances(ctx: Dictionary, ability_tags: int, curse_hit: bool = false
 	for mod: StatMod in chance_mods:
 		if mod.special <= 0 or mod.added == 0.0 or not LE.tags_match(mod.tags, ability_tags):
 			continue
+		# a run-time zone's chances belong to its own tick, never to a hit or to a prefab zone
+		if (mod.zone_interval > 0.0) != bool(zone.get("runtime", false)):
+			continue
 		# chances of the «when the cursed enemy is hit» nodes belong to the curse hits only; generic ones to ordinary hits only
 		if mod.property == LE.AILMENT_CHANCE and mod.on_curse_hit == curse_hit:
 			var c: Dictionary = _entry(out, mod.special)
@@ -319,7 +322,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		if part <= 0.0:
 			continue
 		var lines: PackedStringArray = []
-		var cond: float = SkillCalc._condition_factor(cond_mods, enemy, atags, i, lines, build.player_state)
+		var cond: float = SkillCalc._condition_factor(cond_mods, enemy, atags, i, lines, build.player_state, int(ail.get("id", 0)))
 		var res: float = Enemy.resistance(e, i).added
 		var pen: float = float(ds["pen"][i]) + (eff_pen if i == pen_type else 0.0)
 		var res_mult: float = (0.25 if res > 0.75 else 1.0 - res) + pen
@@ -327,7 +330,7 @@ static func _damaging_ailment(build: Node, ctx: Dictionary, ail: Dictionary, c: 
 		var dt: float = maxf(0.0, (1.0 + dt_q.added) * (1.0 + dt_q.increased) * dt_q.more)
 		var arm: float = 1.0
 		if armour != 0.0 and armour_share > 0.0:
-			arm = 1.0 - Enemy.armour_mitigation(armour, int(enemy.get("level", 100)), i != 0) * armour_share
+			arm = 1.0 - Enemy.armour_mitigation(armour, Enemy.zone_level(enemy), i != 0) * armour_share
 		var mult: float = cond * res_mult * dt * (1.0 - dr) * arm
 		enemy_dps += dps * (part / stack_damage) * mult
 		eb.append(LE.t("%s: share %s, resistance %s, penetration %s → ×%s; damage taken ×%s; level reduction ×%s%s%s → ×%s") % [
@@ -377,7 +380,13 @@ static func _instance_more(build: Node, ctx: Dictionary, ail: Dictionary, health
 			continue
 		var scale: float = 1.0
 		var scale_text: String = ""
-		if mod.chance_scaled != 0:
+		if mod.chance_sum == "scathing_light":
+			# Holy Prism: f × 100 × the Scathing Light chance sum (RadiantLanceMutator.GetAilmentDamageModifier)
+			var sum: Dictionary = _scathing_light_sum(build, ctx)
+			scale = float(sum["s"]) * 100.0
+			scale_text = LE.t(" × Scathing Light chance sum %s") % LE.fmt_pct(float(sum["s"]))
+			lines.append_array(sum["lines"])
+		elif mod.chance_scaled != 0:
 			if not chance_loaded:
 				# the caster's stats (Actor.stats = the character-wide store), not the skill's own mod list
 				chance_mods = BuildMods.global_store(build)["store"].mods_of(LE.AILMENT_CHANCE)
@@ -393,6 +402,73 @@ static func _instance_more(build: Node, ctx: Dictionary, ail: Dictionary, health
 		factor *= 1.0 + float(chars["x"])
 		lines.append_array(chars["lines"])
 	return {"factor": factor, "lines": lines}
+
+
+## Scathing Light chance sum S of RadiantLanceMutator.GetAilmentDamageModifier: the game multiplies S by f × 100 (f = Holy Prism
+## per point). The chances are the character's AilmentChance stats for the skill's tags (no health tags), the resistance and the
+## node values are read from the character (uncapped Lightning for the Lightning type, uncapped Fire for the Fire type).
+## {s, lines}
+static func _scathing_light_sum(build: Node, ctx: Dictionary) -> Dictionary:
+	var tags: int = int(ctx["tags"])
+	var global_store: StatStore = BuildMods.global_store(build)["store"]
+	var chance_mods: Array[StatMod] = global_store.mods_of(LE.AILMENT_CHANCE)
+	var conv: int = _radiant_conversion(build, ctx)
+	var ignite: float = stat_chance(chance_mods, GameData.enum_value("AilmentID", "Ignite"), tags)
+	var electrify: float = stat_chance(chance_mods, GameData.enum_value("AilmentID", "Electrify"), tags)
+	var res: float = 0.0
+	if conv < 2:
+		res = Enemy.resistance(global_store, 3 if conv == 0 else 1).value()
+	# the node terms of the skill tree (fields electrifyChance, electrifyChancePerUncappedLightningResistance, shockChance)
+	var per_res: float = 0.0
+	var electrify_field: float = 0.0
+	var shock_field: float = 0.0
+	for mod: StatMod in ctx["mods"]:
+		if mod.instance_term == "scathing_per_res":
+			per_res += mod.instance_raw
+		elif mod.instance_term == "scathing_electrify":
+			electrify_field += mod.added
+		elif mod.instance_term == "scathing_shock":
+			shock_field += mod.added
+	var shock_on: bool = false
+	for ac: Dictionary in ctx.get("ailment_conversions", []):
+		if str(ac.get("from", "")) == "Shock" and str(ac.get("to", "")) == "Electrify":
+			shock_on = true
+	var shock: float = stat_chance(chance_mods, GameData.enum_value("AilmentID", "Shock"), tags) if (conv < 2 and shock_on) else 0.0
+	var s: float = scathing_light_chance(ignite, electrify, conv, res, per_res, electrify_field, shock_on, shock, shock_field)
+	var lines: PackedStringArray = []
+	lines.append(LE.t("Scathing Light chance sum S = %s: Ignite %s + Electrify %s") % [
+		LE.fmt_pct(s), LE.fmt_pct(ignite), LE.fmt_pct(electrify)])
+	if conv < 2:
+		lines.append(LE.t("  + resistance %s × per point %s × 100 + Electrify field %s") % [
+			LE.fmt_pct(res), LE.fmt_num(per_res), LE.fmt_pct(electrify_field)])
+		if shock_on:
+			lines.append(LE.t("  + Shock %s (converted to Electrify) + Shock field %s") % [LE.fmt_pct(shock), LE.fmt_pct(shock_field)])
+	return {"s": s, "lines": lines}
+
+
+## The Scathing Light chance sum of the game (fractions): Ignite + Electrify chances, and for the Lightning (0) and Fire (1) types
+## the resistance term res × perRes × 100 + the Electrify field, and with Shock converted to Electrify the Shock chance and its field.
+static func scathing_light_chance(ignite: float, electrify: float, conv: int, res: float, per_res: float,
+		electrify_field: float, shock_to_electrify: bool, shock: float, shock_field: float) -> float:
+	var total: float = ignite + electrify
+	if conv < 2:
+		total += res * per_res * 100.0 + electrify_field
+		if shock_to_electrify:
+			total += shock + shock_field
+	return total
+
+
+## Conversion type of Radiant Lance (RadiantLanceMutator.GetConversionType): 3 Void, 2 Physical (item flag), 1 Fire, 0 Lightning.
+## The Void and Fire rules come from the skill's conversions (ctx rules); the Physical flag is the AbilityProperty of the character.
+static func _radiant_conversion(build: Node, ctx: Dictionary) -> int:
+	var rules: Array = ctx.get("rules", [])
+	if rules.has("RadiantLanceMutator.voidConversion"):
+		return 3
+	if float(ShadowCalc.ability_property(build, "radiantLance", 924, 2)["value"]) > 0.0:
+		return 2
+	if rules.has("RadiantLanceMutator.fireConversion"):
+		return 1
+	return 0
 
 
 ## CharacterAilmentMutator.GetAilmentDamageModifier for the ailments of the character mutator (AilmentID 9, 107, 122): the
@@ -443,7 +519,7 @@ static func stat_chance(mods: Array, id: int, tags: int) -> float:
 	var inc: float = 0.0
 	var more: float = 1.0
 	for mod: StatMod in mods:
-		if mod.property != LE.AILMENT_CHANCE or mod.on_curse_hit or mod.extra != 0 or (mod.special != 0 and mod.special != id) or not LE.tags_match(mod.tags, tags):
+		if mod.property != LE.AILMENT_CHANCE or mod.on_curse_hit or mod.extra != 0 or mod.zone_interval > 0.0 or (mod.special != 0 and mod.special != id) or not LE.tags_match(mod.tags, tags):
 			continue
 		added += mod.added
 		inc += mod.increased

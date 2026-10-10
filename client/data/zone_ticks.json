@@ -1,0 +1,69 @@
+{
+ "_meta": {
+  "generator": "tools/extract/distill_prefab_zone_ticks.py",
+  "inputs": [
+   "research/data/game/prefab_sub_ability_hits.json.gz",
+   "research/data/game/prefab_ailment_zones.json.gz",
+   "research/data/game/prefab_trap_spawn_relations.json.gz",
+   "research/data/game/abilities.json"
+  ],
+  "rejected": [
+   [
+    "HammerThrow",
+    "not an allowlisted object: its zone is in the mutator code (hammer_throw block); the returning lifetime is the serialized cap (D?)"
+   ]
+  ],
+  "rules": [
+   "ticks = number of damage ticks of a RepeatedlyDamageEnemiesWithinRadius object over its lifetime: RepeatedlyDamageEnemiesWithinRadius.OnUpdateTick adds dt to its index and hits when the index exceeds damageInterval (index -= damageInterval, one tick per frame); DestroyAfterDuration.OnUpdateTick ends the object on the first update that starts with age >= duration.",
+   "tick k needs the accumulated age to exceed k * interval, so ticks = floor(lifetime / interval) (an epsilon keeps exact multiples); damageAtStart preloads the index: one more tick at once.",
+   "the enemy is assumed to stay inside the radius for the whole lifetime (user decision 4, D?).",
+   "lifetime of an object = its serialized DestroyAfterDuration.duration times (1 + the skill's duration increase) (BlackHoleMutator.Mutate: (duration + addedDuration) * (1 + increasedDuration), halved when halfDuration).",
+   "objects are listed only when their mutator code is read (ALLOWLIST) and no Destroy* component other than DestroyAfterDuration can end them early (prefab_trap_spawn_relations).",
+   "the Hammer Throw object also gets DestroyOnInanimateCollision in code when it does not ignore terrain (HammerThrowMutator.Mutate); the terrain contact depends on the play, so the serialized lifetime is the maximum and is used (D?)."
+  ],
+  "sources": {
+   "hammer_throw.ade_per_base": "DamageStatsHolder.c calculateAddedDamageScaling: *(lVar1 + 0x3c) = fVar4 * 0.05 (fVar4 = sum of base damage)",
+   "hammer_throw.base_damage": "HammerThrowMutator.c Mutate: DamageStatsHolder_addBaseDamage(lVar9, type, (increasedAoEVoidDamage + 1.0) * 8.0, 0)",
+   "hammer_throw.damage_type_lightning": "DamageType 3 (Lightning): uVar6 = 3 when the lightning conversion flag (manager +0x1440) is set",
+   "hammer_throw.damage_type_void": "DamageType 5 (Void), client/scripts/engine/le.gd order Physical..Poison",
+   "hammer_throw.interval": "HammerThrowMutator.c Mutate: *(undefined4 *)(lVar9 + 0x128) = 0x3e4ccccd (0.2)",
+   "hammer_throw.lifetime": "prefab_sub_ability_hits.json.gz row goName hammerThrow, ownerAbilities name HammerThrow, DestroyAfterDuration.fields.duration",
+   "hammer_throw.no_return_lifetime": "HammerThrowMutator.c Mutate: *(alStack_68[0] + 0x88) = 0x3f400000 (0.75) when spiralMovement (+0x146) == 0",
+   "hammer_throw.no_return_return_time": "HammerThrowMutator.c Mutate: ReturnToCasterAfterDuration +0x94 = 0x461c4000 (10000.0)",
+   "hammer_throw.no_return_spiral_lifetime": "HammerThrowMutator.c Mutate: *(alStack_68[0] + 0x88) = 0x40c00000 (6.0) when spiralMovement (+0x146) != 0",
+   "hammer_throw.spiral_node_id": "research/data/game/skill_node_effects.json HammerThrowTree node 20 'Hammer Throw Tree Spirals' (accumulator stk:0x1F8 feeds spiralMovement)",
+   "hammer_throw.tags": "HammerThrowMutator.c Mutate: *(undefined4 *)(lVar9 + 0x98) = 0x1400 (Throwing 0x400 | DoT 0x1000)",
+   "objects.BlackHole": "prefab_ailment_zones.json.gz component goName BlackHoleSpell (damageInterval, damageAtStart, delay) and durations row prefabRootName BlackHoleSpell; BlackHoleMutator.c Mutate lines ~775-782 (duration formula)"
+  }
+ },
+ "hammer_throw": {
+  "ade_per_base": 0.05,
+  "base_damage": 8.0,
+  "damage_type_lightning": 3,
+  "damage_type_void": 5,
+  "early_destroy_classes": [],
+  "interval": 0.2,
+  "lifetime": 2.5,
+  "lifetime_note": "returning hammer: serialized cap, the return (ReturnToCasterAfterDuration, not extracted) may end it earlier (D?)",
+  "no_return_lifetime": 0.75,
+  "no_return_spiral_lifetime": 6.0,
+  "spiral_node_id": 20,
+  "tags": 5120
+ },
+ "objects": {
+  "BlackHole": {
+   "channel_property": {
+    "ability_id": "blackHole",
+    "index": 15,
+    "special": 0
+   },
+   "class": "RepeatedlyDamageEnemiesWithinRadius",
+   "delay": 0.0,
+   "duration_param": "duration",
+   "go": "BlackHoleSpell",
+   "interval": 0.3,
+   "lifetime": 2.75,
+   "start": 1
+  }
+ }
+}

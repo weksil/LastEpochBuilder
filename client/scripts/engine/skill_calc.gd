@@ -134,6 +134,8 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 	if periodic_rules:
 		head_ctx = _context(build, ab, store, s["conversions"], notes, primary_base)
 	var target_hits: float = hits * float(proj.get("factor", 1.0))
+	# the skill's hits on the target per second: the crit stream of PP 419 / PP 89 (recent_crit_share)
+	head_ctx["recent_hits"] = uses * target_hits
 	var inputs: Array[Dictionary] = []
 	var s_comp: Dictionary = s.duplicate()
 	s_comp["triggers"] = _resolve_triggers(build, slot, s, head_ctx, uses, target_hits, inputs, notes)
@@ -213,6 +215,7 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		var first_section: int = sections.size()
 		var comp_store: StatStore = _component_store(store, s, comp)
 		var ctx: Dictionary = head_ctx if comp["kind"] == "primary" and comp_store == store else _context(build, comp["ab"], comp_store, comp.get("conversions", s["conversions"]), notes, comp["base"])
+		ctx["recent_hits"] = uses * target_hits
 		var is_curse: bool = comp["kind"] == "curse_hit"
 		var is_dot: bool = comp["kind"] == "dot"
 		var events: float = float(comp["rate"])
@@ -257,8 +260,9 @@ static func _compute(build: Node, slot: int) -> Dictionary:
 		# a maintained DoT is applied by the casts: ailment chances roll per cast, not per damage event
 		var hit_events: float = float(comp.get("hit_rate", events)) if is_curse else (uses if is_dot else events)
 		sustain_hits.append({"name": str(comp["name"]) if idx > 0 else "", "ctx": ctx, "speed": comp_speed, "gain_events": hit_events})
-		var ail: Dictionary = AilmentCalc.compute(build, ctx, hit_events, ail_notes, is_curse, {},
-			_hit_events_text(comp, uses, hits, proj, hit_events, is_dot))
+		# a zone component of the hit (Hammer Throw's Void zone) rolls no ailments of its own: the hit's component does
+		var ail: Dictionary = {"sections": [], "enemy_dps": 0.0, "applied": []} if bool(comp.get("no_ailments", false)) else AilmentCalc.compute(
+			build, ctx, hit_events, ail_notes, is_curse, {}, _hit_events_text(comp, uses, hits, proj, hit_events, is_dot))
 		_tag_applied(ail, str(comp["kind"]), str(comp["name"]))
 		for section: Dictionary in ail["sections"]:
 			sections.append({"title": prefix + str(section["title"]), "rows": section["rows"]})
@@ -511,8 +515,16 @@ static func trigger_rate(trig: Dictionary, uses: float, hits: float, crit: float
 	var chance: float = float(trig.get("chance", 1.0))
 	var count: float = float(trig.get("count", 1.0))
 	var icd: float = float(trig.get("icd", 0.0))
-	# a chance above 100% (an increased or doubled one) is a sure activation per event, not several
+	var every: float = float(trig.get("every", 0.0))
 	var chance_note: String = ""
+	if every > 1.0:
+		# every n-th event fires, and the n events must all be alive within the window (Soul Bastion: 5 kills within 10 s)
+		var window: float = float(trig.get("window", 0.0))
+		if window > 0.0 and (every - 1.0) > window * event:
+			return {"rate": 0.0, "event": event, "text": LE.t("%s; %d events within %s s are needed, %s events/s are too few: 0/s") % [text, int(every), LE.fmt_num(window), LE.fmt_num(event)]}
+		chance = 1.0 / every
+		chance_note = LE.t(" (every %d-th event)") % int(every)
+	# a chance above 100% (an increased or doubled one) is a sure activation per event, not several
 	if chance > 1.0 and not bool(trig.get("stochastic", false)):
 		chance_note = LE.t(" (a chance above 100%% counts as 100%%, was %s)") % LE.fmt_pct(chance)
 		chance = 1.0
@@ -555,6 +567,12 @@ static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: D
 			_add_input(inputs, inp)
 	var result: Array = []
 	var crit: float = -1.0
+	# automatic events/s of each event kind (the largest «events_default» of its triggers; the input's default)
+	var ev_default: Dictionary = {}
+	for trig: Variant in s.get("triggers", []):
+		if trig is Dictionary and not OWN_EVENTS.has(str((trig as Dictionary).get("on", "use"))):
+			var ev_key: String = "events_" + str((trig as Dictionary).get("on", "use"))
+			ev_default[ev_key] = maxf(float(ev_default.get(ev_key, 0.0)), float((trig as Dictionary).get("events_default", 0.0)))
 	for trig: Variant in s.get("triggers", []):
 		if not trig is Dictionary:
 			continue
@@ -562,8 +580,8 @@ static func _resolve_triggers(build: Node, slot: int, s: Dictionary, head_ctx: D
 		var event_rate: float = 0.0
 		if not OWN_EVENTS.has(on):
 			var key: String = "events_" + on
-			_add_input(inputs, {"key": key, "label": LE.t("Events per second: %s") % _event_name(on), "default": 0.0})
-			event_rate = float(build.skills[slot].get("inputs", {}).get(key, 0.0))
+			_add_input(inputs, {"key": key, "label": LE.t("Events per second: %s") % _event_name(on), "default": float(ev_default.get(key, 0.0))})
+			event_rate = float(build.skills[slot].get("inputs", {}).get(key, ev_default.get(key, 0.0)))
 		if on == "crit" and crit < 0.0:
 			crit = float(_build_damage(head_ctx)["cc"])
 		var rate_info: Dictionary = trigger_rate(trig, uses, hits, maxf(crit, 0.0), event_rate)
@@ -642,17 +660,46 @@ static func _zone_results(build: Node, ab: Dictionary, s: Dictionary, components
 		if zab_name == "" or seen.has(zab_name):
 			continue
 		seen[zab_name] = true
-		for zone: Dictionary in AilmentCalc.zones(zab):
-			if zab_name == str(ab.get("name", "")):
-				# AuraOfDecayMutator.OnAbilityUse: the skill's «increased ailment frequency» divides the zone's tick interval
-				zone["interval"] = AilmentCalc.zone_interval(float(zone["interval"]), _param_total(s, "ailment_frequency"))
-			zone["mods"] = (s["store"] as StatStore).mods if zab_name == str(ab.get("name", "")) else []
+		var zones_of: Array[Dictionary] = AilmentCalc.zones(zab)
+		var zmods: Array = (s["store"] as StatStore).mods if zab_name == str(ab.get("name", "")) else _component_zone_mods(s, zab)
+		# zone component added at run time by the mutator (RepeatedlyApplyAilmentsInRadius): one zone per tick interval
+		var groups: Dictionary = {}  # snapped interval -> {interval, mods}
+		for m: StatMod in zmods:
+			if m.property != LE.AILMENT_CHANCE or m.zone_interval <= 0.0:
+				continue
+			var t: float = AilmentCalc.zone_interval(m.zone_interval, _param_total(s, m.zone_freq)) if m.zone_freq != "" else m.zone_interval
+			var key: float = snappedf(t, 0.0001)
+			if not groups.has(key):
+				groups[key] = {"interval": t, "mods": []}
+			groups[key]["mods"].append(m)
+		for key: float in groups:
+			zones_of.append({"name": GameData.display_name(zab), "interval": maxf(float(groups[key]["interval"]), 0.1), "ailments": [],
+				"mods": groups[key]["mods"], "runtime": true})
+		for zone: Dictionary in zones_of:
+			if not zone.get("runtime", false):
+				if zab_name == str(ab.get("name", "")):
+					# AuraOfDecayMutator.OnAbilityUse: the skill's «increased ailment frequency» divides the zone's tick interval
+					zone["interval"] = AilmentCalc.zone_interval(float(zone["interval"]), _param_total(s, "ailment_frequency"))
+				zone["mods"] = zmods if zab_name == str(ab.get("name", "")) else []
 			var ctx: Dictionary = _context(build, zab, store, s["conversions"], notes, {})
 			var ail: Dictionary = AilmentCalc.compute(build, ctx, 0.0, ail_notes, false, zone)
 			var label: String = LE.t("Zone \"%s\"") % str(zone["name"])
 			_tag_applied(ail, "zone", label)
 			if not ail["applied"].is_empty():
 				out.append({"name": label, "ability": zab_name, "hit_enemy": 0.0, "ail": ail, "events": 1.0 / float(zone["interval"])})
+	return out
+
+
+## The mods of the skill's component_mods that belong to one component ability (matched by its name or abilityName).
+static func _component_zone_mods(s: Dictionary, zab: Dictionary) -> Array:
+	var out: Array = []
+	var by_name: Variant = s.get("component_mods", {})
+	if by_name is Dictionary:
+		for key: String in [str(zab.get("name", "")), str(zab.get("abilityName", ""))]:
+			if key != "" and (by_name as Dictionary).has(key):
+				for m: Variant in by_name[key]:
+					if m is StatMod and not out.has(m):
+						out.append(m)
 	return out
 
 
@@ -792,8 +839,9 @@ static func _context(build: Node, ab: Dictionary, store: StatStore, conversions:
 			mods.append(mod)
 	return {
 		"ab": ab, "base": base, "tags": tags, "hit": hit, "src": src, "dmg": dmg, "type_bits": type_bits,
+		"crit_recent_forced": bool(build.player_state.get("crit_recently", false)),
 		"base_before": conv["before"], "conversion_lines": conv["lines"], "conversion_rows": conv["rows"],
-		"ailment_conversions": conv["ailment_conversions"],
+		"ailment_conversions": conv["ailment_conversions"], "rules": conv["rules"],
 		"minion": tags & LE.MINION, "ade": float(base.get("addedDamageScaling", 1.0)), "mods": mods, "store": store,
 	}
 
@@ -826,11 +874,13 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 	var seen: Dictionary = {}
 	var tags_before: int = tags
 	var ailment_conversions: Array = []
+	var rules: Array[String] = []  # keys of the active rules (RadiantLanceMutator.voidConversion …)
 	for c: Dictionary in conversions:
 		var rule: Dictionary = c["rule"]
 		var v: float = float(c["value"])
 		if v == 0.0:
 			continue
+		rules.append(str(rule["key"]))
 		var field: String = str(rule["key"]).get_slice(".", 1)
 		var full: bool = true
 		for cv: Dictionary in rule.get("convert", []):
@@ -894,7 +944,7 @@ static func _apply_conversions(tags: int, dmg: Array[float], conversions: Array,
 	if tags != tags_before:
 		rows.append({"label": LE.t("Resulting skill tags"), "text": _tag_names(tags),
 			"breakdown": LE.t("Was: %s\nNow: %s") % [_tag_names(tags_before), _tag_names(tags)]})
-	return {"tags": tags, "before": before, "lines": lines, "rows": rows, "ailment_conversions": ailment_conversions}
+	return {"tags": tags, "before": before, "lines": lines, "rows": rows, "ailment_conversions": ailment_conversions, "rules": rules}
 
 
 ## Uses per cycle of a periodic conversion: the converted use starts a cooldown, the next converted use is the first one after it ends,
@@ -950,6 +1000,27 @@ static func _targets(type_idx: int, elemental: bool) -> Array[int]:
 
 # --- 8.2 buildDamageStats ---------------------------------------------------------
 
+## Share of the time a crit was dealt within the last RECENT_CRIT_WINDOW seconds (maximum-case convention, D?): crits are independent
+## events at hits/s × chance, where the chance is the not-recent one (a) or the recent one (b) by the share itself; the fixed point
+## r = 1 - exp(-W × hits × ((1 - r) × a + r × b)) is solved by bisection. Without a crit chance while not recent (a = 0) no crit
+## can start the window, so the share is 0.
+static func recent_crit_share(hits: float, cc_not_recent: float, cc_recent: float) -> float:
+	var a: float = clampf(cc_not_recent, 0.0, 1.0)
+	var b: float = clampf(cc_recent, 0.0, 1.0)
+	if hits <= 0.0 or a <= 0.0:
+		return 0.0
+	var lo: float = 0.0
+	var hi: float = 1.0
+	for _i in range(50):
+		var r: float = (lo + hi) / 2.0
+		var f: float = 1.0 - exp(-RECENT_CRIT_WINDOW * hits * ((1.0 - r) * a + r * b))
+		if r - f < 0.0:
+			lo = r
+		else:
+			hi = r
+	return (lo + hi) / 2.0
+
+
 static func _build_damage(ctx: Dictionary) -> Dictionary:
 	var base_dmg: Array[float] = ctx["dmg"]
 	var ade: float = ctx["ade"]
@@ -993,6 +1064,11 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 	var cm_more: float = 1.0
 	var crit_lines: Array[String] = []
 	var multi_lines: Array[String] = []
+	# crit mods of the two crit states (PP 419: no crit in the last 4 s = index 0, PP 89: a crit in the last 4 s = index 1)
+	var rec_add: Array[float] = [0.0, 0.0]
+	var rec_inc: Array[float] = [0.0, 0.0]
+	var rec_more: Array[float] = [1.0, 1.0]
+	var rec_any: bool = false
 	for mod: StatMod in ctx["mods"]:
 		if mod.ailment_only != 0:
 			continue  # a more of one ailment instance (AilmentCalc), not part of any damage build
@@ -1024,6 +1100,17 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 					if details:
 						lines_more[i].append("  ×%s  (%s)" % [LE.fmt_num(1.0 + m), mod.source])
 		elif mod.property == LE.CRIT_CHANCE and _applicable(ctx, mod.tags):
+			if mod.crit_state != 0:
+				# only in one crit state (section 4 mixes the two)
+				var k: int = mod.crit_state - 1
+				rec_any = true
+				rec_add[k] += mod.added
+				rec_inc[k] += mod.increased
+				for m: float in mod.more:
+					rec_more[k] *= 1.0 + m
+				if details:
+					crit_lines.append("  " + mod.describe() + (LE.t(" (only while no crit in the last 4 s)") if k == 0 else LE.t(" (only while a crit was dealt in the last 4 s)")))
+				continue
 			cc_add += mod.added
 			cc_inc += mod.increased
 			for m: float in mod.more:
@@ -1075,12 +1162,24 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 	var crit_type: int = int(ctx["base"].get("critType", 0))
 	var cc: float = 0.0
 	var cm: float = 1.0
+	var recent: Dictionary = {}  # the two crit states of PP 419 / PP 89: chance without a recent crit (n), after one (r), share of the time after one
 	if crit_type != 1:
 		cc = (1.0 + cc_inc) * (base_cc + cc_add) * cc_more
+		if rec_any:
+			var cc_n: float = (1.0 + cc_inc + rec_inc[0]) * (base_cc + cc_add + rec_add[0]) * cc_more * rec_more[0]
+			var cc_r: float = (1.0 + cc_inc + rec_inc[1]) * (base_cc + cc_add + rec_add[1]) * cc_more * rec_more[1]
+			var share: float = 1.0 if bool(ctx.get("crit_recent_forced", false)) else recent_crit_share(float(ctx.get("recent_hits", 0.0)), cc_n, cc_r)
+			cc = (1.0 - share) * cc_n + share * cc_r  # not clamped here: super crit (PP 590) reads the uncapped chance
+			recent = {"n": cc_n, "r": cc_r, "share": share}
 	if crit_type == 0:
 		cm = maxf(1.0, (1.0 + cm_inc) * (base_cm + cm_add) * cm_more)
-	var cc_text: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s = %s") % [
-		LE.fmt_pct(base_cc), LE.fmt_pct(cc_add), LE.fmt_pct(cc_inc), LE.fmt_num(cc_more), LE.fmt_pct(cc)]]
+	var cc_text: PackedStringArray = []
+	if recent.is_empty():
+		cc_text.append(LE.t("(base %s + added %s) × (1 + %s) × %s = %s") % [
+			LE.fmt_pct(base_cc), LE.fmt_pct(cc_add), LE.fmt_pct(cc_inc), LE.fmt_num(cc_more), LE.fmt_pct(cc)])
+	else:
+		cc_text.append(LE.t("No crit in the last 4 s %s of the time: chance %s; a crit in the last 4 s otherwise: chance %s (crits at %s hits/s, D?)") % [
+			LE.fmt_pct(1.0 - float(recent["share"])), LE.fmt_pct(float(recent["n"])), LE.fmt_pct(float(recent["r"])), LE.fmt_num(float(ctx.get("recent_hits", 0.0)))])
 	cc_text.append_array(crit_lines)
 	var cm_text: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s = %s") % [
 		LE.fmt_num(base_cm), LE.fmt_num(cm_add), LE.fmt_pct(cm_inc), LE.fmt_num(cm_more), LE.fmt_num(cm)]]
@@ -1110,17 +1209,22 @@ static func _build_damage(ctx: Dictionary) -> Dictionary:
 ##          extraTag = ability index, treatExtraTagZeroAsMatching TRUE) / efficiency
 ##   result = max(0, max(minimumManaCost, cost)).
 ## The skill's own divider nodes and unique effects are ADDED efficiency (the mutator's getAddedManaCostDivider, vtable 0xBE8);
-## BaseMana+0x98 (prefab addedManaCostDivider) is taken as 0. `s` is a skill_store result (mana_added / mana_inc of nodes and
+## BaseMana+0x98 (addedManaCostDivider, read by BaseMana.getManaCost) is 0.0 on every player prefab (prefab_mana_divider.json.gz:
+## PlayerMana on Local Player, MainPlayer, SplitTestPlayer), so it adds nothing. `s` is a skill_store result (mana_added / mana_inc of nodes and
 ## unique effects); SP 66 / SP 69 mods of the store include the attribute and level scaling (BuildMods._add_ability_scaling).
-## Returns {cost, text, base, added, inc, more, eff, floor, mods}.
-static func mana_parts(ab: Dictionary, store: StatStore, tags: int, index: int, s: Dictionary) -> Dictionary:
+## `distance` is the environment term of manaCostPerDistance (Lunge; the player's input mana_distance, default 1).
+## Returns {cost, text, base, added, inc, more, eff, floor, mods, distance_cost}.
+static func mana_parts(ab: Dictionary, store: StatStore, tags: int, index: int, s: Dictionary, distance: float = 0.0) -> Dictionary:
 	var qc: StatQuery = store.query(LE.MANA_COST, tags, 0, index)
 	var qe: StatQuery = store.query(LE.MANA_EFFICIENCY, tags, 0, 0, false)
 	var base: float = float(ab.get("manaCost", 0.0))
+	# UsingAbility.c 2356-2400: BaseMana.getManaCost_2 gets distance x manaCostPerDistance as its added argument, summed with manaCost in the SP 66
+	# added value; Ability+0xC8 (subtract stopRange) is 0 on Lunge, the only ability with manaCostPerDistance > 0 (prefab_ability_stop_range)
+	var distance_cost: float = maxf(distance, 0.0) * float(ab.get("manaCostPerDistance", 0.0))
 	var added: float = float(s.get("mana_added", 0.0)) + qc.added
 	var inc: float = float(s.get("mana_inc", 0.0)) + qc.increased
 	var eff: float = (1.0 + qe.added) * (1.0 + qe.increased) * qe.more
-	var cost: float = (base + added) * (1.0 + inc) * qc.more / eff if eff != 0.0 else 0.0
+	var cost: float = (base + distance_cost + added) * (1.0 + inc) * qc.more / eff if eff != 0.0 else 0.0
 	# the minimum is the ability's minimumManaCost (Ability+0xBC, AbilityMutator.getMinimumManaCost); DreamslashMutator adds its
 	# min_mana_cost field to it when the field is above 0
 	var floor_cost: float = float(ab.get("minimumManaCost", 0.0))
@@ -1130,11 +1234,14 @@ static func mana_parts(ab: Dictionary, store: StatStore, tags: int, index: int, 
 	var raised: bool = cost < floor_cost
 	cost = maxf(maxf(cost, floor_cost), 0.0)
 	var lines: PackedStringArray = [LE.t("(base %s + added %s) × (1 + %s) × %s / mana efficiency %s = %s") % [
-		LE.fmt_num(base), LE.fmt_num(added), LE.fmt_pct(inc), LE.fmt_num(qc.more), LE.fmt_num(eff), LE.fmt_num(cost)]]
+		LE.fmt_num(base + distance_cost), LE.fmt_num(added), LE.fmt_pct(inc), LE.fmt_num(qc.more), LE.fmt_num(eff), LE.fmt_num(cost)]]
+	if distance_cost > 0.0:
+		lines.append(LE.t("Distance %s × %s mana per distance = %s (added to the base cost)") % [LE.fmt_num(distance),
+			LE.fmt_num(float(ab.get("manaCostPerDistance", 0.0))), LE.fmt_num(distance_cost)])
 	if raised:
 		lines.append(LE.t("Minimum mana cost %s: the cost is raised to it") % LE.fmt_num(floor_cost))
 	return {"cost": cost, "text": "\n".join(lines), "base": base, "added": added, "inc": inc, "more": qc.more, "eff": eff,
-		"floor": floor_cost, "mods": qc.mods + qe.mods}
+		"floor": floor_cost, "mods": qc.mods + qe.mods, "distance_cost": distance_cost}
 
 
 ## The mana cost of the skill before a calculation context exists (BuildMods._add_cost_models): the ability's tags after the tree's
@@ -1217,8 +1324,9 @@ static func _speed(build: Node, ab: Dictionary, ctx: Dictionary, s: Dictionary) 
 			b.append(LE.t("Uses/s = 1 / %s s = %s") % [LE.fmt_num(cast), LE.fmt_num(uses)])
 
 	var rows: Array = [{"label": LE.t("Uses per second"), "text": LE.fmt_num(uses), "breakdown": "\n".join(b)}]
-	var mana_info: Dictionary = mana_parts(ab, store, _query_tags(ctx), _ability_index(ctx), s)
-	var mana: float = float(mana_info["cost"])
+	var mana_info: Dictionary = mana_parts(ab, store, _query_tags(ctx), _ability_index(ctx), s, float(s.get("mana_distance", 0.0)))
+	# mana_raw: mana spent directly by the skill (Storm Bolt's consumption, BaseMana.reduceMana), not part of the cost divided by efficiency
+	var mana: float = float(mana_info["cost"]) + float(s.get("mana_raw", 0.0))
 	var mana_lines: PackedStringArray = [str(mana_info["text"])]
 	for line: String in s.get("mana_sources", []):
 		mana_lines.append("  " + line)
@@ -1314,6 +1422,19 @@ static func uses_per_second(build: Node, slot: int, global: StatStore) -> float:
 	var scratch: Array[String] = []
 	var ctx: Dictionary = _context(build, ab, s["store"], s["conversions"], scratch, primary)
 	return float(_speed(build, ab, ctx, s)["uses"])
+
+
+## Own rates of the skill being built, for models that follow its use or hit rate (EffectModels input "auto", model key "use_interval").
+## uses: uses/s (Speed of the skill); hits: hits/s on the target (uses × hits per use × projectiles); tags: the skill's tags after conversions.
+static func skill_rates(build: Node, ab: Dictionary, s: Dictionary) -> Dictionary:
+	var slot: int = int(s['ctx'].get('slot', -1))
+	var primary: Dictionary = ab.get('primaryDamage', {}) if ab.get('primaryDamage') is Dictionary else {}
+	var scratch: Array[String] = []
+	var ctx: Dictionary = _context(build, ab, s['store'], s['conversions'], scratch, primary)
+	var uses: float = float(_speed(build, ab, ctx, s)['uses'])
+	var hits: float = float(build.skills[slot].get('hits', 1.0)) if slot >= 0 and slot < build.skills.size() else 1.0
+	hits *= float(projectile_hits(build, slot, ab, s).get('factor', 1.0))
+	return {'uses': uses, 'hits': uses * hits, 'tags': int(ctx['tags'])}
 
 
 ## Default of the input «your hits on the cursed target per second» (docs/ENGINE.md §9.3): the sum of uses per second of the
@@ -1414,7 +1535,7 @@ static func _vs_enemy(build: Node, ctx: Dictionary, ds: Dictionary, speed: Dicti
 	var e: StatStore = Enemy.store(enemy)
 	var hit: bool = ctx["hit"]
 	var src: int = ctx["src"]
-	var area_level: int = int(enemy.get("level", 100))
+	var area_level: int = Enemy.zone_level(enemy)
 	var dr: float = Enemy.level_dr(enemy)
 	var armour: float = Enemy.armour(e)
 	var armour_share: float = minf(1.0, e.query(LE.ARMOUR_VS_DOT).added)  # the victim's own SP 118 (ProtectionClass +0xCC), not the attacker's
@@ -1568,6 +1689,8 @@ static func _conditional_hit_stats(ctx: Dictionary, enemy: Dictionary, ps: Dicti
 	for mod: StatMod in ctx["mods"]:
 		if mod.property != LE.CONDITIONAL_PEN and mod.property != LE.CONDITIONAL_CRIT_CHANCE and mod.property != LE.CONDITIONAL_CRIT_MULTI:
 			continue
+		if mod.special == 43:
+			continue  # PerDistance crit / penetration arms of GetPerDistanceEffect (0x83-0x85 branches) are not traced; no affix uses them
 		var v: float = Enemy.has_condition(enemy, mod.special, ps)
 		if v <= 0.0:
 			continue
@@ -1612,6 +1735,8 @@ static func _conditional_hit_stats(ctx: Dictionary, enemy: Dictionary, ps: Dicti
 
 ## PlayerProperty 590 "You can deal Super Critical Strikes" (CharacterMutator.canSuperCrit: value > 0.1).
 const SUPER_CRIT_PP: int = 590
+## CharacterMutator: a crit starts the 4 s window of PP 419 / PP 89 (timeLastCrit + 4.0, the 0x40800000 buff).
+const RECENT_CRIT_WINDOW: float = 4.0
 
 
 ## Chance that a crit is a super crit (ProtectionClass.ApplyDamage, attacker is a player): with canSuperCrit and a crit chance
@@ -1629,7 +1754,7 @@ static func _super_crit_chance(build: Node, cc: float) -> float:
 
 ## Conditional more damage against the enemy for damage type i (SP 117 by condition, SP 115 per stack of an ailment
 ## on the target without a cap, 06b §6); appends breakdown lines.
-static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray, ps: Dictionary = {}) -> float:
+static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src: int, i: int, lines: PackedStringArray, ps: Dictionary = {}, ailment_id: int = 0) -> float:
 	var cond: float = 1.0
 	# The game folds all `more` values of one Stat key (property, tags, specialTag) into Π(1+m)−1 first (Stats.Stat.getMoreMultiplier /
 	# HasNonZeroMoreValue, GlobalDamageConditionals) and scales that by the condition value v (stacks, or the uptime fraction for a
@@ -1642,7 +1767,13 @@ static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src:
 			continue
 		var ail_stack: bool = mod.property == LE.DAMAGE_PER_AILMENT_STACK
 		var per_stack: bool = ail_stack or PER_STACK_CDP.has(mod.special)
-		var count: float = float(enemy.get("ailments", {}).get(mod.special, 0)) if ail_stack else Enemy.has_condition(enemy, mod.special, ps)
+		var count: float
+		if AILMENT_ONLY_CDP.has(mod.special):
+			# only the damage of the source ailment gets the value (IsAilmentConditional.Check on the DamageSource)
+			var spec: Dictionary = AILMENT_ONLY_CDP[mod.special]
+			count = minf(Enemy.stacks_of(enemy, str(spec["count"])), AILMENT_ONLY_LIMIT) if ailment_id == int(spec["source"]) else 0.0
+		else:
+			count = float(enemy.get("ailments", {}).get(mod.special, 0)) if ail_stack else Enemy.has_condition(enemy, mod.special, ps)
 		# SP 115 item mods are ADDED: the per-stack value is in the added field
 		var values: Array[float] = mod.more.duplicate()
 		if ail_stack and values.is_empty() and mod.added != 0.0:
@@ -1671,8 +1802,13 @@ static func _condition_factor(cond_mods: Array[StatMod], enemy: Dictionary, src:
 
 
 ## ConditionalDamageProperty values that scale per stack / per instance (GlobalDamageConditionals: GetPerAilmentStackEffect,
-## GetPerNegativeAilmentEffect, GetPerCurseEffect); the ones that need the damage source or distance (41-43) are not evaluated.
-const PER_STACK_CDP: Array[int] = [6, 7, 18, 21, 23, 26, 30, 38, 39]
+## GetPerNegativeAilmentEffect, GetPerCurseEffect, GetPerDistanceEffect); 41/42 need the damage source ailment (AILMENT_ONLY_CDP),
+## 43 reads the target_distance input (Enemy.has_condition).
+const PER_STACK_CDP: Array[int] = [6, 7, 18, 21, 23, 26, 30, 38, 39, 41, 42, 43]
+## IsAilmentConditional + GetPerAilmentStackEffect(counted id, 1, 200): the value applies only to the damage of ailment `source`
+## (AilmentID 2 Bleed / 7 Poison), per stack (up to 200) of ailment `count` on the target.
+const AILMENT_ONLY_CDP: Dictionary = {41: {"source": 2, "count": "Poison"}, 42: {"source": 7, "count": "Bleed"}}
+const AILMENT_ONLY_LIMIT: float = 200.0
 
 
 static func _cdp_name(cdp: int) -> String:
@@ -1682,7 +1818,8 @@ static func _cdp_name(cdp: int) -> String:
 		13: "cursed", 16: "moving", 17: "bosses", 18: "per armor shred stack", 19: "bleeding",
 		20: "frozen", 21: "per ailment", 25: "cursed (Damned)", 26: "per ailment (up to 8)",
 		32: "frozen or chilled", 33: "ignited or shocked", 36: "electrified", 40: "boss or rare while mana is at least 50%", 44: "poisoned",
-		46: "blinded", 47: "frostbitten",
+		46: "blinded", 47: "frostbitten", 41: "bleed damage per poison stack", 42: "poison damage per bleed stack",
+		43: "distance to the target (per unit, max 10)",
 		12: "Brand of Deception", 14: "branded", 15: "branded boss or rare", 22: "feared or slowed", 23: "per curse",
 		24: "boss or moving", 27: "slowed or immobilized", 29: "netted", 30: "per slow stack", 31: "marked by the falcon",
 		34: "Spreading Flames", 35: "feared", 38: "per frostbite stack", 39: "per shock stack", 45: "immobilized",

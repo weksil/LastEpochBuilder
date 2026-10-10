@@ -8,7 +8,8 @@ class_name EnemyAilments
 ## - stacks = min(Σ applications/s × duration, maxInstances); a single-instance ailment counts its uptime;
 ##   uptime («the enemy has it») = 1 − e^(−rate × duration) (independent applications, refreshed duration);
 ## - consumption: a skill whose node spends the stacks on its hits (CONSUMERS) wipes them once per use, so with the period
-##   P = 1 / uses the average is rate × P / 2 (rate × (T − T² / 2P) when the duration T is shorter);
+##   P = 1 / uses the average is rate × P / 2 (rate × (T − T² / 2P) when the duration T is shorter); Rive: once per
+##   third-strike use (consume_events);
 ## - threshold ailments (THRESHOLDS: Shadow Daggers strike at 4 stacks) average (N − 1) / 2 stacks; the strike is a
 ##   damage component of the skill (threshold_components).
 ## The effective enemy keeps the stacks in `ailments` and the uptimes in `uptime` (Enemy.presence reads them).
@@ -38,6 +39,21 @@ const CONSUMERS: Dictionary = {
 	"Absorbs Ignite stacks (up to 20) and grants Flame Drinker: Phys penetration per stack": ["Ignite"],
 	"Hits absorb poison stacks from target": ["Poison"],
 }
+## Rive: only hits of the third strike (Rive3Mutator.OnHit, own-ability gate) spend the ignite. The strikes follow the combo list of
+## RiveMutator.GetCurrentComboList: [Rive1 (base)] + [Rive2, Rive3]; node «Cadence» (skipEveryOtherStrike3) [Rive2, Rive1, Rive2, Rive3];
+## «Rive skips its second strike» (AbilityProperty rive1 index 6) removes Rive2; «Double Slash» (noStrike3) removes Rive3.
+const RIVE_ABILITY_ID: String = "rive1"
+const RIVE_ABILITY_INDEX: int = 91
+const RIVE_SKIP_SECOND_PROPERTY: int = 6
+const RIVE_COMBO_TIMER_PROPERTY: int = 4
+const RIVE_COMBO_LIMIT: float = 3.0  # Rive1.comboTimeLimit (prefab_combo_abilities)
+const RIVE_THIRD_FLAG: String = "Absorbs Ignite stacks (up to 20) and grants Flame Drinker: Phys penetration per stack"
+const RIVE_NO_STRIKE3_FLAG: String = "Third hit is skipped"
+const RIVE_CADENCE_FLAG: String = "Changes hit order: third hit every cycle"
+## Puncture: CleanseAilmentsOnHit is added only in the everyThirdBigger branch of PunctureMutator.Mutate (usesSinceLarge > 2, reset to 0,
+## +1 per use in onAbilityUse): once per 3 uses, and never without Every Third Bigger.
+const PUNCTURE_ABSORB_FLAG: String = "Large hit absorbs bleeds and deals their damage instantly"
+const PUNCTURE_THIRD_FLAG: String = "Every third use is stronger and wider"
 ## PlayerProperty index -> buff and event (CharacterMutator constants playerPropertyDuskShroudWhenHitChance = 97,
 ## …OnMeleeOrThrowingThatHits = 102, …CrimsonShroudOnMeleeOrThrowingAttackThatHits = 107, duskShroudOnDodgeChance = 470).
 ## `flag`: the property switches the gain on (chance 1); `duration`: PlayerProperty of increased duration; `tag`: the
@@ -161,7 +177,7 @@ static func auto(build: Node, slot: int) -> Dictionary:
 			for flag: String in r["flag_keys"]:
 				for name: String in CONSUMERS.get(flag, []):
 					var cid: int = GameData.ailment_id_by_name(name)
-					consume_rate[cid] = float(consume_rate.get(cid, 0.0)) + float(r["uses"])
+					consume_rate[cid] = float(consume_rate.get(cid, 0.0)) + consume_events(build, flag, r)
 	var out: Dictionary = {}
 	for id: int in sums:
 		var rate: float = float(sums[id]["rate"])
@@ -200,6 +216,40 @@ static func consumed_load(rate: float, duration: float, period: float) -> float:
 	if duration >= period:
 		return rate * period / 2.0
 	return rate * (duration - duration * duration / (2.0 * period))
+
+
+## Share of the uses of Rive that are the third strike: Rive3 entries / entries of the cycle [base Rive1] + current combo list.
+static func rive_third_share(no_strike3: bool, cadence: bool, skip_second: bool) -> float:
+	if no_strike3:
+		return 0.0
+	var list: Array[int] = [2, 1, 2, 3]
+	if not cadence:
+		list = [2, 3]
+	if skip_second:
+		var kept: Array[int] = []
+		for x: int in list:
+			if x != 2:
+				kept.append(x)
+		list = kept
+	var threes: int = list.count(3)
+	return float(threes) / float(list.size() + 1)
+
+
+## Wipes per second of a consuming flag: other consumers wipe once per use; Puncture once per third use, and never without Every Third
+## Bigger; Rive once per third-strike use, and never when the
+## gap between uses (1 / uses) exceeds the combo time limit (the combo falls back to Rive1).
+static func consume_events(build: Node, flag: String, r: Dictionary) -> float:
+	var uses: float = float(r["uses"])
+	if flag == PUNCTURE_ABSORB_FLAG:
+		return uses / 3.0 if (r["flag_keys"] as Array).has(PUNCTURE_THIRD_FLAG) else 0.0
+	if flag != RIVE_THIRD_FLAG:
+		return uses
+	var keys: Array = r["flag_keys"]
+	var skip: bool = float(ShadowCalc.ability_property(build, RIVE_ABILITY_ID, RIVE_ABILITY_INDEX, RIVE_SKIP_SECOND_PROPERTY)["value"]) > 0.0
+	var limit: float = RIVE_COMBO_LIMIT + float(ShadowCalc.ability_property(build, RIVE_ABILITY_ID, RIVE_ABILITY_INDEX, RIVE_COMBO_TIMER_PROPERTY)["value"])
+	if uses <= 0.0 or 1.0 / uses > limit:
+		return 0.0
+	return uses * rive_third_share(keys.has(RIVE_NO_STRIKE3_FLAG), keys.has(RIVE_CADENCE_FLAG), skip)
 
 
 ## Per bar slot: {name, applied, uses, cooldown, flag_keys} of a pass against the Conditions values only (cached).
@@ -327,6 +377,14 @@ static func _self_sources(build: Node, ab: Dictionary, uses: float, hits: float,
 		var inc: float = float(player_property(build, int(spec["duration"]))["value"]) if spec.has("duration") else 0.0
 		var what: String = str(TAG_USE_TEXT[int(spec["tag"])]) if spec.has("tag") else str(PP_EVENT_TEXT[str(spec["event"])])
 		out.append(_gain(id, events * minf(chance, 1.0), inc, LE.t("%s, chance %s") % [LE.t(what), LE.fmt_pct(chance)]))
+	# Ancestral Speed: a chance on every use of a totem skill (AbilityUse roll, CharacterMutator.OnAbilityUse); the haste lasts 3 s
+	if (tags & LE.TOTEM) != 0:
+		var c_totem: float = _passive_field(build, "CharacterMutator.chanceToGainHasteWhenYouSummonATotemFromPassives")
+		var id_h: int = GameData.ailment_id_by_name("Haste")
+		if c_totem > 0.0 and id_h >= 0 and uses > 0.0:
+			var g_h: Dictionary = _gain(id_h, uses * minf(c_totem, 1.0), 0.0, LE.t("use of a totem skill, chance %s") % LE.fmt_pct(c_totem))
+			g_h["duration"] = 3.0
+			out.append(g_h)
 	for prop: Dictionary in ABILITY_PROPERTY_BUFFS.get(str(ab.get("name", "")), []):
 		var chance_p: float = float(ShadowCalc.ability_property(build, str(prop["ability_id"]), int(prop["ability_index"]), int(prop["index"]))["value"])
 		var id_p: int = GameData.ailment_id_by_name(str(prop["ailment"]))
@@ -551,6 +609,17 @@ static func _defense_sources(build: Node) -> Array[Dictionary]:
 ## Buffs on a timer of PlayerProperties: Apocalypse every 3 s while on high health (the Health select of the Conditions
 ## tab is full or high); Damage Immunity for `value` seconds after a hit, then 15 s of cooldown and the wait for the next
 ## landed hit of the Defense tab attack.
+## Sum of the value of one CharacterMutator field over the allocated passive nodes (BuildMods passive entries, minPoints checked).
+static func _passive_field(build: Node, target: String) -> float:
+	var total: float = 0.0
+	for entry: Dictionary in BuildMods._passive_entries(build):
+		var points: int = int(entry["points"])
+		for effect: Dictionary in (entry["node"] as Dictionary).get("effects", []):
+			if str(effect.get("target", "")) == target and points >= int(effect.get("minPoints", 0)):
+				total += BuildMods.eval_value(effect.get("value"), points)
+	return total
+
+
 static func _timed_sources(build: Node) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var health: String = str(build.player_state.get("health", "full"))
@@ -560,6 +629,12 @@ static func _timed_sources(build: Node) -> Array[Dictionary]:
 		g["duration"] = APOCALYPSE_PERIOD
 		g["periodic"] = true
 		out.append(g)
+	# Divine Essence: a roll every second while alive (CharacterMutator.OnUpdateTick: the health gate is healthAbovePercentage(0), i.e.
+	# alive); random applications, not a fixed timer
+	var de_chance: float = _passive_field(build, "CharacterMutator.divineEssenceEverySecondChance")
+	var id_de: int = GameData.ailment_id_by_name("DivineEssence")
+	if de_chance > 0.0 and id_de >= 0:
+		out.append(_gain(id_de, minf(de_chance, 1.0), 0.0, LE.t("a roll every second, chance %s (the character is alive)") % LE.fmt_pct(de_chance)))
 	var seconds: float = float(player_property(build, IMMUNITY_PROPERTY)["value"])
 	var id_i: int = GameData.ailment_id_by_name("DamageImmunity")
 	if seconds > 0.0 and id_i >= 0:

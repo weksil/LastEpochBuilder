@@ -144,6 +144,8 @@ const MORE_DAMAGE_TAKEN_WHILE_MOVING: int = 113
 const ARMOUR_VS_DOT: int = 118
 ## SP 60 CurrentHealthDrain (research/data/sp_enum.json): ProtectionClass.Update takes drain × current health per second
 const CURRENT_HEALTH_DRAIN: int = 60
+## SP 97 ChanceToGain30WardWhenHit (SP.cs:102)
+const CHANCE_TO_GAIN_30_WARD_WHEN_HIT: int = 97
 
 
 # Damage type data

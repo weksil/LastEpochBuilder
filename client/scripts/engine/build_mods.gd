@@ -183,7 +183,7 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 	store.parent = global
 	var result: Dictionary = {
 		"store": store, "notes": [] as Array[String],
-		"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_inc": 0.0, "mana_added": 0.0,
+		"use_speed_inc": 0.0, "use_speed_more": 1.0, "mana_inc": 0.0, "mana_added": 0.0, "mana_distance": 0.0, "mana_raw": 0.0,
 		"mana_sources": [] as Array[String], "conversions": [],
 		# §9: field models of the skill tree
 		"params": {}, "triggers": [], "components": [], "minion_mods": [] as Array[StatMod], "component_mods": {},
@@ -226,6 +226,7 @@ static func skill_store(build: Node, slot: int, global: StatStore, use: String =
 	_add_ability_scaling(build, ability, global, store, result["conversions"])
 	UniqueEffects.apply_skill(build, ability, result)
 	_add_cost_models(build, ability, result)
+	_add_distance_cost_input(build, slot, ability, result)
 	_declare_buff_input(result)
 	return result
 
@@ -247,6 +248,13 @@ static func _add_cost_models(build: Node, ability: Dictionary, result: Dictionar
 				continue
 			var v: float = eval_value(effect.get("value"), points) if effect.has("value") else 0.0
 			_apply_model(model, v, entry["source"], entry["title"], result)
+	# the skill's own uses and hits (skill_rates) for the models that follow them (automatic stack inputs, use intervals)
+	var rates_needed: bool = false
+	for e0: Dictionary in UniqueEffects.entries(build):
+		if not e0["model"].is_empty() and int(e0["ability_index"]) < 0 and EffectModels.needs_rates(e0["model"]):
+			rates_needed = true
+	if rates_needed:
+		ctx["skill_rates"] = SkillCalc.skill_rates(build, ability, result)
 	for e: Dictionary in UniqueEffects.entries(build):
 		var entry_model: Dictionary = e["model"]
 		if entry_model.is_empty() or int(e["ability_index"]) >= 0 or EffectModels.phase(entry_model) != "skill" \
@@ -257,7 +265,16 @@ static func _add_cost_models(build: Node, ability: Dictionary, result: Dictionar
 		_apply_model(entry_model, float(e["pp"]), e["label"], e["label"], result)
 		ctx.erase("character")
 		ctx["item_slot"] = ""
+	ctx.erase("skill_rates")
 	ctx.erase("mana_cost")
+
+
+## Lunge: manaCostPerDistance > 0 (UsingAbility.c 2356-2400) -> player input "mana_distance", default 1 (the position of the target is not game data).
+static func _add_distance_cost_input(build: Node, slot: int, ability: Dictionary, result: Dictionary) -> void:
+	if float(ability.get("manaCostPerDistance", 0.0)) <= 0.0:
+		return
+	result["inputs"].append({"key": "mana_distance", "label": LE.t("Distance to the target point (mana cost per distance)"), "default": 1.0})
+	result["mana_distance"] = float(build.skills[slot].get("inputs", {}).get("mana_distance", 1.0))
 
 
 ## Input "buff active" for a skill that has global-scope mods (global_store reads it from Build.skills[slot].inputs).
@@ -789,6 +806,13 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 				if part.strip_edges().begins_with(own + "."):
 					own_fields[part.strip_edges().get_slice(".", 1)] = true
 	var title: String = str(node.get("name", ""))
+	# the node's own field values by target, for models capped by a sibling field of the same node (max_node_field)
+	var node_fields: Dictionary = {}
+	for sibling: Dictionary in node.get("effects", []):
+		if sibling.has("value") and str(sibling.get("target", "")).contains("."):
+			node_fields[str(sibling["target"])] = eval_value(sibling["value"], points)
+	var ctx: Dictionary = result["ctx"]
+	ctx["node_fields"] = node_fields
 	for effect: Dictionary in node.get("effects", []):
 		var target: String = str(effect.get("target", ""))
 		var other: Dictionary = _other_part(target, own, str(result.get("main_name", "")))
@@ -809,6 +833,7 @@ static func _add_skill_node(node: Dictionary, points: int, result: Dictionary) -
 		_add_skill_effect(effect, points, title, result)
 		result.erase("scope_override")
 		result.erase("scope_override_note")
+	ctx.erase("node_fields")
 
 
 ## Nodes of the other bar skills' trees that write into this skill's mutator (Firebrand → Flame Reave ignite chance,
@@ -961,7 +986,7 @@ static func _apply_field_models(target: String, v: float, source: String, title:
 ## does (not its scope, note or confidence).
 const SIGNATURE_KEYS: Array[String] = ["stat", "mod", "tags", "param", "resource", "ability", "when", "text", "label", "count", "chance",
 	"on", "icd", "speed", "mana", "cooldown", "ailment", "per", "factor", "offset", "src_max", "min", "max", "max_field", "inverse", "at_least", "below",
-	"base_cooldown", "single_projectile", "v_caps_source", "double_below"]
+	"base_cooldown", "single_projectile", "v_caps_source", "double_below", "zone", "zone_freq", "raw", "max_node_field"]
 
 
 static func _model_signature(m: Dictionary) -> String:
@@ -1008,7 +1033,7 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 	var ctx: Dictionary = result["ctx"]
 	_note_global_scope(model, result)
 	for inp: Dictionary in EffectModels.inputs(model):
-		result["inputs"].append(inp)
+		result["inputs"].append(EffectModels.declared_input(inp, ctx))
 	# models of another user (a shadow-only node on your own use and back) are left to that store, without a note
 	var cur_use: String = str(ctx.get("use", ""))
 	for cond: Variant in model.get("when", []):
@@ -1050,6 +1075,10 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 		"mana":
 			if str(model.get("mana", "")) == "increased":
 				result["mana_inc"] += x
+			elif bool(model.get("raw", false)):
+				# spent directly from the mana pool (BaseMana.reduceMana, Storm Bolt), not divided by mana efficiency
+				result["mana_raw"] += x
+				result["mana_sources"].append("%s %s (%s)" % [LE.fmt_num(x), source, LE.t("spent directly, not divided by mana efficiency")])
 			else:
 				result["mana_added"] += x
 				result["mana_sources"].append("%s %s" % [LE.fmt_num(x), source])
@@ -1094,6 +1123,10 @@ static func _apply_model(model: Dictionary, v: float, source: String, title: Str
 			result["triggers"].append({"ability": str(model["ability"]), "on": str(model.get("on", "use")),
 				"chance": chance, "count": _num(model.get("count", 1.0), v), "single_projectile": bool(model.get("single_projectile", false)),
 				"icd": float(model.get("icd", 0.0)), "node": title,
+				# every n-th event while `window` seconds hold n events (Soul Bastion: 5 kills within 10 s); events_default: the
+				# automatic events/s of the event when no input is set (SkillCalc._resolve_triggers)
+				"every": float(model.get("every", 0.0)), "window": float(model.get("window", 0.0)),
+				"events_default": float(model.get("events_default", 0.0)),
 				# limit kind: a cooldown that starts after a successful roll (rate 1 / (icd + 1 / (chance × events))) or, by default,
 				# a ProcTimeTracker window (at most count / icd); stochastic: the chance above 100% gives several casts (StochasticRound)
 				"cooldown": bool(model.get("cooldown", false)), "stochastic": bool(model.get("stochastic", false)),

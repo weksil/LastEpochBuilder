@@ -252,7 +252,7 @@ static func apply_skill(build: Node, ability: Dictionary, result: Dictionary) ->
 			# a character-wide stat model (applied by apply_global) keeps its input row on the first damaging skill
 			if is_input_slot and kind == "stat" and e["ability_index"] < 0:
 				for inp: Dictionary in EffectModels.inputs(model):
-					result["inputs"].append(inp)
+					result["inputs"].append(EffectModels.declared_input(inp, {"build": build, "slot": -1}))
 			continue
 		if routed and kind == "trigger" and CHARACTER_EVENTS.has(str(model.get("on", ""))) 				and int(result["ctx"].get("slot", -1)) != first_skill_slot(build):
 			continue
